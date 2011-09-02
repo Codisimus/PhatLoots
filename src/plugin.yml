@@ -1,0 +1,9 @@
+name: PhatLoots
+main: PhatLoots.PhatLootsMain
+version: 0.9.1
+author: Codisimus
+website: www.codisimus.com
+description: Chests with randomly generated money/items
+commands:
+  loot:
+    description: Main command, type for additional help/commands
