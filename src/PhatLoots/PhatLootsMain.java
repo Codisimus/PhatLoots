@@ -2,7 +2,6 @@
 package PhatLoots;
 
 import com.griefcraft.lwc.LWC;
-import com.nijiko.permissions.PermissionHandler;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -23,13 +22,14 @@ import org.bukkit.event.Event.Priority;
 import org.bukkit.event.Event.Type;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
+import ru.tehkode.permissions.PermissionManager;
 
 /**
  *
  * @author Codisimus
  */
 public class PhatLootsMain extends JavaPlugin {
-    protected static PermissionHandler permissions;
+    protected static PermissionManager permissions;
     protected static PluginManager pm;
     protected static LWC lwc;
     protected static Server server;
@@ -46,26 +46,20 @@ public class PhatLootsMain extends JavaPlugin {
     @Override
     public void onEnable () {
         server = getServer();
+        pm = server.getPluginManager();
         checkFiles();
         SaveSystem.loadFromFile();
         loadConfig();
-        pm = server.getPluginManager();
-        pm.registerEvent(Event.Type.PLUGIN_ENABLE, new PluginListener(), Priority.Monitor, this);
-        pm.registerEvent(Type.PLAYER_COMMAND_PREPROCESS, new PhatLootsPlayerListener(), Priority.Normal, this);
-        pm.registerEvent(Type.PLAYER_INTERACT, new PhatLootsPlayerListener(), Priority.Normal, this);
-        pm.registerEvent(Type.BLOCK_DAMAGE, new PhatLootsBlockListener(), Priority.Normal, this);
+        registerEvents();
         System.out.println("PhatLoots "+this.getDescription().getVersion()+" is enabled!");
     }
 
     /**
      * Makes sure all needed files exist
-     * Register.jar is for economy support
+     *
      */
     private void checkFiles() {
-        File file = new File("lib/Register.jar");
-        if (!file.exists() || file.length() < 43000)
-            moveFile("Register.jar");
-        file = new File("plugins/PhatLoots/config.properties");
+        File file = new File("plugins/PhatLoots/config.properties");
         if (!file.exists())
             moveFile("config.properties");
     }
@@ -81,10 +75,6 @@ public class PhatLootsMain extends JavaPlugin {
             JarFile jar = new JarFile("plugins/PhatLoots.jar");
             ZipEntry entry = jar.getEntry(fileName);
             String destination = "plugins/PhatLoots/";
-            if (fileName.equals("Register.jar")) {
-                System.out.println("[PhatLoots] Moving Files... Please Reload Server");
-                destination = "lib/";
-            }
             File file = new File(destination.substring(0, destination.length()-1));
             if (!file.exists())
                 file.mkdir();
@@ -122,15 +112,25 @@ public class PhatLootsMain extends JavaPlugin {
         PluginListener.useOP = Boolean.parseBoolean(loadValue("UseOP"));
         PhatLoots.autoLoot = Boolean.parseBoolean(loadValue("AutoLoot"));
         PhatLoots.autoLootMsg = loadValue("AutoLootMessage").replaceAll("&", "§");
+        PhatLoots.displayTimeRemaining = Boolean.parseBoolean(loadValue("DisplayTimeRemaining"));
+        PhatLoots.timeRemainingMsg = loadValue("TimeRemainingMessage").replaceAll("&", "§");
+        PhatLoots.canOnlyLootOnceMsg = loadValue("CanOnlyLootOnceMessage").replaceAll("&", "§");
         defaultResetTime = loadValue("DefaultResetTime");
         defaultResetType = loadValue("DefaultResetType");
-        defaultNumberCollectiveLoots = Integer.parseInt(loadValue("DefaultNumberOfCollectiveLootItemsRecieved"));
+        try {
+            defaultNumberCollectiveLoots = Integer.parseInt(loadValue("DefaultNumberOfCollectiveLootItemsReceived"));
+        }
+        catch (Exception iCantSpell) {
+            defaultNumberCollectiveLoots = Integer.parseInt(loadValue("DefaultNumberOfCollectiveLootItemsRecieved"));
+        }
         autoLock = Boolean.parseBoolean(loadValue("AutoLockPhatLootChestsWithLWC"));
     }
 
     /**
-     * Prints error for missing values
-     * 
+     * Loads the given key and prints error if the key is missing
+     *
+     * @param key The key to be loaded
+     * @return The String value of the loaded key
      */
     private String loadValue(String key) {
         if (!p.containsKey(key)) {
@@ -138,6 +138,18 @@ public class PhatLootsMain extends JavaPlugin {
             System.err.println("[PhatLoots] Please regenerate config file");
         }
         return p.getProperty(key);
+    }
+    
+    /**
+     * Registers events for the PhatLoots Plugin
+     *
+     */
+    private void registerEvents() {
+        PhatLootsPlayerListener playerListener = new PhatLootsPlayerListener();
+        pm.registerEvent(Event.Type.PLUGIN_ENABLE, new PluginListener(), Priority.Monitor, this);
+        pm.registerEvent(Type.PLAYER_COMMAND_PREPROCESS, playerListener, Priority.Normal, this);
+        pm.registerEvent(Type.PLAYER_INTERACT, playerListener, Priority.Normal, this);
+        pm.registerEvent(Type.BLOCK_DAMAGE, new PhatLootsBlockListener(), Priority.Normal, this);
     }
     
     /**
@@ -150,11 +162,9 @@ public class PhatLootsMain extends JavaPlugin {
     public static boolean hasPermission(Player player, String type) {
         if (permissions != null)
             return permissions.has(player, "phatloots."+type);
-        else
-            if (type.equals("use"))
-                return true;
-            else
-                return player.isOp();
+        else if (type.equals("use"))
+            return true;
+        return player.isOp();
     }
 
     /**

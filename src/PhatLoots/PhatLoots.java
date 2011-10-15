@@ -8,6 +8,8 @@ import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
 import org.bukkit.inventory.ItemStack;
 import java.util.Random;
+import org.bukkit.block.Dispenser;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.PlayerInventory;
 
 /**
@@ -18,19 +20,14 @@ import org.bukkit.inventory.PlayerInventory;
 public class PhatLoots {
     protected static boolean autoLoot;
     protected static String autoLootMsg;
+    protected static boolean displayTimeRemaining;
+    protected static String timeRemainingMsg;
+    protected static String canOnlyLootOnceMsg;
     protected String name;
     protected String individualLoots = "";
     protected int numberCollectiveLoots;
-    private String coll1 = "";
-    private String coll2 = "";
-    private String coll3 = "";
-    private String coll4 = "";
-    private String coll5 = "";
-    private int total1 = 0;
-    private int total2 = 0;
-    private int total3 = 0;
-    private int total4 = 0;
-    private int total5 = 0;
+    private String[] coll = new String[6];
+    private int[] total = new int[6];
     protected String resetTime;
     protected String resetType;
     protected String restrictedUsers = "";
@@ -46,6 +43,8 @@ public class PhatLoots {
         numberCollectiveLoots = PhatLootsMain.defaultNumberCollectiveLoots;
         resetTime = PhatLootsMain.defaultResetTime;
         resetType = PhatLootsMain.defaultResetType;
+        for (int i=1; i<=5; i++)
+            coll[i] = "";
     }
 
     /**
@@ -64,24 +63,27 @@ public class PhatLoots {
             String chestXYZ = (users[0]+","+users[1]+","+users[2]+","+users[3]+",");
             if (chestXYZ.equals(blockXYZ))
                 //Check if player looted before
-                for (int j=4; j<users.length; j++) {
+                for (int j=4; j<users.length; j++)
                     if (users[j].contains(player.getName()) || users[j].contains("all")) {
                         //Check if enough time has passed since last loot
-                        if (resetType.equals("never"))
+                        if (resetTime.equalsIgnoreCase("never")) {
+                            if (displayTimeRemaining)
+                                player.sendMessage(canOnlyLootOnceMsg);
                             return;
+                        }
                         lootTime = users[j+1];
                         String[] time = lootTime.split("'");
-                        if(!isTimedOut(time))
+                        String timeRemaining = getTimeRemaining(time);
+                        if (!timeRemaining.equals("0")) {
+                            if (displayTimeRemaining)
+                                player.sendMessage(timeRemainingMsg.replaceAll("<time>", timeRemaining));
                             return;
+                        }
                     }
-                }
         }
         lootIndividual(player, block);
-        lootCollective(coll1, player, block);
-        lootCollective(coll2, player, block);
-        lootCollective(coll3, player, block);
-        lootCollective(coll4, player, block);
-        lootCollective(coll5, player, block);
+        for (int i=1; i<=5; i++)
+            lootCollective(coll[i], player, block);
         if (restrictedUsers.contains(lootTime))
             restrictedUsers = restrictedUsers.replace(lootTime, getCurrentTime());
         else {
@@ -112,7 +114,7 @@ public class PhatLoots {
      * @param time The given time
      * @return false if given time + resetTime is later than current time
      */
-    private boolean isTimedOut(String[] time) {
+    private String getTimeRemaining(String[] time) {
         int lootDay = Integer.parseInt(time[0]);
         int lootHour = Integer.parseInt(time[1]);
         int lootMinute = Integer.parseInt(time[2]);
@@ -148,19 +150,24 @@ public class PhatLoots {
             lootSecond = lootSecond - 60;
         }
         if (lootDay < nowDay)
-            return true;
-        else if(lootDay == nowDay) {
+            return "0";
+        else if(lootDay == nowDay)
             if (lootHour < nowHour)
-                return true;
-            else if (lootHour == nowHour) {
+                return "0";
+            else if (lootHour == nowHour)
                 if (lootMinute < nowMinute)
-                    return true;
+                    return "0";
                 else if (lootMinute == nowMinute)
                     if (lootSecond <= nowSecond)
-                        return true;
-            }
-        }
-        return false;
+                        return "0";
+                    else
+                        return lootSecond-nowSecond+" seconds";
+                else
+                    return lootMinute-nowMinute+" minutes";
+            else
+                return lootHour-nowHour+" hours";
+        else
+            return lootDay-nowDay+" days";
     }
     
     /**
@@ -215,7 +222,15 @@ public class PhatLoots {
                         if (item == null)
                             return;
                         PlayerInventory sack = player.getInventory();
-                        if (autoLoot && sack.firstEmpty() >= 0) {
+                        if (block.getTypeId() == 23) {
+                            Dispenser dispenser = (Dispenser)block.getState();
+                            Inventory inventory = dispenser.getInventory();
+                            inventory.clear();
+                            inventory.addItem(item);
+                            while (inventory.firstEmpty() > 0)
+                                dispenser.dispense();
+                        }
+                        else if (autoLoot && sack.firstEmpty() >= 0) {
                             player.sendMessage(autoLootMsg.replaceAll("<item>", item.getType().name()));
                             sack.addItem(item);
                         }
@@ -241,7 +256,7 @@ public class PhatLoots {
         if (!collectiveLoots.trim().isEmpty()) {
             String[] cLoot = collectiveLoots.split("~");
             int numberLooted = 0;
-            while (numberLooted < numberCollectiveLoots) {
+            while (numberLooted < numberCollectiveLoots)
                 for (int i = 0 ; i < cLoot.length; i++) {
                     String[] itemInfo = cLoot[i].split(",");
                     int percent = Integer.parseInt(itemInfo[2]);
@@ -259,7 +274,15 @@ public class PhatLoots {
                         if (item == null)
                             return;
                         PlayerInventory sack = player.getInventory();
-                        if (autoLoot && sack.firstEmpty() > 0) {
+                        if (block.getTypeId() == 23) {
+                            Dispenser dispenser = (Dispenser)block.getState();
+                            Inventory inventory = dispenser.getInventory();
+                            inventory.clear();
+                            inventory.addItem(item);
+                            while (inventory.firstEmpty() > 0)
+                                dispenser.dispense();
+                        }
+                        else if (autoLoot && sack.firstEmpty() >= 0) {
                             player.sendMessage(autoLootMsg.replaceAll("<item>", item.getType().name()));
                             sack.addItem(item);
                         }
@@ -273,7 +296,6 @@ public class PhatLoots {
                     if (numberLooted >= numberCollectiveLoots)
                         return;
                 }
-            }
         }
     }
 
@@ -286,7 +308,7 @@ public class PhatLoots {
         restrictedUsers = "";
         for (int i=0; i<split.length; i++) {
             String[] users = split[i].split(",");
-            String buttonXYZ = users[0]+","+users[1]+","+users[2]+","+users[3]+",";
+            String buttonXYZ = users[0]+","+users[1]+","+users[2]+","+users[3]+",~";
             restrictedUsers = restrictedUsers.concat(buttonXYZ);
         }
     }
@@ -294,132 +316,55 @@ public class PhatLoots {
     /**
      * Sets the collective loot for the PhatLoots
      * 
-     * @param number The number of the collectiveLoot
+     * @param n The number of the collectiveLoot
      * @param loot The String of loots
      */
-    protected void setCollectiveLoots(int number, String loots) {
+    protected void setCollectiveLoots(int n, String loots) {
         if (loots == null || loots.equals(""))
             return;
         String[] loot = loots.split("~");
-        int total = 0;
         for (int i = 0; i < loot.length; i++) {
             String[] split = loot[i].split(",");
-            total = total + Integer.parseInt(split[2]);
-        }
-        if (number == 1) {
-            coll1 = loots.replaceAll("_", "~");
-            total1 = total;
-        }
-        else if(number == 2) {
-            System.out.println("5");
-            coll2 = loots.replaceAll("_", "~");
-            total2 = total;
-        }
-        else if(number == 3) {
-            coll3 = loots.replaceAll("_", "~");
-            total3 = total;
-        }
-        else if(number == 4) {
-            coll4 = loots.replaceAll("_", "~");
-            total4 = total;
-        }
-        else if(number == 5) {
-            coll5 = loots.replaceAll("_", "~");
-            total5 = total;
+            total[n] = total[n] + Integer.parseInt(split[2]);
         }
     }
     
     /**
      * Adds the collective loot to the PhatLoots
      * 
-     * @param number The number of the collectiveLoot
+     * @param n The number of the collectiveLoot
      * @param loot The loot String to be added
      * @return The total percent of the collective loot
      */
-    protected int addCollectiveLoot(int number, String loot) {
+    protected int addCollectiveLoot(int n, String loot) {
         String[] split = loot.split(",");
-        if (number == 1) {
-            coll1 = coll1.concat(loot.concat(",~"));
-            total1 = total1 + Integer.parseInt(split[2]);
-            return total1;
-        }
-        else if (number == 2) {
-            coll2 = coll2.concat(loot.concat(",~"));
-            total2 = total2 + Integer.parseInt(split[2]);
-            return total2;
-        }
-        else if (number == 3) {
-            coll3 = coll3.concat(loot.concat(",~"));
-            total3 = total3 + Integer.parseInt(split[2]);
-            return total3;
-        }
-        else if (number == 4) {
-            coll4 = coll4.concat(loot.concat(",~"));
-            total4 = total4 + Integer.parseInt(split[2]);
-            return total4;
-        }
-        else if (number == 5) {
-            coll5 = coll5.concat(loot.concat(",~"));
-            total5 = total5 + Integer.parseInt(split[2]);
-            return total5;
-        }
-        return 0;
+        coll[n] = coll[n].concat(loot.concat(",~"));
+        total[n] = total[n] + Integer.parseInt(split[2]);
+        return total[n];
     }
 
     /**
      * Removes the collective loot from the PhatLoots
      * 
-     * @param number The number of the collectiveLoot
+     * @param n The number of the collectiveLoot
      * @param loot The loot String to be removed
      * @return The total percent of the collective loot
      */
-    protected int removeCollectiveLoot(int number, String loot) {
+    protected int removeCollectiveLoot(int n, String loot) {
         String[] split = loot.split(",");
-        if (number == 1) {
-            coll1 = coll1.replaceAll(loot.concat(",~"), "");
-            total1 = total1 - Integer.parseInt(split[2]);
-            return total1;
-        }
-        else if (number == 2) {
-            coll2 = coll2.replaceAll(loot.concat(",~"), "");
-            total2 = total2 - Integer.parseInt(split[2]);
-            return total2;
-        }
-        else if (number == 3) {
-            coll3 = coll3.replaceAll(loot.concat(",~"), "");
-            total3 = total3 - Integer.parseInt(split[2]);
-            return total3;
-        }
-        else if (number == 4) {
-            coll4 = coll4.replaceAll(loot.concat(",~"), "");
-            total4 = total4 - Integer.parseInt(split[2]);
-            return total4;
-        }
-        else if (number == 5) {
-            coll5 = coll5.replaceAll(loot.concat(",~"), "");
-            total5 = total5 - Integer.parseInt(split[2]);
-            return total5;
-        }
-        return 0;
+        coll[n] = coll[n].replaceAll(loot.concat(",~"), "");
+        total[n] = total[n] - Integer.parseInt(split[2]);
+        return total[n];
     }
 
     /**
      * Returns the collective loot of the given number
-     * 
+     *
+     * @param n The number of the collective loot
      * @return The String of collective loots of the given number
      */
-    protected String getCollectiveLoots(int number) {
-        if (number == 1)
-            return coll1;
-        else if(number == 2)
-            return coll2;
-        else if(number == 3)
-            return coll3;
-        else if(number == 4)
-            return coll4;
-        else if(number == 5)
-            return coll5;
-        return null;
+    protected String getCollectiveLoots(int n) {
+        return coll[n];
     }
     
     /**
@@ -452,12 +397,11 @@ public class PhatLoots {
     protected boolean removeChest(Block chest) {
         String chestXYZ = chest.getWorld().getName()+","+chest.getX()+","+chest.getY()+","+chest.getZ()+",";
         String[] split = restrictedUsers.split("~");
-        for (int i = 0 ; i < split.length; ++i) {
+        for (int i = 0 ; i < split.length; ++i)
             if (split[i].startsWith(chestXYZ)) {
                 restrictedUsers = restrictedUsers.replaceAll(split[i]+"~", "");
                 return true;
             }
-        }
         return false;
     }
 }

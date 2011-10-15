@@ -1,7 +1,7 @@
 
 package PhatLoots;
 
-import com.nijikokun.register.payment.Method;
+import com.codisimus.phatloots.register.payment.Method;
 
 /**
  *

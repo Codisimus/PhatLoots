@@ -44,7 +44,7 @@ public class SaveSystem {
             Properties p = new Properties();
             File file = new File("plugins/PhatLoots/"+phatLoot.name+".properties");
             try {
-                if (file.createNewFile()) {
+                if (file.createNewFile())
                     try {
                         p.setProperty("ResetTime", phatLoot.resetTime);
                         p.setProperty("ResetType", phatLoot.resetType);
@@ -54,7 +54,7 @@ public class SaveSystem {
                         p.setProperty("Coll3", phatLoot.getCollectiveLoots(3));
                         p.setProperty("Coll4", phatLoot.getCollectiveLoots(4));
                         p.setProperty("Coll5", phatLoot.getCollectiveLoots(5));
-                        p.setProperty("NumberOfCollectiveLootItemsRecieved", Integer.toString(phatLoot.numberCollectiveLoots));
+                        p.setProperty("NumberOfCollectiveLootItemsReceived", Integer.toString(phatLoot.numberCollectiveLoots));
                         p.setProperty("Chests(RestrictedUsers)", phatLoot.restrictedUsers);
                         p.store(new FileOutputStream("plugins/PhatLoots/"+phatLoot.name+".properties"), null);
                     }
@@ -63,7 +63,6 @@ public class SaveSystem {
                         System.out.println("[PhatLoots] Load failed, saving turned off to prevent loss of data");
                         e.printStackTrace();
                     }
-                }
             }
             catch (Exception e) {
             }
@@ -77,7 +76,12 @@ public class SaveSystem {
                 phatLoot.setCollectiveLoots(3, p.getProperty("Coll3"));
                 phatLoot.setCollectiveLoots(4, p.getProperty("Coll4"));
                 phatLoot.setCollectiveLoots(5, p.getProperty("Coll5"));
-                phatLoot.numberCollectiveLoots = Integer.parseInt(p.getProperty("NumberOfCollectiveLootItemsRecieved"));
+                try {
+                    phatLoot.numberCollectiveLoots = Integer.parseInt(p.getProperty("NumberOfCollectiveLootItemsReceived"));
+                }
+                catch (Exception iCantSpell) {
+                    phatLoot.numberCollectiveLoots = Integer.parseInt(p.getProperty("NumberOfCollectiveLootItemsRecieved"));
+                }
                 phatLoot.restrictedUsers = p.getProperty("Chests(RestrictedUsers)");
             }
             catch (Exception ex) {
@@ -127,7 +131,7 @@ public class SaveSystem {
                 p.setProperty("Coll3", phatLoot.getCollectiveLoots(3));
                 p.setProperty("Coll4", phatLoot.getCollectiveLoots(4));
                 p.setProperty("Coll5", phatLoot.getCollectiveLoots(5));
-                p.setProperty("NumberOfCollectiveLootItemsRecieved", Integer.toString(phatLoot.numberCollectiveLoots));
+                p.setProperty("NumberOfCollectiveLootItemsReceived", Integer.toString(phatLoot.numberCollectiveLoots));
                 p.setProperty("Chests(RestrictedUsers)", phatLoot.restrictedUsers);
                 p.store(new FileOutputStream("plugins/PhatLoots/"+phatLoot.name+".properties"), null);
             }
@@ -152,10 +156,9 @@ public class SaveSystem {
      * @return The PhatLootswith the given name or null if not found
      */
     public static PhatLoots findPhatLoots(String name) {
-        for(PhatLoots PhatLoots : phatLootsList) {
+        for(PhatLoots PhatLoots : phatLootsList)
             if (PhatLoots.name.equals(name))
                 return PhatLoots;
-        }
         return null;
     }
     
@@ -169,10 +172,9 @@ public class SaveSystem {
     public static PhatLoots findPhatLoots(Block chest) {
         String block = chest.getWorld().getName()+","+chest.getX();
         block = block.concat(","+chest.getY()+","+chest.getZ()+",");
-        for(PhatLoots phatLoots : phatLootsList) {
+        for(PhatLoots phatLoots : phatLootsList)
             if (phatLoots.restrictedUsers.contains(block))
                 return phatLoots;
-        }
         return null;
     }
 
@@ -182,13 +184,7 @@ public class SaveSystem {
      * @param phatLoots The PhatLoots to be added
      */
     protected static void addPhatLoots(PhatLoots phatLoots) {
-        try {
-            phatLootsList.add(phatLoots);
-            save();
-        }
-        catch (Exception e) {
-            e.printStackTrace();
-        }
+        phatLootsList.add(phatLoots);
     }
 
     /**
@@ -197,14 +193,8 @@ public class SaveSystem {
      * @param phatLoots The PhatLoots to be removed
      */
     protected static void removePhatLoots(PhatLoots phatLoots){
-        try {
-            phatLootsList.remove(phatLoots);
-            save();
-            File trash = new File("plugins/PhatLoots/"+phatLoots.name+".properties");
-            trash.delete();
-        }
-        catch (Exception e) {
-            e.printStackTrace();
-        }
+        phatLootsList.remove(phatLoots);
+        File trash = new File("plugins/PhatLoots/"+phatLoots.name+".properties");
+        trash.delete();
     }
 }
