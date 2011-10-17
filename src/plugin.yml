@@ -1,9 +1,21 @@
 name: PhatLoots
-main: PhatLoots.PhatLootsMain
+main: com.codisimus.plugins.phatloots.PhatLootsMain
 version: 1.0.0
 author: Codisimus
 website: www.codisimus.com
-description: Chestsr with randomly generated money/items
+description: Chests with randomly generated money/items
+startup: postworld
 commands:
   loot:
-    description: Main command, type for additional help/commands
+    description: Used to setup PhatLoot Chests and rewards
+    usage: /<command> help
+permissions:
+  pvpreward.getreward:
+    default: true
+    description: Needed to steal money from another Player
+  pvpreward.givereward:
+    default: true
+    description: Needed to have money stolen from you
+  pvpreward.ignoredeathtoll:
+    default: op
+    description: Do not pay Death Toll when you die

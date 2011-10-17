@@ -72,7 +72,7 @@
 
     -->
     <target name="-post-jar">
-        <copy failonerror="false" file="${dist.jar}" todir="C:\Users\Cody\Dropbox"/>
+        <copy failonerror="false" file="${dist.jar}" todir="C:\Users\Cody\Dropbox\Public\Plugins\Dev Builds"/>
 
         <delete dir="${build.dir}"/>
     </target>
