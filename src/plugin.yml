@@ -1,6 +1,6 @@
 name: PhatLoots
 main: com.codisimus.plugins.phatloots.PhatLootsMain
-version: 1.0.0
+version: 1.0.0 dev
 author: Codisimus
 website: www.codisimus.com
 description: Chests with randomly generated money/items
@@ -10,12 +10,24 @@ commands:
     description: Used to setup PhatLoot Chests and rewards
     usage: /<command> help
 permissions:
-  pvpreward.getreward:
+  phatloots.use:
     default: true
-    description: Needed to steal money from another Player
-  pvpreward.givereward:
-    default: true
-    description: Needed to have money stolen from you
-  pvpreward.ignoredeathtoll:
+    description: Needed to receive loots
+  phatloots.make:
     default: op
-    description: Do not pay Death Toll when you die
+    description: Needed to make a PhatLoot (/loot make, /loot delete, /loot link, /loot unlink, /loot add, /loot remove, /loot money, /loot time, /loot type)
+  phatloots.reset:
+    default: op
+    description: Needed to reset the list of users who looted PhatLoots (/loot reset)
+  phatloots.list:
+    default: true
+    description: Needed to list all current PhatLoots (/loot list)
+  phatloots.info:
+    default: op
+    description: Needed to see loot information of a given PhatLoot (/loot info)
+  phatloots.name:
+    default: op
+    description: Needed to see the name of the PhatLoot that a chest belongs to (/loot name)
+  phatloots.admin:
+    default: op
+    description: Needed to break linked Blocks
