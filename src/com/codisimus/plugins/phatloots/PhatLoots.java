@@ -40,6 +40,8 @@ public class PhatLoots {
      */
     public PhatLoots (String name) {
         this.name = name;
+        
+        //Initialize lits of loots
         for (int i = 0; i < 6; i++)
             loots[i] = new LinkedList<Loot>();
     }
@@ -54,10 +56,12 @@ public class PhatLoots {
         //Retrieve the PhatLootsChest associated with the given Block
         PhatLootsChest chest = findChest(block);
         
+        //Get the user to be looked up for last time of use
         String user = player.getName();
         if (global)
             user = "global";
         
+        //Find out how much time remains
         String timeRemaining = getTimeRemaining(chest.getTime(user));
         
         //User can never loot the Chest again if timeRemaining == -1
@@ -130,13 +134,15 @@ public class PhatLoots {
             resetHour++;
             resetMinute = resetMinute - 60;
         }
-        while (resetHour >= 60) {
+        while (resetHour >= 24) {
             resetDay++;
-            resetHour = resetHour - 60;
+            resetHour = resetHour - 24;
         }
         
+        Calendar calendar = Calendar.getInstance();
+        
         //Return 0 if the current time is later than the reset time
-        int day = PhatLootsMain.calendar.get(Calendar.DAY_OF_YEAR);
+        int day = calendar.get(Calendar.DAY_OF_YEAR);
         if (day > resetDay)
             return "0";
         
@@ -144,7 +150,7 @@ public class PhatLoots {
             //Display remaining days
             return (resetDay - day)+" days";
         
-        int hour = PhatLootsMain.calendar.get(Calendar.HOUR_OF_DAY);
+        int hour = calendar.get(Calendar.HOUR_OF_DAY);
         if (hour > resetHour)
             return "0";
         
@@ -152,7 +158,7 @@ public class PhatLoots {
             //Display remaining hours
             return (resetHour - hour)+" hours";
         
-        int minute = PhatLootsMain.calendar.get(Calendar.MINUTE);
+        int minute = calendar.get(Calendar.MINUTE);
         if (minute > resetMinute)
             return "0";
         
@@ -160,7 +166,7 @@ public class PhatLoots {
             //Display remaining minutes
             return (resetMinute - minute)+" minutes";
         
-        int second = PhatLootsMain.calendar.get(Calendar.SECOND);
+        int second = calendar.get(Calendar.SECOND);
         if (second >= resetSecond)
             return "0";
         else
@@ -169,8 +175,8 @@ public class PhatLoots {
     }
     
     /**
-     * Fills the chest (block) with loot
-     * Each item is rolled for to determine if it will by added to the chest
+     * Fills the Chest (Block) with loot
+     * Each item is rolled for to determine if it will by added to the Chest
      * Money is rolled for to determine how much will be given within the range
      * 
      * @param player The Player looting
@@ -178,35 +184,41 @@ public class PhatLoots {
      */
     public void lootIndividual(Player player, Block block) {
         for (Loot loot: loots[0])
+            //Roll for item
             if (PhatLootsMain.random.nextInt(100) < loot.probability)
                 lootItem(loot.item, player, block);
     }
 
     /**
-     * Fills the chest (block) with loot
-     * Items are rolled for in order until the maximum number is added to the chest
+     * Fills the Chest (Block) with loot
+     * Items are rolled for in order until the maximum number is added to the Chest
      * 
      * @param collectiveLoots The String that contains the items and percentages
      * @param block The Block being looted
      */
     public void lootCollective(Player player, Block block) {
+        //Loot from each of the 5 collective loots
         for (int i = 1 ; i <= 5; i++) {
             int numberLooted = 0;
 
-            while (numberLooted < numberCollectiveLoots)
-                for (Loot loot: loots[i])
-                    if (PhatLootsMain.random.nextInt(100) < loot.probability) {
-                        lootItem(loot.item, player, block);
+            //Make sure there are items that will be looted before entering loop
+            if (!loots[i].isEmpty() && getPercentRemaining(i) < 100)
+                while (numberLooted < numberCollectiveLoots)
+                    for (Loot loot: loots[i])
+                        //Roll for item
+                        if (PhatLootsMain.random.nextInt(100) < loot.probability) {
+                            lootItem(loot.item, player, block);
 
-                        if (numberLooted++ >= numberCollectiveLoots)
-                            break;
-                    }
+                            //Break if the Player looted enough items
+                            if (numberLooted++ >= numberCollectiveLoots)
+                                break;
+                        }
         }
     }
 
     /**
-     * Fills the chest (block) with loot
-     * Items are rolled for in order until the maximum number is added to the chest
+     * Fills the Chest (Block) with loot
+     * Items are rolled for in order until the maximum number is added to the Chest
      * 
      * @param collectiveLoots The String that contains the items and percentages
      * @param block The Block being looted
@@ -215,12 +227,13 @@ public class PhatLoots {
         PlayerInventory sack = player.getInventory();
 
         if (block.getTypeId() == 23) {
-            //Dispense the Loot
+            //Add the item to the Dispenser inventory
             Dispenser dispenser = (Dispenser)block.getState();
             Inventory inventory = dispenser.getInventory();
             inventory.clear();
             inventory.addItem(item);
 
+            //Dispense until the Dispenser is empty
             while (inventory.firstEmpty() > 0)
                 dispenser.dispense();
         }
@@ -244,19 +257,29 @@ public class PhatLoots {
      * @return Total probability of all Loots in the collective Loots subtracted from 100
      */
     public int getPercentRemaining(int id) {
+        //Subtract the probabilty of each loot from 100
         int total = 100;
         for (Loot loot: loots[id])
             total = total - loot.probability;
+        
         return total;
     }
 
+    /**
+     * Loads data from the save file
+     * 
+     * @param id The id of the Loots (0 for individual loots)
+     * @param string The data of the Loots
+     */
     public void setLoots(int id, String data) {
+        //Cancel if no data was provided
         if (data.isEmpty())
             return;
         
-        String[] arrayOfLoots = data.split(", ");
-        for (String loot: arrayOfLoots) {
+        //Load data for each loot
+        for (String loot: data.split(", ")) {
             try {
+                //Construct a new loot with the item data and probability
                 String[] lootData = loot.split("'");
                 loots[id].add(new Loot(Integer.parseInt(lootData[0]), Short.parseShort(lootData[1]),
                         Integer.parseInt(lootData[2]), Integer.parseInt(lootData[3])));
@@ -270,25 +293,33 @@ public class PhatLoots {
         }
     }
     
+    /**
+     * Loads data from the save file
+     * 
+     * @param string The data of the Chests
+     */
     public void setChests(String data) {
+        //Cancel if no data was provided
         if (data.isEmpty())
             return;
         
-        String[] arrayOfChests = data.split("; ");
         int index;
-        for (String chest: arrayOfChests) {
+        
+        //Load data for each PhatLootsChest
+        for (String chest: data.split("; ")) {
             try {
                 String[] chestData = chest.split("\\{", 2);
 
                 //Load the Block Location data of the Chest
                 String[] blockData = chestData[0].split("'");
                 
+                //Construct a a new PhatLootsChest with the Location data
                 PhatLootsChest phatLootsChest = new PhatLootsChest(blockData[0], Integer.parseInt(blockData[1]),
                         Integer.parseInt(blockData[2]), Integer.parseInt(blockData[3]));
 
                 //Load the HashMap of Users of the Chest
-                String[] users = chestData[1].substring(0, chestData[1].length() - 1).split(", ");
-                for (String user: users)
+                for (String user: chestData[1].substring(0, chestData[1].length() - 1).split(", "))
+                    //Don't load if the data is corrupt or empty
                     if ((index = user.indexOf('@')) != -1) {
                         String[] timeData = user.substring(index + 1).split("'");
                         int[] time = new int[4];
@@ -310,27 +341,41 @@ public class PhatLoots {
         }
     }
     
+    /**
+     * Loads data from the outdated save file
+     * 
+     * @param id The id of the Loots (0 for individual loots)
+     * @param string The data of the Loots
+     */
     public void setOldLoots(int id, String data) {
+        //Cancel if no data was provided
         if (data.isEmpty())
             return;
         
-        String[] arrayOfLoots = data.split("~");
-        for (String loot: arrayOfLoots) {
+        //Load data for each loot
+        for (String loot: data.split("~")) {
             try {
                 String[] lootData = loot.split(",");
                 
-                int itemID;
-                Short durability = -1;
-                if (lootData[0].contains(".")) {
-                    String[] itemData = lootData[0].split(".");
-                    itemID = Integer.parseInt(itemData[0]);
-                    durability = Short.parseShort(itemData[1]);
+                if (lootData[0].equals("money")) {
+                    //Set the money range
+                    rangeLow = Integer.parseInt(lootData[1]);
+                    rangeHigh = Integer.parseInt(lootData[2]);
                 }
-                else
-                    itemID = Integer.parseInt(lootData[0]);
-                
-                Loot lootObject = new Loot(itemID, durability, Integer.parseInt(lootData[1]),Integer.parseInt(lootData[2]));
-                loots[id].add(lootObject);
+                else {
+                    int itemID;
+                    Short durability = -1;
+                    if (lootData[0].contains(".")) {
+                        String[] itemData = lootData[0].split(".");
+                        itemID = Integer.parseInt(itemData[0]);
+                        durability = Short.parseShort(itemData[1]);
+                    }
+                    else
+                        itemID = Integer.parseInt(lootData[0]);
+
+                    Loot lootObject = new Loot(itemID, durability, Integer.parseInt(lootData[1]),Integer.parseInt(lootData[2]));
+                    loots[id].add(lootObject);
+                }
             }
             catch (Exception invalidLoot) {
                 System.out.println("[PhatLoots] Error occured while loading, '"+loot+"' is not a valid Loot");
@@ -341,18 +386,26 @@ public class PhatLoots {
         }
     }
     
+    /**
+     * Loads data from the outdated save file
+     * 
+     * @param string The data of the Chests
+     */
     public void setOldChests(String data) {
+        //Cancel if no data was provided
         if (data.isEmpty())
             return;
         
-        String[] arrayOfChests = data.split("~");
-        for (String chest: arrayOfChests) {
+        //Load data for each PhatLootsChest
+        for (String chest: data.split("~")) {
             try {
                 String[] chestData = chest.split(",");
                 
+                //Construct a a new PhatLootsChest with the Location data
                 PhatLootsChest phatLootsChest = new PhatLootsChest(chestData[0], Integer.parseInt(chestData[1]),
                         Integer.parseInt(chestData[2]), Integer.parseInt(chestData[3]));
                 
+                //Load the HashMap of Users of the Chest
                 for (int i = 4; i < chestData.length; i = i + 2) {
                     String[] timeData = chestData[i+1].split("'");
                     int[] time = new int[4];
@@ -382,16 +435,23 @@ public class PhatLoots {
      */
     public String getLoots(int id) {
         Short durability;
-        String temp = "";
+        String list = "";
+        
+        //Concat each Loot onto the list
         for (Loot loot: loots[id]) {
-            temp = temp.concat(", "+loot.item.getAmount()+" of "+loot.item.getType().name()+" @ "+loot.probability+"%");
+            //Add the Loot info
+            list = list.concat(", "+loot.item.getAmount()+" of "+loot.item.getType().name()+" @ "+loot.probability+"%");
             
+            //Add the durability if it is not negative
             durability = loot.item.getDurability();
             if (durability >= 0)
-                temp.replace("@", "with durability "+durability+" @");
+                list.replace("@", "with durability "+durability+" @");
         }
         
-        return temp.substring(2);
+        if (!list.isEmpty())
+            list = list.substring(2);
+        
+        return list;
     }
     
     /**
@@ -401,6 +461,7 @@ public class PhatLoots {
      * @return The Button that is associated with the given Block
      */
     public PhatLootsChest findChest(Block block) {
+        //Iterate through chests to find the PhatLootsChest of the given Block
         for (PhatLootsChest chest: chests)
             if (chest.isBlock(block))
                 return chest;
@@ -417,9 +478,11 @@ public class PhatLoots {
      */
     public void reset(Block block) {
         if (block == null)
+            //Reset all PhatLootsChests
             for (PhatLootsChest phatLootsChest: chests)
                 phatLootsChest.users.clear();
         else
+            //Find the PhatLootsChest of the given Block and reset it
             for (PhatLootsChest phatLootsChest: chests)
                 if (phatLootsChest.isBlock(block))
                     phatLootsChest.users.clear();

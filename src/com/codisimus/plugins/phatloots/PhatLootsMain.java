@@ -12,14 +12,11 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.Calendar;
 import java.util.Properties;
 import java.util.Random;
 import java.util.jar.JarFile;
 import java.util.zip.ZipEntry;
 import org.bukkit.Server;
-import org.bukkit.block.Block;
-import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.Event.Priority;
@@ -46,7 +43,6 @@ public class PhatLootsMain extends JavaPlugin {
     public static boolean defaultGlobal;
     public static boolean autoLock;
     public Properties p;
-    public static Calendar calendar = Calendar.getInstance();
     public static boolean autoLoot;
     public static String autoLootMsg;
     public static boolean displayTimeRemaining;
@@ -58,6 +54,10 @@ public class PhatLootsMain extends JavaPlugin {
     public void onDisable () {
     }
 
+    /**
+     * Calls methods to load this Plugin when it is enabled
+     *
+     */
     @Override
     public void onEnable () {
         server = getServer();
@@ -75,8 +75,7 @@ public class PhatLootsMain extends JavaPlugin {
      *
      */
     public void checkFiles() {
-        File file = new File("plugins/PhatLoots/config.properties");
-        if (!file.exists())
+        if (!new File("plugins/PhatLoots/config.properties").exists())
             moveFile("config.properties");
     }
     
@@ -137,33 +136,39 @@ public class PhatLootsMain extends JavaPlugin {
         timeRemainingMsg = format(loadValue("TimeRemainingMessage"));
         canOnlyLootOnceMsg = format(loadValue("CanOnlyLootOnceMessage"));
         
+        //Load default reset time
         String[] resetTime = loadValue("DefaultResetTime").split("'");
         defaultDays = Integer.parseInt(resetTime[0]);
         defaultHours = Integer.parseInt(resetTime[1]);
         defaultMinutes = Integer.parseInt(resetTime[2]);
         defaultSeconds = Integer.parseInt(resetTime[3]);
 
-        String resetType = format(loadValue("DefaultResetType"));
+        //Load default reset type
+        String resetType = loadValue("DefaultResetType");
         if (resetType.equals("player"))
             defaultGlobal = false;
         else if (resetType.equals("global"))
             defaultGlobal = true;
+        else
+            System.err.println("[PhatLoots] '"+resetType+"' is not a valid DefaultResetType");
         
         defaultNumberOfLoots = Integer.parseInt(loadValue("DefaultItemsPerColl"));
         autoLock = Boolean.parseBoolean(loadValue("AutoLockPhatLootChestsWithLWC"));
     }
 
     /**
-     * Loads the given key and prints error if the key is missing
+     * Loads the given key and prints an error if the key is missing
      *
      * @param key The key to be loaded
      * @return The String value of the loaded key
      */
     public String loadValue(String key) {
+        //Print an error if key is not found
         if (!p.containsKey(key)) {
             System.err.println("[PhatLoots] Missing value for "+key+" in config file");
             System.err.println("[PhatLoots] Please regenerate config file");
         }
+        
         return p.getProperty(key);
     }
     
@@ -193,35 +198,9 @@ public class PhatLootsMain extends JavaPlugin {
         //Return Bukkit Permission value
         return player.hasPermission("phatloots."+type);
     }
-
-    /**
-     * Finds a neighboring Block that is also a Chest
-     * 
-     * @param chest The original Block
-     * @return The neighboring Chest or null if no neighbors are Chests
-     */
-    public static Block getBigChest(Block chest) {
-        Block neighbor = chest.getRelative(BlockFace.NORTH);
-        if (neighbor.getTypeId() == 54)
-            return neighbor;
-        
-        neighbor = chest.getRelative(BlockFace.EAST);
-        if (neighbor.getTypeId() == 54)
-            return neighbor;
-        
-        neighbor = chest.getRelative(BlockFace.SOUTH);
-        if (neighbor.getTypeId() == 54)
-            return neighbor;
-        
-        neighbor = chest.getRelative(BlockFace.WEST);
-        if (neighbor.getTypeId() == 54)
-            return neighbor;
-        
-        return null;
-    }
     
     /**
-     * Adds various Unicode characters to a string
+     * Adds various Unicode characters and colors to a string
      * 
      * @param string The string being formated
      * @return The formatted String

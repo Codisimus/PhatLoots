@@ -5,7 +5,6 @@ import com.codisimus.plugins.phatloots.PhatLootsMain;
 import com.codisimus.plugins.phatloots.SaveSystem;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
-import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerListener;
 
@@ -16,32 +15,43 @@ import org.bukkit.event.player.PlayerListener;
  */
 public class playerListener extends PlayerListener {
 
+    /**
+     * Checks if a Player loots a PhatLootsChest
+     * 
+     * @param event The PlayerInteractEvent that occurred
+     */
     @Override
     public void onPlayerInteract (PlayerInteractEvent event) {
-        Action action = event.getAction();
         Block block = event.getClickedBlock();
-        if (!(action.equals(Action.RIGHT_CLICK_BLOCK) && block.getTypeId() == 54) &&
-                !(action.equals(Action.LEFT_CLICK_BLOCK) && block.getTypeId() == 23))
-            return;
         
-        PhatLoots phatLoots = SaveSystem.findPhatLoots(block);
-        if (phatLoots == null && block.getTypeId() == 54) {
-            block = PhatLootsMain.getBigChest(block);
-            if (block != null)
-                phatLoots = SaveSystem.findPhatLoots(block);
+        //Return unless a Chest was opened or a Furnace was punched
+        switch (event.getAction()) {
+            case RIGHT_CLICK_BLOCK:
+                if (block.getTypeId() == 54)
+                    break;
+                
+                return;
+                
+            case LEFT_CLICK_BLOCK:
+                if (block.getTypeId() == 23)
+                    break;
+                
+                break;
+                
+            default: return;
         }
         
-        Player player = event.getPlayer();
+        //Return if The Block is not linked to a PhatLoots
+        PhatLoots phatLoots = SaveSystem.findPhatLoots(block);
         if (phatLoots == null)
             return;
         
+        //Return if the Player does not have permission to receive loots
+        Player player = event.getPlayer();
         if (!PhatLootsMain.hasPermission(player, "use")) {
             player.sendMessage("You do not have permission to receive loots.");
             return;
         }
-        
-        if (event.isCancelled())
-            return;
         
         phatLoots.getLoot(player, block);
         SaveSystem.save();

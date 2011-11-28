@@ -3,10 +3,11 @@ package com.codisimus.plugins.phatloots;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Iterator;
+import org.bukkit.World;
 import org.bukkit.block.Block;
 
 /**
- * A PhatLootsChest is a Block location and a Map of Users with times attached to it
+ * A PhatLootsChest is a Block location and a Map of Users with times attached to them
  * 
  * @author Codisimus
  */
@@ -77,18 +78,55 @@ public class PhatLootsChest {
      * @return True if the Location data is the same
      */
     public boolean isBlock(Block block) {
-        if(block.getX() != x)
+        //Return false if the y coordinate is not the same
+        if (block.getY() != y)
             return false;
 
-        if(block.getY() != y)
+        //Return false if the world is not the same
+        if (!block.getWorld().getName().equals(world))
             return false;
+        
+        int a = block.getX();
+        int c = block.getZ();
+        
+        if (a != x) {
+            //Return false if the z coordinate is not the same
+            if (c != z)
+                return false;
+            
+            //Return false if the Block Material is not a Chest
+            if (block.getTypeId() != 54)
+                return false;
+            
+            World blockWorld = block.getWorld();
+            
+            //Return whether the neighboring Block is a linked Chest
+            return a != x + 1 && blockWorld.getBlockTypeIdAt(a + 1, y, z) == 54 ||
+                    a != x - 1 && blockWorld.getBlockTypeIdAt(a - 1, y, z) == 54;
+        }
 
-        if(block.getZ() != z)
-            return false;
-
-        return block.getWorld().getName().equals(world);
+        if (c != z) {
+            //Return false if the Block Material is not a Chest
+            if (block.getTypeId() != 54)
+                return false;
+            
+            World blockWorld = block.getWorld();
+            
+            //Return whether the neighboring Block is a linked Chest
+            return c != z + 1 && blockWorld.getBlockTypeIdAt(x, y, c + 1) == 54 ||
+                    c != z - 1 && blockWorld.getBlockTypeIdAt(x, y, c - 1) == 54;
+        }
+        
+        return true;
     }
 
+    /**
+     * Returns the String representation of this PhatLootsChest
+     * The format of the returned String is as follows
+     * world'x'y'z'{Player1@Days'Hours'Minutes'Seconds, Player1@Days'Hours'Minutes'Seconds}
+     * 
+     * @return The String representation of this Button
+     */
     @Override
     public String toString() {
         String string = world+"'"+x+"'"+y+"'"+z+"{";

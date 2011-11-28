@@ -3,8 +3,8 @@ package com.codisimus.plugins.phatloots;
 import com.codisimus.plugins.phatloots.register.payment.Method;
 
 /**
- * Manages payment for buying and selling Chunks
- * Using Nijikokun's Register API
+ * Manages payment of looted money
+ * Uses Nijikokun's Register API
  *
  * @author Codisimus
  */

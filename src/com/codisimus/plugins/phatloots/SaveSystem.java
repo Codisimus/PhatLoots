@@ -18,7 +18,6 @@ public class SaveSystem {
 
     /**
      * Loads properties for each PhatLoots from save files
-     * Creates the file if it doesn't exist
      * Disables saving if an error occurs
      */
     public static void load() {
@@ -26,25 +25,35 @@ public class SaveSystem {
             File[] files = new File("plugins/PhatLoots").listFiles();
             Properties p = new Properties();
             
+            //Load each .dat file
             for (File file: files) {
                 String name = file.getName();
                 if (name.endsWith(".dat")) {
                     p.load(new FileInputStream(file));
                     
+                    //Construct a new Warp using the file name
                     PhatLoots phatLoots = new PhatLoots(name.substring(0, name.length() - 4));
                     
+                    //Set the reset time
                     String[] resetTime = p.getProperty("ResetTime").split("'");
                     phatLoots.days = Integer.parseInt(resetTime[0]);
                     phatLoots.hours = Integer.parseInt(resetTime[1]);
                     phatLoots.minutes = Integer.parseInt(resetTime[2]);
                     phatLoots.seconds = Integer.parseInt(resetTime[3]);
                     
+                    //Set the reset type
                     String resetType = p.getProperty("ResetType");
                     if (resetType.equals("player"))
                         phatLoots.global = false;
                     else if (resetType.equals("global"))
                         phatLoots.global = true;
                     
+                    //Set the money range
+                    String[] moneyRange = p.getProperty("MoneyRange").split("-");
+                    phatLoots.rangeLow = Integer.parseInt(moneyRange[0]);
+                    phatLoots.rangeHigh = Integer.parseInt(moneyRange[1]);
+                    
+                    //Load the data of all the Individual and Collective Loots
                     phatLoots.setLoots(0, p.getProperty("IndividualLoots"));
                     phatLoots.setLoots(1, p.getProperty("Coll1"));
                     phatLoots.setLoots(2, p.getProperty("Coll2"));
@@ -54,12 +63,14 @@ public class SaveSystem {
                     
                     phatLoots.numberCollectiveLoots = Integer.parseInt(p.getProperty("ItemsPerColl"));
                     
+                    //Load the data of all the PhatLootsChests
                     phatLoots.setChests(p.getProperty("ChestsData"));
                 
                     phatLootsList.add(phatLoots);
                 }
             }
             
+            //End loading if at least one Warp was loaded
             if (!phatLootsList.isEmpty())
                 return;
             
@@ -99,7 +110,10 @@ public class SaveSystem {
                     phatLoots.setOldLoots(4, p.getProperty("Coll4"));
                     phatLoots.setOldLoots(5, p.getProperty("Coll5"));
                     
-                    phatLoots.numberCollectiveLoots = Integer.parseInt(p.getProperty("NumberOfCollectiveLootItemsReceived"));
+                    if (p.containsKey("NumberOfCollectiveLootItemsReceived"))
+                        phatLoots.numberCollectiveLoots = Integer.parseInt(p.getProperty("NumberOfCollectiveLootItemsReceived"));
+                    else
+                        phatLoots.numberCollectiveLoots = Integer.parseInt(p.getProperty("NumberOfCollectiveLootItemsRecieved"));
                     
                     phatLoots.setOldChests(p.getProperty("Chests(RestrictedUsers)"));
                 
@@ -136,6 +150,8 @@ public class SaveSystem {
                     p.setProperty("ResetType", "global");
                 else
                     p.setProperty("ResetType", "player");
+                
+                p.setProperty("MoneyRange", phatLoots.rangeLow+"-"+phatLoots.rangeHigh);
                 
                 String value = "";
                 for (Loot loot: phatLoots.loots[0])
@@ -204,10 +220,12 @@ public class SaveSystem {
      * @return The PhatLootswith the given name or null if not found
      */
     public static PhatLoots findPhatLoots(String name) {
-        for (PhatLoots PhatLoots : phatLootsList)
+        //Iterate through every PhatLoots to find the one with the given Name
+        for (PhatLoots PhatLoots: phatLootsList)
             if (PhatLoots.name.equals(name))
                 return PhatLoots;
         
+        //Return null because the PhatLoots does not exist
         return null;
     }
     
@@ -219,22 +237,13 @@ public class SaveSystem {
      * @return The PhatLoots that contains the given Block or null if not found
      */
     public static PhatLoots findPhatLoots(Block block) {
-        for (PhatLoots phatLoots : phatLootsList)
+        //Iterate through every PhatLoots to find the one with the given Block
+        for (PhatLoots phatLoots: phatLootsList)
             for (PhatLootsChest chest: phatLoots.chests)
                 if (chest.isBlock(block))
                     return phatLoots;
         
+        //Return null because the PhatLoots does not exist
         return null;
-    }
-    
-    /**
-     * Removes the PhatLoots from the LinkedList of saved PhatLoots
-     * 
-     * @param phatLoots The PhatLoots to be removed
-     */
-    public static void removePhatLoots(PhatLoots phatLoots){
-        phatLootsList.remove(phatLoots);
-        File trash = new File("plugins/PhatLoots/"+phatLoots.name+".dat");
-        trash.delete();
     }
 }

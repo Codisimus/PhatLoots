@@ -5,6 +5,9 @@ import com.codisimus.plugins.phatloots.PhatLoots;
 import com.codisimus.plugins.phatloots.PhatLootsChest;
 import com.codisimus.plugins.phatloots.PhatLootsMain;
 import com.codisimus.plugins.phatloots.SaveSystem;
+import com.google.common.collect.Sets;
+import java.io.File;
+import java.util.HashSet;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.command.Command;
@@ -18,7 +21,13 @@ import org.bukkit.entity.Player;
  * @author Codisimus
  */
 public class commandListener implements CommandExecutor {
-    //public static final HashSet TRANSPARENT = Sets.newHashSet(27, 28, 37, 38, 39, 40, 50, 65, 66, 69, 70, 72, 75, 76, 78);
+    public static enum Action {
+        MAKE, LINK, UNLINK, DELETE, TIME, TYPE,
+        ADD, REMOVE, MONEY, LIST, INFO, RESET, RL
+    }
+    public static final HashSet TRANSPARENT = Sets.newHashSet((byte)27, (byte)28,
+            (byte)37, (byte)38, (byte)39, (byte)40, (byte)50, (byte)65, (byte)66,
+            (byte)69, (byte)70, (byte)72, (byte)75, (byte)76, (byte)78);
     
     /**
      * Listens for PhatLoots commands to execute them
@@ -32,8 +41,12 @@ public class commandListener implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String alias, String[] args) {
         //Cancel if the command is not from a Player
-        if (!(sender instanceof Player))
+        if (!(sender instanceof Player)) {
+            if (args.length > 0 && args[0].equals("rl"))
+                rl(null);
+            
             return true;
+        }
         
         Player player = (Player)sender;
 
@@ -42,39 +55,10 @@ public class commandListener implements CommandExecutor {
             sendHelp(player);
             return true;
         }
-
-        //Set the ID of the command
-        int commandID = 0;
-        if (args[0].equals("make"))
-            commandID = 1;
-        else if (args[0].equals("link"))
-            commandID = 2;
-        else if (args[0].equals("unlink"))
-            commandID = 3;
-        else if (args[0].equals("delete"))
-            commandID = 4;
-        else if (args[0].equals("time"))
-            commandID = 5;
-        else if (args[0].equals("type"))
-            commandID = 6;
-        else if (args[0].equals("add"))
-            commandID = 7;
-        else if (args[0].equals("remove"))
-            commandID = 8;
-        else if (args[0].equals("money"))
-            commandID = 9;
-        else if (args[0].equals("list"))
-            commandID = 10;
-        else if (args[0].equals("name"))
-            commandID = 11;
-        else if (args[0].equals("info"))
-            commandID = 12;
-        else if (args[0].equals("reset"))
-            commandID = 13;
         
-        //Execute the command
-        switch (commandID) {
-            case 1: //command == make
+        //Execute the correct command
+        switch (Action.valueOf(args[0])) {
+            case MAKE:
                 //Cancel if the Player does not have permission to use the command
                 if (!PhatLootsMain.hasPermission(player, "make")) {
                     player.sendMessage("You do not have permission to do that.");
@@ -88,7 +72,7 @@ public class commandListener implements CommandExecutor {
                 
                 return true;
                 
-            case 2: //command == link
+            case LINK:
                 //Cancel if the Player does not have permission to use the command
                 if (!PhatLootsMain.hasPermission(player, "make")) {
                     player.sendMessage("You do not have permission to do that.");
@@ -102,7 +86,7 @@ public class commandListener implements CommandExecutor {
                 
                 return true;
                 
-            case 3: //command == unlink
+            case UNLINK:
                 //Cancel if the Player does not have permission to use the command
                 if (!PhatLootsMain.hasPermission(player, "make")) {
                     player.sendMessage("You do not have permission to do that.");
@@ -116,7 +100,7 @@ public class commandListener implements CommandExecutor {
                 
                 return true;
                 
-            case 4: //command == delete
+            case DELETE:
                 //Cancel if the Player does not have permission to use the command
                 if (!PhatLootsMain.hasPermission(player, "make")) {
                     player.sendMessage("You do not have permission to do that.");
@@ -130,7 +114,7 @@ public class commandListener implements CommandExecutor {
                 
                 return true;
                 
-            case 5: //command == time
+            case TIME:
                 //Cancel if the Player does not have permission to use the command
                 if (!PhatLootsMain.hasPermission(player, "make")) {
                     player.sendMessage("You do not have permission to do that.");
@@ -138,7 +122,7 @@ public class commandListener implements CommandExecutor {
                 }
                 
                 switch (args.length) {
-                    case 5:
+                    case 5: //Name is not provided
                         try {
                             time(player, null, Integer.parseInt(args[1]), Integer.parseInt(args[2]),
                                     Integer.parseInt(args[3]), Integer.parseInt(args[4]));
@@ -149,7 +133,7 @@ public class commandListener implements CommandExecutor {
                             break;
                         }
                         
-                    case 6:
+                    case 6: //Name is provided
                         try {
                             time(player, args[1], Integer.parseInt(args[2]), Integer.parseInt(args[3]),
                                     Integer.parseInt(args[4]), Integer.parseInt(args[5]));
@@ -166,7 +150,7 @@ public class commandListener implements CommandExecutor {
                 sendHelp(player);
                 return true;
                 
-            case 6: //command == type
+            case TYPE:
                 //Cancel if the Player does not have permission to use the command
                 if (!PhatLootsMain.hasPermission(player, "make")) {
                     player.sendMessage("You do not have permission to do that.");
@@ -175,7 +159,7 @@ public class commandListener implements CommandExecutor {
                 
                 boolean global;
                 switch (args.length) {
-                    case 2:
+                    case 2: //Name is not provided
                         if (args[1].equals("global"))
                             global = true;
                         else if (args[1].equals("player"))
@@ -186,7 +170,7 @@ public class commandListener implements CommandExecutor {
                         type(player, null, global);
                         return true;
                         
-                    case 3:
+                    case 3: //Name is provided
                         if (args[2].equals("global"))
                             global = true;
                         else if (args[2].equals("player"))
@@ -203,84 +187,92 @@ public class commandListener implements CommandExecutor {
                 sendHelp(player);
                 return true;
                 
-            case 7: //command == add
+            case ADD:
                 //Cancel if the Player does not have permission to use the command
                 if (!PhatLootsMain.hasPermission(player, "make")) {
                     player.sendMessage("You do not have permission to do that.");
                     return true;
                 }
                 
-                String addName = null;
-                int addID = 0;
-                Loot addLoot;
+                String addName = null; //The name of the PhatLoots
+                int addID = 0; //The ID of the Loot collection (0 == IndividualLoots)
+                Loot addLoot = null; //The Loot to be added
                 
                 switch (args.length) {
-                    case 4:
+                    case 4: //All optional fields are missing
                         addLoot = getLoot(player, args[1], "0", args[2], args[3]);
                         break;
                         
-                    case 5:
-                        try {
-                            Integer.parseInt(args[1]);
-                            addLoot = getLoot(player, args[1], args[2], args[3], args[4]);
-                            break;
-                        }
-                        catch (Exception notDurability) {
+                    case 5: //One optional field is present
+                        if (args[1].startsWith("coll")) {
+                            //ID field is present
                             addLoot = getLoot(player, args[2], "0", args[3], args[4]);
-                        }
-                        
-                        if (!args[1].startsWith("coll")) {
-                            addName = args[1];
-                            break;
-                        }
-                        
-                        try {
-                            addID = Integer.parseInt(args[1].substring(4));
-                        }
-                        catch (Exception notInt) {
-                            sendHelp(player);
-                            return true;
-                        }
-                        
-                        break;
-                        
-                    case 6:
-                        try {
-                            Integer.parseInt(args[1]);
-                            addLoot = getLoot(player, args[1], args[2], args[4], args[5]);
                             
-                            if (!args[1].startsWith("coll")) {
-                                addName = args[1];
-                                break;
-                            }
-
                             try {
                                 addID = Integer.parseInt(args[1].substring(4));
+                                break;
                             }
                             catch (Exception notInt) {
                                 sendHelp(player);
                                 return true;
                             }
-                            
+                        }
+                        
+                        for (PhatLoots phatLoots: SaveSystem.phatLootsList)
+                            if (phatLoots.name.equals(args[1])) {
+                                addName = args[1];
+                                break;
+                            }
+                        
+                        if (addName != null) {
+                            //Name field is present
+                            addLoot = getLoot(player, args[2], "0", args[3], args[4]);
                             break;
                         }
-                        catch (Exception notDurability) {
-                            addLoot = getLoot(player, args[2], "0", args[4], args[5]);
-                        }
                         
-                        addName = args[1];
+                        //Durability field is present
+                        addLoot = getLoot(player, args[1], args[2], args[3], args[4]);
+                        break;
                         
-                        try {
-                            addID = Integer.parseInt(args[2].substring(4));
+                    case 6: //One optional field is missing
+                        if (args[1].startsWith("coll")) {
+                            //ID and Durability fields are present
+                            addLoot = getLoot(player, args[2], args[3], args[4], args[5]);
+                            
+                            try {
+                                addID = Integer.parseInt(args[1].substring(4));
+                                break;
+                            }
+                            catch (Exception notInt) {
+                                sendHelp(player);
+                                return true;
+                            }
                         }
-                        catch (Exception notInt) {
-                            sendHelp(player);
-                            return true;
+                        else if (args[2].startsWith("coll")) {
+                            //Name and ID fields are present
+                            addLoot = getLoot(player, args[3], "0", args[4], args[5]);
+                            
+                            addName = args[1];
+                            
+                            try {
+                                addID = Integer.parseInt(args[2].substring(4));
+                                break;
+                            }
+                            catch (Exception notInt) {
+                                sendHelp(player);
+                                return true;
+                            }
+                        }
+                        else {
+                            //Name and Durability fields are present
+                            addLoot = getLoot(player, args[2], args[3], args[4], args[5]);
+                            
+                            addName = args[1];
                         }
                         
                         break;
                         
-                    case 7:
+                    case 7: //All optional fields are present
                         addName = args[1];
                         
                         try {
@@ -298,92 +290,98 @@ public class commandListener implements CommandExecutor {
                     
                 }
                 
-                if (addLoot == null) {
-                    sendHelp(player);
+                if (addLoot == null)
                     return true;
-                }
                 
                 setLoot(player, addName, true, addID, addLoot);
                 return true;
                 
-            case 8: //command == remove
+            case REMOVE:
                 //Cancel if the Player does not have permission to use the command
                 if (!PhatLootsMain.hasPermission(player, "make")) {
                     player.sendMessage("You do not have permission to do that.");
                     return true;
                 }
                 
-                String removeName = null;
-                int removeID = 0;
-                Loot removeLoot;
+                String removeName = null; //The name of the PhatLoots
+                int removeID = 0; //The ID of the Loot collection (0 == IndividualLoots)
+                Loot removeLoot; //The Loot to be removed
                 
                 switch (args.length) {
-                    case 4:
+                    case 4: //All optional fields are missing
                         removeLoot = getLoot(player, args[1], "0", args[2], args[3]);
                         break;
                         
-                    case 5:
-                        try {
-                            Integer.parseInt(args[1]);
-                            removeLoot = getLoot(player, args[1], args[2], args[3], args[4]);
-                            break;
-                        }
-                        catch (Exception notDurability) {
+                    case 5: //One optional field is present
+                        if (args[1].startsWith("coll")) {
+                            //ID field is present
                             removeLoot = getLoot(player, args[2], "0", args[3], args[4]);
-                        }
-                        
-                        if (!args[1].startsWith("coll")) {
-                            removeName = args[1];
-                            break;
-                        }
-                        
-                        try {
-                            removeID = Integer.parseInt(args[1].substring(4));
-                        }
-                        catch (Exception notInt) {
-                            sendHelp(player);
-                            return true;
-                        }
-                        
-                        break;
-                        
-                    case 6:
-                        try {
-                            Integer.parseInt(args[1]);
-                            removeLoot = getLoot(player, args[1], args[2], args[4], args[5]);
                             
-                            if (!args[1].startsWith("coll")) {
-                                removeName = args[1];
-                                break;
-                            }
-
                             try {
                                 removeID = Integer.parseInt(args[1].substring(4));
+                                break;
                             }
                             catch (Exception notInt) {
                                 sendHelp(player);
                                 return true;
                             }
-                            
+                        }
+                        
+                        for (PhatLoots phatLoots: SaveSystem.phatLootsList)
+                            if (phatLoots.name.equals(args[1])) {
+                                removeName = args[1];
+                                break;
+                            }
+                        
+                        if (removeName != null) {
+                            //Name field is present
+                            removeLoot = getLoot(player, args[2], "0", args[3], args[4]);
                             break;
                         }
-                        catch (Exception notDurability) {
-                            removeLoot = getLoot(player, args[2], "0", args[4], args[5]);
-                        }
                         
-                        removeName = args[1];
+                        //Durability field is present
+                        removeLoot = getLoot(player, args[1], args[2], args[3], args[4]);
+                        break;
                         
-                        try {
-                            removeID = Integer.parseInt(args[2].substring(4));
+                    case 6: //One optional field is missing
+                        if (args[1].startsWith("coll")) {
+                            //ID and Durability fields are present
+                            removeLoot = getLoot(player, args[2], args[3], args[4], args[5]);
+                            
+                            try {
+                                removeID = Integer.parseInt(args[1].substring(4));
+                                break;
+                            }
+                            catch (Exception notInt) {
+                                sendHelp(player);
+                                return true;
+                            }
                         }
-                        catch (Exception notInt) {
-                            sendHelp(player);
-                            return true;
+                        else if (args[2].startsWith("coll")) {
+                            //Name and ID fields are present
+                            removeLoot = getLoot(player, args[3], "0", args[4], args[5]);
+                            
+                            removeName = args[1];
+                            
+                            try {
+                                removeID = Integer.parseInt(args[2].substring(4));
+                                break;
+                            }
+                            catch (Exception notInt) {
+                                sendHelp(player);
+                                return true;
+                            }
+                        }
+                        else {
+                            //Name and Durability fields are present
+                            removeLoot = getLoot(player, args[2], args[3], args[4], args[5]);
+                            
+                            removeName = args[1];
                         }
                         
                         break;
                         
-                    case 7:
+                    case 7: //All optional fields are present
                         removeName = args[1];
                         
                         try {
@@ -401,15 +399,13 @@ public class commandListener implements CommandExecutor {
                     
                 }
                 
-                if (removeLoot == null) {
-                    sendHelp(player);
+                if (removeLoot == null)
                     return true;
-                }
                 
                 setLoot(player, removeName, false, removeID, removeLoot);
                 return true;
                 
-            case 9: //command == money
+            case MONEY:
                 //Cancel if the Player does not have permission to use the command
                 if (!PhatLootsMain.hasPermission(player, "make")) {
                     player.sendMessage("You do not have permission to do that.");
@@ -417,7 +413,7 @@ public class commandListener implements CommandExecutor {
                 }
                 
                 switch (args.length) {
-                    case 3:
+                    case 3: //Name is not provided
                         try {
                             setMoney(player, null, Integer.parseInt(args[1]), Integer.parseInt(args[2]));
                             return true;
@@ -427,7 +423,7 @@ public class commandListener implements CommandExecutor {
                             break;
                         }
                         
-                    case 4:
+                    case 4: //Name is provided
                         try {
                             setMoney(player, args[1], Integer.parseInt(args[2]), Integer.parseInt(args[3]));
                             return true;
@@ -443,7 +439,7 @@ public class commandListener implements CommandExecutor {
                 sendHelp(player);
                 return true;
                 
-            case 10: //command == list
+            case LIST:
                 //Cancel if the Player does not have permission to use the command
                 if (!PhatLootsMain.hasPermission(player, "list")) {
                     player.sendMessage("You do not have permission to do that.");
@@ -457,35 +453,20 @@ public class commandListener implements CommandExecutor {
                 
                 return true;
                 
-            case 11: //command == name
-                //Cancel if the Player does not have permission to use the command
-                if (!PhatLootsMain.hasPermission(player, "name")) {
-                    player.sendMessage("You do not have permission to do that.");
-                    return true;
-                }
-                
-                if (args.length == 1)
-                    list(player);
-                else
-                    sendHelp(player);
-                
-                return true;
-                
-            case 12: //command == info
+            case INFO:
                 //Cancel if the Player does not have permission to use the command
                 if (!PhatLootsMain.hasPermission(player, "info")) {
                     player.sendMessage("You do not have permission to do that.");
                     return true;
                 }
                 
-                if (args.length == 2)
-                    info(player, args[1]);
-                else
-                    sendHelp(player);
+                switch (args.length) {
+                    case 1: info(player, null); return true; //Name is not provided
+                    case 2: info(player, args[1]); return true; //Name is provided
+                    default: sendHelp(player); return true;
+                }
                 
-                return true;
-                
-            case 13: //command == reset
+            case RESET:
                 //Cancel if the Player does not have permission to use the command
                 if (!PhatLootsMain.hasPermission(player, "reset")) {
                     player.sendMessage("You do not have permission to do that.");
@@ -493,18 +474,29 @@ public class commandListener implements CommandExecutor {
                 }
                 
                 switch (args.length) {
-                    case 2: reset(player, null); return true;
-                    case 3: reset(player, args[1]); return true;
-                    default: break;
+                    case 1: reset(player, null); return true; //Name is not provided
+                    case 2: reset(player, args[1]); return true; //Name is provided
+                    default: sendHelp(player); return true;
                 }
+            
+            case RL:
+                if (args.length == 1)
+                    rl(player);
+                else
+                    sendHelp(player);
                 
-                sendHelp(player);
                 return true;
                 
             default: sendHelp(player); return true;
         }
     }
     
+    /**
+     * Creates a new PhatLoots of the given name
+     * 
+     * @param player The Player creating the PhatLoots
+     * @param name The name of the PhatLoots being created (must not already exist)
+     */
     public static void make(Player player, String name) {
         //Cancel if the PhatLoots already exists
         if (SaveSystem.findPhatLoots(name) != null) {
@@ -517,9 +509,15 @@ public class commandListener implements CommandExecutor {
         SaveSystem.save();
     }
     
+    /**
+     * Links the target Block to the specified PhatLoots
+     * 
+     * @param player The Player linking the Block they are targeting
+     * @param name The name of the PhatLoots the Block will be linked to
+     */
     public static void link(Player player, String name) {
         //Cancel if the Player is not targeting a correct Block
-        Block block = player.getTargetBlock(null, 10);
+        Block block = player.getTargetBlock(TRANSPARENT, 10);
         int id = block.getTypeId();
         if (id != 54 && id != 23) {
             player.sendMessage("You must target a Chest/Dispenser.");
@@ -529,7 +527,7 @@ public class commandListener implements CommandExecutor {
         //Cancel if the Block is already linked to a PhatLoots
         PhatLoots phatLoots = SaveSystem.findPhatLoots(block);
         if (phatLoots != null) {
-            player.sendMessage("TargetBlock is already linked to PhatLoots "+phatLoots.name+".");
+            player.sendMessage("Target Block is already linked to PhatLoots "+phatLoots.name+".");
             return;
         }
         
@@ -545,9 +543,14 @@ public class commandListener implements CommandExecutor {
         SaveSystem.save();
     }
     
+    /**
+     * Unlinks the target Block from the specified PhatLoots
+     * 
+     * @param player The Player unlinking the Block they are targeting
+     */
     public static void unlink(Player player) {
         //Cancel if the Player is not targeting a correct Block
-        Block block = player.getTargetBlock(null, 10);
+        Block block = player.getTargetBlock(TRANSPARENT, 10);
         int id = block.getTypeId();
         if (id != 54 && id != 23) {
             player.sendMessage("You must target a Chest/Dispenser.");
@@ -562,21 +565,46 @@ public class commandListener implements CommandExecutor {
         }
         
         phatLoots.chests.remove(phatLoots.findChest(block));
-        player.sendMessage("Button has been unlinked from PhatLoots "+phatLoots.name+"!");
+        player.sendMessage("Target Block has been unlinked from PhatLoots "+phatLoots.name+"!");
         SaveSystem.save();
     }
     
+    /**
+     * Deletes the specified PhatLoots
+     * If a name is not provided, the PhatLoots of the target Block is deleted
+     * 
+     * @param player The Player deleting the PhatLoots
+     * @param name The name of the PhatLoots to be deleted
+     */
     public static void delete(Player player, String name) {
+        //Cancel if the PhatLoots was not found
         PhatLoots phatLoots = getPhatLoots(player, name);
         if (phatLoots == null)
             return;
         
         SaveSystem.phatLootsList.remove(phatLoots);
+        
+        //Delete the .dat file
+        File trash = new File("plugins/PhatLoots/"+phatLoots.name+".dat");
+        trash.delete();
+        
         player.sendMessage("PhatLoots "+phatLoots.name+" was deleted!");
         SaveSystem.save();
     }
     
+    /**
+     * Modifies the reset time of the specified PhatLoots
+     * If a name is not provided, the PhatLoots of the target Block is modified
+     * 
+     * @param player The Player modifying the PhatLoots
+     * @param name The name of the PhatLoots to be modified
+     * @param days The amount of days
+     * @param hours The amount of hours
+     * @param minutes The amount of minutes
+     * @param seconds The amount of seconds
+     */
     public static void time(Player player, String name, int days, int hours, int minutes, int seconds) {
+        //Cancel if the PhatLoots was not found
         PhatLoots phatLoots = getPhatLoots(player, name);
         if (phatLoots == null)
             return;
@@ -591,13 +619,22 @@ public class commandListener implements CommandExecutor {
         SaveSystem.save();
     }
     
+    /**
+     * Modifies the reset type of the specified PhatLoots
+     * If a name is not provided, the PhatLoots of the target Block is modified
+     * 
+     * @param player The Player modifying the PhatLoots
+     * @param name The name of the PhatLoots to be modified
+     * @param global True if the new reset type is global
+     */
     public static void type(Player player, String name, boolean global) {
+        //Cancel if the PhatLoots was not found
         PhatLoots phatLoots = getPhatLoots(player, name);
         if (phatLoots == null)
             return;
         
         phatLoots.global = global;
-        String type = "Player";
+        String type = "player";
         if (global)
             type = "global";
         player.sendMessage("Reset type for PhatLoots "+phatLoots.name+" has been set to "+type+"!");
@@ -605,24 +642,35 @@ public class commandListener implements CommandExecutor {
         SaveSystem.save();
     }
     
+    /**
+     * Adds/Removes a Loot to the specified PhatLoots
+     * If a name is not provided, the PhatLoots of the target Block is modified
+     * 
+     * @param player The Player modifying the PhatLoots
+     * @param name The name of the PhatLoots to be modified
+     * @param add True the Loot will be added, false if it will be removed
+     * @param lootID The id of the Loot, 0 for individual loots
+     * @param loot The Loot that will be added/removed
+     */
     public static void setLoot(Player player, String name, boolean add, int lootID, Loot loot) {
+        //Cancel if the PhatLoots was not found
         PhatLoots phatLoots = getPhatLoots(player, name);
         if (phatLoots == null)
             return;
         
-        if (add) {
+        if (add) { //Add the Loot
             phatLoots.loots[lootID].add(loot);
-            if (lootID == 0)
+            if (lootID == 0) //Individual Loot
                 player.sendMessage(loot.item.getType().name()+" added as Loot for Phat Loot "+phatLoots.name+"!");
-            else
+            else //Collective Loot
                 player.sendMessage(loot.item.getType().name()+" added as Loot to coll"+lootID+", "
                         +phatLoots.getPercentRemaining(lootID)+"% remaining");
         }
-        else {
+        else { //Subtract the Loot
             phatLoots.loots[lootID].remove(loot);
-            if (lootID == 0)
+            if (lootID == 0) //Individual Loot
                 player.sendMessage(loot.item.getType().name()+" removed as Loot for Phat Loot "+phatLoots.name+"!");
-            else
+            else //Collective Loot
                 player.sendMessage(loot.item.getType().name()+" removed as Loot to coll"+lootID+", "
                         +phatLoots.getPercentRemaining(lootID)+"% remaining");
         }
@@ -630,7 +678,17 @@ public class commandListener implements CommandExecutor {
         SaveSystem.save();
     }
     
+    /**
+     * Sets the money range of the specified PhatLoots
+     * If a name is not provided, the PhatLoots of the target Block is modified
+     * 
+     * @param player The Player modifying the PhatLoots
+     * @param name The name of the PhatLoots to be modified
+     * @param low The lower bound of the range
+     * @param high The upper bound of the range
+     */
     public static void setMoney(Player player, String name, int low, int high) {
+        //Cancel if the PhatLoots was not found
         PhatLoots phatLoots = getPhatLoots(player, name);
         if (phatLoots == null)
             return;
@@ -649,41 +707,67 @@ public class commandListener implements CommandExecutor {
         SaveSystem.save();
     }
     
+    /**
+     * Displays a list of current PhatLoots
+     * 
+     * @param player The Player requesting the list
+     */
     public static void list(Player player) {
         String list = "Current Phat Loots:  ";
-        for (PhatLoots phatLoots : SaveSystem.phatLootsList)
+        
+        //Concat each PhatLoots
+        for (PhatLoots phatLoots: SaveSystem.phatLootsList)
             list = list.concat(phatLoots.name+", ");
+        
         player.sendMessage(list.substring(0, list.length() - 2));
     }
     
-    public static void name(Player player) {
-        //Find the PhatLoots using the target Block
-        PhatLoots phatLoots = SaveSystem.findPhatLoots(player.getTargetBlock(null, 10));
-        
-        if (phatLoots != null)
-            player.sendMessage("Block is part of Phat Loot "+phatLoots.name+"!");
-        else
-            player.sendMessage("Block is not linked to a Phat Loot.");
-    }
-    
+    /**
+     * Displays the info of the specified PhatLoots
+     * If a name is not provided, the PhatLoots of the target Block is used
+     * 
+     * @param player The Player requesting the info
+     * @param name The name of the PhatLoots
+     */
     public static void info(Player player, String name) {
+        //Cancel if the PhatLoots was not found
         PhatLoots phatLoots = getPhatLoots(player, name);
         if (phatLoots == null)
             return;
         
-        player.sendMessage("IndividualLoots: "+phatLoots.getLoots(0));
-        player.sendMessage("Coll1: "+phatLoots.getLoots(1));
-        player.sendMessage("Coll2: "+phatLoots.getLoots(2));
-        player.sendMessage("Coll3: "+phatLoots.getLoots(3));
-        player.sendMessage("Coll4: "+phatLoots.getLoots(4));
-        player.sendMessage("Coll5: "+phatLoots.getLoots(5));
+        String type = "player";
+        if (phatLoots.global)
+            type = "global";
+        
+        player.sendMessage("§2Name:§b "+phatLoots.name+" §2Reset Type:§b "+type+" §2# of collective loots:§b "+phatLoots.numberCollectiveLoots);
+        player.sendMessage("§2Reset Time:§b "+phatLoots.days+" days, "+phatLoots.hours+" hours, "+phatLoots.minutes+" minutes, and "+phatLoots.seconds+" seconds.");
+        player.sendMessage("§2Money Range§b: "+phatLoots.rangeLow+"-"+phatLoots.rangeHigh);
+        
+        //Display Individual Loots if not empty
+        String loots = phatLoots.getLoots(0);
+        if (!loots.isEmpty())
+            player.sendMessage("§2IndividualLoots§b: "+loots);
+        
+        //Display each Collective Loots that is not empty
+        for (int i = 1; i <= 5; i++) {
+            loots = phatLoots.getLoots(i);
+            if (!loots.isEmpty())
+                player.sendMessage("§2Coll"+i+"§b: "+loots);
+        }
     }
     
+    /**
+     * Reset the use times of the specified PhatLoots/PhatLootsChest
+     * If a name is not provided, the target PhatLootsChest is reset
+     * 
+     * @param player The Player reseting the PhatLootsChests
+     * @param name The name of the PhatLoots
+     */
     public static void reset(Player player, String name) {
         //Reset the target Button if a name was not provided
         if (name == null) {
             //Find the PhatLoots that will be reset using the given name
-            Block block = player.getTargetBlock(null, 10);
+            Block block = player.getTargetBlock(TRANSPARENT, 10);
             PhatLoots phatLoots = SaveSystem.findPhatLoots(block);
             
             //Cancel if the PhatLoots does not exist
@@ -724,6 +808,23 @@ public class commandListener implements CommandExecutor {
     }
     
     /**
+     * Reloads PhatLoots data
+     * 
+     * @param player The Player reloading the data 
+     */
+    public static void rl(Player player) {
+        SaveSystem.phatLootsList.clear();
+        SaveSystem.save = true;
+        SaveSystem.load();
+        PhatLootsMain.pm = PhatLootsMain.server.getPluginManager();
+        
+        System.out.println("[PhatLoots] reloaded");
+        if (player != null)
+            player.sendMessage("PhatLoots reloaded");
+        return;
+    }
+    
+    /**
      * Displays the PhatLoots Help Page to the given Player
      *
      * @param player The Player needing help
@@ -736,22 +837,30 @@ public class commandListener implements CommandExecutor {
         player.sendMessage("§2/loot delete (Name)§b Deletes PhatLoot and unlinks Block");
         player.sendMessage("§2/loot time (Name) [Days] [Hrs] [Mins] [Secs]§b Sets cooldown time");
         player.sendMessage("§2/loot type (Name) ['global' or 'player']§b Sets cooldown type");
-        player.sendMessage("§2/loot ['add' or 'remove] (Name) ('coll'[1-5]) [Item] (Durability) [Amount] [Percent]"
+        player.sendMessage("§2/loot ['add' or 'remove'] (Name) ('coll'[1-5]) [Item] (Durability) [Amount] [Percent]"
                 + "§b Manage items that may be looted");
         player.sendMessage("§2/loot money (Name) [Low] [High]§b Sets money range to be looted");
         player.sendMessage("§2/loot list§b Lists all PhatLoots");
-        player.sendMessage("§2/loot name§b Gives PhatLoot name of target Block");
         player.sendMessage("§2/loot info (Name)§b Lists info of PhatLoot");
-        player.sendMessage("§2/loot reset§b Reset activation times for target Block");
-        player.sendMessage("§2/loot reset [Name or 'all']§b Reset Block linked to the PhatLoots");
+        player.sendMessage("§2/loot reset§b Resets activation times for target Block");
+        player.sendMessage("§2/loot reset [Name or 'all']§b Resets Block linked to the PhatLoots");
+        player.sendMessage("§2/loot rl§b Reloads PhatLoots Plugin");
     }
     
+    /**
+     * Returns the PhatLoots with the given name
+     * If no name is provided the PhatLoots is found using the target Block
+     * 
+     * @param player The Player target the Block
+     * @param name The name of the PhatLoots to be found
+     * @return The PhatLoots or null if none was found
+     */
     public static PhatLoots getPhatLoots(Player player, String name) {
         PhatLoots phatLoots = null;
         
         if (name == null) {
             //Find the PhatLoots using the target Block
-            phatLoots = SaveSystem.findPhatLoots(player.getTargetBlock(null, 10));
+            phatLoots = SaveSystem.findPhatLoots(player.getTargetBlock(TRANSPARENT, 10));
             
             //Cancel if the PhatLoots does not exist
             if (phatLoots == null ) {
@@ -782,8 +891,8 @@ public class commandListener implements CommandExecutor {
      * @param percent The String of the percent chance of receiving loot
      */
     public Loot getLoot(Player player, String item, String durability, String amount, String percent) {
+        //Return null if the Material id/name is invalid
         int id;
-
         try {
             id = Integer.parseInt(item);
             if (Material.getMaterial(id) == null) {
@@ -801,8 +910,8 @@ public class commandListener implements CommandExecutor {
             }
         }
 
+        //Return null if the probability is invalid
         int probablility;
-
         try {
             probablility = Integer.parseInt(percent);
 
@@ -816,6 +925,7 @@ public class commandListener implements CommandExecutor {
             return null;
         }
 
+        //Return a newly created Loot using the given Loot data
         return new Loot(id, Short.parseShort(durability), Integer.parseInt(amount), probablility);
     }
 }

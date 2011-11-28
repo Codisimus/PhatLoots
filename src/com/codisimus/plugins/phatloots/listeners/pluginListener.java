@@ -10,13 +10,18 @@ import org.bukkit.plugin.Plugin;
 import ru.tehkode.permissions.bukkit.PermissionsEx;
 
 /**
- * Checks for plugins whenever one is enabled
- *
+ * Checks for Permission/Economy plugins whenever a Plugin is enabled
+ * 
  * @author Codisimus
  */
 public class pluginListener extends ServerListener {
     public static boolean useBP;
 
+    /**
+     * Executes methods to look for various types of plugins to link
+     *
+     * @param event The PluginEnableEvent that occurred
+     */
     @Override
     public void onPluginEnable(PluginEnableEvent event) {
         linkPermissions();
@@ -25,7 +30,7 @@ public class pluginListener extends ServerListener {
     }
 
     /**
-     * Find and link a Permission plugin
+     * Finds and links a Permission plugin
      *
      */
     public void linkPermissions() {
@@ -46,7 +51,7 @@ public class pluginListener extends ServerListener {
     }
 
     /**
-     * Find and link an Economy plugin
+     * Finds and links an Economy plugin
      *
      */
     public void linkEconomy() {
@@ -62,7 +67,12 @@ public class pluginListener extends ServerListener {
         if (!Register.economy.equalsIgnoreCase("auto"))
             Methods.setPreferred(Register.economy);
 
+        //Find an Economy Plugin (will first look for preferred Plugin)
         Methods.setMethod(PhatLootsMain.pm);
+        
+        //Return if no Economy Plugin was found
+        if (!Methods.hasMethod())
+            return;
 
         //Reset Methods if the preferred Economy was not found
         if (!Methods.getMethod().getName().equalsIgnoreCase(Register.economy) && !Register.economy.equalsIgnoreCase("auto")) {
@@ -75,7 +85,7 @@ public class pluginListener extends ServerListener {
     }
 
     /**
-     * Find and link a Chest Locking plugin
+     * Finds and links a Chest Locking plugin
      *
      */
     public void linkChestLocker() {
