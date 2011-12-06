@@ -25,9 +25,15 @@ public class commandListener implements CommandExecutor {
         MAKE, LINK, UNLINK, DELETE, TIME, TYPE,
         ADD, REMOVE, MONEY, LIST, INFO, RESET, RL
     }
-    public static final HashSet TRANSPARENT = Sets.newHashSet((byte)27, (byte)28,
-            (byte)37, (byte)38, (byte)39, (byte)40, (byte)50, (byte)65, (byte)66,
-            (byte)69, (byte)70, (byte)72, (byte)75, (byte)76, (byte)78);
+    public static final HashSet TRANSPARENT = Sets.newHashSet((byte)0, (byte)6,
+            (byte)8, (byte)9, (byte)10, (byte)11, (byte)26, (byte)27, (byte)28,
+            (byte)30, (byte)31, (byte)32, (byte)37, (byte)38, (byte)39, (byte)40,
+            (byte)44, (byte)50, (byte)51, (byte)53, (byte)55, (byte)59, (byte)64,
+            (byte)65, (byte)66, (byte)67, (byte)69, (byte)70, (byte)71, (byte)72,
+            (byte)75, (byte)76, (byte)77, (byte)78, (byte)85, (byte)90, (byte)92,
+            (byte)96, (byte)101, (byte)102, (byte)104, (byte)105, (byte)106,
+            (byte)107, (byte)108, (byte)109, (byte)111, (byte)113, (byte)114,
+            (byte)115, (byte)117);
     
     /**
      * Listens for PhatLoots commands to execute them
@@ -50,14 +56,24 @@ public class commandListener implements CommandExecutor {
         
         Player player = (Player)sender;
 
-        //Display help page if the Player did not add any arguments
+        //Display the help page if the Player did not add any arguments
         if (args.length == 0) {
             sendHelp(player);
             return true;
         }
         
+        Action action;
+        
+        try {
+            action = Action.valueOf(args[0].toUpperCase());
+        }
+        catch (Exception notEnum) {
+            sendHelp(player);
+            return true;
+        }
+        
         //Execute the correct command
-        switch (Action.valueOf(args[0])) {
+        switch (action) {
             case MAKE:
                 //Cancel if the Player does not have permission to use the command
                 if (!PhatLootsMain.hasPermission(player, "make")) {

@@ -25,9 +25,11 @@ public class blockListener extends BlockListener {
         Block block = event.getBlock();
         
         //Return if the Material of the Block is not a Chest or Furnace
-        int id = block.getTypeId();
-        if (id != 54 && id != 23)
-            return;
+        switch (block.getType()) {
+            case CHEST: break;
+            case FURNACE: break;
+            default: return;
+        }
         
         //Return if the Block is not linked to a PhatLoots
         PhatLoots phatLoots = SaveSystem.findPhatLoots(block);

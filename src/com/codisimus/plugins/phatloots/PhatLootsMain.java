@@ -163,7 +163,7 @@ public class PhatLootsMain extends JavaPlugin {
      * @return The String value of the loaded key
      */
     public String loadValue(String key) {
-        //Print an error if key is not found
+        //Print an error if the key is not found
         if (!p.containsKey(key)) {
             System.err.println("[PhatLoots] Missing value for "+key+" in config file");
             System.err.println("[PhatLoots] Please regenerate config file");
@@ -177,9 +177,8 @@ public class PhatLootsMain extends JavaPlugin {
      *
      */
     public void registerEvents() {
-        playerListener playerListener = new playerListener();
-        pm.registerEvent(Event.Type.PLUGIN_ENABLE, new pluginListener(), Priority.Monitor, this);
-        pm.registerEvent(Type.PLAYER_INTERACT, playerListener, Priority.Normal, this);
+        pm.registerEvent(Type.PLUGIN_ENABLE, new pluginListener(), Priority.Monitor, this);
+        pm.registerEvent(Type.PLAYER_INTERACT, new playerListener(), Priority.Monitor, this);
         pm.registerEvent(Type.BLOCK_DAMAGE, new blockListener(), Priority.Normal, this);
     }
     
