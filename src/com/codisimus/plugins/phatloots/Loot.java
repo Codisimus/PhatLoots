@@ -37,4 +37,18 @@ public class Loot {
     public String toString() {
         return item.getTypeId()+"'"+item.getDurability()+"'"+item.getAmount()+"'"+probability;
     }
+    
+    /**
+     * Compares the  properties of this Loot with the given Loot
+     * 
+     * @param object The given Loot
+     * @return true if both of the Loot Objects represent the same Loot
+     */
+    @Override
+    public boolean equals(Object object) {
+        Loot loot = (Loot)object;
+        return probability == loot.probability && item.getTypeId() == loot.item.getTypeId()
+                && item.getAmount() == loot.item.getAmount() &&
+                item.getDurability() == loot.item.getDurability();
+    }
 }

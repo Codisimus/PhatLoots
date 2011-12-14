@@ -20,7 +20,7 @@ import org.bukkit.entity.Player;
  * 
  * @author Codisimus
  */
-public class commandListener implements CommandExecutor {
+public class CommandListener implements CommandExecutor {
     public static enum Action {
         MAKE, LINK, UNLINK, DELETE, TIME, TYPE,
         ADD, REMOVE, MONEY, LIST, INFO, RESET, RL
@@ -138,6 +138,20 @@ public class commandListener implements CommandExecutor {
                 }
                 
                 switch (args.length) {
+                    case 2:  //Name is not provided
+                        if (!args[1].equals("never"))
+                            break;
+
+                        time(player, null, -1, -1, -1, -1);
+                        return true;
+
+                    case 3: //Name is provided
+                        if (!args[1].equals("never"))
+                            break;
+
+                        time(player, args[1], -1, -1, -1, -1);
+                        return true;
+
                     case 5: //Name is not provided
                         try {
                             time(player, null, Integer.parseInt(args[1]), Integer.parseInt(args[2]),
@@ -145,7 +159,6 @@ public class commandListener implements CommandExecutor {
                             return true;
                         }
                         catch (Exception notInt) {
-                            sendHelp(player);
                             break;
                         }
                         
@@ -156,7 +169,6 @@ public class commandListener implements CommandExecutor {
                             return true;
                         }
                         catch (Exception notInt) {
-                            sendHelp(player);
                             break;
                         }
                         
@@ -674,22 +686,51 @@ public class commandListener implements CommandExecutor {
         if (phatLoots == null)
             return;
         
-        if (add) { //Add the Loot
-            phatLoots.loots[lootID].add(loot);
-            if (lootID == 0) //Individual Loot
-                player.sendMessage(loot.item.getType().name()+" added as Loot for Phat Loot "+phatLoots.name+"!");
-            else //Collective Loot
-                player.sendMessage(loot.item.getType().name()+" added as Loot to coll"+lootID+", "
-                        +phatLoots.getPercentRemaining(lootID)+"% remaining");
+        String lootDescription = loot.item.getAmount()+" of "+loot.item.getType().name()+" @ "+loot.probability+"%";
+
+        //Add the durability if it is not negative
+        short durability = loot.item.getDurability();
+        if (durability >= 0)
+            lootDescription.replace("@", "with durability "+durability+" @");
+        
+        //Try to find the Loot
+        for (Loot tempLoot: phatLoots.loots[lootID])
+            if (loot.equals(tempLoot)) {
+                //The Loot was not found
+                //Cancel if the Player is trying to duplicate the Loot
+                if (add) {
+                    player.sendMessage(lootDescription+" is already Loot for Phat Loot "+phatLoots.name+"!");
+                    return;
+                }
+                
+                phatLoots.loots[lootID].remove(loot);
+                
+                //Display the appropriate message
+                if (lootID == 0) //Individual Loot
+                    player.sendMessage(lootDescription+" removed as Loot for Phat Loot "+phatLoots.name+"!");
+                else //Collective Loot
+                    player.sendMessage(lootDescription+" removed as Loot to coll"+lootID+", "
+                            +phatLoots.getPercentRemaining(lootID)+"% remaining");
+                
+                SaveSystem.save();
+                return;
+            }
+        //The Loot was not found
+                
+        //Cancel if the Loot is not present
+        if (!add) {
+            player.sendMessage(lootDescription+" was not found as a Loot for Phat Loot "+phatLoots.name+"!");
+            return;
         }
-        else { //Subtract the Loot
-            phatLoots.loots[lootID].remove(loot);
-            if (lootID == 0) //Individual Loot
-                player.sendMessage(loot.item.getType().name()+" removed as Loot for Phat Loot "+phatLoots.name+"!");
-            else //Collective Loot
-                player.sendMessage(loot.item.getType().name()+" removed as Loot to coll"+lootID+", "
-                        +phatLoots.getPercentRemaining(lootID)+"% remaining");
-        }
+            
+        phatLoots.loots[lootID].add(loot);
+        
+        //Display the appropriate message
+        if (lootID == 0) //Individual Loot
+            player.sendMessage(lootDescription+" added as Loot for Phat Loot "+phatLoots.name+"!");
+        else //Collective Loot
+            player.sendMessage(lootDescription+" added as Loot to coll"+lootID+", "
+                    +phatLoots.getPercentRemaining(lootID)+"% remaining");
         
         SaveSystem.save();
     }
@@ -755,8 +796,10 @@ public class commandListener implements CommandExecutor {
         if (phatLoots.global)
             type = "global";
         
-        player.sendMessage("§2Name:§b "+phatLoots.name+" §2Reset Type:§b "+type+" §2# of collective loots:§b "+phatLoots.numberCollectiveLoots);
-        player.sendMessage("§2Reset Time:§b "+phatLoots.days+" days, "+phatLoots.hours+" hours, "+phatLoots.minutes+" minutes, and "+phatLoots.seconds+" seconds.");
+        player.sendMessage("§2Name:§b "+phatLoots.name+" §2Reset Type:§b "+type+
+                " §2# of collective loots:§b "+phatLoots.numberCollectiveLoots);
+        player.sendMessage("§2Reset Time:§b "+phatLoots.days+" days, "+phatLoots.hours+
+                " hours, "+phatLoots.minutes+" minutes, and "+phatLoots.seconds+" seconds.");
         player.sendMessage("§2Money Range§b: "+phatLoots.rangeLow+"-"+phatLoots.rangeHigh);
         
         //Display Individual Loots if not empty

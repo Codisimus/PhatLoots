@@ -1,9 +1,8 @@
 package com.codisimus.plugins.phatloots;
 
-import com.codisimus.plugins.phatloots.listeners.blockListener;
-import com.codisimus.plugins.phatloots.listeners.commandListener;
-import com.codisimus.plugins.phatloots.listeners.playerListener;
-import com.codisimus.plugins.phatloots.listeners.pluginListener;
+import com.codisimus.plugins.phatloots.listeners.BlockEventListener;
+import com.codisimus.plugins.phatloots.listeners.CommandListener;
+import com.codisimus.plugins.phatloots.listeners.PlayerEventListener;
 import com.griefcraft.lwc.LWC;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -16,14 +15,15 @@ import java.util.Properties;
 import java.util.Random;
 import java.util.jar.JarFile;
 import java.util.zip.ZipEntry;
+import net.milkbowl.vault.economy.Economy;
+import net.milkbowl.vault.permission.Permission;
 import org.bukkit.Server;
 import org.bukkit.entity.Player;
-import org.bukkit.event.Event;
 import org.bukkit.event.Event.Priority;
 import org.bukkit.event.Event.Type;
 import org.bukkit.plugin.PluginManager;
+import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
-import ru.tehkode.permissions.PermissionManager;
 
 /**
  * Loads Plugin and manages Permissions
@@ -31,7 +31,7 @@ import ru.tehkode.permissions.PermissionManager;
  * @author Codisimus
  */
 public class PhatLootsMain extends JavaPlugin {
-    public static PermissionManager permissions;
+    public static Permission permission;
     public static PluginManager pm;
     public static LWC lwc;
     public static Server server;
@@ -62,21 +62,31 @@ public class PhatLootsMain extends JavaPlugin {
     public void onEnable () {
         server = getServer();
         pm = server.getPluginManager();
-        checkFiles();
+        
+        //Load PhatLoots Data
         SaveSystem.load();
+        
+        //Load Config settings
         loadConfig();
-        registerEvents();
-        getCommand("loot").setExecutor(new commandListener());
+        
+        //Find Permissions
+        RegisteredServiceProvider<Permission> permissionProvider =
+                getServer().getServicesManager().getRegistration(net.milkbowl.vault.permission.Permission.class);
+        if (permissionProvider != null)
+            permission = permissionProvider.getProvider();
+        
+        //Find Economy
+        RegisteredServiceProvider<Economy> economyProvider =
+                getServer().getServicesManager().getRegistration(net.milkbowl.vault.economy.Economy.class);
+        if (economyProvider != null)
+            Econ.economy = economyProvider.getProvider();
+        
+        //Register Events
+        pm.registerEvent(Type.PLAYER_INTERACT, new PlayerEventListener(), Priority.Monitor, this);
+        pm.registerEvent(Type.BLOCK_DAMAGE, new BlockEventListener(), Priority.Normal, this);
+        getCommand("loot").setExecutor(new CommandListener());
+        
         System.out.println("PhatLoots "+this.getDescription().getVersion()+" is enabled!");
-    }
-
-    /**
-     * Makes sure all needed files exist
-     *
-     */
-    public void checkFiles() {
-        if (!new File("plugins/PhatLoots/config.properties").exists())
-            moveFile("config.properties");
     }
     
     /**
@@ -112,8 +122,9 @@ public class PhatLootsMain extends JavaPlugin {
             out.close();
             in.close();
         }
-        catch (Exception e) {
-            e.printStackTrace();
+        catch (Exception moveFailed) {
+            System.err.println("[PhatLoots] File Move Failed!");
+            moveFailed.printStackTrace();
         }
     }
     
@@ -124,36 +135,41 @@ public class PhatLootsMain extends JavaPlugin {
     public void loadConfig() {
         p = new Properties();
         try {
+            //Copy the file from the jar if it is missing
+            if (!new File("plugins/PhatLoots/config.properties").exists())
+                moveFile("config.properties");
+            
             p.load(new FileInputStream("plugins/PhatLoots/config.properties"));
-        }
-        catch (Exception e) {
-        }
-        Register.economy = loadValue("Economy");
-        pluginListener.useBP = Boolean.parseBoolean(loadValue("UseBukkitPermissions"));
-        autoLoot = Boolean.parseBoolean(loadValue("AutoLoot"));
-        autoLootMsg = format(("AutoLootMessage"));
-        displayTimeRemaining = Boolean.parseBoolean(loadValue("DisplayTimeRemaining"));
-        timeRemainingMsg = format(loadValue("TimeRemainingMessage"));
-        canOnlyLootOnceMsg = format(loadValue("CanOnlyLootOnceMessage"));
-        
-        //Load default reset time
-        String[] resetTime = loadValue("DefaultResetTime").split("'");
-        defaultDays = Integer.parseInt(resetTime[0]);
-        defaultHours = Integer.parseInt(resetTime[1]);
-        defaultMinutes = Integer.parseInt(resetTime[2]);
-        defaultSeconds = Integer.parseInt(resetTime[3]);
+            
+            autoLoot = Boolean.parseBoolean(loadValue("AutoLoot"));
+            autoLootMsg = format(("AutoLootMessage"));
+            displayTimeRemaining = Boolean.parseBoolean(loadValue("DisplayTimeRemaining"));
+            timeRemainingMsg = format(loadValue("TimeRemainingMessage"));
+            canOnlyLootOnceMsg = format(loadValue("CanOnlyLootOnceMessage"));
 
-        //Load default reset type
-        String resetType = loadValue("DefaultResetType");
-        if (resetType.equals("player"))
-            defaultGlobal = false;
-        else if (resetType.equals("global"))
-            defaultGlobal = true;
-        else
-            System.err.println("[PhatLoots] '"+resetType+"' is not a valid DefaultResetType");
-        
-        defaultNumberOfLoots = Integer.parseInt(loadValue("DefaultItemsPerColl"));
-        autoLock = Boolean.parseBoolean(loadValue("AutoLockPhatLootChestsWithLWC"));
+            //Load default reset time
+            String[] resetTime = loadValue("DefaultResetTime").split("'");
+            defaultDays = Integer.parseInt(resetTime[0]);
+            defaultHours = Integer.parseInt(resetTime[1]);
+            defaultMinutes = Integer.parseInt(resetTime[2]);
+            defaultSeconds = Integer.parseInt(resetTime[3]);
+
+            //Load default reset type
+            String resetType = loadValue("DefaultResetType");
+            if (resetType.equals("player"))
+                defaultGlobal = false;
+            else if (resetType.equals("global"))
+                defaultGlobal = true;
+            else
+                System.err.println("[PhatLoots] '"+resetType+"' is not a valid DefaultResetType");
+
+            defaultNumberOfLoots = Integer.parseInt(loadValue("DefaultItemsPerColl"));
+            autoLock = Boolean.parseBoolean(loadValue("AutoLockPhatLootChestsWithLWC"));
+        }
+        catch (Exception missingProp) {
+            System.err.println("Failed to load PhatLoots "+this.getDescription().getVersion());
+            missingProp.printStackTrace();
+        }
     }
 
     /**
@@ -173,16 +189,6 @@ public class PhatLootsMain extends JavaPlugin {
     }
     
     /**
-     * Registers events for the PhatLoots Plugin
-     *
-     */
-    public void registerEvents() {
-        pm.registerEvent(Type.PLUGIN_ENABLE, new pluginListener(), Priority.Monitor, this);
-        pm.registerEvent(Type.PLAYER_INTERACT, new playerListener(), Priority.Monitor, this);
-        pm.registerEvent(Type.BLOCK_DAMAGE, new blockListener(), Priority.Normal, this);
-    }
-    
-    /**
      * Returns boolean value of whether the given player has the specific permission
      * 
      * @param player The Player who is being checked for permission
@@ -190,12 +196,7 @@ public class PhatLootsMain extends JavaPlugin {
      * @return true if the given player has the specific permission
      */
     public static boolean hasPermission(Player player, String type) {
-        //Check if a Permission Plugin is present
-        if (permissions != null)
-            return permissions.has(player, "phatloots."+type);
-        
-        //Return Bukkit Permission value
-        return player.hasPermission("phatloots."+type);
+        return permission.has(player, "phatloots."+type);
     }
     
     /**

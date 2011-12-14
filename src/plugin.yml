@@ -1,10 +1,11 @@
 name: PhatLoots
 main: com.codisimus.plugins.phatloots.PhatLootsMain
-version: 1.0.0 dev
+version: 1.1.2
 author: Codisimus
 website: www.codisimus.com
 description: Chests with randomly generated money/items
 startup: postworld
+depend: [Vault]
 commands:
   loot:
     description: Used to setup PhatLoot Chests and rewards

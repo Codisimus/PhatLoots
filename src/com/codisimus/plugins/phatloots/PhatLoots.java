@@ -1,6 +1,7 @@
 package com.codisimus.plugins.phatloots;
 
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.LinkedList;
 import org.bukkit.entity.Player;
 import org.bukkit.block.Block;
@@ -87,7 +88,7 @@ public class PhatLoots {
             
             //Give money to the Player if there is money to give
             if (amount > 0) {
-                String money = Register.reward(player.getName(), amount);
+                String money = Econ.reward(player.getName(), amount);
                 player.sendMessage(money+" added to your account!");
             }
         }
@@ -199,20 +200,32 @@ public class PhatLoots {
     public void lootCollective(Player player, Block block) {
         //Loot from each of the 5 collective loots
         for (int i = 1 ; i <= 5; i++) {
-            int numberLooted = 0;
+            
+            //Make sure there are items that will be looted before entering the loop
+            if (!loots[i].isEmpty()) {
+                //Do not loot if the probability does not add up to 100
+                if (getPercentRemaining(i) != 0)
+                    player.sendMessage("Cannot loot Coll"+i+" because the probability does not equal 100%");
+                else {
+                    //Create an array of 100 Loots
+                    Loot[] collLoots = new Loot[100];
+                    int j = 0;
 
-            //Make sure there are items that will be looted before entering loop
-            if (!loots[i].isEmpty() && getPercentRemaining(i) < 100)
-                while (numberLooted < numberCollectiveLoots)
+                    //Add each loot to the array of Loots
                     for (Loot loot: loots[i])
-                        //Roll for item
-                        if (PhatLootsMain.random.nextInt(100) < loot.probability) {
-                            lootItem(loot.item, player, block);
-
-                            //Break if the Player looted enough items
-                            if (numberLooted++ >= numberCollectiveLoots)
-                                break;
+                        //The amount of times the Loot is added is determined by the probability
+                        for (int k = 0; k < loot.probability; k++) {
+                            collLoots[j] = loot;
+                            j++;
                         }
+                    
+                    //Loot the specified number of items
+                    for (int numberLooted = 0; numberLooted < numberCollectiveLoots; numberLooted++)
+                        //Generate a random int to determine the index of the array that holds the Loot
+                        lootItem(collLoots[PhatLootsMain.random.nextInt(100)].item, player, block);
+                }
+            }
+                
         }
     }
 
