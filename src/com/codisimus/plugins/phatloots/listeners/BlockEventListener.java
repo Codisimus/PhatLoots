@@ -2,7 +2,6 @@ package com.codisimus.plugins.phatloots.listeners;
 
 import com.codisimus.plugins.phatloots.PhatLoots;
 import com.codisimus.plugins.phatloots.PhatLootsMain;
-import com.codisimus.plugins.phatloots.SaveSystem;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.BlockBreakEvent;
@@ -32,7 +31,7 @@ public class BlockEventListener extends BlockListener {
         }
         
         //Return if the Block is not linked to a PhatLoots
-        PhatLoots phatLoots = SaveSystem.findPhatLoots(block);
+        PhatLoots phatLoots = PhatLootsMain.findPhatLoots(block);
         if (phatLoots == null)
             return;
         

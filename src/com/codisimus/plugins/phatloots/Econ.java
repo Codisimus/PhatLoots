@@ -8,7 +8,7 @@ import net.milkbowl.vault.economy.Economy;
  * @author Codisimus
  */
 public class Econ {
-    public static Economy economy;
+    static Economy economy;
     
     /**
      * Pays a Player a given amount of money

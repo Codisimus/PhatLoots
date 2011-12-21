@@ -1,7 +1,6 @@
 package com.codisimus.plugins.phatloots;
 
 import java.util.Calendar;
-import java.util.Collection;
 import java.util.LinkedList;
 import org.bukkit.entity.Player;
 import org.bukkit.block.Block;
@@ -30,7 +29,8 @@ public class PhatLoots {
     public int minutes = PhatLootsMain.defaultMinutes;
     public int seconds = PhatLootsMain.defaultSeconds;
 
-    public boolean global = false; //Reset Type
+    public boolean global = PhatLootsMain.defaultGlobal; //Reset Type
+    public boolean round = PhatLootsMain.defaultRound;
     
     public LinkedList<PhatLootsChest> chests = new LinkedList<PhatLootsChest>(); //List of PhatLootsChest that activate the Warp
 
@@ -65,15 +65,11 @@ public class PhatLoots {
         //Find out how much time remains
         String timeRemaining = getTimeRemaining(chest.getTime(user));
         
-        //User can never loot the Chest again if timeRemaining == -1
-        if (timeRemaining.equals("-1")) {
-            if (PhatLootsMain.displayTimeRemaining)
-                player.sendMessage(PhatLootsMain.canOnlyLootOnceMsg);
-            
+        //User can never loot the Chest again if timeRemaining is null
+        if (timeRemaining == null)
             return;
-        }
         
-        //Display remaining time if it is not 0
+        //Display remaining time if it is not 
         if (!timeRemaining.equals("0")) {
             if (PhatLootsMain.displayTimeRemaining)
                 player.sendMessage(PhatLootsMain.timeRemainingMsg.replaceAll("<time>", timeRemaining));
@@ -100,13 +96,13 @@ public class PhatLoots {
         lootCollective(player, block);
         
         //Set the new time for the User and return true
-        chest.setTime(user);
+        setTime(chest, user);
         return;
     }
 
     /**
      * Returns the remaining time until the PhatLootsChest resets
-     * Returns -1 if the PhatLootsChest never resets
+     * Returns null if the PhatLootsChest never resets
      * 
      * @param time The given time
      * @return the remaining time until the PhatLootsChest resets
@@ -116,9 +112,9 @@ public class PhatLoots {
         if (time == null)
             return "0";
         
-        //Return -1 if the reset time is set to never
+        //Return null if the reset time is set to never
         if (days < 0 || hours < 0 || minutes < 0 || seconds < 0)
-            return "-1";
+            return null;
         
         //Calculate the time that the Warp will reset
         int resetDay = time[0] + days;
@@ -141,38 +137,42 @@ public class PhatLoots {
         }
         
         Calendar calendar = Calendar.getInstance();
-        
-        //Return 0 if the current time is later than the reset time
         int day = calendar.get(Calendar.DAY_OF_YEAR);
+        int hour = calendar.get(Calendar.HOUR_OF_DAY);
+        int minute = calendar.get(Calendar.MINUTE);
+        int second = calendar.get(Calendar.SECOND);
+        
+        String msg = "";
+        
+        //Return null if the current time is later than the reset time
         if (day > resetDay)
             return "0";
         
-        if (day < resetDay)
-            //Display remaining days
-            return (resetDay - day)+" days";
+        if (day < resetDay) {
+            msg = msg.concat((resetDay - day - 1)+" days, ");
+            resetHour = resetHour + 24;
+        }
         
-        int hour = calendar.get(Calendar.HOUR_OF_DAY);
         if (hour > resetHour)
             return "0";
         
-        if (hour < resetHour)
-            //Display remaining hours
-            return (resetHour - hour)+" hours";
+        if (hour < resetHour) {
+            msg = msg.concat((resetHour - hour - 1)+" hours, ");
+            resetMinute = resetMinute + 60;
+        }
         
-        int minute = calendar.get(Calendar.MINUTE);
         if (minute > resetMinute)
             return "0";
         
-        if (minute < resetMinute)
-            //Display remaining minutes
-            return (resetMinute - minute)+" minutes";
+        if (minute < resetMinute) {
+            msg = msg.concat((resetMinute - minute - 1)+" minutes, ");
+            resetSecond = resetSecond + 60;
+        }
         
-        int second = calendar.get(Calendar.SECOND);
         if (second >= resetSecond)
             return "0";
-        else
-            //Display remaining seconds
-            return (resetSecond - second)+" seconds";
+        
+        return msg.concat((resetSecond - second)+" seconds");
     }
     
     /**
@@ -264,6 +264,41 @@ public class PhatLoots {
     }
     
     /**
+     * Updates the Player's time value in the Map with the current time
+     * The time is saved as an array with DAY, HOUR, MINUTE, SECOND
+     * 
+     * @param player The Player whose time is to be updated
+     */
+    public void setTime(PhatLootsChest chest, String player) {
+        int[] time = new int[4];
+        Calendar calendar = Calendar.getInstance();
+        
+        if (round) {
+            if (seconds != 0) {
+                time[3] = calendar.get(Calendar.SECOND);
+                time[2] = calendar.get(Calendar.MINUTE);
+                time[1] = calendar.get(Calendar.HOUR_OF_DAY);
+            }
+            else if (minutes != 0) {
+                time[2] = calendar.get(Calendar.MINUTE);
+                time[1] = calendar.get(Calendar.HOUR_OF_DAY);
+            }
+            else if (hours != 0)
+                time[1] = calendar.get(Calendar.HOUR_OF_DAY);
+            
+            time[0] = calendar.get(Calendar.DAY_OF_YEAR);
+        }
+        else {
+            time[0] = calendar.get(Calendar.DAY_OF_YEAR);
+            time[1] = calendar.get(Calendar.HOUR_OF_DAY);
+            time[2] = calendar.get(Calendar.MINUTE);
+            time[3] = calendar.get(Calendar.SECOND);
+        }
+        
+        chest.users.put(player, time);
+    }
+    
+    /**
      * Returns the Remaining Percent of the given collective Loots
      * 
      * @param id The id of the collective Loots
@@ -299,7 +334,7 @@ public class PhatLoots {
             }
             catch (Exception invalidLoot) {
                 System.out.println("[PhatLoots] Error occured while loading, '"+loot+"' is not a valid Loot");
-                SaveSystem.save = false;
+                PhatLootsMain.save = false;
                 System.out.println("[PhatLoots] Saving turned off to prevent loss of data");
                 invalidLoot.printStackTrace();
             }
@@ -347,7 +382,7 @@ public class PhatLoots {
             }
             catch (Exception invalidChest) {
                 System.out.println("[PhatLoots] Error occured while loading, "+'"'+chest+'"'+" is not a valid PhatLootsChest");
-                SaveSystem.save = false;
+                PhatLootsMain.save = false;
                 System.out.println("[PhatLoots] Saving turned off to prevent loss of data");
                 invalidChest.printStackTrace();
             }
@@ -392,7 +427,7 @@ public class PhatLoots {
             }
             catch (Exception invalidLoot) {
                 System.out.println("[PhatLoots] Error occured while loading, '"+loot+"' is not a valid Loot");
-                SaveSystem.save = false;
+                PhatLootsMain.save = false;
                 System.out.println("[PhatLoots] Saving turned off to prevent loss of data");
                 invalidLoot.printStackTrace();
             }
@@ -433,7 +468,7 @@ public class PhatLoots {
             }
             catch (Exception invalidChest) {
                 System.out.println("[PhatLoots] Error occured while loading, "+chest+" is not a valid PhatLootsChest");
-                SaveSystem.save = false;
+                PhatLootsMain.save = false;
                 System.out.println("[PhatLoots] Saving turned off to prevent loss of data");
                 invalidChest.printStackTrace();
             }

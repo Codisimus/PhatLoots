@@ -1,6 +1,5 @@
 package com.codisimus.plugins.phatloots;
 
-import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Iterator;
 import org.bukkit.World;
@@ -43,22 +42,6 @@ public class PhatLootsChest {
         this.x = x;
         this.y = y;
         this.z = z;
-    }
-    
-    /**
-     * Updates the Player's time value in the Map with the current time
-     * The time is saved as an array with DAY, HOUR, MINUTE, SECOND
-     * 
-     * @param player The Player whose time is to be updated
-     */
-    public void setTime(String player) {
-        int[] time = new int[4];
-        Calendar calendar = Calendar.getInstance();
-        time[0] = calendar.get(Calendar.DAY_OF_YEAR);
-        time[1] = calendar.get(Calendar.HOUR_OF_DAY);
-        time[2] = calendar.get(Calendar.MINUTE);
-        time[3] = calendar.get(Calendar.SECOND);
-        users.put(player, time);
     }
     
     /**
