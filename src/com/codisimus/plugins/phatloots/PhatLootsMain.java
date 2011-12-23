@@ -147,7 +147,7 @@ public class PhatLootsMain extends JavaPlugin {
             p.load(fis);
             
             autoLoot = Boolean.parseBoolean(loadValue("AutoLoot"));
-            autoLootMsg = format(("AutoLootMessage"));
+            autoLootMsg = format(loadValue(("AutoLootMessage")));
             displayTimeRemaining = Boolean.parseBoolean(loadValue("DisplayTimeRemaining"));
             timeRemainingMsg = format(loadValue("TimeRemainingMessage"));
 
