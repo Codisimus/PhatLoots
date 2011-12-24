@@ -40,7 +40,7 @@ public class PlayerEventListener extends PlayerListener {
             default: return;
         }
         
-        //Return if The Block is not linked to a PhatLoots
+        //Return if the Block is not linked to a PhatLoots
         PhatLoots phatLoots = PhatLootsMain.findPhatLoots(block);
         if (phatLoots == null)
             return;

@@ -1,5 +1,7 @@
 package com.codisimus.plugins.phatloots.listeners;
 
+import com.codisimus.plugins.chestlock.ChestLock;
+import com.codisimus.plugins.chestlock.Safe;
 import com.codisimus.plugins.phatloots.Loot;
 import com.codisimus.plugins.phatloots.PhatLoots;
 import com.codisimus.plugins.phatloots.PhatLootsChest;
@@ -572,10 +574,27 @@ public class CommandListener implements CommandExecutor {
     public static void link(Player player, String name) {
         //Cancel if the Player is not targeting a correct Block
         Block block = player.getTargetBlock(TRANSPARENT, 10);
-        int id = block.getTypeId();
-        if (id != 54 && id != 23) {
-            player.sendMessage("You must target a Chest/Dispenser.");
-            return;
+        switch (block.getType()) {
+            case CHEST:
+                //Make the Chest unlockable if ChestLock is enabled
+                if (PhatLootsMain.pm.isPluginEnabled("ChestLock")) {
+                    Safe safe = ChestLock.findSafe(block);
+                    if (safe == null) {
+                        safe = new Safe(player.getName(), block);
+                        safe.lockable = false;
+                        
+                        ChestLock.addSafe(safe);
+                        ChestLock.save();
+                    }
+                }
+                
+                break;
+                
+            case DISPENSER: break;
+            
+            default:
+                player.sendMessage("You must target a Chest/Dispenser.");
+                return;
         }
         
         //Cancel if the Block is already linked to a PhatLoots
