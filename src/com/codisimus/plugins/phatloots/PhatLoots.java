@@ -117,10 +117,11 @@ public class PhatLoots {
             return null;
         
         //Calculate the time that the Warp will reset
-        int resetDay = time[0] + days;
-        int resetHour = time[1] + hours;
-        int resetMinute = time[2] + minutes;
-        int resetSecond = time[3] + seconds;
+        int resetYear = time[0];
+        int resetDay = time[1] + days;
+        int resetHour = time[2] + hours;
+        int resetMinute = time[3] + minutes;
+        int resetSecond = time[4] + seconds;
         
         //Update time values into the correct format
         while (resetSecond >= 60) {
@@ -135,8 +136,13 @@ public class PhatLoots {
             resetDay++;
             resetHour = resetHour - 24;
         }
+        while (resetDay >= 366) {
+            resetYear++;
+            resetDay = resetDay - 365;
+        }
         
         Calendar calendar = Calendar.getInstance();
+        int year = calendar.get(Calendar.YEAR);
         int day = calendar.get(Calendar.DAY_OF_YEAR);
         int hour = calendar.get(Calendar.HOUR_OF_DAY);
         int minute = calendar.get(Calendar.MINUTE);
@@ -144,7 +150,15 @@ public class PhatLoots {
         
         String msg = "";
         
-        //Return null if the current time is later than the reset time
+        //Return 0 if the current time is later than the reset time
+        if (year > resetYear)
+            return "0";
+        
+        if (year < resetYear) {
+            msg = msg.concat((resetDay - day - 1)+" years, ");
+            resetDay = resetDay + 365;
+        }
+        
         if (day > resetDay)
             return "0";
         
@@ -270,29 +284,31 @@ public class PhatLoots {
      * @param player The Player whose time is to be updated
      */
     public void setTime(PhatLootsChest chest, String player) {
-        int[] time = new int[4];
+        int[] time = new int[5];
         Calendar calendar = Calendar.getInstance();
         
         if (round) {
             if (seconds != 0) {
-                time[3] = calendar.get(Calendar.SECOND);
-                time[2] = calendar.get(Calendar.MINUTE);
-                time[1] = calendar.get(Calendar.HOUR_OF_DAY);
+                time[4] = calendar.get(Calendar.SECOND);
+                time[3] = calendar.get(Calendar.MINUTE);
+                time[2] = calendar.get(Calendar.HOUR_OF_DAY);
             }
             else if (minutes != 0) {
-                time[2] = calendar.get(Calendar.MINUTE);
-                time[1] = calendar.get(Calendar.HOUR_OF_DAY);
+                time[3] = calendar.get(Calendar.MINUTE);
+                time[2] = calendar.get(Calendar.HOUR_OF_DAY);
             }
             else if (hours != 0)
-                time[1] = calendar.get(Calendar.HOUR_OF_DAY);
+                time[2] = calendar.get(Calendar.HOUR_OF_DAY);
             
-            time[0] = calendar.get(Calendar.DAY_OF_YEAR);
+            time[1] = calendar.get(Calendar.DAY_OF_YEAR);
+            time[0] = calendar.get(Calendar.YEAR);
         }
         else {
-            time[0] = calendar.get(Calendar.DAY_OF_YEAR);
-            time[1] = calendar.get(Calendar.HOUR_OF_DAY);
-            time[2] = calendar.get(Calendar.MINUTE);
-            time[3] = calendar.get(Calendar.SECOND);
+            time[0] = calendar.get(Calendar.YEAR);
+            time[1] = calendar.get(Calendar.DAY_OF_YEAR);
+            time[2] = calendar.get(Calendar.HOUR_OF_DAY);
+            time[3] = calendar.get(Calendar.MINUTE);
+            time[4] = calendar.get(Calendar.SECOND);
         }
         
         chest.users.put(player, time);
@@ -370,10 +386,16 @@ public class PhatLoots {
                     //Don't load if the data is corrupt or empty
                     if ((index = user.indexOf('@')) != -1) {
                         String[] timeData = user.substring(index + 1).split("'");
-                        int[] time = new int[4];
+                        int[] time = new int[5];
 
-                        for (int j = 0; j < 4; j++)
-                            time[j] = Integer.parseInt(timeData[j]);
+                        if (timeData.length == 4) {
+                            time[0] = 2011;
+                            for (int j = 0; j < 4; j++)
+                                time[j+1] = Integer.parseInt(timeData[j]);
+                        }
+                        else
+                            for (int j = 0; j < 5; j++)
+                                time[j] = Integer.parseInt(timeData[j]);
 
                         phatLootsChest.users.put(user.substring(0, index), time);
                     }

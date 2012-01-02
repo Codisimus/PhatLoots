@@ -119,7 +119,7 @@ public class PhatLootsChest {
             String key = (String)itr.next();
             int[] time = getTime(key);
 
-            string = string.concat(key+"@"+time[0]+"'"+time[1]+"'"+time[2]+"'"+time[3]);
+            string = string.concat(key+"@"+time[0]+"'"+time[1]+"'"+time[2]+"'"+time[3]+"'"+time[4]);
             
             if (itr.hasNext())
                 string = string.concat(", ");
