@@ -30,11 +30,11 @@ public class CommandListener implements CommandExecutor {
             (byte)8, (byte)9, (byte)10, (byte)11, (byte)26, (byte)27, (byte)28,
             (byte)30, (byte)31, (byte)32, (byte)37, (byte)38, (byte)39, (byte)40,
             (byte)44, (byte)50, (byte)51, (byte)53, (byte)55, (byte)59, (byte)64,
-            (byte)65, (byte)66, (byte)67, (byte)69, (byte)70, (byte)71, (byte)72,
-            (byte)75, (byte)76, (byte)77, (byte)78, (byte)85, (byte)90, (byte)92,
-            (byte)96, (byte)101, (byte)102, (byte)104, (byte)105, (byte)106,
-            (byte)107, (byte)108, (byte)109, (byte)111, (byte)113, (byte)114,
-            (byte)115, (byte)117);
+            (byte)63, (byte)65, (byte)66, (byte)67, (byte)68, (byte)69, (byte)70,
+            (byte)71, (byte)72, (byte)75, (byte)76, (byte)77, (byte)78, (byte)85,
+            (byte)90, (byte)92, (byte)96, (byte)101, (byte)102, (byte)104,
+            (byte)105, (byte)106, (byte)107, (byte)108, (byte)109, (byte)111,
+            (byte)113, (byte)114, (byte)115, (byte)117);
     
     /**
      * Listens for PhatLoots commands to execute them
@@ -252,7 +252,7 @@ public class CommandListener implements CommandExecutor {
                 
                 String addName = null; //The name of the PhatLoots
                 int addID = 0; //The ID of the Loot collection (0 == IndividualLoots)
-                Loot addLoot = null; //The Loot to be added
+                Loot addLoot; //The Loot to be added
                 
                 switch (args.length) {
                     case 4: //All optional fields are missing
@@ -750,7 +750,14 @@ public class CommandListener implements CommandExecutor {
         if (phatLoots == null)
             return;
         
-        String lootDescription = loot.item.getAmount()+" of "+loot.item.getType().name()+" @ "+loot.probability+"%";
+        String lootDescription = loot.item.getAmount()+" of "+loot.item.getType().name()+" @ ";
+        
+        if (Math.floor(loot.probability) == loot.probability)
+            lootDescription = lootDescription.concat(String.valueOf((int)loot.probability));
+        else
+            lootDescription = lootDescription.concat(String.valueOf(loot.probability));
+
+        lootDescription = lootDescription.concat("%");
 
         //Add the durability if it is not negative
         short data = loot.item.getDurability();
@@ -945,7 +952,6 @@ public class CommandListener implements CommandExecutor {
         System.out.println("[PhatLoots] reloaded");
         if (player != null)
             player.sendMessage("PhatLoots reloaded");
-        return;
     }
     
     /**
@@ -981,7 +987,7 @@ public class CommandListener implements CommandExecutor {
      * @return The PhatLoots or null if none was found
      */
     public static PhatLoots getPhatLoots(Player player, String name) {
-        PhatLoots phatLoots = null;
+        PhatLoots phatLoots;
         
         if (name == null) {
             //Find the PhatLoots using the target Block
@@ -1036,11 +1042,11 @@ public class CommandListener implements CommandExecutor {
         }
 
         //Return null if the probability is invalid
-        int probablility;
+        double probablility;
         try {
-            probablility = Integer.parseInt(percent);
+            probablility = Double.parseDouble(percent);
 
-            if (probablility < 1 || probablility > 100) {
+            if (probablility <= 0 || probablility > 100) {
                 player.sendMessage(percent+" is not between 0 and 100");
                 return null;
             }

@@ -200,7 +200,7 @@ public class PhatLoots {
     public void lootIndividual(Player player, Block block) {
         for (Loot loot: loots[0])
             //Roll for item
-            if (PhatLootsMain.random.nextInt(100) < loot.probability)
+            if (PhatLootsMain.random.nextInt(100) + PhatLootsMain.random.nextDouble() < loot.probability)
                 lootItem(loot.item, player, block);
     }
 
@@ -320,9 +320,9 @@ public class PhatLoots {
      * @param id The id of the collective Loots
      * @return Total probability of all Loots in the collective Loots subtracted from 100
      */
-    public int getPercentRemaining(int id) {
+    public double getPercentRemaining(int id) {
         //Subtract the probabilty of each loot from 100
-        int total = 100;
+        double total = 100;
         for (Loot loot: loots[id])
             total = total - loot.probability;
         
@@ -346,7 +346,7 @@ public class PhatLoots {
                 //Construct a new loot with the item data and probability
                 String[] lootData = loot.split("'");
                 loots[id].add(new Loot(Integer.parseInt(lootData[0]), Short.parseShort(lootData[1]),
-                        Integer.parseInt(lootData[2]), Integer.parseInt(lootData[3])));
+                        Integer.parseInt(lootData[2]), Double.parseDouble(lootData[3])));
             }
             catch (Exception invalidLoot) {
                 System.out.println("[PhatLoots] Error occured while loading, '"+loot+"' is not a valid Loot");
@@ -443,7 +443,7 @@ public class PhatLoots {
                     else
                         itemID = Integer.parseInt(lootData[0]);
 
-                    Loot lootObject = new Loot(itemID, durability, Integer.parseInt(lootData[1]),Integer.parseInt(lootData[2]));
+                    Loot lootObject = new Loot(itemID, durability, Integer.parseInt(lootData[1]), Double.parseDouble(lootData[2]));
                     loots[id].add(lootObject);
                 }
             }
@@ -510,12 +510,19 @@ public class PhatLoots {
         //Concat each Loot onto the list
         for (Loot loot: loots[id]) {
             //Add the Loot info
-            list = list.concat(", "+loot.item.getAmount()+" of "+loot.item.getType().name()+" @ "+loot.probability+"%");
+            list = list.concat(", "+loot.item.getAmount()+" of "+loot.item.getType().name()+" @ ");
+            
+            if (Math.floor(loot.probability) == loot.probability)
+                list = list.concat(String.valueOf((int)loot.probability));
+            else
+                list = list.concat(String.valueOf(loot.probability));
+            
+            list = list.concat("%");
             
             //Add the durability if it is not negative
             durability = loot.item.getDurability();
             if (durability >= 0)
-                list.replace("@", "with durability "+durability+" @");
+                list.replace("@", "with data "+durability+" @");
         }
         
         if (!list.isEmpty())

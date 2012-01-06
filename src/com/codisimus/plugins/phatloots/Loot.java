@@ -9,7 +9,7 @@ import org.bukkit.inventory.ItemStack;
  */
 public class Loot {
     public ItemStack item;
-    public int probability;
+    public double probability;
 
     /**
      * Constructs a new Loot with the given Item data
@@ -19,7 +19,7 @@ public class Loot {
      * @param amount The stack size of the item
      * @param probability The chance of looting the item
      */
-    public Loot (int id, short durability, int amount, int probability) {
+    public Loot (int id, short durability, int amount, double probability) {
         item = new ItemStack(id, amount);
         if (durability >= 0)
             item.setDurability(durability);
@@ -35,7 +35,14 @@ public class Loot {
      */
     @Override
     public String toString() {
-        return item.getTypeId()+"'"+item.getDurability()+"'"+item.getAmount()+"'"+probability;
+        String string = item.getTypeId()+"'"+item.getDurability()+"'"+item.getAmount()+"'";
+        
+        if (Math.floor(probability) == probability)
+            string = string.concat(String.valueOf((int)probability));
+        else
+            string = string.concat(String.valueOf(probability));
+        
+        return string;
     }
     
     /**
