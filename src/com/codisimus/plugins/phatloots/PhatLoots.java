@@ -340,6 +340,9 @@ public class PhatLoots {
         if (data.isEmpty())
             return;
         
+        while (data.endsWith(",") || data.endsWith(" "))
+            data = data.substring(0, data.length() - 1);
+        
         //Load data for each loot
         for (String loot: data.split(", ")) {
             try {
