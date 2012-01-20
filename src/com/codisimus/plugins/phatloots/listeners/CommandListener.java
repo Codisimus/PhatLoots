@@ -21,7 +21,7 @@ import org.bukkit.entity.Player;
  * 
  * @author Codisimus
  */
-public class CommadListener implements CommandExecutor {
+public class CommandListener implements CommandExecutor {
     private static enum Action {
         MAKE, LINK, UNLINK, DELETE, TIME, GLOBAL, ROUND,
         ADD, REMOVE, MONEY, LIST, INFO, RESET, RL
