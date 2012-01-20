@@ -287,7 +287,7 @@ public class CommandListener implements CommandExecutor {
                         }
                         
                         //Data field is present
-                        addLoot = getLoot(player, args[1], args[3], args[2], args[4]);
+                        addLoot = getLoot(player, args[1], args[2], args[3], args[4]);
                         break;
                         
                     case 6: //One optional field is missing
@@ -321,7 +321,7 @@ public class CommandListener implements CommandExecutor {
                         }
                         else {
                             //Name and Data fields are present
-                            addLoot = getLoot(player, args[2], args[4], args[3], args[5]);
+                            addLoot = getLoot(player, args[2], args[3], args[4], args[5]);
                             
                             addName = args[1];
                         }
@@ -339,7 +339,7 @@ public class CommandListener implements CommandExecutor {
                             return true;
                         }
                         
-                        addLoot = getLoot(player, args[3], args[5], args[4], args[6]);
+                        addLoot = getLoot(player, args[3], args[4], args[5], args[6]);
                         break;
                         
                     default: sendHelp(player); return true;
@@ -396,13 +396,13 @@ public class CommandListener implements CommandExecutor {
                         }
                         
                         //Data field is present
-                        removeLoot = getLoot(player, args[1], args[3], args[2], args[4]);
+                        removeLoot = getLoot(player, args[1], args[2], args[3], args[4]);
                         break;
                         
                     case 6: //One optional field is missing
                         if (args[1].startsWith("coll")) {
                             //ID and Data fields are present
-                            removeLoot = getLoot(player, args[2], args[4], args[3], args[5]);
+                            removeLoot = getLoot(player, args[2], args[3], args[4], args[5]);
                             
                             try {
                                 removeID = Integer.parseInt(args[1].substring(4));
@@ -430,7 +430,7 @@ public class CommandListener implements CommandExecutor {
                         }
                         else {
                             //Name and Data fields are present
-                            removeLoot = getLoot(player, args[2], args[4], args[3], args[5]);
+                            removeLoot = getLoot(player, args[2], args[3], args[4], args[5]);
                             
                             removeName = args[1];
                         }
@@ -448,7 +448,7 @@ public class CommandListener implements CommandExecutor {
                             return true;
                         }
                         
-                        removeLoot = getLoot(player, args[3], args[5], args[4], args[6]);
+                        removeLoot = getLoot(player, args[3], args[4], args[5], args[6]);
                         break;
                         
                     default: sendHelp(player); return true;
