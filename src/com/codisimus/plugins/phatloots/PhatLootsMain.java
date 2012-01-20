@@ -1,15 +1,9 @@
 package com.codisimus.plugins.phatloots;
 
 import com.codisimus.plugins.phatloots.listeners.BlockEventListener;
-import com.codisimus.plugins.phatloots.listeners.CommandListener;
+import com.codisimus.plugins.phatloots.listeners.CommadListener;
 import com.codisimus.plugins.phatloots.listeners.PlayerEventListener;
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.util.LinkedList;
 import java.util.Properties;
 import java.util.Random;
@@ -86,7 +80,7 @@ public class PhatLootsMain extends JavaPlugin {
         //Register Events
         pm.registerEvent(Type.PLAYER_INTERACT, new PlayerEventListener(), Priority.Monitor, this);
         pm.registerEvent(Type.BLOCK_DAMAGE, new BlockEventListener(), Priority.Normal, this);
-        getCommand("loot").setExecutor(new CommandListener());
+        getCommand("loot").setExecutor(new CommadListener());
         
         System.out.println("PhatLoots "+this.getDescription().getVersion()+" is enabled!");
     }

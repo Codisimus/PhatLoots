@@ -2,12 +2,12 @@ package com.codisimus.plugins.phatloots;
 
 import java.util.Calendar;
 import java.util.LinkedList;
-import org.bukkit.entity.Player;
 import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.block.Dispenser;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 
 /**
@@ -97,7 +97,6 @@ public class PhatLoots {
         
         //Set the new time for the User and return true
         setTime(chest, user);
-        return;
     }
 
     /**
