@@ -70,7 +70,7 @@ public class Loot {
         short durability = item.getDurability();
         int amount = item.getAmount();
         return amount+(bonus == 0 ? " of " : "-"+(amount + bonus)+" of ")+item.getType().name()+
-                (durability >= 0 ? " with data "+durability+" @ " : " @ ")+
+                (durability > 0 ? " with data "+durability+" @ " : " @ ")+
                 (Math.floor(probability) == probability ? (int)probability : probability)+"%";
     }
     
