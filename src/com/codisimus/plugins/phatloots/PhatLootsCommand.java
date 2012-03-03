@@ -290,7 +290,7 @@ public class PhatLootsCommand implements CommandExecutor {
                 String name = null; //Name of the PhatLoot (if not specified then the PhatLoot of the target Block are used)
                 int id = 0; //The ID of the Loot collection (defaulted to 0 == IndividualLoots)
                 int baseAmount = 1; //Stack size of the Loot item (defaulted to 1)
-                int bonusAmount = 0; //Amount to possibly increase the Stack size of the Loot item (defaulted to 0)
+                int bonusAmount = 1; //Amount to possibly increase the Stack size of the Loot item (defaulted to 1)
                 int item = 0; //TypeID of the Loot item (if item is not provided then this is found by chacking the Player's hand)
                 short data = 0; //Data/Damage value of the Loot item (defaulted to 0 or unused)
                 double percent = 100; //The chance of recieving the Loot item (defaulted to 100)
