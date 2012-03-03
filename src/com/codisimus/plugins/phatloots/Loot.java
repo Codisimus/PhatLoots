@@ -83,7 +83,7 @@ public class Loot {
     @Override
     public String toString() {
         String string = item.getTypeId()+"'"+item.getDurability()+"'"+item.getAmount();
-        string = string.concat(bonus == 0 ? "'" : ("-"+(item.getAmount() + bonus)));
+        string = string.concat(bonus == 0 ? "'" : ("-"+(item.getAmount() + bonus)+"'"));
         
         if (Math.floor(probability) == probability)
             string = string.concat(String.valueOf((int)probability));
