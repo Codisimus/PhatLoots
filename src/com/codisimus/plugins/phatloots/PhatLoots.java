@@ -10,6 +10,7 @@ import org.bukkit.Server;
 import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.RegisteredServiceProvider;
@@ -42,13 +43,6 @@ public class PhatLoots extends JavaPlugin {
 
     @Override
     public void onDisable () {
-        //Clear all looted Chests
-        for (Block block: PhatLootsListener.LastUser.keySet())
-            if (block.getTypeId() == 54) {
-                Chest chest = (Chest)block.getState();
-                chest.getInventory().clear();
-                chest.update();
-            }
     }
 
     /**
@@ -259,6 +253,10 @@ public class PhatLoots extends JavaPlugin {
 
                     //Load the data of all the PhatLootsChests
                     phatLoot.setChests(p.getProperty("ChestsData"));
+                    
+                    //Try to Load old data (incase the old Worlds are now present)
+                    if (p.containsKey("OldChestsData"))
+                        phatLoot.setChests(p.getProperty("OldChestsData"));
 
                     phatLoots.put(phatLoot.name, phatLoot);
 
@@ -420,6 +418,13 @@ public class PhatLoots extends JavaPlugin {
             if (!value.isEmpty())
                 value = value.substring(2);
             p.setProperty("ChestsData", value);
+            
+            value = "";
+            for (String chest: phatLoot.oldChests)
+                value = value.concat("; "+chest);
+            if (!value.isEmpty())
+                value = value.substring(2);
+            p.setProperty("OldChestsData", value);
 
             //Write the PhatLoot Properties to file
             FileOutputStream fos = new FileOutputStream(dataFolder+"/PhatLoots/"+phatLoot.name+".properties");

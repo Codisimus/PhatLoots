@@ -1,17 +1,16 @@
 package com.codisimus.plugins.phatloots;
 
 import java.util.HashMap;
-import org.bukkit.Location;
 import org.bukkit.block.Block;
-import org.bukkit.block.Chest;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
-import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.inventory.DoubleChestInventory;
+import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.InventoryHolder;
 
 /**
  * Listens for interactions with PhatLootChests
@@ -19,8 +18,7 @@ import org.bukkit.event.player.PlayerMoveEvent;
  * @author Codisimus
  */
 public class PhatLootsListener implements Listener {
-    private static HashMap<Player, Block> openChests = new HashMap<Player, Block>();
-    static HashMap<Block, Player> LastUser = new HashMap<Block, Player>();
+    static HashMap<Inventory, Player> LastUser = new HashMap<Inventory, Player>();
 
     /**
      * Checks if a Player loots a PhatLootChest
@@ -55,37 +53,34 @@ public class PhatLootsListener implements Listener {
             return;
         
         Player player = event.getPlayer();
+        boolean clear = false;
         
         //Check if the Block is a Chest
         if (block.getTypeId() == 54) {
-            //Remove the Player as having the Chest open if they are offline
-            for (Player key: openChests.keySet())
-                if (!key.isOnline())
-                    openChests.remove(key);
-
             Player chestOpener = event.getPlayer();
             
-            Block chestBlock = openChests.containsValue(block) ? block : PhatLoots.getOtherHalf(block);
-
-            //Check if the Chest is already in use
-            if (openChests.containsValue(chestBlock)) {
-                Block using = openChests.get(chestOpener);
-                if (using == null || !using.equals(chestBlock)) {
+            InventoryHolder chest = (InventoryHolder)block.getState();
+            Inventory inventory = chest.getInventory();
+            if (inventory instanceof DoubleChestInventory) {
+                if (!((DoubleChestInventory)inventory).getLeftSide().getViewers().isEmpty()) {
                     event.setCancelled(true);
                     chestOpener.sendMessage(PhatLootsMessages.inUse);
                     return;
                 }
             }
-
-            openChests.put(chestOpener, block);
+            else if (!inventory.getViewers().isEmpty()) {
+                event.setCancelled(true);
+                chestOpener.sendMessage(PhatLootsMessages.inUse);
+                return;
+            }
             
             //Clear the Chest if a new Player opened it
-            if (!LastUser.containsKey(block) || !LastUser.get(block).equals(player)) {
-                Chest chest = (Chest)block.getState();
-                chest.getInventory().clear();
-                chest.update();
-                LastUser.put(block, player);
-            }
+            //if (!LastUser.containsKey(inventory))
+                //block = PhatLoots.getOtherHalf(block);
+            if (!LastUser.containsKey(inventory) || !LastUser.get(inventory).equals(player))
+                clear = true;
+            
+            LastUser.put(inventory, player);
         }
         
         //Return if the Player does not have permission to receive loots
@@ -96,30 +91,17 @@ public class PhatLootsListener implements Listener {
         
         for (PhatLoot phatLoot: PhatLoots.getPhatLoots()) {
             PhatLootChest chest = phatLoot.findChest(block);
-            if (chest != null)
+            
+            if (chest != null) {
+                if (clear) {
+                    chest.clear();
+                    clear = false;
+                }
+                
                 phatLoot.getLoot(player, chest);
                 phatLoot.save();
+            }
         }
-    }
-    
-    /**
-     * Listens for Players leaving Chests
-     * 
-     * @param event The PlayerMoveEvent that occurred
-     */
-    @EventHandler (priority = EventPriority.MONITOR)
-    public void onPlayerMove (PlayerMoveEvent event) {
-        if (event.isCancelled())
-            return;
-        
-        Player player = event.getPlayer();
-        Location to = event.getTo();
-        Location from = event.getFrom();
-        
-        if (openChests.containsKey(player))
-            if ((int)to.getPitch() != (int)from.getPitch() ||
-                    to.distance(openChests.get(player).getLocation()) > 8)
-                openChests.remove(player);
     }
     
     /**

@@ -4,7 +4,10 @@ import java.util.HashMap;
 import java.util.Iterator;
 import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
+import org.bukkit.block.Dispenser;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 
 /**
@@ -13,9 +16,10 @@ import org.bukkit.inventory.ItemStack;
  * @author Codisimus
  */
 public class PhatLootChest {
-    public Block block;
+    private Block block;
+    public Inventory inventory;
     public boolean isDispenser;
-    public HashMap users = new HashMap(); //A map of each Player that loots the Chest {PlayerName=TimeActivated}
+    public HashMap<String, int[]> users = new HashMap<String, int[]>(); //A map of each Player that loots the Chest {PlayerName=TimeActivated}
 
     /**
      * Constructs a new PhatLootChest with the given Block
@@ -24,6 +28,7 @@ public class PhatLootChest {
      */
     public PhatLootChest (Block block) {
         this.block = block;
+        inventory = ((InventoryHolder)block.getState()).getInventory();
         isDispenser = block.getTypeId() == 23;
     }
     
@@ -37,6 +42,7 @@ public class PhatLootChest {
      */
     public PhatLootChest (String world, int x, int y, int z) {
         block = PhatLoots.server.getWorld(world).getBlockAt(x, y, z);
+        inventory = ((InventoryHolder)block.getState()).getInventory();
         isDispenser = block.getTypeId() == 23;
     }
     
@@ -47,38 +53,18 @@ public class PhatLootChest {
      * @return The time as an array of ints
      */
     public int[] getTime(String player) {
-        return (int[])users.get(player);
+        return users.get(player);
     }
     
     /**
-     * Return the other half of the Double Chest
-     * If this is a dispenser then null is returned
-     * If this is a single Chest then the normal Chest Block is returned
+     * Returns the Dispenser Block or null if it is a Chest
      * 
-     * @return The other half of the Double Chest
+     * @return The Dispenser Block
      */
-    public Chest getOtherHalf() {
+    public Dispenser getDispenser() {
         if (isDispenser)
-            return null;
-        
-        Block neighbor = block.getRelative(0, 0, 1);
-        if (neighbor.getTypeId() == 54)
-            return (Chest)neighbor.getState();
-        
-        neighbor = block.getRelative(1, 0, 0);
-        if (neighbor.getTypeId() == 54)
-            return (Chest)neighbor.getState();
-        
-        neighbor = block.getRelative(0, 0, -1);
-        if (neighbor.getTypeId() == 54)
-            return (Chest)neighbor.getState();
-        
-        neighbor = block.getRelative(-1, 0, 0);
-        if (neighbor.getTypeId() == 54)
-            return (Chest)neighbor.getState();
-        
-        //Return the single block Chest
-        return (Chest)block.getState();
+            return (Dispenser)block.getState();
+        return null;
     }
     
     /**
@@ -86,25 +72,10 @@ public class PhatLootChest {
      * 
      */
     public void clear() {
-        if (!isDispenser) {
-            Chest chest = (Chest)block.getState();
-            chest.getInventory().clear();
-            chest.update();
-        }
+        inventory.clear();
+        ((Chest)block.getState()).update();
     }
     
-    /**
-     * Drops the given item outside the PhatLootChest
-     * 
-     * @param item The ItemStack that will be dropped
-     * @param player The Player (if any) that will be informed of the drop
-     */
-    public void overFlow(ItemStack item, Player player) {
-        block.getWorld().dropItemNaturally(block.getLocation(), item);
-        if (player != null)
-            player.sendMessage(PhatLootsMessages.overflow.replaceAll("<item>", item.getType().name()));
-    }
-
     /**
      * Returns true if the given Block is this PhatLootChest
      * 
@@ -120,8 +91,20 @@ public class PhatLootChest {
         if (isDispenser || block.getTypeId() != 54)
             return false;
         
-        //Return whether if the given Block is not the other half of the PhatLootChest
-        return getOtherHalf().equals((Chest)block.getState());
+        //Return whether the given Block is the other half of the PhatLootChest
+        return this.block.equals(PhatLoots.getOtherHalf(block));
+    }
+    
+    /**
+     * Drops the given item outside the PhatLootChest
+     * 
+     * @param item The ItemStack that will be dropped
+     * @param player The Player (if any) that will be informed of the drop
+     */
+    public void overFlow(ItemStack item, Player player) {
+        block.getWorld().dropItemNaturally(block.getLocation(), item);
+        if (player != null)
+            player.sendMessage(PhatLootsMessages.overflow.replaceAll("<item>", item.getType().name()));
     }
 
     /**

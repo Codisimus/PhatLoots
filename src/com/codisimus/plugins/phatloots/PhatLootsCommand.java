@@ -3,13 +3,16 @@ package com.codisimus.plugins.phatloots;
 import com.codisimus.plugins.chestlock.ChestLock;
 import com.codisimus.plugins.chestlock.Safe;
 import com.google.common.collect.Sets;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.Map;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
@@ -265,15 +268,15 @@ public class PhatLootsCommand implements CommandExecutor {
                 if (args.length > 1 && args[1].equals("cmd")) {
                     String name = null;
                     String cmd = "";
-                    
-                    if (args.length > 2) {
-                    }
-                    
                     int i = 2;
-                    if (PhatLoots.hasPhatLoot(args[2])) {
-                        name = args[2];
-                        i++;
-                    }
+                    
+                    if (args.length > 2)
+                        
+                        
+                        if (PhatLoots.hasPhatLoot(args[2])) {
+                            name = args[2];
+                            i++;
+                        }
                     
                     while (i < args.length) {
                         cmd = cmd.concat(args[i].concat(" "));
@@ -291,8 +294,9 @@ public class PhatLootsCommand implements CommandExecutor {
                 int id = 0; //The ID of the Loot collection (defaulted to 0 == IndividualLoots)
                 int baseAmount = 1; //Stack size of the Loot item (defaulted to 1)
                 int bonusAmount = 1; //Amount to possibly increase the Stack size of the Loot item (defaulted to 1)
-                int item = 0; //TypeID of the Loot item (if item is not provided then this is found by chacking the Player's hand)
+                int item = 0; //TypeID of the Loot item (if item is not provided then this is found by checking the Player's hand)
                 short data = 0; //Data/Damage value of the Loot item (defaulted to 0 or unused)
+                Map<Enchantment, Integer> enchantments = null; //ID of the enchantment (defaulted to -1 or unused)
                 double percent = 100; //The chance of recieving the Loot item (defaulted to 100)
                 
                 ItemStack itemStack; //The Loot item (created from baseAmount, item and data)
@@ -312,7 +316,9 @@ public class PhatLootsCommand implements CommandExecutor {
                             name = args[1];
                         else { //Item field
                             item = getItemID(player, args[1]);
-                            data = getData(player, args[1]);
+                            enchantments = getEnchantments(player, args[1]);
+                            if (enchantments == null)
+                                data = getData(player, args[1]);
                         }
                         
                         break;
@@ -327,14 +333,18 @@ public class PhatLootsCommand implements CommandExecutor {
                                 name = args[1];
                             else { //Item & Percent fields
                                 item = getItemID(player, args[1]);
-                                data = getData(player, args[1]);
+                                enchantments = getEnchantments(player, args[1]);
+                                if (enchantments == null)
+                                    data = getData(player, args[1]);
                             }
                         }
                         else if (args[1].startsWith("coll")) { //AddID & Item fields
                             id = getCollID(player, args[1]);
                             
                             item = getItemID(player, args[2]);
-                            data = getData(player, args[2]);
+                            enchantments = getEnchantments(player, args[2]);
+                            if (enchantments == null)
+                                data = getData(player, args[2]);
                         }
                         else if (args[2].startsWith("coll")) { //Name & AddID fields
                             name = args[1];
@@ -345,14 +355,18 @@ public class PhatLootsCommand implements CommandExecutor {
                             name = args[1];
                             
                             item = getItemID(player, args[2]);
-                            data = getData(player, args[2]);
+                            enchantments = getEnchantments(player, args[2]);
+                            if (enchantments == null)
+                                data = getData(player, args[2]);
                         }
                         else { //Amount & Item fields
                             baseAmount = getLowerBound(player, args[1]);
                             bonusAmount = getUpperBound(player, args[1]);
                             
                             item = getItemID(player, args[2]);
-                            data = getData(player, args[2]);
+                            enchantments = getEnchantments(player, args[2]);
+                            if (enchantments == null)
+                                data = getData(player, args[2]);
                         }
                         
                         break;
@@ -365,7 +379,9 @@ public class PhatLootsCommand implements CommandExecutor {
                                 id = getCollID(player, args[1]);
                                 
                                 item = getItemID(player, args[2]);
-                                data = getData(player, args[2]);
+                                enchantments = getEnchantments(player, args[2]);
+                                if (enchantments == null)
+                                    data = getData(player, args[2]);
                             }
                             else if (args[2].startsWith("coll")) { //Name, AddID, & Percent fields
                                 name = args[1];
@@ -376,14 +392,18 @@ public class PhatLootsCommand implements CommandExecutor {
                                 name = args[1];
                                 
                                 item = getItemID(player, args[2]);
-                                data = getData(player, args[2]);
+                                enchantments = getEnchantments(player, args[2]);
+                                if (enchantments == null)
+                                    data = getData(player, args[2]);
                             }
                             else { //Amount, Item, & Percent fields
                                 baseAmount = getLowerBound(player, args[1]);
                                 bonusAmount = getUpperBound(player, args[1]);
 
                                 item = getItemID(player, args[2]);
-                                data = getData(player, args[2]);
+                                enchantments = getEnchantments(player, args[2]);
+                                if (enchantments == null)
+                                    data = getData(player, args[2]);
                             }
                         }
                         else if (args[1].startsWith("coll")) { //AddID, Amount, & Item fields
@@ -393,7 +413,9 @@ public class PhatLootsCommand implements CommandExecutor {
                             bonusAmount = getUpperBound(player, args[2]);
 
                             item = getItemID(player, args[3]);
-                            data = getData(player, args[3]);
+                            enchantments = getEnchantments(player, args[3]);
+                            if (enchantments == null)
+                                data = getData(player, args[3]);
                         }
                         else if (args[2].startsWith("coll")) { //Name, AddID, & Item fields
                             name = args[1];
@@ -401,7 +423,9 @@ public class PhatLootsCommand implements CommandExecutor {
                             id = getCollID(player, args[2]);
 
                             item = getItemID(player, args[3]);
-                            data = getData(player, args[3]);
+                            enchantments = getEnchantments(player, args[3]);
+                            if (enchantments == null)
+                                data = getData(player, args[3]);
                         }
                         else { //Name, Amount, & Item fields
                             name = args[1];
@@ -410,7 +434,9 @@ public class PhatLootsCommand implements CommandExecutor {
                             bonusAmount = getUpperBound(player, args[2]);
 
                             item = getItemID(player, args[3]);
-                            data = getData(player, args[3]);
+                            enchantments = getEnchantments(player, args[3]);
+                            if (enchantments == null)
+                                data = getData(player, args[3]);
                         }
                         
                         break;
@@ -423,7 +449,9 @@ public class PhatLootsCommand implements CommandExecutor {
                             bonusAmount = getUpperBound(player, args[2]);
 
                             item = getItemID(player, args[3]);
-                            data = getData(player, args[3]);
+                            enchantments = getEnchantments(player, args[3]);
+                            if (enchantments == null)
+                                data = getData(player, args[3]);
                             
                             percent = getPercent(player, args[4]);
                         }
@@ -436,7 +464,9 @@ public class PhatLootsCommand implements CommandExecutor {
                             bonusAmount = getUpperBound(player, args[3]);
 
                             item = getItemID(player, args[4]);
-                            data = getData(player, args[4]);
+                            enchantments = getEnchantments(player, args[4]);
+                            if (enchantments == null)
+                                data = getData(player, args[4]);
                         }
                         else if (!args[2].startsWith("coll")) { //Name, Amount, Item, & Percent fields
                             name = args[1];
@@ -445,7 +475,9 @@ public class PhatLootsCommand implements CommandExecutor {
                             bonusAmount = getUpperBound(player, args[2]);
 
                             item = getItemID(player, args[3]);
-                            data = getData(player, args[3]);
+                            enchantments = getEnchantments(player, args[3]);
+                            if (enchantments == null)
+                                data = getData(player, args[3]);
                             
                             percent = getPercent(player, args[4]);
                         }
@@ -455,7 +487,9 @@ public class PhatLootsCommand implements CommandExecutor {
                             id = getCollID(player, args[2]);
                             
                             item = getItemID(player, args[3]);
-                            data = getData(player, args[3]);
+                            enchantments = getEnchantments(player, args[3]);
+                            if (enchantments == null)
+                                data = getData(player, args[3]);
                             
                             percent = getPercent(player, args[4]);
                         }
@@ -471,7 +505,9 @@ public class PhatLootsCommand implements CommandExecutor {
                         bonusAmount = getUpperBound(player, args[3]);
 
                         item = getItemID(player, args[4]);
-                        data = getData(player, args[4]);
+                        enchantments = getEnchantments(player, args[4]);
+                        if (enchantments == null)
+                            data = getData(player, args[4]);
                         
                         percent = getPercent(player, args[5]);
                         break;
@@ -489,7 +525,13 @@ public class PhatLootsCommand implements CommandExecutor {
                 
                 //Construct itemStack from item, amount, and data
                 //If the item is AIR (unset) uses the ItemStack in the Player's hand
-                itemStack = item == 0 ? player.getItemInHand() : new ItemStack(item, baseAmount, data);
+                if (item == 0)
+                    itemStack = player.getItemInHand();
+                else {
+                    itemStack = new ItemStack(item, baseAmount, data);
+                    if (enchantments != null)
+                        itemStack.addEnchantments(enchantments);
+                }
                 
                 //Contruct the Loot
                 loot = new Loot(itemStack, bonusAmount - baseAmount, percent);
@@ -737,7 +779,7 @@ public class PhatLootsCommand implements CommandExecutor {
             phatLoot.global = global;
 
             player.sendMessage("PhatLoot "+phatLoot.name+" has been set to "+
-                    (global ? "" : "non-")+"global reset!");
+                    (global ? "global" : "individual")+" reset!");
             phatLoot.save();
         }
     }
@@ -1072,6 +1114,8 @@ public class PhatLootsCommand implements CommandExecutor {
         player.sendMessage("§6Amount may be a number §4(10)§6 or range §4(10-64)");
         player.sendMessage("§5If Amount is not specified then the amount will be 1");
         player.sendMessage("§6To add a data value to an item use §4:x§6 ex. §4wool:5§6 or §435:5");
+        player.sendMessage("§3To add enchantments to an item use §4:enchantment§3 ex. §4bow:arrow_fire§3 or §4bow:arrow_fire&arrow_unlimited");
+        player.sendMessage("§3Enchantment levels can be added as follows §4bow:arrow_fire(2)");
         player.sendMessage("§5If Item is not specified then the item you are holding will be used");
         player.sendMessage("§5If Percent is not specified then the percent will be 100%");
         player.sendMessage("§2/"+command+" add (Name) (coll[1-5]) (Amount) (Item) (x%)§b add item that may be looted");
@@ -1226,6 +1270,49 @@ public class PhatLootsCommand implements CommandExecutor {
     }
     
     /**
+     * Retrieves an Enchantment from the given string
+     * 
+     * @param player The Player that will receive error messages
+     * @param string The String that contains the item
+     */
+    public static Map<Enchantment, Integer> getEnchantments(Player player, String string) {
+        if (!string.contains(":"))
+            return null;
+        
+        string = string.substring(string.indexOf(':') + 1);
+        Map<Enchantment, Integer> enchantments = new HashMap<Enchantment, Integer>();
+        
+        try {
+            for (String split: string.split("&")) {
+                Enchantment enchantment = null;
+                int level = -1;
+
+                if (split.contains("(")) {
+                    int index = split.indexOf('(');
+                    level = Integer.parseInt(split.substring(index + 1, split.length() - 1));
+                    split = split.substring(0, index);
+                }
+
+                for (Enchantment enchant: Enchantment.values())
+                    if (enchant.getName().equalsIgnoreCase(split))
+                        enchantment = enchant;
+
+                if (level < enchantment.getStartLevel())
+                    level = enchantment.getStartLevel();
+                else if (level > enchantment.getMaxLevel())
+                    level = enchantment.getMaxLevel();
+
+                enchantments.put(enchantment, level);
+            }
+        }
+        catch (Exception notEnchantment) {
+            return null;
+        }
+        
+        return enchantments;
+    }
+    
+    /**
      * Retrieves a short value from the given string
      * 
      * @param player The Player that will receive error messages
@@ -1235,7 +1322,7 @@ public class PhatLootsCommand implements CommandExecutor {
         if (!string.contains(":"))
             return 0;
         
-        string = string.substring(string.indexOf(':'));
+        string = string.substring(string.indexOf(':') + 1);
         short data;
         
         try {
@@ -1243,7 +1330,7 @@ public class PhatLootsCommand implements CommandExecutor {
         }
         catch (Exception notShort) {
             if (player != null)
-                player.sendMessage(string+" is not a valid data value");
+                player.sendMessage(string+" is not a valid enchantment or data value");
             return -1;
         }
         
