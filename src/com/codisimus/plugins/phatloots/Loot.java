@@ -81,9 +81,9 @@ public class Loot {
     }
     
     /**
-     * Returns the info of this Loot as a String
+     * Returns the Enchantments of this Loot as a String
      * 
-     * @return The String representation of this Loot
+     * @return The String representation of this Loot's Enchantments
      */
     public String enchantmentsToString() {
         Map<Enchantment, Integer> enchantments = item.getEnchantments();
@@ -100,6 +100,7 @@ public class Loot {
     
     /**
      * Returns the info of this Loot as a String
+     * This String is user friendly
      * 
      * @return The String representation of this Loot
      */
@@ -115,7 +116,8 @@ public class Loot {
     
     /**
      * Returns the String representation of this Loot
-     * The format of the returned String is MaterialID'Durability'Amount'Probability
+     * The format for a Loot with Enchantments is MaterialID'Enchantment1(level)&Enchantment2(level)...'Amount'Probability
+     * The format for a Loot without Enchantments is MaterialID'Durability'Amount'Probability
      * 
      * @return The String representation of this Loot
      */

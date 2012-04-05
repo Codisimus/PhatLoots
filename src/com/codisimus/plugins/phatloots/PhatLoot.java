@@ -63,7 +63,7 @@ public class PhatLoot {
      * @param player The Player who is looting
      * @param block The Block being looted
      */
-    public void getLoot(Player player, PhatLootChest chest) {
+    public void getLoot(Player player, PhatLootChest chest, Inventory inventory) {
         //Get the user to be looked up for last time of use
         String user = player.getName();
         if (global)
@@ -79,7 +79,7 @@ public class PhatLoot {
         //Display remaining time if it is not 
         if (!timeRemaining.equals("0")) {
             if (PhatLoots.displayTimeRemaining)
-                player.sendMessage(PhatLootsMessages.timeRemaining.replaceAll("<time>", timeRemaining));
+                player.sendMessage(PhatLootsMessages.timeRemaining.replace("<time>", timeRemaining));
             
             return;
         }
@@ -113,10 +113,10 @@ public class PhatLoot {
             PhatLoots.server.dispatchCommand(cs, cmd.replace("<player>", player.getName()));
         
         //Give individual loots
-        lootIndividual(player, chest);
+        lootIndividual(player, chest, inventory);
         
         //Give collective loots
-        lootCollective(player, chest);
+        lootCollective(player, chest, inventory);
         
         //Set the new time for the User and return true
         setTime(chest, user);
@@ -219,11 +219,11 @@ public class PhatLoot {
      * @param player The Player looting
      * @param block The Block being looted
      */
-    public void lootIndividual(Player player, PhatLootChest phatLootChest) {
+    public void lootIndividual(Player player, PhatLootChest phatLootChest, Inventory inventory) {
         for (Loot loot: loots[0])
             //Roll for item
             if (PhatLoots.random.nextInt(100) + PhatLoots.random.nextDouble() < loot.getProbability())
-                lootItem(loot.getItem(), player, phatLootChest);
+                lootItem(loot.getItem(), player, phatLootChest, inventory);
     }
 
     /**
@@ -233,7 +233,7 @@ public class PhatLoot {
      * @param collectiveLoots The String that contains the items and percentages
      * @param block The Block being looted
      */
-    public void lootCollective(Player player, PhatLootChest phatLootChest) {
+    public void lootCollective(Player player, PhatLootChest phatLootChest, Inventory inventory) {
         //Loot from each of the 5 collective loots
         for (int i = 1 ; i <= 5; i++) {
             
@@ -258,7 +258,7 @@ public class PhatLoot {
                     //Loot the specified number of items
                     for (int numberLooted = 0; numberLooted < numberCollectiveLoots; numberLooted++)
                         //Generate a random int to determine the index of the array that holds the Loot
-                        lootItem(collLoots[PhatLoots.random.nextInt(100)].getItem(), player, phatLootChest);
+                        lootItem(collLoots[PhatLoots.random.nextInt(100)].getItem(), player, phatLootChest, inventory);
                 }
             }
                 
@@ -272,15 +272,15 @@ public class PhatLoot {
      * @param collectiveLoots The String that contains the items and percentages
      * @param block The Block being looted
      */
-    public void lootItem(ItemStack item, Player player, PhatLootChest phatLootChest) {
+    public void lootItem(ItemStack item, Player player, PhatLootChest phatLootChest, Inventory inventory) {
         //Make sure loots do not excede the stack size
         if (item.getAmount() > item.getMaxStackSize()) {
             int id = item.getTypeId();
             short durability = item.getDurability();
             byte data = item.getData().getData();
             
-            lootItem(new ItemStack(id, item.getMaxStackSize(), durability, data), player, phatLootChest);
-            lootItem(new ItemStack(id, item.getAmount() - item.getMaxStackSize(), durability, data), player, phatLootChest);
+            lootItem(new ItemStack(id, item.getMaxStackSize(), durability, data), player, phatLootChest, inventory);
+            lootItem(new ItemStack(id, item.getAmount() - item.getMaxStackSize(), durability, data), player, phatLootChest, inventory);
         }
         
         PlayerInventory sack = player.getInventory();
@@ -288,24 +288,27 @@ public class PhatLoot {
         if (phatLootChest.isDispenser) {
             //Add the item to the Dispenser inventory
             Dispenser dispenser = phatLootChest.getDispenser();
-            phatLootChest.clear();
-            phatLootChest.inventory.addItem(item);
+            /* fix*/
+            inventory.addItem(item);
 
             //Dispense until the Dispenser is empty
-            while (phatLootChest.inventory.firstEmpty() > 0)
+            while (inventory.firstEmpty() > 0)
                 dispenser.dispense();
         }
         else if (PhatLoots.autoLoot && sack.firstEmpty() != -1) {
             //Add the Loot to the Player's Inventory
-            player.sendMessage(PhatLootsMessages.autoLoot.replaceAll("<item>", item.getType().name()));
+            player.sendMessage(PhatLootsMessages.autoLoot.replace("<item>", item.getType().name()));
             sack.addItem(item);
         }
         else {
             //Add the Loot to the Chest's Inventory
-            if (phatLootChest.inventory.firstEmpty() != -1)
-                phatLootChest.inventory.addItem(item);
-            else
-                phatLootChest.overFlow(item, player);
+            if (inventory.firstEmpty() != -1)
+                inventory.addItem(item);
+            else {
+                player.getWorld().dropItemNaturally(player.getLocation(), item);
+                if (player != null)
+                    player.sendMessage(PhatLootsMessages.overflow.replace("<item>", item.getType().name()));
+            }
         }
     }
     
@@ -386,7 +389,7 @@ public class PhatLoot {
                 if (lower == -1 || upper == -1)
                     throw new Exception();
                 
-                Map<Enchantment, Integer> enchantments = PhatLootsCommand.getEnchantments(null, ":"+lootData[1]);
+                Map<Enchantment, Integer> enchantments = PhatLootsCommand.getEnchantments(":"+lootData[1]);
                 
                 if (enchantments == null)
                     loots[id].add(new Loot(Integer.parseInt(lootData[0]), Short.parseShort(lootData[1]),

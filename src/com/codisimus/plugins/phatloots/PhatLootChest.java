@@ -17,7 +17,6 @@ import org.bukkit.inventory.ItemStack;
  */
 public class PhatLootChest {
     private Block block;
-    public Inventory inventory;
     public boolean isDispenser;
     public HashMap<String, int[]> users = new HashMap<String, int[]>(); //A map of each Player that loots the Chest {PlayerName=TimeActivated}
 
@@ -28,7 +27,6 @@ public class PhatLootChest {
      */
     public PhatLootChest (Block block) {
         this.block = block;
-        inventory = ((InventoryHolder)block.getState()).getInventory();
         isDispenser = block.getTypeId() == 23;
     }
     
@@ -42,7 +40,6 @@ public class PhatLootChest {
      */
     public PhatLootChest (String world, int x, int y, int z) {
         block = PhatLoots.server.getWorld(world).getBlockAt(x, y, z);
-        inventory = ((InventoryHolder)block.getState()).getInventory();
         isDispenser = block.getTypeId() == 23;
     }
     
@@ -65,15 +62,6 @@ public class PhatLootChest {
         if (isDispenser)
             return (Dispenser)block.getState();
         return null;
-    }
-    
-    /**
-     * Clears all items from the Chest's Inventory
-     * 
-     */
-    public void clear() {
-        inventory.clear();
-        ((Chest)block.getState()).update();
     }
     
     /**
@@ -102,9 +90,7 @@ public class PhatLootChest {
      * @param player The Player (if any) that will be informed of the drop
      */
     public void overFlow(ItemStack item, Player player) {
-        block.getWorld().dropItemNaturally(block.getLocation(), item);
-        if (player != null)
-            player.sendMessage(PhatLootsMessages.overflow.replaceAll("<item>", item.getType().name()));
+        
     }
 
     /**

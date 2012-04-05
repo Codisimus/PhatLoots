@@ -2,11 +2,15 @@ package com.codisimus.plugins.phatloots;
 
 import java.util.HashMap;
 import org.bukkit.block.Block;
+import org.bukkit.block.Chest;
+import org.bukkit.block.Dispenser;
+import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.DoubleChestInventory;
 import org.bukkit.inventory.Inventory;
@@ -18,70 +22,53 @@ import org.bukkit.inventory.InventoryHolder;
  * @author Codisimus
  */
 public class PhatLootsListener implements Listener {
-    static HashMap<Inventory, Player> LastUser = new HashMap<Inventory, Player>();
+    private static HashMap<Player, Inventory> inventories = new HashMap<Player, Inventory>();
 
     /**
      * Checks if a Player loots a PhatLootChest
      * 
      * @param event The PlayerInteractEvent that occurred
      */
-    @EventHandler
-    public void onPlayerInteract (PlayerInteractEvent event) {
+    //@EventHandler
+    public void onInventoryOpen(InventoryOpenEvent event) {
+        //Return if the Event was cancelled
         if (event.isCancelled())
             return;
         
-        Block block = event.getClickedBlock();
+        //Return if the Chest opener was not a Player
+        HumanEntity chestOpener = (Player)event.getPlayer();
+        if (!(chestOpener instanceof Player))
+            return;
+        Player player = (Player)chestOpener;
         
-        //Return unless a Chest was opened or a Dispenser was punched
-        switch (block.getType()) {
-            case CHEST:
-                if (event.getAction().equals(Action.RIGHT_CLICK_BLOCK))
-                    break;
-                
-                return;
-                
-            case DISPENSER:
-                if (event.getAction().equals(Action.LEFT_CLICK_BLOCK))
-                    break;
-                
-                return;
-                
-            default: return;
-        }
+        //We only care about the left side because that is the Block that would be linked
+        Inventory inventory = event.getInventory();
+        if (inventory instanceof DoubleChestInventory)
+            inventory = ((DoubleChestInventory)inventory).getLeftSide();
+        else return;
+        //Return if the Inventory is not from a Chest
+        InventoryHolder holder = inventory.getHolder();
+        if (!(holder instanceof Chest))
+            return;
         
+        //Retrieve the Block of the Inventory
+        Block block = ((Chest)holder).getBlock();
+        
+        //Return if the Chest is not a PhatLootChest
         if (!isPhatLootChest(block))
             return;
         
-        Player player = event.getPlayer();
-        boolean clear = false;
-        
-        //Check if the Block is a Chest
-        if (block.getTypeId() == 54) {
-            Player chestOpener = event.getPlayer();
-            
-            InventoryHolder chest = (InventoryHolder)block.getState();
-            Inventory inventory = chest.getInventory();
-            if (inventory instanceof DoubleChestInventory) {
-                if (!((DoubleChestInventory)inventory).getLeftSide().getViewers().isEmpty()) {
-                    event.setCancelled(true);
-                    chestOpener.sendMessage(PhatLootsMessages.inUse);
-                    return;
-                }
-            }
-            else if (!inventory.getViewers().isEmpty()) {
-                event.setCancelled(true);
-                chestOpener.sendMessage(PhatLootsMessages.inUse);
-                return;
-            }
-            
-            //Clear the Chest if a new Player opened it
-            //if (!LastUser.containsKey(inventory))
-                //block = PhatLoots.getOtherHalf(block);
-            if (!LastUser.containsKey(inventory) || !LastUser.get(inventory).equals(player))
-                clear = true;
-            
-            LastUser.put(inventory, player);
+        //Grab the custom Inventory belonging to the Player
+        inventory = inventories.get(player);
+        if (inventory == null) {
+            //Create a new Inventory for the Player
+            inventory = PhatLoots.server.createInventory(((DoubleChestInventory)inventory).getRightSide().getHolder(), event.getInventory().getSize(), "Loot!");
+            inventories.put(player, inventory);
         }
+        
+        //Swap the Inventories
+        player.closeInventory();
+        player.openInventory(inventory);
         
         //Return if the Player does not have permission to receive loots
         if (!PhatLoots.hasPermission(player, "use")) {
@@ -93,12 +80,87 @@ public class PhatLootsListener implements Listener {
             PhatLootChest chest = phatLoot.findChest(block);
             
             if (chest != null) {
-                if (clear) {
-                    chest.clear();
-                    clear = false;
+                phatLoot.getLoot(player, chest, inventory);
+                phatLoot.save();
+            }
+        }
+    }
+    
+    /**
+     * Checks if a Player loots a PhatLootChest
+     * 
+     * @param event The PlayerInteractEvent that occurred
+     */
+    @EventHandler
+    public void onPlayerInteract (PlayerInteractEvent event) {
+        //Return if the Event was cancelled
+        if (event.isCancelled())
+            return;
+        
+        Player player = event.getPlayer();
+        Inventory inventory;
+        Block block = event.getClickedBlock();
+        switch (block.getType()) {
+            case DISPENSER:
+                //Return if the Dispenser was not punched
+                if (!event.getAction().equals(Action.LEFT_CLICK_BLOCK))
+                    return;
+
+                //Return if the Dispenser is not a PhatLootChest
+                if (!isPhatLootChest(block))
+                    return;
+
+                //Return if the Player does not have permission to receive loots
+                if (!PhatLoots.hasPermission(player, "use")) {
+                    player.sendMessage("You do not have permission to receive loots.");
+                    return;
                 }
                 
-                phatLoot.getLoot(player, chest);
+                Dispenser dispenser = (Dispenser)block.getState();
+                inventory = dispenser.getInventory();
+                
+                break;
+                
+            case CHEST:
+                //Return if the Chest was not opened
+                if (!event.getAction().equals(Action.RIGHT_CLICK_BLOCK))
+                    return;
+
+                //Return if the Chest is not a PhatLootChest
+                if (!isPhatLootChest(block))
+                    return;
+                
+                //Grab the custom Inventory belonging to the Player
+                inventory = inventories.get(player);
+                if (inventory == null) {
+                    //Create a new Inventory for the Player
+                    Chest chest = (Chest)block.getState();
+                    int size = chest.getBlockInventory().getHolder().getInventory().getSize();
+                    inventory = PhatLoots.server.createInventory(chest, size, "Loot!");
+                    inventories.put(player, inventory);
+                }
+
+                //Swap the Inventories
+                event.setCancelled(true);
+                player.openInventory(inventory);
+
+                //Return if the Player does not have permission to receive loots
+                if (!PhatLoots.hasPermission(player, "use")) {
+                    player.sendMessage("You do not have permission to receive loots.");
+                    return;
+                }
+                
+                break;
+                
+            default: return;
+        }
+        
+        
+        for (PhatLoot phatLoot: PhatLoots.getPhatLoots()) {
+            PhatLootChest chest = phatLoot.findChest(block);
+            
+            if (chest != null) {
+                phatLoot.getLoot(player, chest, inventory);
                 phatLoot.save();
             }
         }
@@ -110,7 +172,7 @@ public class PhatLootsListener implements Listener {
      * @param event The BlockBreakEvent that occurred
      */
     @EventHandler
-    public void onBlockBreak (BlockBreakEvent event) {
+    public void onBlockBreak(BlockBreakEvent event) {
         if (event.isCancelled())
             return;
         
