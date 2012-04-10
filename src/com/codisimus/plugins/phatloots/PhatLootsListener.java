@@ -15,6 +15,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.DoubleChestInventory;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
+import org.bukkit.plugin.java.JavaPlugin;
 
 /**
  * Listens for interactions with PhatLootChests
@@ -22,7 +23,7 @@ import org.bukkit.inventory.InventoryHolder;
  * @author Codisimus
  */
 public class PhatLootsListener implements Listener {
-    private static HashMap<Player, Inventory> inventories = new HashMap<Player, Inventory>();
+    private static HashMap<Player, ForgettableInventory> inventories = new HashMap<Player, ForgettableInventory>();
 
     /**
      * Checks if a Player loots a PhatLootChest
@@ -59,12 +60,28 @@ public class PhatLootsListener implements Listener {
             return;
         
         //Grab the custom Inventory belonging to the Player
-        inventory = inventories.get(player);
+        ForgettableInventory fInventory = inventories.get(player);
+        if(fInventory == null) {
+            inventory = null;
+        }
+        else {
+        	inventory = fInventory.getInventory();
+        }
         if (inventory == null) {
             //Create a new Inventory for the Player
             inventory = PhatLoots.server.createInventory(((DoubleChestInventory)inventory).getRightSide().getHolder(), event.getInventory().getSize(), "Loot!");
-            inventories.put(player, inventory);
+            fInventory = new ForgettableInventory(PhatLoots.pm.getPlugin("PhatLoots"), 600L) {
+				
+				@Override
+				protected void execute() {
+					inventories.remove(player);
+				}
+			};
+            inventories.put(player, fInventory);
         }
+        
+        fInventory.cancel();
+        fInventory.schedule();
         
         //Swap the Inventories
         player.closeInventory();
@@ -215,5 +232,53 @@ public class PhatLootsListener implements Listener {
                     return true;
         
         return false;
+    }
+    
+    
+    public abstract class ForgettableInventory implements Runnable {
+    	
+    	private JavaPlugin plugin;
+    	private long delay;
+    	private int taskId;
+    	
+    	private Inventory inventory;
+
+    	public ForgettableInventory(JavaPlugin plugin, long delay, Inventory inventory) {
+    		this.plugin = plugin;
+    		this.delay = delay;
+    		this.taskId = 0;
+    		this.inventory = inventory;
+    	}
+    	
+    	/**
+    	 * @return the inventory
+    	 */
+    	public Inventory getInventory() {
+    		return inventory;
+    	}
+    	
+    	public void schedule() {
+    		cancel();
+    		taskId  = plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, this, delay);
+    	}
+    	
+    	public void cancel() {
+    		if(taskId != 0) {
+    			plugin.getServer().getScheduler().cancelTask(taskId);
+    			taskId = 0;
+    		}
+    	}
+
+    	@Override
+    	public void run() {
+    		cancel();
+    		execute();
+    	}
+
+    	
+    	protected abstract void execute();
+
+    	
+
     }
 }
