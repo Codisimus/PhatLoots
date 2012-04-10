@@ -6,6 +6,7 @@ package com.codisimus.plugins.phatloots;
  * @author Codisimus
  */
 public class PhatLootsMessages {
+    static String permission = "You do not have permission to do that.";
     static String autoLoot;
     static String timeRemaining;
     static String inUse;

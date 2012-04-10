@@ -81,7 +81,7 @@ public class PhatLootsCommand implements CommandExecutor {
             case MAKE:
                 //Cancel if the Player does not have permission to use the command
                 if (!PhatLoots.hasPermission(player, "make")) {
-                    player.sendMessage("You do not have permission to do that.");
+                    player.sendMessage(PhatLootsMessages.permission);
                     return true;
                 }
                 
@@ -95,7 +95,7 @@ public class PhatLootsCommand implements CommandExecutor {
             case LINK:
                 //Cancel if the Player does not have permission to use the command
                 if (!PhatLoots.hasPermission(player, "make")) {
-                    player.sendMessage("You do not have permission to do that.");
+                    player.sendMessage(PhatLootsMessages.permission);
                     return true;
                 }
                 
@@ -109,7 +109,7 @@ public class PhatLootsCommand implements CommandExecutor {
             case UNLINK:
                 //Cancel if the Player does not have permission to use the command
                 if (!PhatLoots.hasPermission(player, "make")) {
-                    player.sendMessage("You do not have permission to do that.");
+                    player.sendMessage(PhatLootsMessages.permission);
                     return true;
                 }
                 
@@ -124,7 +124,7 @@ public class PhatLootsCommand implements CommandExecutor {
             case DELETE:
                 //Cancel if the Player does not have permission to use the command
                 if (!PhatLoots.hasPermission(player, "make")) {
-                    player.sendMessage("You do not have permission to do that.");
+                    player.sendMessage(PhatLootsMessages.permission);
                     return true;
                 }
                 
@@ -146,7 +146,7 @@ public class PhatLootsCommand implements CommandExecutor {
             case TIME:
                 //Cancel if the Player does not have permission to use the command
                 if (!PhatLoots.hasPermission(player, "make")) {
-                    player.sendMessage("You do not have permission to do that.");
+                    player.sendMessage(PhatLootsMessages.permission);
                     return true;
                 }
                 
@@ -194,7 +194,7 @@ public class PhatLootsCommand implements CommandExecutor {
             case GLOBAL:
                 //Cancel if the Player does not have permission to use the command
                 if (!PhatLoots.hasPermission(player, "make")) {
-                    player.sendMessage("You do not have permission to do that.");
+                    player.sendMessage(PhatLootsMessages.permission);
                     return true;
                 }
                 
@@ -226,7 +226,7 @@ public class PhatLootsCommand implements CommandExecutor {
             case ROUND:
                 //Cancel if the Player does not have permission to use the command
                 if (!PhatLoots.hasPermission(player, "make")) {
-                    player.sendMessage("You do not have permission to do that.");
+                    player.sendMessage(PhatLootsMessages.permission);
                     return true;
                 }
                 
@@ -259,7 +259,7 @@ public class PhatLootsCommand implements CommandExecutor {
             case ADD:
                 //Cancel if the Player does not have permission to use the command
                 if (!PhatLoots.hasPermission(player, "make")) {
-                    player.sendMessage("You do not have permission to do that.");
+                    player.sendMessage(PhatLootsMessages.permission);
                     return true;
                 }
                 
@@ -542,7 +542,7 @@ public class PhatLootsCommand implements CommandExecutor {
             case MONEY:
                 //Cancel if the Player does not have permission to use the command
                 if (!PhatLoots.hasPermission(player, "make")) {
-                    player.sendMessage("You do not have permission to do that.");
+                    player.sendMessage(PhatLootsMessages.permission);
                     return true;
                 }
                 
@@ -576,7 +576,7 @@ public class PhatLootsCommand implements CommandExecutor {
             case EXP:
                 //Cancel if the Player does not have permission to use the command
                 if (!PhatLoots.hasPermission(player, "make")) {
-                    player.sendMessage("You do not have permission to do that.");
+                    player.sendMessage(PhatLootsMessages.permission);
                     return true;
                 }
                 
@@ -595,7 +595,7 @@ public class PhatLootsCommand implements CommandExecutor {
             case LIST:
                 //Cancel if the Player does not have permission to use the command
                 if (!PhatLoots.hasPermission(player, "list")) {
-                    player.sendMessage("You do not have permission to do that.");
+                    player.sendMessage(PhatLootsMessages.permission);
                     return true;
                 }
                 
@@ -609,7 +609,7 @@ public class PhatLootsCommand implements CommandExecutor {
             case INFO:
                 //Cancel if the Player does not have permission to use the command
                 if (!PhatLoots.hasPermission(player, "info")) {
-                    player.sendMessage("You do not have permission to do that.");
+                    player.sendMessage(PhatLootsMessages.permission);
                     return true;
                 }
                 
@@ -622,7 +622,7 @@ public class PhatLootsCommand implements CommandExecutor {
             case RESET:
                 //Cancel if the Player does not have permission to use the command
                 if (!PhatLoots.hasPermission(player, "reset")) {
-                    player.sendMessage("You do not have permission to do that.");
+                    player.sendMessage(PhatLootsMessages.permission);
                     return true;
                 }
                 

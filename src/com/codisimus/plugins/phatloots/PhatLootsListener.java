@@ -197,7 +197,7 @@ public class PhatLootsListener implements Listener {
         
         //Cancel if the Block was not broken by an Admin
         if (!PhatLoots.hasPermission(player, "admin")) {
-            player.sendMessage("You do not have permission to do that");
+            player.sendMessage(PhatLootsMessages.permission);
             event.setCancelled(true);
         }
     }
