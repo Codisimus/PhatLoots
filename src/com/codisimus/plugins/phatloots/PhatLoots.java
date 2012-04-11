@@ -38,7 +38,7 @@ public class PhatLoots extends JavaPlugin {
     static boolean displayTimeRemaining;
     public static Random random = new Random();
     private static HashMap<String, PhatLoot> phatLoots = new HashMap<String, PhatLoot>();
-    static Plugin plugin;
+    static JavaPlugin plugin;
     private static String dataFolder;
 
     @Override

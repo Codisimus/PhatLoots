@@ -3,6 +3,7 @@ package com.codisimus.plugins.phatloots;
 import java.util.HashMap;
 import java.util.Iterator;
 import org.bukkit.block.Block;
+import org.bukkit.block.Chest;
 import org.bukkit.block.Dispenser;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -87,7 +88,9 @@ public class PhatLootChest {
      * @param player The Player (if any) that will be informed of the drop
      */
     public void overFlow(ItemStack item, Player player) {
-        
+        block.getWorld().dropItemNaturally(block.getLocation(), item);
+        if (player != null)
+            player.sendMessage(PhatLootsMessages.overflow.replaceAll("<item>", item.getType().name()));
     }
 
     /**

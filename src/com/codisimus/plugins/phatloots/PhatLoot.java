@@ -118,6 +118,10 @@ public class PhatLoot {
         //Give collective loots
         lootCollective(player, chest, inventory);
         
+        //Update the Chest View
+        if (!chest.isDispenser)
+            ((Chest)inventory.getHolder()).update();
+        
         //Set the new time for the User and return true
         setTime(chest, user);
     }
@@ -288,7 +292,7 @@ public class PhatLoot {
         if (phatLootChest.isDispenser) {
             //Add the item to the Dispenser inventory
             Dispenser dispenser = phatLootChest.getDispenser();
-            /* fix*/
+            /* fix */
             inventory.addItem(item);
 
             //Dispense until the Dispenser is empty
@@ -300,16 +304,12 @@ public class PhatLoot {
             player.sendMessage(PhatLootsMessages.autoLoot.replace("<item>", item.getType().name()));
             sack.addItem(item);
         }
-        else {
+        else
             //Add the Loot to the Chest's Inventory
             if (inventory.firstEmpty() != -1)
                 inventory.addItem(item);
-            else {
-                player.getWorld().dropItemNaturally(player.getLocation(), item);
-                if (player != null)
-                    player.sendMessage(PhatLootsMessages.overflow.replace("<item>", item.getType().name()));
-            }
-        }
+            else
+                phatLootChest.overFlow(item, player);
     }
     
     /**

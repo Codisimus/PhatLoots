@@ -10,11 +10,10 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
-import org.bukkit.event.inventory.InventoryOpenEvent;
+import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.DoubleChestInventory;
 import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.plugin.java.JavaPlugin;
 
 /**
@@ -23,93 +22,15 @@ import org.bukkit.plugin.java.JavaPlugin;
  * @author Codisimus
  */
 public class PhatLootsListener implements Listener {
-    private static HashMap<Player, ForgettableInventory> inventories = new HashMap<Player, ForgettableInventory>();
+    private static HashMap<String, ForgettableInventory> inventories = new HashMap<String, ForgettableInventory>();
 
     /**
      * Checks if a Player loots a PhatLootChest
      * 
      * @param event The PlayerInteractEvent that occurred
      */
-    //@EventHandler
-    public void onInventoryOpen(InventoryOpenEvent event) {
-        //Return if the Event was cancelled
-        if (event.isCancelled())
-            return;
-        
-        //Return if the Chest opener was not a Player
-        HumanEntity chestOpener = (Player)event.getPlayer();
-        if (!(chestOpener instanceof Player))
-            return;
-        Player player = (Player)chestOpener;
-        
-        //We only care about the left side because that is the Block that would be linked
-        Inventory inventory = event.getInventory();
-        if (inventory instanceof DoubleChestInventory)
-            inventory = ((DoubleChestInventory)inventory).getLeftSide();
-        else return;
-        //Return if the Inventory is not from a Chest
-        InventoryHolder holder = inventory.getHolder();
-        if (!(holder instanceof Chest))
-            return;
-        
-        //Retrieve the Block of the Inventory
-        Block block = ((Chest)holder).getBlock();
-        
-        //Return if the Chest is not a PhatLootChest
-        if (!isPhatLootChest(block))
-            return;
-        
-        //Grab the custom Inventory belonging to the Player
-        ForgettableInventory fInventory = inventories.get(player);
-        if(fInventory == null) {
-            inventory = null;
-        }
-        else {
-        	inventory = fInventory.getInventory();
-        }
-        if (inventory == null) {
-            //Create a new Inventory for the Player
-            inventory = PhatLoots.server.createInventory(((DoubleChestInventory)inventory).getRightSide().getHolder(), event.getInventory().getSize(), "Loot!");
-            fInventory = new ForgettableInventory(PhatLoots.pm.getPlugin("PhatLoots"), 600L) {
-				
-				@Override
-				protected void execute() {
-					inventories.remove(player);
-				}
-			};
-            inventories.put(player, fInventory);
-        }
-        
-        fInventory.cancel();
-        fInventory.schedule();
-        
-        //Swap the Inventories
-        player.closeInventory();
-        player.openInventory(inventory);
-        
-        //Return if the Player does not have permission to receive loots
-        if (!PhatLoots.hasPermission(player, "use")) {
-            player.sendMessage("You do not have permission to receive loots.");
-            return;
-        }
-        
-        for (PhatLoot phatLoot: PhatLoots.getPhatLoots()) {
-            PhatLootChest chest = phatLoot.findChest(block);
-            
-            if (chest != null) {
-                phatLoot.getLoot(player, chest, inventory);
-                phatLoot.save();
-            }
-        }
-    }
-    
-    /**
-     * Checks if a Player loots a PhatLootChest
-     * 
-     * @param event The PlayerInteractEvent that occurred
-     */
     @EventHandler
-    public void onPlayerInteract (PlayerInteractEvent event) {
+    public void onPlayerInteract(PlayerInteractEvent event) {
         //Return if the Event was cancelled
         if (event.isCancelled())
             return;
@@ -143,19 +64,40 @@ public class PhatLootsListener implements Listener {
                 if (!event.getAction().equals(Action.RIGHT_CLICK_BLOCK))
                     return;
 
+                Chest chest = (Chest)block.getState();
+                inventory = chest.getInventory();
+                
+                //We only care about the left side because that is the Block that would be linked
+                if (inventory instanceof DoubleChestInventory) {
+                    chest = (Chest)((DoubleChestInventory)inventory).getLeftSide().getHolder();
+                    block = chest.getBlock();
+                }
+                
                 //Return if the Chest is not a PhatLootChest
                 if (!isPhatLootChest(block))
                     return;
                 
+                //Create the custom key using the Player Name and Block location
+                final String KEY = player.getName()+"@"+block.getLocation().toString();
+                
                 //Grab the custom Inventory belonging to the Player
-                inventory = inventories.get(player);
-                if (inventory == null) {
+                ForgettableInventory fInventory = inventories.get(KEY);
+                if (fInventory != null)
+                    inventory = fInventory.getInventory();
+                else {
                     //Create a new Inventory for the Player
-                    Chest chest = (Chest)block.getState();
-                    int size = chest.getBlockInventory().getHolder().getInventory().getSize();
-                    inventory = PhatLoots.server.createInventory(chest, size, "Loot!");
-                    inventories.put(player, inventory);
+                    inventory = PhatLoots.server.createInventory(chest, inventory.getSize(), "PhatLoots!");
+                    fInventory = new ForgettableInventory(PhatLoots.plugin, 600L, inventory) {
+                        @Override
+                        protected void execute() {
+                            inventories.remove(KEY);
+                        }
+                    };
+                    inventories.put(KEY, fInventory);
                 }
+                
+                //Forget the Inventory in the scheduled time
+                fInventory.schedule();
 
                 //Swap the Inventories
                 event.setCancelled(true);
@@ -181,6 +123,40 @@ public class PhatLootsListener implements Listener {
                 phatLoot.save();
             }
         }
+    }
+    
+    /**
+     * Checks if a Player loots a PhatLootChest
+     * 
+     * @param event The PlayerInteractEvent that occurred
+     */
+    @EventHandler
+    public void onInventoryClose(InventoryCloseEvent event) {
+        //Return if it was not a PhatLoots Inventory
+        Inventory inventory = event.getInventory();
+        if (!inventory.getName().equals("PhatLoots!"))
+            return;
+        
+        Chest chest = (Chest)event.getInventory().getHolder();
+        
+        //Create the custom key using the Player Name and Block location
+        final String KEY = event.getPlayer().getName()+"@"+chest.getBlock().getLocation().toString();
+        
+        //Grab the custom Inventory belonging to the Player
+        ForgettableInventory fInventory = inventories.get(KEY);
+        if (fInventory == null) { //Inventory lost (perhaps due to Server rl or the Player had the Inventory open for over the scheduled timee)
+            //Save the Inventory for the Player
+            fInventory = new ForgettableInventory(PhatLoots.plugin, 600L, inventory) {
+                @Override
+                protected void execute() {
+                    inventories.remove(KEY);
+                }
+            };
+            inventories.put(KEY, fInventory);
+        }
+
+        //Forget the Inventory in the scheduled time
+        fInventory.schedule();
     }
     
     /**
@@ -234,9 +210,7 @@ public class PhatLootsListener implements Listener {
         return false;
     }
     
-    
     public abstract class ForgettableInventory implements Runnable {
-    	
     	private JavaPlugin plugin;
     	private long delay;
     	private int taskId;
@@ -244,41 +218,37 @@ public class PhatLootsListener implements Listener {
     	private Inventory inventory;
 
     	public ForgettableInventory(JavaPlugin plugin, long delay, Inventory inventory) {
-    		this.plugin = plugin;
-    		this.delay = delay;
-    		this.taskId = 0;
-    		this.inventory = inventory;
+            this.plugin = plugin;
+            this.delay = delay;
+            this.taskId = 0;
+            this.inventory = inventory;
     	}
     	
     	/**
     	 * @return the inventory
     	 */
     	public Inventory getInventory() {
-    		return inventory;
+            return inventory;
     	}
     	
     	public void schedule() {
-    		cancel();
-    		taskId  = plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, this, delay);
+            cancel();
+            taskId  = plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, this, delay);
     	}
     	
     	public void cancel() {
-    		if(taskId != 0) {
-    			plugin.getServer().getScheduler().cancelTask(taskId);
-    			taskId = 0;
-    		}
+            if (taskId != 0) {
+                plugin.getServer().getScheduler().cancelTask(taskId);
+                taskId = 0;
+            }
     	}
 
     	@Override
     	public void run() {
-    		cancel();
-    		execute();
+            cancel();
+            execute();
     	}
 
-    	
     	protected abstract void execute();
-
-    	
-
     }
 }
