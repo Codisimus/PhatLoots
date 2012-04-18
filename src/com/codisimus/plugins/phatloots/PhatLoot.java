@@ -122,6 +122,9 @@ public class PhatLoot {
         if (!chest.isDispenser)
             ((Chest)inventory.getHolder()).update();
         
+        if (PhatLoots.autoLoot)
+            player.closeInventory();
+        
         //Set the new time for the User and return true
         setTime(chest, user);
     }

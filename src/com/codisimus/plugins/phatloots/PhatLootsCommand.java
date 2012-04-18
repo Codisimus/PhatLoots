@@ -1180,7 +1180,7 @@ public class PhatLootsCommand implements CommandExecutor {
         
         int id = 0;
         try {
-            id = string.charAt(4);
+            id = Integer.parseInt(string.substring(4));
         }
         catch (Exception ex) {
         }
