@@ -9,6 +9,7 @@ import org.bukkit.block.Dispenser;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 
@@ -84,6 +85,9 @@ public class PhatLoot {
             return;
         }
         
+        //Reset(Clear) the Inventory
+        inventory.clear();
+        
         //Roll for money amount if the range is above 0
         if (moneyUpper > 0) {
             int amount = PhatLoots.random.nextInt((moneyUpper + 1) - moneyLower);
@@ -119,8 +123,9 @@ public class PhatLoot {
         lootCollective(player, chest, inventory);
         
         //Update the Chest View
-        if (!chest.isDispenser)
-            ((Chest)inventory.getHolder()).update();
+        InventoryHolder holder = inventory.getHolder();
+        if (holder instanceof Chest)
+            ((Chest)holder).update();
         
         if (PhatLoots.autoLoot)
             player.closeInventory();

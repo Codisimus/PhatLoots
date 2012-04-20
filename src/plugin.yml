@@ -1,6 +1,6 @@
 name: PhatLoots
 main: com.codisimus.plugins.phatloots.PhatLoots
-version: 1.8.1
+version: 1.8.2
 author: Codisimus
 website: www.codisimus.com
 description: Chests with randomly generated money/items
@@ -15,6 +15,9 @@ permissions:
   phatloots.use:
     default: true
     description: Needed to receive loots
+  phatloots.commandloot:
+    default: op
+    description: Needed to receive loots through command
   phatloots.make:
     default: op
     description: Needed to make a PhatLoot (/loot make, /loot delete, /loot link, /loot unlink, /loot add, /loot remove, /loot money, /loot time, /loot type)

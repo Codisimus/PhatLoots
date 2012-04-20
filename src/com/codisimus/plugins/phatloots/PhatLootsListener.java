@@ -4,7 +4,6 @@ import java.util.HashMap;
 import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
 import org.bukkit.block.Dispenser;
-import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -14,7 +13,7 @@ import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.DoubleChestInventory;
 import org.bukkit.inventory.Inventory;
-import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.inventory.InventoryHolder;
 
 /**
  * Listens for interactions with PhatLootChests
@@ -114,7 +113,6 @@ public class PhatLootsListener implements Listener {
             default: return;
         }
         
-        
         for (PhatLoot phatLoot: PhatLoots.getPhatLoots()) {
             PhatLootChest chest = phatLoot.findChest(block);
             
@@ -132,12 +130,16 @@ public class PhatLootsListener implements Listener {
      */
     @EventHandler
     public void onInventoryClose(InventoryCloseEvent event) {
+        InventoryHolder holder = event.getInventory().getHolder();
+        if (!(holder instanceof Chest))
+            return;
+        
         //Return if it was not a PhatLoots Inventory
         Inventory inventory = event.getInventory();
         if (!inventory.getName().equals("PhatLoots!"))
             return;
         
-        Chest chest = (Chest)event.getInventory().getHolder();
+        Chest chest = (Chest)holder;
         
         //Create the custom key using the Player Name and Block location
         final String KEY = event.getPlayer().getName()+"@"+chest.getBlock().getLocation().toString();
@@ -208,47 +210,5 @@ public class PhatLootsListener implements Listener {
                     return true;
         
         return false;
-    }
-    
-    public abstract class ForgettableInventory implements Runnable {
-    	private JavaPlugin plugin;
-    	private long delay;
-    	private int taskId;
-    	
-    	private Inventory inventory;
-
-    	public ForgettableInventory(JavaPlugin plugin, long delay, Inventory inventory) {
-            this.plugin = plugin;
-            this.delay = delay;
-            this.taskId = 0;
-            this.inventory = inventory;
-    	}
-    	
-    	/**
-    	 * @return the inventory
-    	 */
-    	public Inventory getInventory() {
-            return inventory;
-    	}
-    	
-    	public void schedule() {
-            cancel();
-            taskId  = plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, this, delay);
-    	}
-    	
-    	public void cancel() {
-            if (taskId != 0) {
-                plugin.getServer().getScheduler().cancelTask(taskId);
-                taskId = 0;
-            }
-    	}
-
-    	@Override
-    	public void run() {
-            cancel();
-            execute();
-    	}
-
-    	protected abstract void execute();
     }
 }

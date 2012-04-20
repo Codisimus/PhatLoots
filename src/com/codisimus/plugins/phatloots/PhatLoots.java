@@ -425,7 +425,7 @@ public class PhatLoots extends JavaPlugin {
 
             //Write the PhatLoot Properties to file
             FileOutputStream fos = new FileOutputStream(dataFolder+"/PhatLoots/"+phatLoot.name+".properties");
-            p.store(new FileOutputStream(dataFolder+"/PhatLoots/"+phatLoot.name+".properties"), null);
+            p.store(fos, null);
             fos.close();
         }
         catch (Exception saveFailed) {

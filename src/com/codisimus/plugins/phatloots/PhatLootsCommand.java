@@ -14,6 +14,7 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
 /**
@@ -71,8 +72,26 @@ public class PhatLootsCommand implements CommandExecutor {
         try {
             action = Action.valueOf(args[0].toUpperCase());
         }
-        catch (Exception notEnum) {
-            sendHelp(player);
+        catch (IllegalArgumentException notEnum) {
+            //Cancel if the first argument is not a valid PhatLoot
+            PhatLoot phatLoot = PhatLoots.getPhatLoot(args[0]);
+            if (phatLoot == null) {
+                player.sendMessage("PhatLoot "+args[0]+" does not exist");
+                return true;
+            }
+
+            //Cancel if the Player does not have the needed permission
+            if (!PhatLoots.hasPermission(player, "commandloot")) {
+                player.sendMessage("You do not have permission to do that");
+                return true;
+            }
+            
+            Inventory inventory = PhatLoots.server.createInventory(player, 54, "PhatLoots!");
+            
+            //Open the Inventory
+            player.openInventory(inventory);
+
+            phatLoot.getLoot(player, new PhatLootChest(player.getLocation().getBlock()), inventory);
             return true;
         }
         
@@ -1058,6 +1077,7 @@ public class PhatLootsCommand implements CommandExecutor {
      */
     private static void sendHelp(Player player) {
         player.sendMessage("§e     PhatLoots Help Page:");
+        player.sendMessage("§2/"+command+" [Name]§b Loot a virtual Chest for the given PhatLoot");
         player.sendMessage("§2/"+command+" list§b List all PhatLoots");
         player.sendMessage("§2/"+command+" info (Name)§b List info of PhatLoot");
         player.sendMessage("§2/"+command+" reset§b Reset looted times for target Block");
