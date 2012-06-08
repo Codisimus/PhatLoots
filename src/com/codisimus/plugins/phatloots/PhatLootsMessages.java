@@ -9,7 +9,6 @@ public class PhatLootsMessages {
     static String permission = "You do not have permission to do that.";
     static String autoLoot;
     static String timeRemaining;
-    static String inUse;
     static String overflow;
     
     /**
@@ -19,7 +18,6 @@ public class PhatLootsMessages {
     static void formatAll() {
         autoLoot = format(autoLoot);
         timeRemaining = format(timeRemaining);
-        inUse = format(inUse);
         overflow = format(overflow);
     }
     

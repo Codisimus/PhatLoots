@@ -743,7 +743,7 @@ public class PhatLootsCommand implements CommandExecutor {
         
         PhatLoot phatLoot = PhatLoots.getPhatLoot(name);
         
-        phatLoot.chests.add(new PhatLootChest(block));
+        phatLoot.addChest(block);
         player.sendMessage("Target Block has been linked to PhatLoot "+name+"!");
         phatLoot.save();
     }
@@ -757,7 +757,7 @@ public class PhatLootsCommand implements CommandExecutor {
         Block block = player.getTargetBlock(TRANSPARENT, 10);
         
         for (PhatLoot phatLoot: getPhatLoots(player, name)) {
-            phatLoot.chests.remove(phatLoot.findChest(block));
+            phatLoot.removeChest(block);
             player.sendMessage("Target Block has been unlinked from PhatLoot "+phatLoot.name+"!");
             phatLoot.save();
         }
@@ -795,11 +795,13 @@ public class PhatLootsCommand implements CommandExecutor {
      */
     public static void global(Player player, String name, boolean global) {
         for (PhatLoot phatLoot: getPhatLoots(player, name)) {
-            phatLoot.global = global;
+            if (phatLoot.global != global) {
+                phatLoot.global = global;
+                phatLoot.reset(null);
 
-            player.sendMessage("PhatLoot "+phatLoot.name+" has been set to "+
-                    (global ? "global" : "individual")+" reset!");
-            phatLoot.save();
+                player.sendMessage("PhatLoot "+phatLoot.name+" has been set to "+
+                        (global ? "global" : "individual")+" reset!");
+            }
         }
     }
     

@@ -1,15 +1,11 @@
 package com.codisimus.plugins.phatloots;
 
-import java.util.Calendar;
-import java.util.LinkedList;
-import java.util.Map;
+import java.util.*;
 import org.bukkit.block.Block;
-import org.bukkit.block.Chest;
 import org.bukkit.block.Dispenser;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 
@@ -40,8 +36,10 @@ public class PhatLoot {
     public boolean global = PhatLoots.defaultGlobal; //Reset Type
     public boolean round = PhatLoots.defaultRound;
     
-    public LinkedList<PhatLootChest> chests = new LinkedList<PhatLootChest>(); //List of PhatLootChests that activate the Warp
+    LinkedList<PhatLootChest> chests = new LinkedList<PhatLootChest>(); //List of PhatLootChests that activate the Warp
     LinkedList<String> oldChests = new LinkedList<String>(); //List of PhatLootChests from unloaded Worlds
+    
+    Properties lootTimes = new Properties(); //PhatLootChest'PlayerName=Year'Day'Hour'Minute'Second
     
     PhatLootsCommandSender cs = new PhatLootsCommandSender();
 
@@ -71,7 +69,7 @@ public class PhatLoot {
             user = "global";
         
         //Find out how much time remains
-        String timeRemaining = getTimeRemaining(chest.getTime(user));
+        String timeRemaining = getTimeRemaining(getTime(chest, user));
         
         //User can never loot the Chest again if timeRemaining is null
         if (timeRemaining == null)
@@ -117,17 +115,17 @@ public class PhatLoot {
             PhatLoots.server.dispatchCommand(cs, cmd.replace("<player>", player.getName()));
         
         //Give individual loots
-        lootIndividual(player, chest, inventory);
+        boolean itemsInChest = lootIndividual(player, chest, inventory);
         
         //Give collective loots
-        lootCollective(player, chest, inventory);
+        if (lootCollective(player, chest, inventory))
+            itemsInChest = true;
         
-        //Update the Chest View
-        InventoryHolder holder = inventory.getHolder();
-        if (holder instanceof Chest)
-            ((Chest)holder).update();
+        //Update the Inventory View
+        if (!chest.isDispenser)
+            player.updateInventory();
         
-        if (PhatLoots.autoLoot)
+        if (PhatLoots.autoLoot && !itemsInChest)
             player.closeInventory();
         
         //Set the new time for the User and return true
@@ -231,11 +229,14 @@ public class PhatLoot {
      * @param player The Player looting
      * @param block The Block being looted
      */
-    public void lootIndividual(Player player, PhatLootChest phatLootChest, Inventory inventory) {
+    public boolean lootIndividual(Player player, PhatLootChest phatLootChest, Inventory inventory) {
+        boolean itemsInChest = false;
         for (Loot loot: loots[0])
             //Roll for item
             if (PhatLoots.random.nextInt(100) + PhatLoots.random.nextDouble() < loot.getProbability())
-                lootItem(loot.getItem(), player, phatLootChest, inventory);
+                if (lootItem(loot.getItem(), player, phatLootChest, inventory))
+                    itemsInChest = true;
+        return itemsInChest;
     }
 
     /**
@@ -245,7 +246,9 @@ public class PhatLoot {
      * @param collectiveLoots The String that contains the items and percentages
      * @param block The Block being looted
      */
-    public void lootCollective(Player player, PhatLootChest phatLootChest, Inventory inventory) {
+    public boolean lootCollective(Player player, PhatLootChest phatLootChest, Inventory inventory) {
+        boolean itemsInChest = false;
+        
         //Loot from each of the 5 collective loots
         for (int i = 1 ; i <= 5; i++) {
             
@@ -270,11 +273,14 @@ public class PhatLoot {
                     //Loot the specified number of items
                     for (int numberLooted = 0; numberLooted < numberCollectiveLoots; numberLooted++)
                         //Generate a random int to determine the index of the array that holds the Loot
-                        lootItem(collLoots[PhatLoots.random.nextInt(100)].getItem(), player, phatLootChest, inventory);
+                        if (lootItem(collLoots[PhatLoots.random.nextInt(100)].getItem(), player, phatLootChest, inventory))
+                            itemsInChest = true;
                 }
             }
                 
         }
+        
+        return itemsInChest;
     }
 
     /**
@@ -284,7 +290,7 @@ public class PhatLoot {
      * @param collectiveLoots The String that contains the items and percentages
      * @param block The Block being looted
      */
-    public void lootItem(ItemStack item, Player player, PhatLootChest phatLootChest, Inventory inventory) {
+    public boolean lootItem(ItemStack item, Player player, PhatLootChest phatLootChest, Inventory inventory) {
         //Make sure loots do not excede the stack size
         if (item.getAmount() > item.getMaxStackSize()) {
             int id = item.getTypeId();
@@ -299,25 +305,30 @@ public class PhatLoot {
 
         if (phatLootChest.isDispenser) {
             //Add the item to the Dispenser inventory
-            Dispenser dispenser = phatLootChest.getDispenser();
+            Dispenser dispenser = (Dispenser)phatLootChest.getBlock();
             /* fix */
             inventory.addItem(item);
 
             //Dispense until the Dispenser is empty
             while (inventory.firstEmpty() > 0)
                 dispenser.dispense();
+            
+            return false;
         }
         else if (PhatLoots.autoLoot && sack.firstEmpty() != -1) {
             //Add the Loot to the Player's Inventory
             player.sendMessage(PhatLootsMessages.autoLoot.replace("<item>", item.getType().name()));
             sack.addItem(item);
+            return false;
         }
-        else
+        else {
             //Add the Loot to the Chest's Inventory
             if (inventory.firstEmpty() != -1)
                 inventory.addItem(item);
             else
                 phatLootChest.overFlow(item, player);
+            return true;
+        }
     }
     
     /**
@@ -354,7 +365,33 @@ public class PhatLoot {
             time[4] = calendar.get(Calendar.SECOND);
         }
         
-        chest.users.put(player, time);
+        String timeString = time[0]+"'"+time[1]+"'"+time[2]+"'"+time[3]+"'"+time[4];
+        lootTimes.setProperty(chest.toString()+"'"+player, timeString);
+    }
+    
+    /**
+     * Retrieves the time for the given Player
+     * 
+     * @param player The Player whose time is requested
+     * @return The time as an array of ints
+     */
+    public int[] getTime(PhatLootChest chest, String player) {
+        int[] time = new int[5];
+        String key = chest.toString()+"'"+player;
+        
+        String string = lootTimes.getProperty(key);
+        if (string != null) {
+            String[] timeString = string.split("'");
+            for (int i = 0; i < 5; i++)
+                try {
+                    time[i] = Integer.parseInt(timeString[i]);
+                }
+                catch (Exception corruptData) {
+                    System.err.println("[PhatLoots] Fixed corrupt time value!");
+                }
+            }
+        
+        return time;
     }
     
     /**
@@ -422,44 +459,19 @@ public class PhatLoot {
         if (data.isEmpty())
             return;
         
-        int index;
-        
-        //Load data for each PhatLootChest
-        for (String chest: data.split("; "))
+        for (String chest: data.split(", "))
             try {
-                String[] chestData = chest.split("\\{", 2);
+                String[] chestData = chest.split("'");
 
-                //Load the Block Location data of the Chest
-                String[] blockData = chestData[0].split("'");
-                
                 //Check if the World is not loaded
-                if (PhatLoots.server.getWorld(blockData[0]) == null) {
+                if (PhatLoots.server.getWorld(chestData[0]) == null) {
                     oldChests.add(chest);
                     continue;
                 }
                 
                 //Construct a a new PhatLootChest with the Location data
-                PhatLootChest phatLootChest = new PhatLootChest(blockData[0], Integer.parseInt(blockData[1]),
-                        Integer.parseInt(blockData[2]), Integer.parseInt(blockData[3]));
-
-                //Load the HashMap of Users of the Chest
-                for (String user: chestData[1].substring(0, chestData[1].length() - 1).split(", "))
-                    //Don't load if the data if it is corrupt or empty
-                    if ((index = user.indexOf('@')) != -1) {
-                        String[] timeData = user.substring(index + 1).split("'");
-                        int[] time = new int[5];
-
-                        if (timeData.length == 4) {
-                            time[0] = 2011;
-                            for (int j = 0; j < 4; j++)
-                                time[j+1] = Integer.parseInt(timeData[j]);
-                        }
-                        else
-                            for (int j = 0; j < 5; j++)
-                                time[j] = Integer.parseInt(timeData[j]);
-
-                        phatLootChest.users.put(user.substring(0, index), time);
-                    }
+                PhatLootChest phatLootChest = new PhatLootChest(chestData[0], Integer.parseInt(chestData[1]),
+                        Integer.parseInt(chestData[2]), Integer.parseInt(chestData[3]));
 
                 chests.add(phatLootChest);
             }
@@ -468,49 +480,6 @@ public class PhatLoot {
                         '"'+name+'"'+", "+'"'+chest+'"'+" is not a valid PhatLootChest");
                 invalidChest.printStackTrace();
             }
-    }
-    
-    /**
-     * Loads data from the outdated save file
-     * 
-     * @param id The id of the Loots (0 for individual loots)
-     * @param string The data of the Loots
-     */
-    public void setOldLoots(int id, String data) {
-        //Cancel if no data was provided
-        if (data.isEmpty())
-            return;
-        
-        //Load data for each loot
-        for (String loot: data.split("~")) {
-            try {
-                String[] lootData = loot.split(",");
-                
-                if (lootData[0].equals("money")) {
-                    //Set the money range
-                    moneyLower = Integer.parseInt(lootData[1]);
-                    moneyUpper = Integer.parseInt(lootData[2]);
-                }
-                else {
-                    int itemID;
-                    Short durability = -1;
-                    if (lootData[0].contains(".")) {
-                        String[] itemData = lootData[0].split(".");
-                        itemID = Integer.parseInt(itemData[0]);
-                        durability = Short.parseShort(itemData[1]);
-                    }
-                    else
-                        itemID = Integer.parseInt(lootData[0]);
-
-                    Loot lootObject = new Loot(itemID, durability, Integer.parseInt(lootData[1]), Integer.parseInt(lootData[1]), Double.parseDouble(lootData[2]));
-                    loots[id].add(lootObject);
-                }
-            }
-            catch (Exception invalidLoot) {
-                System.out.println("[PhatLoots] Error occured while loading PhatLoot "+'"'+name+'"'+", "+'"'+loot+'"'+" is not a valid Loot");
-                invalidLoot.printStackTrace();
-            }
-        }
     }
     
     /**
@@ -523,34 +492,39 @@ public class PhatLoot {
         if (data.isEmpty())
             return;
         
+        int index;
+        
         //Load data for each PhatLootChest
-        for (String chest: data.split("~")) {
+        for (String chest: data.split("; "))
             try {
-                String[] chestData = chest.split(",");
+                String[] chestData = chest.split("\\{", 2);
+
+                //Load the Block Location data of the Chest
+                String[] blockData = chestData[0].split("'");
                 
                 //Construct a a new PhatLootChest with the Location data
-                PhatLootChest phatLootChest = new PhatLootChest(chestData[0], Integer.parseInt(chestData[1]),
-                        Integer.parseInt(chestData[2]), Integer.parseInt(chestData[3]));
+                PhatLootChest phatLootChest = new PhatLootChest(blockData[0], Integer.parseInt(blockData[1]),
+                        Integer.parseInt(blockData[2]), Integer.parseInt(blockData[3]));
                 
-                //Load the HashMap of Users of the Chest
-                for (int i = 4; i < chestData.length; i = i + 2) {
-                    String[] timeData = chestData[i+1].split("'");
-                    int[] time = new int[4];
-
-                    for (int j = 0; j < 4; j++)
-                        time[j] = Integer.parseInt(timeData[j]);
-
-                    phatLootChest.users.put(chestData[i], time);
-                }
+                //Load the HashMap of loot times of the Chest
+                for (String user: chestData[1].substring(0, chestData[1].length() - 1).split(", "))
+                    //Don't load if the data if it is corrupt or empty
+                    if ((index = user.indexOf('@')) != -1) {
+                        String timeString = user.substring(index + 1);
+                        lootTimes.setProperty(phatLootChest.toString()+"'"+user.substring(0, index), timeString);
+                    }
                 
-                chests.add(phatLootChest);
+                //Check if the World is not loaded
+                if (PhatLoots.server.getWorld(blockData[0]) == null)
+                    oldChests.add(chestData[0]);
+                else
+                    chests.add(phatLootChest);
             }
             catch (Exception invalidChest) {
                 System.out.println("[PhatLoots] Error occured while loading PhatLoot "+
                         '"'+name+'"'+", "+'"'+chest+'"'+" is not a valid PhatLootChest");
                 invalidChest.printStackTrace();
             }
-        }
     }
     
     /**
@@ -573,10 +547,35 @@ public class PhatLoot {
     }
     
     /**
-     * Returns the Button that is associated with the given Block
+     * Creates a PhatLootChest for the given Block and links it to this PhatLoot
      * 
      * @param block The given Block
-     * @return The Button that is associated with the given Block
+     */
+    public void addChest(Block block) {
+        PhatLootChest chest = findChest(block);
+        if (chest == null)
+            chests.add(new PhatLootChest(block));
+        save();
+    }
+    
+    /**
+     * removes the PhatLootChest for the given Block and links it to this PhatLoot
+     * 
+     * @param block The given Block
+     */
+    public void removeChest(Block block) {
+        PhatLootChest chest = findChest(block);
+        if (chest != null) {
+            reset(block);
+            chests.remove(chest);
+        }
+    }
+    
+    /**
+     * Returns the PhatLootChest that is associated with the given Block
+     * 
+     * @param block The given Block
+     * @return The PhatLootChest that is associated with the given Block
      */
     public PhatLootChest findChest(Block block) {
         //Iterate through chests to find the PhatLootChest of the given Block
@@ -597,14 +596,17 @@ public class PhatLoot {
     public void reset(Block block) {
         if (block == null)
             //Reset all PhatLootChests
-            for (PhatLootChest phatLootChest: chests)
-                phatLootChest.users.clear();
-        else
+            lootTimes.clear();
+        else {
             //Find the PhatLootChest of the given Block and reset it
-            for (PhatLootChest phatLootChest: chests)
-                if (phatLootChest.isBlock(block))
-                    phatLootChest.users.clear();
-        
+            String chest = findChest(block).toString();
+            Iterator itr = lootTimes.keySet().iterator();
+                while (itr.hasNext()) {
+                    String key = (String)itr.next();
+                    if (key.startsWith(chest))
+                        itr.remove();
+                }
+        }
         save();
     }
     

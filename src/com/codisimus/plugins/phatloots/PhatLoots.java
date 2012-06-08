@@ -36,7 +36,7 @@ public class PhatLoots extends JavaPlugin {
     public static Random random = new Random();
     private static HashMap<String, PhatLoot> phatLoots = new HashMap<String, PhatLoot>();
     static JavaPlugin plugin;
-    private static String dataFolder;
+    static String dataFolder;
 
     @Override
     public void onDisable () {
@@ -52,6 +52,14 @@ public class PhatLoots extends JavaPlugin {
         pm = server.getPluginManager();
         plugin = this;
         
+        /* Disable this plugin if Vault is not present */
+        if (!pm.isPluginEnabled("Vault")) {
+            System.err.println("[PhatLoots] Please install Vault in order to use this plugin!");
+            pm.disablePlugin(this);
+            return;
+        }
+        
+        /* Create data folders */
         File dir = this.getDataFolder();
         if (!dir.isDirectory())
             dir.mkdir();
@@ -62,28 +70,25 @@ public class PhatLoots extends JavaPlugin {
         if (!dir.isDirectory())
             dir.mkdir();
         
-        //Load PhatLoot Data
+        /* Load Data and Settings */
         loadData();
-        
-        //Load Config settings
         loadSettings();
         
-        //Find Permissions
+        /* Link Permissions/Economy */
         RegisteredServiceProvider<Permission> permissionProvider =
                 getServer().getServicesManager().getRegistration(net.milkbowl.vault.permission.Permission.class);
         if (permissionProvider != null)
             permission = permissionProvider.getProvider();
         
-        //Find Economy
         RegisteredServiceProvider<Economy> economyProvider =
                 getServer().getServicesManager().getRegistration(net.milkbowl.vault.economy.Economy.class);
         if (economyProvider != null)
             Econ.economy = economyProvider.getProvider();
         
-        //Register Events
+        /* Register Events */
         pm.registerEvents(new PhatLootsListener(), this);
         
-        //Register the command found in the plugin.yml
+        /* Register the command found in the plugin.yml */
         PhatLootsCommand.command = (String)this.getDescription().getCommands().keySet().toArray()[0];
         getCommand(PhatLootsCommand.command).setExecutor(new PhatLootsCommand());
         
@@ -95,6 +100,7 @@ public class PhatLoots extends JavaPlugin {
      * 
      */
     public void loadSettings() {
+        FileInputStream fis = null;
         try {
             //Copy the file from the jar if it is missing
             File file = new File(dataFolder+"/config.properties");
@@ -103,14 +109,13 @@ public class PhatLoots extends JavaPlugin {
             
             //Load config file
             p = new Properties();
-            FileInputStream fis = new FileInputStream(file);
+            fis = new FileInputStream(file);
             p.load(fis);
             
             autoLoot = Boolean.parseBoolean(loadValue("AutoLoot"));
             PhatLootsMessages.autoLoot = loadValue(("AutoLootMessage"));
             displayTimeRemaining = Boolean.parseBoolean(loadValue("DisplayTimeRemaining"));
             PhatLootsMessages.timeRemaining = loadValue("TimeRemainingMessage");
-            PhatLootsMessages.inUse = loadValue("ChestInUseMessage");
             PhatLootsMessages.overflow = loadValue("OverflowMessage");
             PhatLootsMessages.formatAll();
             
@@ -127,11 +132,18 @@ public class PhatLoots extends JavaPlugin {
             defaultRound = Boolean.parseBoolean(loadValue("RoundDownTimeByDefault"));
             defaultNumberOfLoots = Integer.parseInt(loadValue("DefaultItemsPerColl"));
             
-            fis.close();
+            PhatLootsListener.chestName = loadValue("ChestName");
         }
         catch (Exception missingProp) {
             System.err.println("Failed to load PhatLoots "+this.getDescription().getVersion());
             missingProp.printStackTrace();
+        }
+        finally {
+            try {
+                fis.close();
+            }
+            catch (Exception e) {
+            }
         }
     }
 
@@ -167,29 +179,16 @@ public class PhatLoots extends JavaPlugin {
      *
      */
     public static void loadData() {
-        File[] files = plugin.getDataFolder().listFiles();
-
-        //Organize files
-        if (files != null)
-            for (File file: files) {
-                String name = file.getName();
-                if (name.endsWith(".dat")) {
-                    File dest = new File(dataFolder+"/PhatLoots");
-                    dest = new File(dataFolder+"/PhatLoots/"+name.substring(0, name.length() - 4)+".properties");
-                    file.renameTo(dest);
-                }
-            }
-        
-        files = new File(dataFolder+"/PhatLoots/").listFiles();
-        
-        for (File file: files) {
+        FileInputStream fis = null;
+        for (File file: new File(dataFolder+"/PhatLoots/").listFiles()) {
             String name = file.getName();
             if (name.endsWith(".properties"))
                 try {
                     //Load the Properties file for reading
                     Properties p = new Properties();
-                    FileInputStream fis = new FileInputStream(file);
+                    fis = new FileInputStream(file);
                     p.load(fis);
+                    fis.close();
 
                     //Construct a new PhatLoot using the file name
                     PhatLoot phatLoot = new PhatLoot(name.substring(0, name.length() - 11));
@@ -202,17 +201,8 @@ public class PhatLoots extends JavaPlugin {
                     phatLoot.seconds = Integer.parseInt(resetTime[3]);
 
                     //Set the reset type
-                    try {
-                        phatLoot.global = Boolean.parseBoolean(p.getProperty("GlobalReset"));
-                        phatLoot.round = Boolean.parseBoolean(p.getProperty("RoundDownTime"));
-                    }
-                    catch (Exception oldFile) {
-                        String resetType = p.getProperty("ResetType");
-                        if (resetType.equals("player"))
-                            phatLoot.global = false;
-                        else if (resetType.equals("global"))
-                            phatLoot.global = true;
-                    }
+                    phatLoot.global = Boolean.parseBoolean(p.getProperty("GlobalReset"));
+                    phatLoot.round = Boolean.parseBoolean(p.getProperty("RoundDownTime"));
 
                     //Set the money range
                     String[] moneyRange = p.getProperty("MoneyRange").split("-");
@@ -249,87 +239,42 @@ public class PhatLoots extends JavaPlugin {
                     phatLoot.numberCollectiveLoots = Integer.parseInt(p.getProperty("ItemsPerColl"));
 
                     //Load the data of all the PhatLootsChests
-                    phatLoot.setChests(p.getProperty("ChestsData"));
+                    String chestData = p.getProperty("ChestsData");
+                    if (chestData.contains("@"))
+                        phatLoot.setOldChests(chestData);
+                    else
+                        phatLoot.setChests(chestData);
                     
                     //Try to Load old data (incase the old Worlds are now present)
-                    if (p.containsKey("OldChestsData"))
-                        phatLoot.setChests(p.getProperty("OldChestsData"));
+                    if (p.containsKey("OldChestsData")) {
+                        chestData = p.getProperty("OldChestsData");
+                        if (chestData.contains("@"))
+                            phatLoot.setOldChests(chestData);
+                        else
+                            phatLoot.setChests(chestData);
+                    }
 
                     phatLoots.put(phatLoot.name, phatLoot);
-
-                    fis.close();
+                    
+                    file = new File(dataFolder+"/PhatLoots/"+phatLoot.name+".loottimes");
+                    if (file.exists()) {
+                        fis = new FileInputStream(file);
+                        phatLoot.lootTimes.load(fis);
+                    }
+                    else
+                        phatLoot.save();
                 }
                 catch (Exception loadFailed) {
                     System.err.println("[PhatLoots] Failed to load "+name);
                     loadFailed.printStackTrace();
                 }
-        }
-        
-        //Look for old save files if no data was loaded
-        if (phatLoots.isEmpty())
-            loadOld();
-    }
-        
-    /**
-     * Reads outdated save files to load Turnstile data
-     *
-     */
-    public static void loadOld() {
-        for (File file: plugin.getDataFolder().listFiles()) {
-            String name = file.getName();
-            if (name.endsWith(".properties") && !name.equals("config.properties")) {
-                System.out.println("[PhatLoots] Loading outdated save file "+name);
-                try {
-                    //Load the Properties file for reading
-                    Properties p = new Properties();
-                    FileInputStream fis = new FileInputStream(file);
-                    p.load(fis);
-                    
-                    PhatLoot phatLoot = new PhatLoot(name.substring(0, name.length() - 11));
-                    
-                    String[] resetTime = p.getProperty("ResetTime").split("'");
-                    if (resetTime[0].equals("never")) {
-                        phatLoot.days = -1;
-                        phatLoot.hours = -1;
-                        phatLoot.minutes = -1;
-                        phatLoot.seconds = -1;
+                finally {
+                    try {
+                        fis.close();
                     }
-                    else {
-                        phatLoot.days = Integer.parseInt(resetTime[0]);
-                        phatLoot.hours = Integer.parseInt(resetTime[1]);
-                        phatLoot.minutes = Integer.parseInt(resetTime[2]);
-                        phatLoot.seconds = Integer.parseInt(resetTime[3]);
+                    catch (Exception e) {
                     }
-                    
-                    String resetType = p.getProperty("ResetType");
-                    if (resetType.equals("player"))
-                        phatLoot.global = false;
-                    else if (resetType.equals("global"))
-                        phatLoot.global = true;
-                    
-                    phatLoot.setOldLoots(0, p.getProperty("IndividualLoots"));
-                    phatLoot.setOldLoots(1, p.getProperty("Coll1"));
-                    phatLoot.setOldLoots(2, p.getProperty("Coll2"));
-                    phatLoot.setOldLoots(3, p.getProperty("Coll3"));
-                    phatLoot.setOldLoots(4, p.getProperty("Coll4"));
-                    phatLoot.setOldLoots(5, p.getProperty("Coll5"));
-                    
-                    if (p.containsKey("NumberOfCollectiveLootItemsReceived"))
-                        phatLoot.numberCollectiveLoots = Integer.parseInt(p.getProperty("NumberOfCollectiveLootItemsReceived"));
-                    else
-                        phatLoot.numberCollectiveLoots = Integer.parseInt(p.getProperty("NumberOfCollectiveLootItemsRecieved"));
-                    
-                    phatLoot.setOldChests(p.getProperty("Chests(RestrictedUsers)"));
-                
-                    addPhatLoot(phatLoot);
-                    
-                    fis.close();
                 }
-                catch (Exception loadFailed) {
-                    System.out.println("[PhatLoots] Failed to Load outdated save file");
-                    loadFailed.printStackTrace();
-                }
-            }
         }
     }
     
@@ -349,6 +294,7 @@ public class PhatLoots extends JavaPlugin {
      * @param phatLoot The given PhatLoot
      */
     static void savePhatLoot(PhatLoot phatLoot) {
+        FileOutputStream fos = null;
         try {
             Properties p = new Properties();
             
@@ -411,58 +357,38 @@ public class PhatLoots extends JavaPlugin {
 
             value = "";
             for (PhatLootChest chest: phatLoot.chests)
-                value = value.concat("; "+chest.toString());
+                value = value.concat(", "+chest.toString());
             if (!value.isEmpty())
                 value = value.substring(2);
             p.setProperty("ChestsData", value);
             
             value = "";
             for (String chest: phatLoot.oldChests)
-                value = value.concat("; "+chest);
+                value = value.concat(", "+chest);
             if (!value.isEmpty())
                 value = value.substring(2);
             p.setProperty("OldChestsData", value);
 
             //Write the PhatLoot Properties to file
-            FileOutputStream fos = new FileOutputStream(dataFolder+"/PhatLoots/"+phatLoot.name+".properties");
+            fos = new FileOutputStream(dataFolder+"/PhatLoots/"+phatLoot.name+".properties");
             p.store(fos, null);
             fos.close();
+            
+            //Write the PhatLoot Loot times to file
+            fos = new FileOutputStream(dataFolder+"/PhatLoots/"+phatLoot.name+".loottimes");
+            phatLoot.lootTimes.store(fos, null);
         }
         catch (Exception saveFailed) {
             System.err.println("[PhatLoots] Save Failed!");
             saveFailed.printStackTrace();
         }
-    }
-    
-    /**
-     * Return the other half of the Double Chest
-     * If this is a not a Chest then null is returned
-     * If this is a single Chest then the normal Chest Block is returned
-     * 
-     * @return The other half of the Double Chest
-     */
-    public static Block getOtherHalf(Block block) {
-        if (block.getTypeId() != 54)
-            return null;
-        
-        Block neighbor = block.getRelative(0, 0, 1);
-        if (neighbor.getTypeId() == 54)
-            return neighbor;
-        
-        neighbor = block.getRelative(1, 0, 0);
-        if (neighbor.getTypeId() == 54)
-            return neighbor;
-        
-        neighbor = block.getRelative(0, 0, -1);
-        if (neighbor.getTypeId() == 54)
-            return neighbor;
-        
-        neighbor = block.getRelative(-1, 0, 0);
-        if (neighbor.getTypeId() == 54)
-            return neighbor;
-        
-        //Return the single Block
-        return block;
+        finally {
+            try {
+                fos.close();
+            }
+            catch (Exception e) {
+            }
+        }
     }
     
     /**
@@ -501,6 +427,8 @@ public class PhatLoots extends JavaPlugin {
     public static void removePhatLoot(PhatLoot phatLoot) {
         phatLoots.remove(phatLoot.name);
         File trash = new File(dataFolder+"/PhatLoots/"+phatLoot.name+".properties");
+        trash.delete();
+        trash = new File(dataFolder+"/PhatLoots/"+phatLoot.name+".lootTimes");
         trash.delete();
     }
 

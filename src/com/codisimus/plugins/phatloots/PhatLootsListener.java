@@ -1,6 +1,10 @@
 package com.codisimus.plugins.phatloots;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.Properties;
 import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
 import org.bukkit.block.Dispenser;
@@ -11,6 +15,7 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.world.WorldLoadEvent;
 import org.bukkit.inventory.DoubleChestInventory;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
@@ -22,6 +27,39 @@ import org.bukkit.inventory.InventoryHolder;
  */
 public class PhatLootsListener implements Listener {
     private static HashMap<String, ForgettableInventory> inventories = new HashMap<String, ForgettableInventory>();
+    static String chestName;
+    
+    /**
+     * Attempts to load OldChestData for newly loaded Worlds
+     * 
+     * @param event The WorldLoadEvent that occurred
+     */
+    @EventHandler
+    public void onWorldLoad(WorldLoadEvent event) {
+        FileInputStream fis = null;
+        for (File file: new File(PhatLoots.dataFolder+"/PhatLoots/").listFiles()) {
+            String name = file.getName();
+            if (name.endsWith(".properties"))
+                try {
+                    //Load the Properties file for reading
+                    Properties p = new Properties();
+                    fis = new FileInputStream(file);
+                    p.load(fis);
+                    
+                    if (p.containsKey("OldChestsData"))
+                        PhatLoots.getPhatLoot(name.substring(0, name.length() - 11)).setChests(p.getProperty("OldChestsData"));
+                }
+                catch (Exception loadFailed) {
+                }
+                finally {
+                    try {
+                        fis.close();
+                    }
+                    catch (Exception e) {
+                    }
+                }
+        }
+    }
 
     /**
      * Checks if a Player loots a PhatLootChest
@@ -73,11 +111,14 @@ public class PhatLootsListener implements Listener {
                 }
                 
                 //Return if the Chest is not a PhatLootChest
-                if (!isPhatLootChest(block))
-                    return;
+                LinkedList<PhatLoot> phatLoots = PhatLoots.getPhatLoots(block);
+                boolean global = true;
+                for (PhatLoot phatLoot: phatLoots)
+                    if (!phatLoot.global)
+                        global = false;
                 
                 //Create the custom key using the Player Name and Block location
-                final String KEY = player.getName()+"@"+block.getLocation().toString();
+                final String KEY = (global ? "global" : player.getName())+"@"+block.getLocation().toString();
                 
                 //Grab the custom Inventory belonging to the Player
                 ForgettableInventory fInventory = inventories.get(KEY);
@@ -85,7 +126,10 @@ public class PhatLootsListener implements Listener {
                     inventory = fInventory.getInventory();
                 else {
                     //Create a new Inventory for the Player
-                    inventory = PhatLoots.server.createInventory(chest, inventory.getSize(), "PhatLoots!");
+                    String name = chestName;
+                    name = name.replace("<name>", phatLoots.getFirst().name);
+                        
+                    inventory = PhatLoots.server.createInventory(chest, inventory.getSize(), name);
                     fInventory = new ForgettableInventory(PhatLoots.plugin, 600L, inventory) {
                         @Override
                         protected void execute() {
@@ -136,7 +180,7 @@ public class PhatLootsListener implements Listener {
         
         //Return if it was not a PhatLoots Inventory
         Inventory inventory = event.getInventory();
-        if (!inventory.getName().equals("PhatLoots!"))
+        if (!inventory.getName().equals(chestName))
             return;
         
         Chest chest = (Chest)holder;
@@ -205,9 +249,8 @@ public class PhatLootsListener implements Listener {
      */
     public boolean isPhatLootChest(Block block) {
         for (PhatLoot phatLoot: PhatLoots.getPhatLoots())
-            for (PhatLootChest chest: phatLoot.chests)
-                if (chest.isBlock(block))
-                    return true;
+            if (phatLoot.findChest(block) != null)
+                return true;
         
         return false;
     }

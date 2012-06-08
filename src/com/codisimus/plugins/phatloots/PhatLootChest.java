@@ -1,9 +1,6 @@
 package com.codisimus.plugins.phatloots;
 
-import java.util.HashMap;
-import java.util.Iterator;
 import org.bukkit.block.Block;
-import org.bukkit.block.Dispenser;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
@@ -13,17 +10,21 @@ import org.bukkit.inventory.ItemStack;
  * @author Codisimus
  */
 public class PhatLootChest {
-    private Block block;
+    private String world;
+    private int x, y, z;
     public boolean isDispenser;
-    public HashMap<String, int[]> users = new HashMap<String, int[]>(); //A map of each Player that loots the Chest {PlayerName=TimeActivated}
+    
 
     /**
      * Constructs a new PhatLootChest with the given Block
      * 
      * @param block The given Block
      */
-    public PhatLootChest (Block block) {
-        this.block = block;
+    public PhatLootChest(Block block) {
+        world = block.getWorld().getName();
+        x = block.getX();
+        y = block.getY();
+        z = block.getZ();
         isDispenser = block.getTypeId() == 23;
     }
     
@@ -35,30 +36,22 @@ public class PhatLootChest {
      * @param y The y-coordinate of the Block
      * @param z The z-coordinate of the Block
      */
-    public PhatLootChest (String world, int x, int y, int z) {
-        block = PhatLoots.server.getWorld(world).getBlockAt(x, y, z);
+    public PhatLootChest(String world, int x, int y, int z) {
+        this.world = world;
+        this.x = x;
+        this.y = y;
+        this.z = z;
+        Block block = PhatLoots.server.getWorld(world).getBlockAt(x, y, z);
         isDispenser = block.getTypeId() == 23;
     }
     
     /**
-     * Retrieves the time for the given Player
+     * Returns the Block that this Chest Represents
      * 
-     * @param player The Player whose time is requested
-     * @return The time as an array of ints
+     * @return The Block that this Chest Represents
      */
-    public int[] getTime(String player) {
-        return users.get(player);
-    }
-    
-    /**
-     * Returns the Dispenser Block or null if it is a Chest
-     * 
-     * @return The Dispenser Block
-     */
-    public Dispenser getDispenser() {
-        if (isDispenser)
-            return (Dispenser)block.getState();
-        return null;
+    public Block getBlock() {
+        return PhatLoots.server.getWorld(world).getBlockAt(x, y, z);
     }
     
     /**
@@ -68,16 +61,51 @@ public class PhatLootChest {
      * @return True if the given Block is the same Dispenser or part of the double Chest
      */
     public boolean isBlock(Block block) {
-        //Return true if they are the same Block
-        if (this.block.equals(block))
-            return true;
+        //Return false if Blocks are not in the same x-axis
+        if (x != block.getX())
+            return false;
         
-        //Return false if the PhatLootChest is a Dispenser or the given Block is not a Chest
+        //Return false if Blocks are not in the same y-axis
+        if (y != block.getY())
+            return false;
+        
+        //Return false if Blocks are not in the same z-axis
+        if (z != block.getZ())
+            return false;
+        
+        //Return false if Blocks are not in the same World
+        return world.equals(block.getWorld().getName());
+    }
+
+    /**
+     * Returns whether the given Block is left or right of the PhatLootChest Block
+     * Will only return true is both the Block and the PhatLootChest are Chests
+     * 
+     * @param block The given Block
+     * @return true if the given Block is left or right of the PhatLootChest
+     */
+    public boolean isNeighbor(Block block) {
+        //Return false if either Block is not a Chest
         if (isDispenser || block.getTypeId() != 54)
             return false;
         
-        //Return whether the given Block is the other half of the PhatLootChest
-        return this.block.equals(PhatLoots.getOtherHalf(block));
+        //Return false if Blocks are not in the same y-axis
+        if (y != block.getY())
+            return false;
+        
+        //Return false if Blocks are not in the same World
+        if (!world.equals(block.getWorld().getName()))
+            return false;
+        
+        //Return true if the Blocks are side by side
+        int a = block.getX();
+        int c = block.getZ();
+        if (a == x)
+            return c == z+1 || c == z-1;
+        else if (c == z)
+            return a == x+1 || a == x-1;
+        else
+            return false;
     }
     
     /**
@@ -87,6 +115,7 @@ public class PhatLootChest {
      * @param player The Player (if any) that will be informed of the drop
      */
     public void overFlow(ItemStack item, Player player) {
+        Block block = getBlock();
         block.getWorld().dropItemNaturally(block.getLocation(), item);
         if (player != null)
             player.sendMessage(PhatLootsMessages.overflow.replaceAll("<item>", item.getType().name()));
@@ -94,26 +123,12 @@ public class PhatLootChest {
 
     /**
      * Returns the String representation of this PhatLootChest
-     * The format of the returned String is as follows
-     * world'x'y'z'{Player1@Days'Hours'Minutes'Seconds, Player1@Days'Hours'Minutes'Seconds}
+     * The format of the returned String is world'x'y'z
      * 
-     * @return The String representation of this Button
+     * @return The String representation of this Chest
      */
     @Override
     public String toString() {
-        String string = block.getWorld().getName()+"'"+block.getX()+"'"+block.getY()+"'"+block.getZ()+"{";
-
-        Iterator itr = users.keySet().iterator();
-        while (itr.hasNext()) {
-            String key = (String)itr.next();
-            int[] time = getTime(key);
-
-            string = string.concat(key+"@"+time[0]+"'"+time[1]+"'"+time[2]+"'"+time[3]+"'"+time[4]);
-            
-            if (itr.hasNext())
-                string = string.concat(", ");
-        }
-
-        return string.concat("}");
+        return world+"'"+x+"'"+y+"'"+z;
     }
 }
