@@ -71,8 +71,14 @@
     nbproject/build-impl.xml file. 
 
     -->
+    <target name="-pre-jar" > 
+    <propertyfile file="${src.dir}\version.properties"> 
+    <entry key="Build" value="1" type="int" operation="+"/> 
+    </propertyfile> 
+    </target>
+    
     <target name="-post-jar">
-        <copy failonerror="false" file="${dist.jar}" todir="C:\Users\Cody\Dropbox\Public\Plugins\Dev Builds"/>
+        <copy failonerror="true" file="${dist.jar}" todir="I:\Dropbox\Projects\Libraries"/>
 
         <delete dir="${build.dir}"/>
     </target>

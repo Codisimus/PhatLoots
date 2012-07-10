@@ -13,6 +13,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.world.WorldLoadEvent;
@@ -34,7 +35,7 @@ public class PhatLootsListener implements Listener {
      * 
      * @param event The WorldLoadEvent that occurred
      */
-    @EventHandler
+    @EventHandler (ignoreCancelled = true)
     public void onWorldLoad(WorldLoadEvent event) {
         FileInputStream fis = null;
         for (File file: new File(PhatLoots.dataFolder+"/PhatLoots/").listFiles()) {
@@ -66,12 +67,8 @@ public class PhatLootsListener implements Listener {
      * 
      * @param event The PlayerInteractEvent that occurred
      */
-    @EventHandler
+    @EventHandler (ignoreCancelled = true)
     public void onPlayerInteract(PlayerInteractEvent event) {
-        //Return if the Event was cancelled
-        if (event.isCancelled())
-            return;
-        
         Player player = event.getPlayer();
         Inventory inventory;
         Block block = event.getClickedBlock();
@@ -112,6 +109,9 @@ public class PhatLootsListener implements Listener {
                 
                 //Return if the Chest is not a PhatLootChest
                 LinkedList<PhatLoot> phatLoots = PhatLoots.getPhatLoots(block);
+                if (phatLoots.isEmpty())
+                    return;
+                
                 boolean global = true;
                 for (PhatLoot phatLoot: phatLoots)
                     if (!phatLoot.global)
@@ -130,7 +130,7 @@ public class PhatLootsListener implements Listener {
                     name = name.replace("<name>", phatLoots.getFirst().name);
                         
                     inventory = PhatLoots.server.createInventory(chest, inventory.getSize(), name);
-                    fInventory = new ForgettableInventory(PhatLoots.plugin, 600L, inventory) {
+                    fInventory = new ForgettableInventory(PhatLoots.plugin, inventory) {
                         @Override
                         protected void execute() {
                             inventories.remove(KEY);
@@ -168,53 +168,12 @@ public class PhatLootsListener implements Listener {
     }
     
     /**
-     * Checks if a Player loots a PhatLootChest
-     * 
-     * @param event The PlayerInteractEvent that occurred
-     */
-    @EventHandler
-    public void onInventoryClose(InventoryCloseEvent event) {
-        InventoryHolder holder = event.getInventory().getHolder();
-        if (!(holder instanceof Chest))
-            return;
-        
-        //Return if it was not a PhatLoots Inventory
-        Inventory inventory = event.getInventory();
-        if (!inventory.getName().equals(chestName))
-            return;
-        
-        Chest chest = (Chest)holder;
-        
-        //Create the custom key using the Player Name and Block location
-        final String KEY = event.getPlayer().getName()+"@"+chest.getBlock().getLocation().toString();
-        
-        //Grab the custom Inventory belonging to the Player
-        ForgettableInventory fInventory = inventories.get(KEY);
-        if (fInventory == null) { //Inventory lost (perhaps due to Server rl or the Player had the Inventory open for over the scheduled timee)
-            //Save the Inventory for the Player
-            fInventory = new ForgettableInventory(PhatLoots.plugin, 600L, inventory) {
-                @Override
-                protected void execute() {
-                    inventories.remove(KEY);
-                }
-            };
-            inventories.put(KEY, fInventory);
-        }
-
-        //Forget the Inventory in the scheduled time
-        fInventory.schedule();
-    }
-    
-    /**
      * Prevents non-admins from breaking PhatLootsChests
      * 
      * @param event The BlockBreakEvent that occurred
      */
-    @EventHandler
+    @EventHandler (ignoreCancelled = true)
     public void onBlockBreak(BlockBreakEvent event) {
-        if (event.isCancelled())
-            return;
-        
         Block block = event.getBlock();
         
         //Return if the Material of the Block is not a Chest or Furnace
@@ -239,6 +198,20 @@ public class PhatLootsListener implements Listener {
             player.sendMessage(PhatLootsMessages.permission);
             event.setCancelled(true);
         }
+    }
+    
+    /**
+     * Manages Mob drops
+     * 
+     * @param event The EntityDeathEvent that occurred
+     */
+    @EventHandler (ignoreCancelled = true)
+    public void onEntityDeath(EntityDeathEvent event) {
+        PhatLoot phatLoot = PhatLoots.getPhatLoot(event.getEntityType().getName());
+        if (phatLoot == null)
+            return;
+        
+        event.setDroppedExp(phatLoot.getLoot(event.getEntity().getKiller(), event.getDrops()));
     }
     
     /**

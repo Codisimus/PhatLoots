@@ -10,7 +10,7 @@
             <test-roots/>
         </data>
         <libraries xmlns="http://www.netbeans.org/ns/ant-project-libraries/1">
-            <definitions>.\lib\nblibraries.properties</definitions>
+            <definitions>I:\Dropbox\Projects\Libraries\nblibraries.properties</definitions>
         </libraries>
     </configuration>
 </project>

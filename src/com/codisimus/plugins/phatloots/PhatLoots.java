@@ -92,7 +92,13 @@ public class PhatLoots extends JavaPlugin {
         PhatLootsCommand.command = (String)this.getDescription().getCommands().keySet().toArray()[0];
         getCommand(PhatLootsCommand.command).setExecutor(new PhatLootsCommand());
         
-        System.out.println("PhatLoots "+this.getDescription().getVersion()+" is enabled!");
+        Properties version = new Properties();
+        try {
+            version.load(this.getResource("version.properties"));
+        }
+        catch (Exception ex) {
+        }
+        System.out.println("PhatLoots "+this.getDescription().getVersion()+" (Build "+version.getProperty("Build")+") is enabled!");
     }
     
     /**

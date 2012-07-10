@@ -10,14 +10,13 @@ import org.bukkit.plugin.java.JavaPlugin;
  */
 public abstract class ForgettableInventory implements Runnable {
     private JavaPlugin plugin;
-    private long delay;
+    private long delay = 6000L;
     private int taskId;
 
     private Inventory inventory;
 
-    public ForgettableInventory(JavaPlugin plugin, long delay, Inventory inventory) {
+    public ForgettableInventory(JavaPlugin plugin, Inventory inventory) {
         this.plugin = plugin;
-        this.delay = delay;
         this.taskId = 0;
         this.inventory = inventory;
     }

@@ -1,8 +1,12 @@
 package com.codisimus.plugins.phatloots;
 
+import java.util.List;
 import org.bukkit.block.Block;
+import org.bukkit.block.Dispenser;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.PlayerInventory;
 
 /**
  * A PhatLootChest is a Block location and a Map of Users with times attached to them
@@ -106,6 +110,54 @@ public class PhatLootChest {
             return a == x+1 || a == x-1;
         else
             return false;
+    }
+    
+    public boolean addLoots(List<ItemStack> itemList, Player player, Inventory inventory) {
+        boolean itemsInChest = false;
+        for (ItemStack item: itemList)
+            if (addLoot(item, player, inventory))
+                itemsInChest = true;
+        return itemsInChest;
+    }
+    
+    public boolean addLoot(ItemStack item, Player player, Inventory inventory) {
+        //Make sure loots do not excede the stack size
+        if (item.getAmount() > item.getMaxStackSize()) {
+            int id = item.getTypeId();
+            short durability = item.getDurability();
+            byte data = item.getData().getData();
+            
+            addLoot(new ItemStack(id, item.getMaxStackSize(), durability, data), player, inventory);
+            addLoot(new ItemStack(id, item.getAmount() - item.getMaxStackSize(), durability, data), player, inventory);
+        }
+        
+        PlayerInventory sack = player.getInventory();
+
+        if (isDispenser) {
+            //Add the item to the Dispenser inventory
+            Dispenser dispenser = (Dispenser)getBlock().getState();
+            inventory.addItem(item);
+
+            //Dispense until the Dispenser is empty
+            while (inventory.firstEmpty() > 0)
+                dispenser.dispense();
+            
+            return false;
+        }
+        else if (PhatLoots.autoLoot && sack.firstEmpty() != -1) {
+            //Add the Loot to the Player's Inventory
+            player.sendMessage(PhatLootsMessages.autoLoot.replace("<item>", item.getType().name()));
+            sack.addItem(item);
+            return false;
+        }
+        else {
+            //Add the Loot to the Chest's Inventory
+            if (inventory.firstEmpty() != -1)
+                inventory.addItem(item);
+            else
+                overFlow(item, player);
+            return true;
+        }
     }
     
     /**

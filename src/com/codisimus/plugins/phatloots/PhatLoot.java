@@ -115,10 +115,10 @@ public class PhatLoot {
             PhatLoots.server.dispatchCommand(cs, cmd.replace("<player>", player.getName()));
         
         //Give individual loots
-        boolean itemsInChest = lootIndividual(player, chest, inventory);
+        boolean itemsInChest = chest.addLoots(lootIndividual(), player, inventory);
         
         //Give collective loots
-        if (lootCollective(player, chest, inventory))
+        if (chest.addLoots(lootCollective(), player, inventory))
             itemsInChest = true;
         
         //Update the Inventory View
@@ -130,6 +130,36 @@ public class PhatLoot {
         
         //Set the new time for the User and return true
         setTime(chest, user);
+    }
+    
+    public int getLoot(Player player, List<ItemStack> drops) {
+        drops.clear();
+        drops.addAll(lootIndividual());
+        drops.addAll(lootCollective());
+        
+        //Roll for money amount if the range is above 0
+        if (moneyUpper > 0 && player != null) {
+            int amount = PhatLoots.random.nextInt((moneyUpper + 1) - moneyLower);
+            amount = amount + moneyLower;
+            
+            //Give money to the Player if there is money to give
+            if (amount > 0) {
+                String money = Econ.reward(player.getName(), amount);
+                player.sendMessage(money+" added to your account!");
+            }
+        }
+        
+        //Execute each command
+        for (String cmd: commands)
+            PhatLoots.server.dispatchCommand(cs, cmd.replace("<player>", player.getName()));
+        
+        //Roll for exp amount if the range is above 0
+        if (expUpper > 0) {
+            int amount = PhatLoots.random.nextInt((expUpper + 1) - expLower);
+            return amount + expLower;
+        }
+        
+        return 0;
     }
 
     /**
@@ -225,38 +255,30 @@ public class PhatLoot {
      * Fills the Chest (Block) with loot
      * Each item is rolled for to determine if it will by added to the Chest
      * Money is rolled for to determine how much will be given within the range
-     * 
-     * @param player The Player looting
-     * @param block The Block being looted
      */
-    public boolean lootIndividual(Player player, PhatLootChest phatLootChest, Inventory inventory) {
-        boolean itemsInChest = false;
+    public List<ItemStack> lootIndividual() {
+        List<ItemStack> itemList = new LinkedList<ItemStack>();
         for (Loot loot: loots[0])
             //Roll for item
             if (PhatLoots.random.nextInt(100) + PhatLoots.random.nextDouble() < loot.getProbability())
-                if (lootItem(loot.getItem(), player, phatLootChest, inventory))
-                    itemsInChest = true;
-        return itemsInChest;
+                itemList.add(loot.getItem());
+        return itemList;
     }
 
     /**
      * Fills the Chest (Block) with loot
      * Items are rolled for in order until the maximum number is added to the Chest
-     * 
-     * @param collectiveLoots The String that contains the items and percentages
-     * @param block The Block being looted
      */
-    public boolean lootCollective(Player player, PhatLootChest phatLootChest, Inventory inventory) {
-        boolean itemsInChest = false;
+    public List<ItemStack> lootCollective() {
+        List<ItemStack> itemList = new LinkedList<ItemStack>();
         
         //Loot from each of the 5 collective loots
         for (int i = 1 ; i <= 5; i++) {
-            
             //Make sure there are items that will be looted before entering the loop
             if (!loots[i].isEmpty()) {
                 //Do not loot if the probability does not add up to 100
                 if (getPercentRemaining(i) != 0)
-                    player.sendMessage("Cannot loot Coll"+i+" because the probability does not equal 100%");
+                    System.err.println("Cannot loot Coll"+i+" of "+name+" because the probability does not equal 100%");
                 else {
                     //Create an array of 100 Loots
                     Loot[] collLoots = new Loot[100];
@@ -273,14 +295,12 @@ public class PhatLoot {
                     //Loot the specified number of items
                     for (int numberLooted = 0; numberLooted < numberCollectiveLoots; numberLooted++)
                         //Generate a random int to determine the index of the array that holds the Loot
-                        if (lootItem(collLoots[PhatLoots.random.nextInt(100)].getItem(), player, phatLootChest, inventory))
-                            itemsInChest = true;
+                        itemList.add(collLoots[PhatLoots.random.nextInt(100)].getItem());
                 }
             }
-                
         }
         
-        return itemsInChest;
+        return itemList;
     }
 
     /**
@@ -289,7 +309,7 @@ public class PhatLoot {
      * 
      * @param collectiveLoots The String that contains the items and percentages
      * @param block The Block being looted
-     */
+     *
     public boolean lootItem(ItemStack item, Player player, PhatLootChest phatLootChest, Inventory inventory) {
         //Make sure loots do not excede the stack size
         if (item.getAmount() > item.getMaxStackSize()) {
@@ -306,7 +326,6 @@ public class PhatLoot {
         if (phatLootChest.isDispenser) {
             //Add the item to the Dispenser inventory
             Dispenser dispenser = (Dispenser)phatLootChest.getBlock();
-            /* fix */
             inventory.addItem(item);
 
             //Dispense until the Dispenser is empty
