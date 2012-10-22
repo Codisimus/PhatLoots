@@ -76,17 +76,18 @@ public class PhatLootsCommand implements CommandExecutor {
             //Cancel if the first argument is not a valid PhatLoot
             PhatLoot phatLoot = PhatLoots.getPhatLoot(args[0]);
             if (phatLoot == null) {
-                player.sendMessage("PhatLoot "+args[0]+" does not exist");
+                player.sendMessage("PhatLoot " + args[0] + " does not exist");
                 return true;
             }
 
             //Cancel if the Player does not have the needed permission
-            if (!PhatLoots.hasPermission(player, "commandloot")) {
+            if (!PhatLoots.hasPermission(player, "commandloot")
+                    || !(PhatLoots.canLoot(player, phatLoot))) {
                 player.sendMessage("You do not have permission to do that");
                 return true;
             }
             
-            Inventory inventory = PhatLoots.server.createInventory(player, 54, "PhatLoots!");
+            Inventory inventory = PhatLoots.server.createInventory(player, 54, phatLoot.name);
             
             //Open the Inventory
             player.openInventory(inventory);
@@ -151,10 +152,10 @@ public class PhatLootsCommand implements CommandExecutor {
                     PhatLoot delete = PhatLoots.getPhatLoot(args[1]);
                     
                     if (delete == null)
-                        player.sendMessage("PhatLoot "+args[1]+" does not exist!");
+                        player.sendMessage("PhatLoot " + args[1] + " does not exist!");
                     else {
                         PhatLoots.removePhatLoot(delete);
-                        player.sendMessage("PhatLoot "+delete.name+" was deleted!");
+                        player.sendMessage("PhatLoot " + delete.name + " was deleted!");
                     }
                 }
                 else
@@ -549,7 +550,7 @@ public class PhatLootsCommand implements CommandExecutor {
                 else {
                     itemStack = new ItemStack(item, baseAmount, data);
                     if (enchantments != null)
-                        itemStack.addEnchantments(enchantments);
+                        itemStack.addUnsafeEnchantments(enchantments);
                 }
                 
                 //Contruct the Loot
@@ -928,7 +929,8 @@ public class PhatLootsCommand implements CommandExecutor {
      * 
      * @param player The Player modifying the PhatLoot
      * @param name The name of the PhatLoot to be modified or null to indicate all linked PhatLoots
-     * @param amount The String of the range of the amount
+     * @param add True if the command is to be added
+     * @param cmd The command to be added/removed
      */
     public static void setCommand(Player player, String name, boolean add, String cmd) {
         if (cmd.startsWith("/"))
@@ -1321,8 +1323,6 @@ public class PhatLootsCommand implements CommandExecutor {
 
                 if (level < enchantment.getStartLevel())
                     level = enchantment.getStartLevel();
-                else if (level > enchantment.getMaxLevel())
-                    level = enchantment.getMaxLevel();
 
                 enchantments.put(enchantment, level);
             }

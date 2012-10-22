@@ -17,7 +17,7 @@ public class PhatLootsCommandSender implements CommandSender {
 
     @Override
     public void sendMessage(String string) {
-        System.out.println("[PhatLoots Command Sender] "+string);
+        PhatLoots.logger.info("[PhatLoots Command Sender] "+string);
     }
 
     @Override

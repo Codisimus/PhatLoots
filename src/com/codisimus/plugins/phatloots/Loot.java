@@ -43,7 +43,7 @@ public class Loot {
      */
     public Loot (int id, Map<Enchantment, Integer> enchantments, int amountLower, int amountUpper, double probability) {
         item = new ItemStack(id, amountLower);
-        item.addEnchantments(enchantments);
+        item.addUnsafeEnchantments(enchantments);
         
         bonus = amountUpper - amountLower;
         this.probability = probability;
