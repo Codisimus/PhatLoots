@@ -30,7 +30,8 @@ public abstract class ForgettableInventory implements Runnable {
 
     public void schedule() {
         cancel();
-        taskId  = plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, this, delay);
+        taskId  = plugin.getServer().getScheduler()
+                .scheduleSyncDelayedTask(plugin, this, delay);
     }
 
     public void cancel() {

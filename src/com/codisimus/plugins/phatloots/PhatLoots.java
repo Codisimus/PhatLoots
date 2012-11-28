@@ -65,7 +65,17 @@ public class PhatLoots extends JavaPlugin {
 
         dataFolder = dir.getPath();
 
-        dir = new File(dataFolder+"/PhatLoots");
+        dir = new File(dataFolder + "/PhatLoots");
+        if (!dir.isDirectory()) {
+            dir.mkdir();
+        }
+
+        dir = new File(dataFolder + "/Item Descriptions");
+        if (!dir.isDirectory()) {
+            dir.mkdir();
+        }
+
+        dir = new File(dataFolder + "/Books");
         if (!dir.isDirectory()) {
             dir.mkdir();
         }
@@ -76,13 +86,13 @@ public class PhatLoots extends JavaPlugin {
 
         /* Link Permissions/Economy */
         RegisteredServiceProvider<Permission> permissionProvider =
-                getServer().getServicesManager().getRegistration(net.milkbowl.vault.permission.Permission.class);
+                getServer().getServicesManager().getRegistration(Permission.class);
         if (permissionProvider != null) {
             permission = permissionProvider.getProvider();
         }
 
         RegisteredServiceProvider<Economy> economyProvider =
-                getServer().getServicesManager().getRegistration(net.milkbowl.vault.economy.Economy.class);
+                getServer().getServicesManager().getRegistration(Economy.class);
         if (economyProvider != null) {
             Econ.economy = economyProvider.getProvider();
         }
@@ -111,7 +121,7 @@ public class PhatLoots extends JavaPlugin {
         FileInputStream fis = null;
         try {
             //Copy the file from the jar if it is missing
-            File file = new File(dataFolder+"/config.properties");
+            File file = new File(dataFolder + "/config.properties");
             if (!file.exists()) {
                 this.saveResource("config.properties", true);
             }
@@ -124,15 +134,11 @@ public class PhatLoots extends JavaPlugin {
             PhatLoot.onlyDropOnPlayerKill = Boolean.parseBoolean(loadValue("OnlyDropLootWhenKilledByPlayer"));
             PhatLoot.replaceMobLoot = Boolean.parseBoolean(loadValue("ReplaceMobLoot"));
             autoLoot = Boolean.parseBoolean(loadValue("AutoLoot"));
-            PhatLootsMessages.autoLoot = loadValue(("AutoLootMessage"));
             displayTimeRemaining = Boolean.parseBoolean(loadValue("DisplayTimeRemaining"));
-            PhatLootsMessages.timeRemaining = loadValue("TimeRemainingMessage");
-            PhatLootsMessages.overflow = loadValue("OverflowMessage");
-            PhatLootsMessages.formatAll();
 
             PhatLootsCommand.setUnlockable = Boolean.parseBoolean(loadValue("SetChestsAsUnlockable"));
 
-            //Load default reset time
+            /* Default reset time */
             String[] resetTime = loadValue("DefaultResetTime").split("'");
             defaultDays = Integer.parseInt(resetTime[0]);
             defaultHours = Integer.parseInt(resetTime[1]);
@@ -142,8 +148,17 @@ public class PhatLoots extends JavaPlugin {
             defaultGlobal = Boolean.parseBoolean(loadValue("GlobalResetByDefault"));
             defaultRound = Boolean.parseBoolean(loadValue("RoundDownTimeByDefault"));
             defaultNumberOfLoots = Integer.parseInt(loadValue("DefaultItemsPerColl"));
-            
+
             PhatLootsListener.chestName = loadValue("ChestName");
+
+            /* Messages */
+            PhatLootsMessages.permission = loadValue(("PermissionMessage"));
+            PhatLootsMessages.experienceLooted = loadValue(("ExperienceLootedMessage"));
+            PhatLootsMessages.moneyLooted = loadValue(("MoneyLootedMessage"));
+            PhatLootsMessages.autoLoot = loadValue(("AutoLootMessage"));
+            PhatLootsMessages.overflow = loadValue("OverflowMessage");
+            PhatLootsMessages.timeRemaining = loadValue("TimeRemainingMessage");
+            PhatLootsMessages.formatAll();
         } catch (Exception missingProp) {
             logger.severe("Failed to load PhatLoots "
                             + this.getDescription().getVersion());
@@ -168,7 +183,7 @@ public class PhatLoots extends JavaPlugin {
             logger.severe("Missing value for " + key + " in config file");
             logger.severe("Please regenerate config file");
         }
-        
+
         return p.getProperty(key);
     }
 
@@ -203,7 +218,7 @@ public class PhatLoots extends JavaPlugin {
      */
     public static void loadData() {
         FileInputStream fis = null;
-        for (File file: new File(dataFolder+"/PhatLoots/").listFiles()) {
+        for (File file: new File(dataFolder + "/PhatLoots/").listFiles()) {
             String name = file.getName();
             if (name.endsWith(".properties")) {
                 try {
@@ -522,7 +537,7 @@ public class PhatLoots extends JavaPlugin {
     /**
      * Reloads PhatLoot data
      *
-     * @param player The Player reloading the data 
+     * @param player The Player reloading the data
      */
     public static void rl(Player player) {
         phatLoots.clear();
@@ -530,7 +545,7 @@ public class PhatLoots extends JavaPlugin {
 
         logger.info("PhatLoots reloaded");
         if (player != null) {
-            player.sendMessage("PhatLoots reloaded");
+            player.sendMessage("§5PhatLoots reloaded");
         }
     }
 }

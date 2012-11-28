@@ -18,7 +18,7 @@ public class PhatLoot {
     static boolean replaceMobLoot;
 
     private static PhatLootsCommandSender cs = new PhatLootsCommandSender();
-    
+
     public String name; //A unique name for the Warp
     public int numberCollectiveLoots = PhatLoots.defaultNumberOfLoots; //Amount of loots received from each collective loot
 
@@ -32,7 +32,7 @@ public class PhatLoot {
 
     public LinkedList<Loot>[] loots = (LinkedList<Loot>[])new LinkedList[6]; //List of items that may be given
 
-    public int days = PhatLoots.defaultDays; //Reset time (will never reset if any are negative) 
+    public int days = PhatLoots.defaultDays; //Reset time (will never reset if any are negative)
     public int hours = PhatLoots.defaultHours;
     public int minutes = PhatLoots.defaultMinutes;
     public int seconds = PhatLoots.defaultSeconds;
@@ -80,7 +80,7 @@ public class PhatLoot {
             return;
         }
 
-        //Display remaining time if it is not 
+        //Display remaining time if it is not
         if (!timeRemaining.equals("0")) {
             if (PhatLoots.displayTimeRemaining) {
                 player.sendMessage(PhatLootsMessages.timeRemaining.replace("<time>", timeRemaining));
@@ -100,7 +100,8 @@ public class PhatLoot {
             //Give money to the Player if there is money to give
             if (amount > 0) {
                 String money = Econ.reward(player.getName(), amount);
-                player.sendMessage(money + " added to your account!");
+                player.sendMessage(PhatLootsMessages.moneyLooted
+                        .replace("<amount>", money));
             }
         }
 
@@ -112,8 +113,8 @@ public class PhatLoot {
             //Give exp to the Player if there is exp to give
             if (amount > 0) {
                 player.giveExp(amount);
-                player.sendMessage("You gained " + amount
-                                    + " experience from looting the Chest");
+                player.sendMessage(PhatLootsMessages.experienceLooted
+                        .replace("<amount>", String.valueOf(amount)));
             }
         }
 
@@ -404,7 +405,7 @@ public class PhatLoot {
             try {
                 time[i] = Integer.parseInt(timeString[i]);
             } catch (Exception corruptData) {
-                PhatLoots.logger.severe("[PhatLoots] Fixed corrupt time value!");
+                PhatLoots.logger.severe("Fixed corrupted time value!");
             }
         }
 
@@ -433,41 +434,66 @@ public class PhatLoot {
      * @param id The id of the Loots (0 for individual loots)
      * @param string The data of the Loots
      */
-    public void setLoots(int id, String data) {
+    public void setLoots(int id, String lootsString) {
         //Cancel if no data was provided
-        if (data.isEmpty()) {
+        if (lootsString.isEmpty()) {
             return;
         }
 
-        while (data.endsWith(",") || data.endsWith(" ")) {
-            data = data.substring(0, data.length() - 1);
+        while (lootsString.endsWith(",") || lootsString.endsWith(" ")) {
+            lootsString = lootsString.substring(0, lootsString.length() - 1);
         }
 
         //Load data for each loot
-        for (String loot: data.split(", ")) {
+        for (String lootString: lootsString.split(", ")) {
             try {
-                //Construct a new loot with the item data and probability
-                String[] lootData = loot.split("'");
-                int lower = PhatLootsCommand.getLowerBound(null, lootData[2]);
-                int upper = PhatLootsCommand.getUpperBound(null, lootData[2]);
+                String[] lootData = lootString.split("'");
+
+                String item = lootData[0];
+                int itemID;
+                //Check for Name of Item Description
+                if (item.contains("+")) {
+                    int index = item.indexOf('+');
+                    itemID = Integer.parseInt(item.substring(0, index));
+                    item = item.substring(index + 1);
+                } else {
+                    itemID = Integer.parseInt(item);
+                    item = "";
+                }
+
+                String data = lootData[1];
+                Map<Enchantment, Integer> enchantments = null;
+                //Check for Enchantments
+                if (data.contains("+")) {
+                    int index = data.indexOf('+');
+                    enchantments = PhatLootsCommand.getEnchantments(
+                            data.substring(index + 1));
+                    data = data.substring(0, index);
+                }
+
+                String amount = lootData[2];
+                int lower = PhatLootsCommand.getLowerBound(amount);
+                int upper = PhatLootsCommand.getUpperBound(amount);
 
                 if (lower == -1 || upper == -1) {
-                    throw new Exception();
+                    throw new RuntimeException();
                 }
 
-                Map<Enchantment, Integer> enchantments = PhatLootsCommand.getEnchantments(":"+lootData[1]);
+                Loot loot = new Loot(itemID, lower, upper);
+                loot.setProbability(Double.parseDouble(lootData[3]));
 
-                if (enchantments == null) {
-                    loots[id].add(new Loot(Integer.parseInt(lootData[0]), Short.parseShort(lootData[1]),
-                            lower, upper, Double.parseDouble(lootData[3])));
-                } else {
-                    loots[id].add(new Loot(Integer.parseInt(lootData[0]), enchantments,
-                            lower, upper, Double.parseDouble(lootData[3])));
+                try {
+                    loot.setDurability(Short.parseShort(data));
+                } catch (Exception notDurability) {
+                    enchantments = PhatLootsCommand.getEnchantments(data);
                 }
-            }
-            catch (Exception invalidLoot) {
-                PhatLoots.logger.info("[PhatLoots] Error occured while loading PhatLoots "
-                                        + '"' + name + '"' + ", " + '"' + loot
+                loot.setEnchantments(enchantments);
+
+                loot.name = item;
+                loots[id].add(loot);
+            } catch (Exception invalidLoot) {
+                PhatLoots.logger.info("Error occured while loading PhatLoot "
+                                        + '"' + name + '"' + ", " + '"' + lootString
                                         + '"' + " is not a valid Loot");
                 invalidLoot.printStackTrace();
             }
@@ -495,13 +521,13 @@ public class PhatLoot {
                     continue;
                 }
 
-                //Construct a a new PhatLootChest with the Location data
+                //Construct a new PhatLootChest with the Location data
                 PhatLootChest phatLootChest = new PhatLootChest(chestData[0], Integer.parseInt(chestData[1]),
                         Integer.parseInt(chestData[2]), Integer.parseInt(chestData[3]));
 
                 chests.add(phatLootChest);
             } catch (Exception invalidChest) {
-                PhatLoots.logger.info("[PhatLoots] Error occured while loading PhatLoot "
+                PhatLoots.logger.info("Error occured while loading PhatLoot "
                                         + '"' + name + '"' + ", " + '"' + chest
                                         + '"' + " is not a valid PhatLootChest");
                 invalidChest.printStackTrace();
@@ -551,7 +577,7 @@ public class PhatLoot {
                     chests.add(phatLootChest);
                 }
             } catch (Exception invalidChest) {
-                PhatLoots.logger.info("[PhatLoots] Error occured while loading PhatLoot "
+                PhatLoots.logger.info("Error occured while loading PhatLoot "
                                         + '"' + name + '"' + ", " + '"' + chest
                                         + '"' + " is not a valid PhatLootChest");
                 invalidChest.printStackTrace();
@@ -639,7 +665,7 @@ public class PhatLoot {
             String chest = findChest(block).toString();
             Iterator itr = lootTimes.keySet().iterator();
                 while (itr.hasNext()) {
-                    String key = (String)itr.next();
+                    String key = (String) itr.next();
                     if (key.startsWith(chest)) {
                         itr.remove();
                     }
@@ -650,7 +676,6 @@ public class PhatLoot {
 
     /**
      * Writes the PhatLoot data to file
-     *
      */
     public void save() {
         PhatLoots.savePhatLoot(this);

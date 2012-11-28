@@ -193,6 +193,6 @@ public class PhatLootChest {
      */
     @Override
     public String toString() {
-        return world+"'"+x+"'"+y+"'"+z;
+        return world + "'" + x + "'" + y + "'" + z;
     }
 }

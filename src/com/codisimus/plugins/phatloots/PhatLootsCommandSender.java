@@ -14,16 +14,19 @@ import org.bukkit.plugin.Plugin;
  * @author Codisimus
  */
 public class PhatLootsCommandSender implements CommandSender {
+    private final String name = "PhatLoots";
+    private final String tag = "[PhatLoots Command Sender] ";
 
     @Override
     public void sendMessage(String string) {
-        PhatLoots.logger.info("[PhatLoots Command Sender] "+string);
+        PhatLoots.logger.info(tag.concat(string));
     }
 
     @Override
     public void sendMessage(String[] strings) {
-        for (String string: strings)
+        for (String string: strings) {
             sendMessage(string);
+        }
     }
 
     @Override
@@ -33,7 +36,7 @@ public class PhatLootsCommandSender implements CommandSender {
 
     @Override
     public String getName() {
-        return "PhatLoots";
+        return name;
     }
 
     @Override
