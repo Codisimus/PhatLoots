@@ -374,4 +374,32 @@ public class Loot {
         }
         return ((Loot) object).toString().equals(toString());
     }
+
+    /**
+     * Returns the name of the given ItemStack
+     * Returns null if the ItemStack provided is null
+     * Returns the name from the NBTTag if present
+     * Otherwise returns the name of the ItemStack Material
+     *
+     * @param item The given ItemStack (may be null)
+     * @return The name of the item
+     */
+    public static String getName(ItemStack item) {
+        String name = null;
+        if (item != null) {
+            if (!(item instanceof CraftItemStack)) {
+                item = new CraftItemStack(item);
+            }
+            CraftItemStack cis = (CraftItemStack) item;
+
+            NBTTagCompound tag = cis.getHandle().getTag();
+            if (tag == null) {
+                name = item.getType().name().toLowerCase();
+            } else {
+                NBTTagCompound display = tag.getCompound("display");
+                name = display.getString("Name");
+            }
+        }
+        return name;
+    }
 }
