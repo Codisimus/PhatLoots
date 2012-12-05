@@ -8,13 +8,11 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Map;
-import net.minecraft.server.NBTTagCompound;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
-import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
@@ -40,7 +38,9 @@ public class PhatLootsCommand implements CommandExecutor {
             (byte)71,  (byte)72,  (byte)75,  (byte)76,  (byte)77,  (byte)78,
             (byte)85,  (byte)90,  (byte)92,  (byte)96,  (byte)101, (byte)102,
             (byte)104, (byte)105, (byte)106, (byte)107, (byte)108, (byte)109,
-            (byte)111, (byte)113, (byte)114, (byte)115, (byte)117);
+            (byte)111, (byte)113, (byte)114, (byte)115, (byte)117, (byte)126,
+            (byte)127, (byte)131, (byte)132, (byte)139, (byte)140, (byte)141,
+            (byte)142, (byte)144, (byte)145);
     static String command;
     static boolean setUnlockable;
 

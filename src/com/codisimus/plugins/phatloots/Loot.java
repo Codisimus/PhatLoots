@@ -398,9 +398,14 @@ public class Loot {
                 display = tag.getCompound("display");
             }
 
-            name = display == null
-                   ? item.getType().name().toLowerCase()
-                   : display.getString("Name");
+            if (display == null) {
+                name = item.getType().name().toLowerCase();
+            } else {
+                name = display.getString("Name");
+                if (name.isEmpty()) {
+                    name = item.getType().name().toLowerCase();
+                }
+            }
         }
         return name;
     }

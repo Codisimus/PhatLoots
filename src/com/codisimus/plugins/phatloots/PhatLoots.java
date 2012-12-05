@@ -206,11 +206,9 @@ public class PhatLoots extends JavaPlugin {
      * @return true if the given player is allowed to loot the PhatLoot
      */
     public static boolean canLoot(Player player, PhatLoot phatLoot) {
-        if (hasPermission(player, "loot.*")) {
-            return true;
-        } else {
-            return hasPermission(player, "loot." + phatLoot.name);
-        }
+        return hasPermission(player, "loot.*")
+                ? !hasPermission(player, "loot.-" + phatLoot.name)
+                : hasPermission(player, "loot." + phatLoot.name);
     }
 
     /**
