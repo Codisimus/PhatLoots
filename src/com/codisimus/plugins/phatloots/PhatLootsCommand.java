@@ -1164,7 +1164,7 @@ public class PhatLootsCommand implements CommandExecutor {
     public static int getCollID(String string) {
         int id = 0;
         try {
-            id = Integer.parseInt(string.substring(4));
+            id = Integer.parseInt(string.substring(1));
         } catch (Exception ex) {
         }
 
