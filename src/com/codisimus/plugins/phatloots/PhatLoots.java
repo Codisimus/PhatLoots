@@ -8,6 +8,7 @@ import java.util.logging.Logger;
 import net.milkbowl.vault.economy.Economy;
 import net.milkbowl.vault.permission.Permission;
 import org.bukkit.Server;
+import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.PluginManager;
@@ -206,9 +207,11 @@ public class PhatLoots extends JavaPlugin {
      * @return true if the given player is allowed to loot the PhatLoot
      */
     public static boolean canLoot(Player player, PhatLoot phatLoot) {
-        return hasPermission(player, "loot.*")
-                ? !hasPermission(player, "loot.-" + phatLoot.name)
-                : hasPermission(player, "loot." + phatLoot.name);
+        World world = null;
+        return hasPermission(player, "loot.*") //Check for loot all permission
+               ? !permission.groupHas(world, permission.getPrimaryGroup(player),
+                                             "loot.-" + phatLoot.name) //Check if the Group negates the permission
+               : hasPermission(player, "loot." + phatLoot.name); //Check if the Player has the specific loot permission
     }
 
     /**
