@@ -1,15 +1,19 @@
 package com.codisimus.plugins.phatloots;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import net.minecraft.server.NBTTagCompound;
-import net.minecraft.server.NBTTagList;
-import net.minecraft.server.NBTTagString;
 import org.bukkit.Material;
-import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.BookMeta;
+import org.bukkit.inventory.meta.ItemMeta;
 
 /**
  * A Loot is a ItemStack and with a probability of looting
@@ -19,7 +23,6 @@ import org.bukkit.inventory.ItemStack;
 public class Loot {
     private final String TITLE = "title";
     private final String AUTHOR = "author";
-    private final String PAGES = "pages";
     private final String PAGE = "page";
     private ItemStack item;
     private int bonus = 0;
@@ -91,23 +94,17 @@ public class Loot {
     public boolean setName(String name) {
         //Check if the Loot is a WrittenBook
         if (item.getType() == Material.WRITTEN_BOOK) {
-            if (!(item instanceof CraftItemStack)) {
-                item = new CraftItemStack(item);
-            }
-            CraftItemStack cis = (CraftItemStack) item;
             Properties book = new Properties();
-            NBTTagCompound tag = cis.getHandle().getTag();
+            BookMeta bookMeta = (BookMeta) item.getItemMeta();
 
             //Store the Title and Author of the Book
-            String title = tag.getString(TITLE);
+            String title = bookMeta.getTitle();
             book.setProperty(TITLE, title);
-            book.setProperty(AUTHOR, tag.getString(AUTHOR));
+            book.setProperty(AUTHOR, bookMeta.getAuthor());
 
             //Store all the Pages
-            NBTTagList pages = tag.getList(PAGES);
-            for (int i = 0; i < pages.size(); i++) {
-                NBTTagString page = (NBTTagString) pages.get(i);
-                book.setProperty(PAGE + i, page.toString());
+            for (int i = 0; i < bookMeta.getPageCount(); i++) {
+                book.setProperty(PAGE + i, bookMeta.getPage(i));
             }
 
             //Write the Book Properties to file
@@ -153,17 +150,9 @@ public class Loot {
         }
 
         if (!name.isEmpty()) {
-            if (!(clone instanceof CraftItemStack)) {
-                clone = new CraftItemStack(clone);
-            }
-            CraftItemStack cis = (CraftItemStack) clone;
-
-            NBTTagCompound tag = cis.getHandle().getTag();
-            //If the tag doesnt exist, create one.
-            if (tag == null) {
-                cis.getHandle().setTag(new NBTTagCompound());
-                tag = cis.getHandle().getTag();
-            }
+            ItemMeta meta = clone.hasItemMeta()
+                            ? clone.getItemMeta()
+                            : PhatLoots.server.getItemFactory().getItemMeta(clone.getType());
 
             //Check if the Loot is a WrittenBook
             if (clone.getType() == Material.WRITTEN_BOOK) {
@@ -185,19 +174,16 @@ public class Loot {
                 }
 
                 //Set the Title and Author of the Book
-                tag.setString(TITLE, book.getProperty(TITLE));
-                tag.setString(AUTHOR, book.getProperty(AUTHOR));
-
-                if (!tag.hasKey(PAGES)) {
-                    tag.set(PAGES, new NBTTagList());
-                }
-                NBTTagList pages = tag.getList(PAGES);
+                BookMeta bookMeta = (BookMeta) meta;
+                bookMeta.setTitle(book.getProperty(TITLE));
+                bookMeta.setAuthor(book.getProperty(AUTHOR));
 
                 //Set all the Pages
                 for (int i = 0; book.containsKey(PAGE + i); i++) {
-                    NBTTagString page = new NBTTagString("", book.getProperty(PAGE + i));
-                    pages.add(page);
+                    bookMeta.addPage(book.getProperty(PAGE + i));
                 }
+
+                clone.setItemMeta(bookMeta);
             } else {
                 File file = new File(PhatLoots.dataFolder
                         + "/Item Descriptions/" + name + ".txt");
@@ -208,16 +194,6 @@ public class Loot {
                         fReader = new FileReader(file);
                         bReader = new BufferedReader(fReader);
 
-                        if (!tag.hasKey("display")) {
-                            tag.set("display", new NBTTagCompound());
-                        }
-                        NBTTagCompound display = tag.getCompound("display");
-
-                        if (!display.hasKey("Lore")) {
-                            display.set("Lore", new NBTTagList());
-                        }
-                        NBTTagList loreList = display.getList("Lore");
-
                         String line = bReader.readLine();
                         if (line != null) {
                             //Add color to the Name line
@@ -226,13 +202,20 @@ public class Loot {
                             }
 
                             //Set the Name of the Item
-                            display.setString("Name", line);
+                            meta.setDisplayName(line);
 
                             //Add each remaining line of the File
+                            List<String> lore = new LinkedList<String>();
                             while ((line = bReader.readLine()) != null) {
                                 line = line.replace('&', '§');
-                                loreList.add(new NBTTagString("", line));
+                                lore.add(line);
+//                                //Check if part of a Set
+//                                if (line.matches("§[0-9a-flno][0-9a-zA-Z]+ Set")) {
+//                                    String set = line.substring(2, line.length() - 4);
+//                                    tag.setString("set", set);
+//                                }
                             }
+                            meta.setLore(lore);
                         }
                     } catch (Exception e) {
                     } finally {
@@ -246,6 +229,8 @@ public class Loot {
                     PhatLoots.logger.severe("The " + name
                             + " Item Description File cannot be found");
                 }
+
+                clone.setItemMeta(meta);
             }
         }
 
@@ -375,38 +360,38 @@ public class Loot {
         return ((Loot) object).toString().equals(toString());
     }
 
-    /**
-    * Returns the name of the given ItemStack
-    * Returns null if the ItemStack provided is null
-    * Returns the name from the NBTTag if present
-    * Otherwise returns the name of the ItemStack Material
-    *
-    * @param item The given ItemStack (may be null)
-    * @return The name of the item
-    */
-    public static String getName(ItemStack item) {
-        String name = null;
-        if (item != null) {
-            if (!(item instanceof CraftItemStack)) {
-                item = new CraftItemStack(item);
-            }
-            CraftItemStack cis = (CraftItemStack) item;
-
-            NBTTagCompound tag = cis.getHandle().getTag();
-            NBTTagCompound display = null;
-            if (tag != null) {
-                display = tag.getCompound("display");
-            }
-
-            if (display == null) {
-                name = item.getType().name().toLowerCase();
-            } else {
-                name = display.getString("Name");
-                if (name.isEmpty()) {
-                    name = item.getType().name().toLowerCase();
-                }
-            }
-        }
-        return name;
-    }
+//    /**
+//    * Returns the name of the given ItemStack
+//    * Returns null if the ItemStack provided is null
+//    * Returns the name from the NBTTag if present
+//    * Otherwise returns the name of the ItemStack Material
+//    *
+//    * @param item The given ItemStack (may be null)
+//    * @return The name of the item
+//    */
+//    public static String getName(ItemStack item) {
+//        String name = null;
+//        if (item != null) {
+//            if (!(item instanceof CraftItemStack)) {
+//                item = new CraftItemStack(item);
+//            }
+//            CraftItemStack cis = (CraftItemStack) item;
+//
+//            NBTTagCompound tag = cis.getHandle().getTag();
+//            NBTTagCompound display = null;
+//            if (tag != null) {
+//                display = tag.getCompound("display");
+//            }
+//
+//            if (display == null) {
+//                name = item.getType().name().toLowerCase();
+//            } else {
+//                name = display.getString("Name");
+//                if (name.isEmpty()) {
+//                    name = item.getType().name().toLowerCase();
+//                }
+//            }
+//        }
+//        return name;
+//    }
 }

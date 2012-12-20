@@ -662,14 +662,12 @@ public class PhatLoot {
             lootTimes.clear();
         } else {
             //Find the PhatLootChest of the given Block and reset it
-            String chest = findChest(block).toString();
-            Iterator itr = lootTimes.keySet().iterator();
-                while (itr.hasNext()) {
-                    String key = (String) itr.next();
-                    if (key.startsWith(chest)) {
-                        itr.remove();
-                    }
+            String chest = findChest(block).toString() + "'";
+            for (String key: lootTimes.stringPropertyNames()) {
+                if (key.startsWith(chest)) {
+                    lootTimes.remove(key);
                 }
+            }
         }
         save();
     }

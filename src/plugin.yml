@@ -1,6 +1,6 @@
 name: PhatLoots
 main: com.codisimus.plugins.phatloots.PhatLoots
-version: 2.2.1
+version: 2.2.2
 author: Codisimus
 website: www.codisimus.com
 description: Chests with randomly generated money/items
@@ -27,5 +27,7 @@ permissions:
     description: Needed to see loot information of a given PhatLoot (/loot info)
   phatloots.name:
     description: Needed to see the name of the PhatLoot that a chest belongs to (/loot name)
+  phatloots.give:
+    description: Needed to force a Player to open a PhatLoot chest (/loot give)
   phatloots.admin:
     description: Needed to break linked Blocks

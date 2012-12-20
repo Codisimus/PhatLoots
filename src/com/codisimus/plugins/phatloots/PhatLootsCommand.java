@@ -26,7 +26,7 @@ import org.bukkit.inventory.ItemStack;
 public class PhatLootsCommand implements CommandExecutor {
     private static enum Action {
         HELP, MAKE, DELETE, LINK, UNLINK, DESCRIPTION, TIME, GLOBAL,
-        ROUND, ADD, REMOVE, MONEY, EXP, LIST, INFO, RESET, RL
+        ROUND, ADD, REMOVE, MONEY, EXP, LIST, INFO, GIVE, RESET, RL
     }
     private static enum Help { CREATE, SETUP, LOOT }
     private static final HashSet TRANSPARENT = Sets.newHashSet(
@@ -55,12 +55,50 @@ public class PhatLootsCommand implements CommandExecutor {
      */
     @Override
     public boolean onCommand(CommandSender sender, Command command, String alias, String[] args) {
+        //loot give command
+        if (args.length > 0 && args[0].equals("give")) {
+            if (args.length != 3) {
+                if (sender instanceof Player) {
+                    sendHelp((Player) sender);
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+
+            //Cancel if the Player does not have the needed permission
+            if (sender instanceof Player) {
+                Player player = (Player) sender;
+                if (!PhatLoots.hasPermission(player, "commandloot")) {
+                    player.sendMessage(PhatLootsMessages.permission);
+                    return true;
+                }
+            }
+
+            Player player = PhatLoots.server.getPlayer(args[1]);
+            if (player == null) {
+                sender.sendMessage("§6" + player + " §4is not online");
+                return true;
+            }
+
+            PhatLoot phatLoot = PhatLoots.getPhatLoot(args[2]);
+            if (phatLoot == null) {
+                sender.sendMessage("§4PhatLoot §6" + args[2] + "§4 does not exist");
+                return true;
+            }
+
+            Inventory inventory = PhatLoots.server.createInventory(player, 54, phatLoot.name);
+            player.openInventory(inventory);
+            phatLoot.getLoot(player, new PhatLootChest(player.getLocation().getBlock()), inventory);
+            return true;
+        }
+
         //Cancel if the command is not from a Player
         if (!(sender instanceof Player)) {
-            if (args.length > 0 && args[0].equals("rl")) {
+            if (args.length == 1 && args[0].equals("rl")) {
                 PhatLoots.rl();
             }
-            return true;
+            return false;
         }
 
         Player player = (Player) sender;
@@ -79,7 +117,7 @@ public class PhatLootsCommand implements CommandExecutor {
             //Cancel if the first argument is not a valid PhatLoot
             PhatLoot phatLoot = PhatLoots.getPhatLoot(args[0]);
             if (phatLoot == null) {
-                player.sendMessage("§5PhatLoot §6" + args[0] + "§5 does not exist");
+                player.sendMessage("§4PhatLoot §6" + args[0] + "§4 does not exist");
                 return true;
             }
 
@@ -127,7 +165,7 @@ public class PhatLootsCommand implements CommandExecutor {
                 PhatLoot delete = PhatLoots.getPhatLoot(args[1]);
 
                 if (delete == null) {
-                    player.sendMessage("§5PhatLoot §6" + args[0] + "§5 does not exist");
+                    player.sendMessage("§4PhatLoot §6" + args[0] + "§4 does not exist");
                 } else {
                     PhatLoots.removePhatLoot(delete);
                     player.sendMessage("§5PhatLoot §6" + delete.name + "§5 was deleted!");
@@ -183,6 +221,11 @@ public class PhatLootsCommand implements CommandExecutor {
 
             if (args.length != 2) {
                 sendCreateHelp(player);
+                return true;
+            }
+
+            if (!args[1].matches("[a-zA-Z0-9]+")) {
+                player.sendMessage("§4An item decription name may only contain letters and numbers");
                 return true;
             }
 
@@ -373,6 +416,7 @@ public class PhatLootsCommand implements CommandExecutor {
                     bonusAmount = getUpperBound(s);
                     if (baseAmount == -1 || bonusAmount == -1) {
                         player.sendMessage("§6" + s + "§4 is not a valid number or range");
+                        return true;
                     }
                     item.setAmount(baseAmount);
                     break;
@@ -380,6 +424,7 @@ public class PhatLootsCommand implements CommandExecutor {
                 case '%':
                     percent = getPercent(player, s);
                     if (percent == -1) {
+                        player.sendMessage("§6" + s + "§4 is not a percent");
                         return true;
                     }
                     break;
@@ -396,11 +441,16 @@ public class PhatLootsCommand implements CommandExecutor {
                     short data = getData(s);
                     if (data == -1) {
                         player.sendMessage("§6" + s + "§4 is not a valid data/durability value");
+                        return true;
                     }
                     item.setDurability(data);
                     break;
 
                 case 'n':
+                    if (!s.matches("[a-zA-Z0-9]")) {
+                        player.sendMessage("§4An item decription name may only contain letters and numbers");
+                        return true;
+                    }
                     description = s;
                     break;
 
@@ -1037,11 +1087,12 @@ public class PhatLootsCommand implements CommandExecutor {
      */
     private static void sendHelp(Player player) {
         player.sendMessage("§e     PhatLoots Help Page:");
-        player.sendMessage("§2/"+command+" [Name]§b Loot a virtual Chest for the given PhatLoot");
+        player.sendMessage("§2/"+command+" <Name>§b Loot a virtual Chest for the given PhatLoot");
         player.sendMessage("§2/"+command+" list§b List all PhatLoots");
-        player.sendMessage("§2/"+command+" info (Name)§b List info of PhatLoot");
+        player.sendMessage("§2/"+command+" info [Name]§b List info of PhatLoot");
+        player.sendMessage("§2/"+command+" give <PhatLoot> <Name>§b List info of PhatLoot");
         player.sendMessage("§2/"+command+" reset§b Reset looted times for target Block");
-        player.sendMessage("§2/"+command+" reset [Name]§b Reset looted times for PhatLoot");
+        player.sendMessage("§2/"+command+" reset <Name>§b Reset looted times for PhatLoot");
         player.sendMessage("§2/"+command+" reset all§b Reset looted times for all PhatLoots");
         player.sendMessage("§2/"+command+" help create§b Display PhatLoots Create Help Page");
         player.sendMessage("§2/"+command+" help setup§b Display PhatLoots Setup Help Page");
@@ -1057,11 +1108,11 @@ public class PhatLootsCommand implements CommandExecutor {
     private static void sendCreateHelp(Player player) {
         player.sendMessage("§e     PhatLoots Create Help Page:");
         player.sendMessage("§7If Name is not specified then all PhatLoots linked to the target Block will be affected");
-        player.sendMessage("§2/"+command+" make [Name]§b Create PhatLoot with given name");
-        player.sendMessage("§2/"+command+" delete [Name]§b Delete PhatLoot");
-        player.sendMessage("§2/"+command+" link [Name]§b Link target Chest/Dispenser with PhatLoot");
-        player.sendMessage("§2/"+command+" unlink (Name)§b Unlink target Block from PhatLoot");
-        player.sendMessage("§2/"+command+" description [Name]§b Create a new Item Description");
+        player.sendMessage("§2/"+command+" make <Name>§b Create PhatLoot with given name");
+        player.sendMessage("§2/"+command+" delete <Name>§b Delete PhatLoot");
+        player.sendMessage("§2/"+command+" link <Name>§b Link target Chest/Dispenser with PhatLoot");
+        player.sendMessage("§2/"+command+" unlink [Name]§b Unlink target Block from PhatLoot");
+        player.sendMessage("§2/"+command+" description <Name>§b Create a new Item Description");
     }
 
     /**
@@ -1073,15 +1124,14 @@ public class PhatLootsCommand implements CommandExecutor {
         player.sendMessage("§e     PhatLoots Setup Help Page:");
         player.sendMessage("§7If Name is not specified then all PhatLoots linked to the target Block will be affected");
         player.sendMessage("§6Amount may be a number §4(100)§6 or range §4(100-500)");
-        player.sendMessage("§2/"+command+" time (Name) [Days] [Hrs] [Mins] [Secs]§b Set cooldown time for PhatLoot");
-        player.sendMessage("§2/"+command+" global (Name) true§b Set PhatLoot to a global cooldown");
-        player.sendMessage("§2/"+command+" global (Name) false§b Set PhatLoot to an individual cooldown");
-        player.sendMessage("§2/"+command+" round (Name) true§b Set PhatLoot to round down cooldown times (ex. Daily/Hourly loots)");
-        player.sendMessage("§2/"+command+" round (Name) false§b Set PhatLoot not round down cooldown times");
-        player.sendMessage("§2/"+command+" money (Name) [Amount]§b Set money range to be looted");
-        player.sendMessage("§2/"+command+" exp (Name) [Amount]§b Set experience to be gained");
-        player.sendMessage("§2/"+command+" add cmd (Name) /[Command]§b Add a Command that will be executed upon looting");
-        player.sendMessage("§2/"+command+" remove cmd (Name) /[Command]§b Remove a Command that will be executed upon looting");
+        player.sendMessage("§2/"+command+" time [Name] <Days> <Hrs> <Mins> <Secs>§b Set cooldown time for PhatLoot");
+        player.sendMessage("§2/"+command+" global [Name] true§b Set PhatLoot to a global cooldown");
+        player.sendMessage("§2/"+command+" global [Name] false§b Set PhatLoot to an individual cooldown");
+        player.sendMessage("§2/"+command+" round [Name] <true|false>§b Set if cooldown times should round down (ex. Daily/Hourly loots)");
+        player.sendMessage("§2/"+command+" money [Name] <Amount>§b Set money range to be looted");
+        player.sendMessage("§2/"+command+" exp [Name] <Amount>§b Set experience to be gained");
+        player.sendMessage("§2/"+command+" add cmd [Name] /<Command>§b Add a Command that will be executed upon looting");
+        player.sendMessage("§2/"+command+" remove cmd [Name] /<Command>§b Remove a Command that will be executed upon looting");
     }
 
     /**
@@ -1105,8 +1155,8 @@ public class PhatLootsCommand implements CommandExecutor {
         player.sendMessage("   §5Append more Enchantments using §2& ex. §2earrow_fire&arrow_unlimited");
         player.sendMessage("§5Item may be it's Name, ID, or §2hand");
         player.sendMessage("§5Parameters can be in any order but must be separated by a space");
-        player.sendMessage("§2/"+command+" add (Item) (Parameters)§b add item that may be looted");
-        player.sendMessage("§2/"+command+" remove (Item) (Parameters)§b remove item that may be looted");
+        player.sendMessage("§2/"+command+" <add|remove> <Item> [Parameters]");
+        player.sendMessage("§bex. /"+command+" add hand #5 nEnderNade %10");
     }
 
     /**
