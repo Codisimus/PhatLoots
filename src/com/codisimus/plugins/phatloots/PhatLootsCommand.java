@@ -447,7 +447,7 @@ public class PhatLootsCommand implements CommandExecutor {
                     break;
 
                 case 'n':
-                    if (!s.matches("[a-zA-Z0-9]")) {
+                    if (!s.matches("[a-zA-Z0-9]+")) {
                         player.sendMessage("§4An item decription name may only contain letters and numbers");
                         return true;
                     }
