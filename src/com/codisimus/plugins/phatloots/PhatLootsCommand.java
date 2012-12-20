@@ -69,7 +69,7 @@ public class PhatLootsCommand implements CommandExecutor {
             //Cancel if the Player does not have the needed permission
             if (sender instanceof Player) {
                 Player player = (Player) sender;
-                if (!PhatLoots.hasPermission(player, "commandloot")) {
+                if (!PhatLoots.hasPermission(player, "give")) {
                     player.sendMessage(PhatLootsMessages.permission);
                     return true;
                 }
@@ -77,7 +77,7 @@ public class PhatLootsCommand implements CommandExecutor {
 
             Player player = PhatLoots.server.getPlayer(args[1]);
             if (player == null) {
-                sender.sendMessage("§6" + player + " §4is not online");
+                sender.sendMessage("§6" + args[1] + " §4is not online");
                 return true;
             }
 
