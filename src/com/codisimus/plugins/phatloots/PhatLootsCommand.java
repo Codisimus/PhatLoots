@@ -1090,7 +1090,7 @@ public class PhatLootsCommand implements CommandExecutor {
         player.sendMessage("§2/"+command+" <Name>§b Loot a virtual Chest for the given PhatLoot");
         player.sendMessage("§2/"+command+" list§b List all PhatLoots");
         player.sendMessage("§2/"+command+" info [Name]§b List info of PhatLoot");
-        player.sendMessage("§2/"+command+" give <PhatLoot> <Name>§b List info of PhatLoot");
+        player.sendMessage("§2/"+command+" give <PhatLoot> <Name>§b Force Player to open a PhatLoot");
         player.sendMessage("§2/"+command+" reset§b Reset looted times for target Block");
         player.sendMessage("§2/"+command+" reset <Name>§b Reset looted times for PhatLoot");
         player.sendMessage("§2/"+command+" reset all§b Reset looted times for all PhatLoots");
@@ -1141,22 +1141,21 @@ public class PhatLootsCommand implements CommandExecutor {
      */
     private static void sendLootHelp(Player player) {
         player.sendMessage("§e     PhatLoots Manage Loot Help Page:");
-        player.sendMessage("§5Add any number of the following Parameters to the command");
         player.sendMessage("§5A Parameter starts with the 1 character §2id");
-        player.sendMessage("§2p§f: §5The Name of the PhatLoot ex. §2pEpic");
-        player.sendMessage("   §5If PhatLoot is not specified then all PhatLoots linked to the target Block will be affected");
-        player.sendMessage("§2d§f: §5The data/durability value of the item ex. §2d5");
-        player.sendMessage("§2c§f: §5The id of the collective loot to specify ex. §2c1");
-        player.sendMessage("§2#§f: §5The amount of the item ex. §2#10 §7or §2#1-64 §7(defaulted to §21§5)");
-        player.sendMessage("§2%§f: §5The chance of looting the item ex. §2%50 §5or §2%0.1 §5(defaulted to §2100§5)");
-        player.sendMessage("§2n§f: §5The Name of the item description ex. §2nSuperSword");
-        player.sendMessage("§2e§f: §5The item enchantments ex. §2earrow_fire §5or §2earrow_fire&arrow_unlimited");
-        player.sendMessage("   §5Enchantment levels can be added as follows §2arrow_fire(2)");
-        player.sendMessage("   §5Append more Enchantments using §2& ex. §2earrow_fire&arrow_unlimited");
-        player.sendMessage("§5Item may be it's Name, ID, or §2hand");
-        player.sendMessage("§5Parameters can be in any order but must be separated by a space");
-        player.sendMessage("§2/"+command+" <add|remove> <Item> [Parameters]");
-        player.sendMessage("§bex. /"+command+" add hand #5 nEnderNade %10");
+        player.sendMessage("§2p§f: §5The Name of the PhatLoot ex. §6pEpic");
+        player.sendMessage("§bIf PhatLoot is not specified then all PhatLoots linked to the target Block will be affected");
+        player.sendMessage("§2d§f: §5The data/durability value of the item ex. §6d5");
+        player.sendMessage("§2c§f: §5The id of the collective loot to specify ex. §6c1");
+        player.sendMessage("§2#§f: §5The amount of the item ex. §6#10 §5or §6#1-64 §5(default: §61§5)");
+        player.sendMessage("§2%§f: §5The chance of looting the item ex. §6%50 §5or §6%0.1 §5(default: §6100§5)");
+        player.sendMessage("§2n§f: §5The Name of the item description ex. §6nSuperSword");
+        player.sendMessage("§2e§f: §5The item enchantment ex. §6earrow_fire");
+        player.sendMessage("§bEnchantment levels can be added. ex. §6arrow_fire(2)");
+        player.sendMessage("§2/"+command+" <add|remove> <Item|ID|hand> [Parameter1] [Parameter2]...");
+        player.sendMessage("§bex. §6/"+command+" add hand #1-16 nEnderNade %32");
+        player.sendMessage("§bex. §6/"+command+" add bow earrow_fire(2) earrow_unlimited %5");
+        player.sendMessage("§bTutorial Video:");
+        player.sendMessage("§1§nwww.youtu.be/tRQuKbRTaA4");
     }
 
     /**
