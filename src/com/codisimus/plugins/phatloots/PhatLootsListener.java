@@ -8,9 +8,11 @@ import java.util.LinkedList;
 import java.util.Properties;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.Sound;
 import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
 import org.bukkit.block.Dispenser;
+import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -19,11 +21,13 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPhysicsEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
+import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.world.WorldLoadEvent;
 import org.bukkit.inventory.DoubleChestInventory;
 import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.InventoryHolder;
 
 /**
  * Listens for interactions with PhatLootChests
@@ -253,6 +257,7 @@ public class PhatLootsListener implements Listener {
 
             break;
 
+        case ENDER_CHEST: //Fall through
         case CHEST:
             //Return if the Chest was not opened
             if (!event.getAction().equals(Action.RIGHT_CLICK_BLOCK)) {
@@ -318,6 +323,7 @@ public class PhatLootsListener implements Listener {
             //Swap the Inventories
             event.setCancelled(true);
             player.openInventory(inventory);
+            player.playSound(block.getLocation(), Sound.CHEST_OPEN, 0.75F, 0.95F);
 
             break;
 
@@ -329,6 +335,28 @@ public class PhatLootsListener implements Listener {
             if (chest != null && PhatLoots.canLoot(player, phatLoot)) {
                 phatLoot.getLoot(player, chest, inventory);
                 phatLoot.save();
+            }
+        }
+    }
+
+    /**
+     * Checks if a Player loots a PhatLootChest
+     *
+     * @param event The PlayerInteractEvent that occurred
+     */
+    @EventHandler (ignoreCancelled = true)
+    public void onPlayerCloseChest(InventoryCloseEvent event) {
+        InventoryHolder holder = event.getInventory().getHolder();
+        if (holder instanceof Chest) {
+            HumanEntity human = event.getPlayer();
+            if (human instanceof Player) {
+                Player player = (Player) human;
+                Location location = ((Chest) holder).getLocation();
+                String key = "global@" + location.toString();
+                if (inventories.containsKey(key)
+                        || inventories.containsKey(player.getName() + key.substring(6))) {
+                    player.playSound(location, Sound.CHEST_CLOSE, 0.75F, 0.95F);
+                }
             }
         }
     }
@@ -387,6 +415,7 @@ public class PhatLootsListener implements Listener {
         //Return if the Material of the Block is not a Chest or Furnace
         Block block = event.getBlock();
         switch (block.getType()) {
+            case ENDER_CHEST: break;
             case CHEST: break;
             case FURNACE: break;
             default: return;

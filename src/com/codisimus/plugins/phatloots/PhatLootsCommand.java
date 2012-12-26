@@ -646,6 +646,7 @@ public class PhatLootsCommand implements CommandExecutor {
         //Cancel if the Player is not targeting a correct Block
         Block block = player.getTargetBlock(TRANSPARENT, 10);
         switch (block.getType()) {
+        case ENDER_CHEST:
         case CHEST:
             //Make the Chest unlockable if ChestLock is enabled
             if (setUnlockable && PhatLoots.pm.isPluginEnabled("ChestLock")) {
@@ -1065,7 +1066,7 @@ public class PhatLootsCommand implements CommandExecutor {
                 return;
             }
 
-            //Reset all Buttons linked to the PhatLoot
+            //Reset all Chests linked to the PhatLoot
             phatLoot.reset(null);
 
             player.sendMessage("§5All Chests in PhatLoot §6"
@@ -1184,10 +1185,9 @@ public class PhatLootsCommand implements CommandExecutor {
             //Cancel if the Player is not targeting a correct Block
             Block block = player.getTargetBlock(TRANSPARENT, 10);
             switch (block.getType()) {
-            case DISPENSER:
-                break;
-            case CHEST:
-                break;
+            case DISPENSER: break;
+            case ENDER_CHEST: break;
+            case CHEST: break;
             default:
                 player.sendMessage("§4You must target a Chest/Dispenser.");
                 return phatLoots;
@@ -1213,7 +1213,7 @@ public class PhatLootsCommand implements CommandExecutor {
     public static int getCollID(String string) {
         int id = 0;
         try {
-            id = Integer.parseInt(string.substring(1));
+            id = Integer.parseInt(string);
         } catch (Exception ex) {
         }
 
