@@ -312,7 +312,7 @@ public class PhatLootsListener implements Listener {
                 //Create a new Inventory for the Player
                 inventory = PhatLoots.server.createInventory(chest,
                                                              inventory == null
-                                                             ? 24
+                                                             ? 27
                                                              : inventory.getSize()
                                                              , name);
 
