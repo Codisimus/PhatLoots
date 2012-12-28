@@ -238,7 +238,8 @@ public class PhatLootsListener implements Listener {
     @EventHandler (ignoreCancelled = true)
     public void onPlayerInteract(PlayerInteractEvent event) {
         Player player = event.getPlayer();
-        Inventory inventory;
+        Chest chest = null;
+        Inventory inventory = null;
         Block block = event.getClickedBlock();
         switch (block.getType()) {
         case DISPENSER:
@@ -257,20 +258,22 @@ public class PhatLootsListener implements Listener {
 
             break;
 
-        case ENDER_CHEST: //Fall through
-        case CHEST:
+        case CHEST: //Fall through
+        case ENDER_CHEST:
             //Return if the Chest was not opened
             if (!event.getAction().equals(Action.RIGHT_CLICK_BLOCK)) {
                 return;
             }
 
-            Chest chest = (Chest) block.getState();
-            inventory = chest.getInventory();
+            if (block.getType() == Material.CHEST) {
+                chest = (Chest) block.getState();
+                inventory = chest.getInventory();
 
-            //We only care about the left side because that is the Block that would be linked
-            if (inventory instanceof DoubleChestInventory) {
-                chest = (Chest) ((DoubleChestInventory) inventory).getLeftSide().getHolder();
-                block = chest.getBlock();
+                //We only care about the left side because that is the Block that would be linked
+                if (inventory instanceof DoubleChestInventory) {
+                    chest = (Chest) ((DoubleChestInventory) inventory).getLeftSide().getHolder();
+                    block = chest.getBlock();
+                }
             }
 
             //Return if the Chest is not a PhatLootChest
@@ -307,7 +310,12 @@ public class PhatLootsListener implements Listener {
                 String name = chestName.replace("<name>", phatLootName);
 
                 //Create a new Inventory for the Player
-                inventory = PhatLoots.server.createInventory(chest, inventory.getSize(), name);
+                inventory = PhatLoots.server.createInventory(chest,
+                                                             inventory == null
+                                                             ? 24
+                                                             : inventory.getSize()
+                                                             , name);
+
                 fInventory = new ForgettableInventory(PhatLoots.plugin, inventory) {
                     @Override
                     protected void execute() {
@@ -331,9 +339,9 @@ public class PhatLootsListener implements Listener {
         }
 
         for (PhatLoot phatLoot: PhatLoots.getPhatLoots()) {
-            PhatLootChest chest = phatLoot.findChest(block);
+            PhatLootChest plChest = phatLoot.findChest(block);
             if (chest != null && PhatLoots.canLoot(player, phatLoot)) {
-                phatLoot.getLoot(player, chest, inventory);
+                phatLoot.getLoot(player, plChest, inventory);
                 phatLoot.save();
             }
         }
