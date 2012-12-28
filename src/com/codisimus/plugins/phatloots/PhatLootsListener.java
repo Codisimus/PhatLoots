@@ -6,6 +6,7 @@ import java.io.FileWriter;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Properties;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Sound;
@@ -340,7 +341,7 @@ public class PhatLootsListener implements Listener {
 
         for (PhatLoot phatLoot: PhatLoots.getPhatLoots()) {
             PhatLootChest plChest = phatLoot.findChest(block);
-            if (chest != null && PhatLoots.canLoot(player, phatLoot)) {
+            if (plChest != null && PhatLoots.canLoot(player, phatLoot)) {
                 phatLoot.getLoot(player, plChest, inventory);
                 phatLoot.save();
             }
