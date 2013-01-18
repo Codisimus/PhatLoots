@@ -179,7 +179,7 @@ public class Loot {
                 bookMeta.setAuthor(book.getProperty(AUTHOR));
 
                 //Set all the Pages
-                for (int i = 0; book.containsKey(PAGE + i); i++) {
+                for (int i = 1; book.containsKey(PAGE + i); i++) {
                     bookMeta.addPage(book.getProperty(PAGE + i));
                 }
 
