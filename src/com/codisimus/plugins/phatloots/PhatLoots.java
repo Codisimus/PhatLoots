@@ -7,10 +7,13 @@ import java.util.*;
 import java.util.logging.Logger;
 import net.milkbowl.vault.economy.Economy;
 import net.milkbowl.vault.permission.Permission;
+import org.bukkit.Location;
 import org.bukkit.Server;
+import org.bukkit.Sound;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -209,8 +212,8 @@ public class PhatLoots extends JavaPlugin {
     public static boolean canLoot(Player player, PhatLoot phatLoot) {
         World world = null;
         return hasPermission(player, "loot.*") //Check for loot all permission
-               ? !permission.groupHas(world, permission.getPrimaryGroup(player),
-                                             "loot.-" + phatLoot.name) //Check if the Group negates the permission
+               ? true//!permission.groupHas(world, permission.getPrimaryGroup(player),
+                                             //"loot.-" + phatLoot.name) //Check if the Group negates the permission
                : hasPermission(player, "loot." + phatLoot.name); //Check if the Player has the specific loot permission
     }
 
@@ -298,6 +301,8 @@ public class PhatLoots extends JavaPlugin {
                     }
 
                     phatLoots.put(phatLoot.name, phatLoot);
+
+                    fis.close();
 
                     file = new File(dataFolder + "/PhatLoots/"
                                     + phatLoot.name + ".loottimes");
@@ -547,6 +552,54 @@ public class PhatLoots extends JavaPlugin {
         logger.info("PhatLoots reloaded");
         if (player != null) {
             player.sendMessage("§5PhatLoots reloaded");
+        }
+    }
+
+    /**
+     * Plays animation/sound for opening a virtual Inventory
+     *
+     * @param player The Player opening the Inventory
+     * @param inv The virtual Inventory being opened
+     * @param loc The Location of the Chest which we want to be animation
+     * @param global Whether the animation should be sent to everyone (true) or just the Player (false)
+     */
+    public static void openInventory(Player player, Inventory inv, Location loc, Boolean global) {
+        if (global) {
+            if (inv.getViewers().size() <= 1) { //First viewer
+                //Play for each Player in the World
+                for (Player p: player.getWorld().getPlayers()) {
+                    p.playSound(loc, Sound.CHEST_OPEN, 0.75F, 0.95F);
+                    p.playNote(loc, (byte) 1, (byte) 1); //Open animation
+                }
+            }
+        } else {
+            //Play for only the individual Player
+            player.playSound(loc, Sound.CHEST_OPEN, 0.75F, 0.95F);
+            player.playNote(loc, (byte) 1, (byte) 1); //Open animation
+        }
+    }
+
+    /**
+     * Plays animation/sound for closing a virtual Inventory
+     *
+     * @param player The Player closing the Inventory
+     * @param inv The virtual Inventory being closed
+     * @param loc The Location of the Chest which we want to be animation
+     * @param global Whether the animation should be sent to everyone (true) or just the Player (false)
+     */
+    public static void closeInventory(Player player, Inventory inv, Location loc, Boolean global) {
+        if (global) {
+            if (inv.getViewers().size() <= 1) { //Last viewer
+                //Play for each Player in the World
+                for (Player p: player.getWorld().getPlayers()) {
+                    p.playSound(loc, Sound.CHEST_CLOSE, 0.75F, 0.95F);
+                    p.playNote(loc, (byte) 1, (byte) 0); //Close animation
+                }
+            }
+        } else {
+            //Play for only the individual Player
+            player.playSound(loc, Sound.CHEST_CLOSE, 0.75F, 0.95F);
+            player.playNote(loc, (byte) 1, (byte) 0); //Close animation
         }
     }
 }

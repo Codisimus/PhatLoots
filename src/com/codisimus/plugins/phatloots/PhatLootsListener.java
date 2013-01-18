@@ -332,7 +332,7 @@ public class PhatLootsListener implements Listener {
             //Swap the Inventories
             event.setCancelled(true);
             player.openInventory(inventory);
-            player.playSound(block.getLocation(), Sound.CHEST_OPEN, 0.75F, 0.95F);
+            PhatLoots.openInventory(player, inventory, block.getLocation(), global);
 
             break;
 
@@ -355,16 +355,18 @@ public class PhatLootsListener implements Listener {
      */
     @EventHandler (ignoreCancelled = true)
     public void onPlayerCloseChest(InventoryCloseEvent event) {
-        InventoryHolder holder = event.getInventory().getHolder();
+        Inventory inv = event.getInventory();
+        InventoryHolder holder = inv.getHolder();
         if (holder instanceof Chest) {
             HumanEntity human = event.getPlayer();
             if (human instanceof Player) {
                 Player player = (Player) human;
                 Location location = ((Chest) holder).getLocation();
                 String key = "global@" + location.toString();
-                if (inventories.containsKey(key)
-                        || inventories.containsKey(player.getName() + key.substring(6))) {
-                    player.playSound(location, Sound.CHEST_CLOSE, 0.75F, 0.95F);
+                if (inventories.containsKey(key)) {
+                    PhatLoots.closeInventory(player, inv, location, true);
+                } else if (inventories.containsKey(player.getName() + key.substring(6))) {
+                    PhatLoots.closeInventory(player, inv, location, false);
                 }
             }
         }

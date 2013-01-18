@@ -5,10 +5,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileReader;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemStack;
@@ -130,6 +128,14 @@ public class Loot {
             this.name = name;
             if (name.isEmpty()) {
                 return true;
+            } else if (name.equals("Random")) {
+                String folder = item.getType() + item.getEnchantments().toString();
+                File dir = new File(PhatLoots.dataFolder
+                        + "/Item Descriptions/" + folder);
+                if (!dir.isDirectory()) {
+                    dir.mkdir();
+                }
+                return true;
             } else {
                 return new File(PhatLoots.dataFolder
                         + "/Item Descriptions/" + name + ".txt").exists();
@@ -185,8 +191,18 @@ public class Loot {
 
                 clone.setItemMeta(bookMeta);
             } else {
-                File file = new File(PhatLoots.dataFolder
-                        + "/Item Descriptions/" + name + ".txt");
+                File file;
+                if (name.equals("Random")) {
+                    String folder = clone.getType() + clone.getEnchantments().toString();
+                    File dir = new File(PhatLoots.dataFolder
+                            + "/Item Descriptions/" + folder);
+                    File[] files = dir.listFiles();
+                    Random random = new Random();
+                    file = files[random.nextInt(files.length)];
+                } else {
+                    file = new File(PhatLoots.dataFolder
+                            + "/Item Descriptions/" + name + ".txt");
+                }
                 if (file.exists()) {
                     FileReader fReader = null;
                     BufferedReader bReader = null;

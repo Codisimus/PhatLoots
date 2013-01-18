@@ -2,6 +2,7 @@ package com.codisimus.plugins.phatloots;
 
 import java.util.*;
 import org.bukkit.GameMode;
+import org.bukkit.Location;
 import org.bukkit.Sound;
 import org.bukkit.block.Block;
 import org.bukkit.enchantments.Enchantment;
@@ -139,7 +140,7 @@ public class PhatLoot {
 
         if (PhatLoots.autoLoot && !itemsInChest) {
             player.closeInventory();
-            player.playSound(chest.getBlock().getLocation(), Sound.CHEST_CLOSE, 0.75F, 0.95F);
+            PhatLoots.closeInventory(player, inventory, chest.getBlock().getLocation(), global);
         }
 
         //Set the new time for the User and return true
