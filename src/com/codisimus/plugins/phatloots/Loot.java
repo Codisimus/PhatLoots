@@ -1,13 +1,14 @@
 package com.codisimus.plugins.phatloots;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.util.*;
-import org.bukkit.Bukkit;
+import java.io.*;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Random;
+import net.minecraft.server.v1_4_6.NBTTagCompound;
 import org.bukkit.Material;
+import org.bukkit.craftbukkit.v1_4_6.inventory.CraftItemStack;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BookMeta;
@@ -22,6 +23,9 @@ public class Loot {
     private final String TITLE = "title";
     private final String AUTHOR = "author";
     private final String PAGE = "page";
+    private final String ITEM_DESCRIPTION = "item_description";
+    private final String SET = "set";
+    private final String CLASS = "class";
     private ItemStack item;
     private int bonus = 0;
     private double probability;
@@ -50,6 +54,11 @@ public class Loot {
     public Loot(ItemStack item, int bonus) {
         this.item = item;
         this.bonus = bonus;
+        net.minecraft.server.v1_4_6.ItemStack mis = CraftItemStack.asNMSCopy(item);
+        NBTTagCompound tag = mis.getTag();
+        if (tag != null) {
+            name = tag.getString(ITEM_DESCRIPTION);
+        }
     }
 
     /**
@@ -191,6 +200,13 @@ public class Loot {
 
                 clone.setItemMeta(bookMeta);
             } else {
+                net.minecraft.server.v1_4_6.ItemStack mis = CraftItemStack.asNMSCopy(clone);
+                NBTTagCompound tag = mis.getTag();
+                if (tag == null) {
+                    tag = new NBTTagCompound();
+                }
+                tag.setString(ITEM_DESCRIPTION, name);
+
                 File file;
                 if (name.equals("Random")) {
                     String folder = clone.getType() + clone.getEnchantments().toString();
@@ -199,6 +215,8 @@ public class Loot {
                     File[] files = dir.listFiles();
                     Random random = new Random();
                     file = files[random.nextInt(files.length)];
+                    //String fileName = file.getName();
+                    //tag.setString(ITEM_DESCRIPTION, fileName.substring(0, fileName.length() - 4));
                 } else {
                     file = new File(PhatLoots.dataFolder
                             + "/Item Descriptions/" + name + ".txt");
@@ -225,11 +243,15 @@ public class Loot {
                             while ((line = bReader.readLine()) != null) {
                                 line = line.replace('&', '§');
                                 lore.add(line);
-//                                //Check if part of a Set
-//                                if (line.matches("§[0-9a-flno][0-9a-zA-Z]+ Set")) {
-//                                    String set = line.substring(2, line.length() - 4);
-//                                    tag.setString("set", set);
-//                                }
+
+                                //Check if part of a Class or Set
+                                if (line.matches("§[0-9a-flno][0-9a-zA-Z]+ Class")) {
+                                    String className = line.substring(2, line.length() - 6);
+                                    tag.setString(CLASS, className);
+                                } else if (line.matches("§[0-9a-flno][0-9a-zA-Z]+ Set")) {
+                                    String set = line.substring(2, line.length() - 4);
+                                    tag.setString(SET, set);
+                                }
                             }
                             meta.setLore(lore);
                         }
@@ -246,6 +268,8 @@ public class Loot {
                             + " Item Description File cannot be found");
                 }
 
+                mis.setTag(tag);
+                clone = CraftItemStack.asCraftMirror(mis);
                 clone.setItemMeta(meta);
             }
         }
