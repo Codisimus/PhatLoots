@@ -29,7 +29,7 @@ public class PhatLootsCommand implements CommandExecutor {
         ROUND, ADD, REMOVE, MONEY, EXP, LIST, INFO, GIVE, RESET, RL
     }
     private static enum Help { CREATE, SETUP, LOOT }
-    private static final HashSet TRANSPARENT = Sets.newHashSet(
+    private static final HashSet<Byte> TRANSPARENT = Sets.newHashSet(
             (byte)0,   (byte)6,   (byte)8,   (byte)9,   (byte)10,  (byte)11,
             (byte)26,  (byte)27,  (byte)28,  (byte)30,  (byte)31,  (byte)32,
             (byte)37,  (byte)38,  (byte)39,  (byte)40,  (byte)44,  (byte)50,
