@@ -1,9 +1,12 @@
 package com.codisimus.plugins.phatloots;
 
 import java.util.List;
+import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.block.Chest;
 import org.bukkit.block.Dispenser;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.DoubleChestInventory;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
@@ -64,6 +67,17 @@ public class PhatLootChest {
      * @return True if the given Block is the same Dispenser or part of the double Chest
      */
     public boolean isBlock(Block block) {
+        if (block.getType() == Material.CHEST) {
+            Chest chest = (Chest) block.getState();
+            Inventory inventory = chest.getInventory();
+
+            //We only link the left side of a DoubleChest
+            if (inventory instanceof DoubleChestInventory) {
+                chest = (Chest) ((DoubleChestInventory) inventory).getLeftSide().getHolder();
+                block = chest.getBlock();
+            }
+        }
+
         //Return false if Blocks are not in the same x-axis
         if (x != block.getX()) {
             return false;
@@ -83,41 +97,6 @@ public class PhatLootChest {
         return world.equals(block.getWorld().getName());
     }
 
-    /**
-     * Returns whether the given Block is left or right of the PhatLootChest Block
-     * Will only return true is both the Block and the PhatLootChest are Chests
-     *
-     * @param block The given Block
-     * @return true if the given Block is left or right of the PhatLootChest
-     */
-    public boolean isNeighbor(Block block) {
-        //Return false if either Block is not a Chest
-        if (isDispenser || block.getTypeId() != 54) {
-            return false;
-        }
-
-        //Return false if Blocks are not in the same y-axis
-        if (y != block.getY()) {
-            return false;
-        }
-
-        //Return false if Blocks are not in the same World
-        if (!world.equals(block.getWorld().getName())) {
-            return false;
-        }
-
-        //Return true if the Blocks are side by side
-        int a = block.getX();
-        int c = block.getZ();
-        if (a == x) {
-            return c == z+1 || c == z-1;
-        } else if (c == z) {
-            return a == x+1 || a == x-1;
-        } else {
-            return false;
-        }
-    }
-
     public boolean addLoots(List<ItemStack> itemList, Player player, Inventory inventory) {
         boolean itemsInChest = false;
         for (ItemStack item: itemList) {
@@ -129,7 +108,7 @@ public class PhatLootChest {
     }
 
     public boolean addLoot(ItemStack item, Player player, Inventory inventory) {
-        //Make sure loots do not excede the stack size
+        //Make sure loots do not exceed the stack size
         if (item.getAmount() > item.getMaxStackSize()) {
             int id = item.getTypeId();
             short durability = item.getDurability();

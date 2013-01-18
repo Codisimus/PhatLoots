@@ -10,11 +10,13 @@ import java.util.LinkedList;
 import java.util.Map;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.block.Chest;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.DoubleChestInventory;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
@@ -646,8 +648,16 @@ public class PhatLootsCommand implements CommandExecutor {
         //Cancel if the Player is not targeting a correct Block
         Block block = player.getTargetBlock(TRANSPARENT, 10);
         switch (block.getType()) {
-        case ENDER_CHEST:
         case CHEST:
+            Chest chest = (Chest) block.getState();
+            Inventory inventory = chest.getInventory();
+
+            //Linked the left side if it is a DoubleChest
+            if (inventory instanceof DoubleChestInventory) {
+                chest = (Chest) ((DoubleChestInventory) inventory).getLeftSide().getHolder();
+                block = chest.getBlock();
+            }
+        case ENDER_CHEST:
             //Make the Chest unlockable if ChestLock is enabled
             if (setUnlockable && PhatLoots.pm.isPluginEnabled("ChestLock")) {
                 Safe safe = ChestLock.findSafe(block);

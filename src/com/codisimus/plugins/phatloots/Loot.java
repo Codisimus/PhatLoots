@@ -200,12 +200,8 @@ public class Loot {
 
                 clone.setItemMeta(bookMeta);
             } else {
-                net.minecraft.server.v1_4_6.ItemStack mis = CraftItemStack.asNMSCopy(clone);
-                NBTTagCompound tag = mis.getTag();
-                if (tag == null) {
-                    tag = new NBTTagCompound();
-                }
-                tag.setString(ITEM_DESCRIPTION, name);
+                String className = null;
+                String set = null;
 
                 File file;
                 if (name.equals("Random")) {
@@ -245,12 +241,10 @@ public class Loot {
                                 lore.add(line);
 
                                 //Check if part of a Class or Set
-                                if (line.matches("§[0-9a-flno][0-9a-zA-Z]+ Class")) {
-                                    String className = line.substring(2, line.length() - 6);
-                                    tag.setString(CLASS, className);
-                                } else if (line.matches("§[0-9a-flno][0-9a-zA-Z]+ Set")) {
-                                    String set = line.substring(2, line.length() - 4);
-                                    tag.setString(SET, set);
+                                if (line.matches("§[0-9a-flno][0-9a-zA-Z]+ Class")) { //Color ClassNameOfLettersAndNumbersOfAnyLength Class
+                                    className = line.substring(2, line.length() - 6);
+                                } else if (line.matches("§[0-9a-flno][0-9a-zA-Z]+ Set")) { //Color SetNameOfLettersAndNumbersOfAnyLength Set
+                                    set = line.substring(2, line.length() - 4);
                                 }
                             }
                             meta.setLore(lore);
@@ -268,9 +262,25 @@ public class Loot {
                             + " Item Description File cannot be found");
                 }
 
-                mis.setTag(tag);
-                clone = CraftItemStack.asCraftMirror(mis);
                 clone.setItemMeta(meta);
+
+                net.minecraft.server.v1_4_6.ItemStack mis = CraftItemStack.asNMSCopy(clone);
+                NBTTagCompound tag = mis.getTag();
+                if (tag == null) {
+                    tag = new NBTTagCompound();
+                }
+
+                tag.setString(ITEM_DESCRIPTION, name);
+                if (className != null && !className.isEmpty()) {
+                    tag.setString(CLASS, className);
+                }
+                if (set != null && !set.isEmpty()) {
+                    tag.setString(SET, set);
+                }
+
+                mis.setTag(tag);
+
+                clone = CraftItemStack.asCraftMirror(mis);
             }
         }
 

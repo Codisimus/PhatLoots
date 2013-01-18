@@ -38,6 +38,8 @@ public class PhatLoots extends JavaPlugin {
     static boolean autoLock;
     static boolean autoLoot;
     static boolean displayTimeRemaining;
+    static boolean useRestricted;
+    static HashSet<String> restricted = new HashSet<String>();
     static JavaPlugin plugin;
     static String dataFolder;
     private static Permission permission;
@@ -86,7 +88,7 @@ public class PhatLoots extends JavaPlugin {
 
         /* Load Data and Settings */
         loadData();
-        loadSettings();
+        PhatLootsConfig.load();
 
         /* Link Permissions/Economy */
         RegisteredServiceProvider<Permission> permissionProvider =
@@ -119,79 +121,6 @@ public class PhatLoots extends JavaPlugin {
     }
 
     /**
-     * Loads settings from the config.properties file
-     */
-    public void loadSettings() {
-        FileInputStream fis = null;
-        try {
-            //Copy the file from the jar if it is missing
-            File file = new File(dataFolder + "/config.properties");
-            if (!file.exists()) {
-                this.saveResource("config.properties", true);
-            }
-
-            //Load config file
-            p = new Properties();
-            fis = new FileInputStream(file);
-            p.load(fis);
-
-            PhatLoot.onlyDropOnPlayerKill = Boolean.parseBoolean(loadValue("OnlyDropLootWhenKilledByPlayer"));
-            PhatLoot.replaceMobLoot = Boolean.parseBoolean(loadValue("ReplaceMobLoot"));
-            autoLoot = Boolean.parseBoolean(loadValue("AutoLoot"));
-            displayTimeRemaining = Boolean.parseBoolean(loadValue("DisplayTimeRemaining"));
-
-            PhatLootsCommand.setUnlockable = Boolean.parseBoolean(loadValue("SetChestsAsUnlockable"));
-
-            /* Default reset time */
-            String[] resetTime = loadValue("DefaultResetTime").split("'");
-            defaultDays = Integer.parseInt(resetTime[0]);
-            defaultHours = Integer.parseInt(resetTime[1]);
-            defaultMinutes = Integer.parseInt(resetTime[2]);
-            defaultSeconds = Integer.parseInt(resetTime[3]);
-
-            defaultGlobal = Boolean.parseBoolean(loadValue("GlobalResetByDefault"));
-            defaultRound = Boolean.parseBoolean(loadValue("RoundDownTimeByDefault"));
-            defaultNumberOfLoots = Integer.parseInt(loadValue("DefaultItemsPerColl"));
-
-            PhatLootsListener.chestName = loadValue("ChestName");
-
-            /* Messages */
-            PhatLootsMessages.permission = loadValue(("PermissionMessage"));
-            PhatLootsMessages.experienceLooted = loadValue(("ExperienceLootedMessage"));
-            PhatLootsMessages.moneyLooted = loadValue(("MoneyLootedMessage"));
-            PhatLootsMessages.autoLoot = loadValue(("AutoLootMessage"));
-            PhatLootsMessages.overflow = loadValue("OverflowMessage");
-            PhatLootsMessages.timeRemaining = loadValue("TimeRemainingMessage");
-            PhatLootsMessages.formatAll();
-        } catch (Exception missingProp) {
-            logger.severe("Failed to load PhatLoots "
-                            + this.getDescription().getVersion());
-            missingProp.printStackTrace();
-        } finally {
-            try {
-                fis.close();
-            } catch (Exception e) {
-            }
-        }
-    }
-
-    /**
-     * Loads the given key and prints an error if the key is missing
-     *
-     * @param key The key to be loaded
-     * @return The String value of the loaded key
-     */
-    private String loadValue(String key) {
-        //Print an error if the key is not found
-        if (!p.containsKey(key)) {
-            logger.severe("Missing value for " + key + " in config file");
-            logger.severe("Please regenerate config file");
-        }
-
-        return p.getProperty(key);
-    }
-
-    /**
      * Returns boolean value of whether the given player has the specific permission
      *
      * @param player The Player who is being checked for permission
@@ -210,11 +139,11 @@ public class PhatLoots extends JavaPlugin {
      * @return true if the given player is allowed to loot the PhatLoot
      */
     public static boolean canLoot(Player player, PhatLoot phatLoot) {
-        World world = null;
-        return hasPermission(player, "loot.*") //Check for loot all permission
-               ? true//!permission.groupHas(world, permission.getPrimaryGroup(player),
-                                             //"loot.-" + phatLoot.name) //Check if the Group negates the permission
-               : hasPermission(player, "loot." + phatLoot.name); //Check if the Player has the specific loot permission
+        return (!useRestricted || restricted.contains(phatLoot.name))
+               ? hasPermission(player, "loot.*") //Check for loot all permission
+                 ? true
+                 : hasPermission(player, "loot." + phatLoot.name) //Check if the Player has the specific loot permission
+               : true;
     }
 
     /**
