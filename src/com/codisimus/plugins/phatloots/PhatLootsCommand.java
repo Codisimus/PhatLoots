@@ -27,8 +27,8 @@ import org.bukkit.inventory.ItemStack;
  */
 public class PhatLootsCommand implements CommandExecutor {
     private static enum Action {
-        HELP, MAKE, DELETE, LINK, UNLINK, DESCRIPTION, TIME, GLOBAL,
-        ROUND, ADD, REMOVE, MONEY, EXP, LIST, INFO, GIVE, RESET, RL
+        HELP, MAKE, DELETE, LINK, UNLINK, TIME, GLOBAL, ROUND,
+        ADD, REMOVE, MONEY, EXP, LIST, INFO, GIVE, RESET, RL
     }
     private static enum Help { CREATE, SETUP, LOOT }
     private static final HashSet<Byte> TRANSPARENT = Sets.newHashSet(
@@ -212,26 +212,6 @@ public class PhatLootsCommand implements CommandExecutor {
                 break;
             }
 
-            return true;
-
-        case DESCRIPTION:
-            //Cancel if the Player does not have permission to use the command
-            if (!PhatLoots.hasPermission(player, "make")) {
-                player.sendMessage(PhatLootsMessages.permission);
-                return true;
-            }
-
-            if (args.length != 2) {
-                sendCreateHelp(player);
-                return true;
-            }
-
-            if (!args[1].matches("[a-zA-Z0-9]+")) {
-                player.sendMessage("§4An item decription name may only contain letters and numbers");
-                return true;
-            }
-
-            createDescription(player, args[1]);
             return true;
 
         case TIME:
@@ -466,9 +446,9 @@ public class PhatLootsCommand implements CommandExecutor {
             Loot loot = new Loot(item, bonusAmount - baseAmount);
             loot.setProbability(percent);
             if (!loot.setName(description)) {
-                player.sendMessage("§4You must create the §6"
-                        + description + "§4 description file");
-                createDescription(player, description);
+                player.sendMessage("§4The Item had no lore to write to file. Perhaps use the plugin §6Lores§4 to add some");
+                return true;
+                //createDescription(player, description);
             }
 
             setLoot(player, phatLoot, add, id, loot);
@@ -705,23 +685,6 @@ public class PhatLootsCommand implements CommandExecutor {
             phatLoot.removeChest(block);
             player.sendMessage("§5Target Block has been unlinked from PhatLoot §6" + phatLoot.name);
             phatLoot.save();
-        }
-    }
-
-    /**
-     * Initiates the creation of a new Item Description File
-     *
-     * @param player The Player creating the Description
-     * @param name The Name of the new Description File
-     */
-    public static void createDescription(Player player, String name) {
-        File file = new File(PhatLoots.dataFolder + "/Item Descriptions/" + name + ".txt");
-        if (file.exists()) {
-            player.sendMessage("§4The Item Description §6" + name + "§4 already exists");
-        } else {
-            PhatLootsListener.descriptionFiles.put(player, file);
-            player.sendMessage("§5Please type the Item Name as you wish it to appear");
-            player.sendMessage("§5Do not start the line with §6/§5 and use §6&§5 to add color");
         }
     }
 
@@ -1123,7 +1086,6 @@ public class PhatLootsCommand implements CommandExecutor {
         player.sendMessage("§2/"+command+" delete <Name>§b Delete PhatLoot");
         player.sendMessage("§2/"+command+" link <Name>§b Link target Chest/Dispenser with PhatLoot");
         player.sendMessage("§2/"+command+" unlink [Name]§b Unlink target Block from PhatLoot");
-        player.sendMessage("§2/"+command+" description <Name>§b Create a new Item Description");
     }
 
     /**

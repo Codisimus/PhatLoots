@@ -1,6 +1,7 @@
 package com.codisimus.plugins.phatloots;
 
 import java.util.*;
+import org.bukkit.Color;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Sound;
@@ -155,8 +156,15 @@ public class PhatLoot {
         if (replaceMobLoot) {
             drops.clear();
         }
-        drops.addAll(lootIndividual());
-        drops.addAll(lootCollective());
+
+        List<ItemStack> loot = lootIndividual();
+        loot.addAll(lootCollective());
+        if (player != null && !PhatLootsMessages.mobDropped.isEmpty()) {
+            for (ItemStack item : loot) {
+                player.sendMessage(PhatLootsMessages.mobDropped.replace("<item>", getItemName(item)));
+            }
+        }
+        drops.addAll(loot);
 
         //Roll for money amount if the range is above 0
         if (moneyUpper > 0 && player != null) {
@@ -454,6 +462,12 @@ public class PhatLoot {
 
                 String item = lootData[0];
                 int itemID;
+                //Check for Dyed Color
+                Color color = null;
+                if (item.startsWith("(")) {
+                    color = Color.fromRGB(Integer.parseInt(item.substring(1, 8)));
+                    item = item.substring(9);
+                }
                 //Check for Name of Item Description
                 if (item.contains("+")) {
                     int index = item.indexOf('+');
@@ -483,6 +497,9 @@ public class PhatLoot {
                 }
 
                 Loot loot = new Loot(itemID, lower, upper);
+                if (color != null) {
+                    loot.setColor(color);
+                }
                 loot.setProbability(Double.parseDouble(lootData[3]));
 
                 try {
@@ -680,5 +697,15 @@ public class PhatLoot {
      */
     public void save() {
         PhatLoots.savePhatLoot(this);
+    }
+
+    private String getItemName(ItemStack item) {
+        if (!item.hasItemMeta()) {
+            String name = item.getItemMeta().getDisplayName();
+            if (name != null && !name.isEmpty()) {
+                return name;
+            }
+        }
+        return item.getType().toString();
     }
 }

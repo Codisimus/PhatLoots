@@ -47,6 +47,16 @@ public class PhatLoots extends JavaPlugin {
     private static HashMap<String, PhatLoot> phatLoots = new HashMap<String, PhatLoot>();
 
     /**
+     * Runs the PhatLoots GUI
+     *
+     * @param args the command line arguments
+     */
+    public static void main(String[] args) {
+        //PhatLootsGUI gui = new PhatLootsGUI();
+        //gui.setVisible(true);
+    }
+
+    /**
      * Calls methods to load this Plugin when it is enabled
      */
     @Override

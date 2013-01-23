@@ -6,13 +6,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Random;
-import net.minecraft.server.v1_4_R1.NBTTagCompound;
+import net.minecraft.server.v1_4_6.NBTTagCompound;
+import org.bukkit.Color;
 import org.bukkit.Material;
-import org.bukkit.craftbukkit.v1_4_R1.inventory.CraftItemStack;
+import org.bukkit.craftbukkit.v1_4_6.inventory.CraftItemStack;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BookMeta;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.inventory.meta.LeatherArmorMeta;
 
 /**
  * A Loot is a ItemStack and with a probability of looting
@@ -54,7 +56,7 @@ public class Loot {
     public Loot(ItemStack item, int bonus) {
         this.item = item;
         this.bonus = bonus;
-        net.minecraft.server.v1_4_R1.ItemStack mis = CraftItemStack.asNMSCopy(item);
+        net.minecraft.server.v1_4_6.ItemStack mis = CraftItemStack.asNMSCopy(item);
         NBTTagCompound tag = mis.getTag();
         if (tag != null) {
             name = tag.getString(ITEM_DESCRIPTION);
@@ -136,7 +138,13 @@ public class Loot {
         } else {
             this.name = name;
             if (name.isEmpty()) {
-                return true;
+                net.minecraft.server.v1_4_6.ItemStack mis = CraftItemStack.asNMSCopy(item);
+                NBTTagCompound tag = mis.getTag();
+                if (tag == null) {
+                    return true;
+                } else {
+                    this.name = name = tag.getString(ITEM_DESCRIPTION);
+                }
             } else if (name.equals("Random")) {
                 String folder = item.getType() + item.getEnchantments().toString();
                 File dir = new File(PhatLoots.dataFolder
@@ -145,10 +153,39 @@ public class Loot {
                     dir.mkdir();
                 }
                 return true;
-            } else {
-                return new File(PhatLoots.dataFolder
-                        + "/Item Descriptions/" + name + ".txt").exists();
             }
+
+            File file = new File(PhatLoots.dataFolder + "/Item Descriptions/" + name + ".txt");
+            if (file.exists()) {
+                return true;
+            }
+            if (!item.hasItemMeta()) {
+                return false;
+            }
+            ItemMeta meta = item.getItemMeta();
+
+            BufferedWriter bWriter = null;
+            try {
+                file.createNewFile();
+                bWriter = new BufferedWriter(new FileWriter(file));
+                bWriter.write(meta.getDisplayName().replace('§', '&'));
+
+                List<String> lore = meta.getLore();
+                if (lore != null) {
+                    for (String line : lore) {
+                        bWriter.newLine();
+                        bWriter.write(line.replace('§', '&'));
+                    }
+                }
+            } catch (Exception e) {
+            } finally {
+                try {
+                    bWriter.close();
+                } catch (Exception e) {
+                }
+            }
+
+            return true;
         }
     }
 
@@ -264,7 +301,7 @@ public class Loot {
 
                 clone.setItemMeta(meta);
 
-                net.minecraft.server.v1_4_R1.ItemStack mis = CraftItemStack.asNMSCopy(clone);
+                net.minecraft.server.v1_4_6.ItemStack mis = CraftItemStack.asNMSCopy(clone);
                 NBTTagCompound tag = mis.getTag();
                 if (tag == null) {
                     tag = new NBTTagCompound();
@@ -356,17 +393,23 @@ public class Loot {
     /**
      * Returns the String representation of this Loot in the following format
      * [ ] indicates an optional additional field
-     * MaterialID[+Name]'Durability[+Enchantment1(level)&Enchantment2(level)...]'Amount[-Amount]'Probability
+     * MaterialID[:DyedColor][+Name]'Durability[+Enchantment1(level)&Enchantment2(level)...]'Amount[-Amount]'Probability
      *
      * @return The String representation of this Loot
      */
     @Override
     public String toString() {
         String string = String.valueOf(item.getTypeId()); //MaterialID
+        int id = item.getTypeId();
+        if (id >= 298 && id <= 301) {
+            if (item.hasItemMeta()) {
+                string = "(" + ((LeatherArmorMeta) item.getItemMeta()).getColor().asRGB() + ")" + string; //:DyedColor
+            }
+        }
 
         //Check if Item has a Description
         if (!name.isEmpty()) {
-            string += "+" + name; //:Name
+            string += "+" + name; //+Name
         }
 
         string += "'" + item.getDurability(); //'Durability
@@ -396,52 +439,35 @@ public class Loot {
         return string;
     }
 
-    /**
-     * Compares the String representations of each Loot
-     *
-     * @param object The given Loot
-     * @return true if both of the Loot Objects represent the same Loot
-     */
     @Override
     public boolean equals(Object object) {
         if (!(object instanceof Loot)) {
             return false;
         }
-        return ((Loot) object).toString().equals(toString());
+
+        Loot loot = (Loot) object;
+        return loot.name.equals(name)
+                && loot.item.getAmount() == item.getAmount()
+                && loot.item.getDurability() == item.getDurability()
+                && loot.item.getTypeId() == item.getTypeId()
+                && loot.bonus == bonus
+                && loot.probability == probability
+                && loot.item.getEnchantments().entrySet().equals(item.getEnchantments().entrySet());
     }
 
-//    /**
-//    * Returns the name of the given ItemStack
-//    * Returns null if the ItemStack provided is null
-//    * Returns the name from the NBTTag if present
-//    * Otherwise returns the name of the ItemStack Material
-//    *
-//    * @param item The given ItemStack (may be null)
-//    * @return The name of the item
-//    */
-//    public static String getName(ItemStack item) {
-//        String name = null;
-//        if (item != null) {
-//            if (!(item instanceof CraftItemStack)) {
-//                item = new CraftItemStack(item);
-//            }
-//            CraftItemStack cis = (CraftItemStack) item;
-//
-//            NBTTagCompound tag = cis.getHandle().getTag();
-//            NBTTagCompound display = null;
-//            if (tag != null) {
-//                display = tag.getCompound("display");
-//            }
-//
-//            if (display == null) {
-//                name = item.getType().name().toLowerCase();
-//            } else {
-//                name = display.getString("Name");
-//                if (name.isEmpty()) {
-//                    name = item.getType().name().toLowerCase();
-//                }
-//            }
-//        }
-//        return name;
-//    }
+    @Override
+    public int hashCode() {
+        int hash = 3;
+        hash = 97 * hash + (this.item != null ? this.item.hashCode() : 0);
+        hash = 97 * hash + this.bonus;
+        hash = 97 * hash + (int) (Double.doubleToLongBits(this.probability) ^ (Double.doubleToLongBits(this.probability) >>> 32));
+        hash = 97 * hash + (this.name != null ? this.name.hashCode() : 0);
+        return hash;
+    }
+
+    void setColor(Color color) {
+        LeatherArmorMeta meta = (LeatherArmorMeta) item.getItemMeta();
+        meta.setColor(color);
+        item.setItemMeta(meta);
+    }
 }

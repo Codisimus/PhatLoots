@@ -58,6 +58,7 @@ public class PhatLootsConfig {
             PhatLootsMessages.autoLoot = loadString("AutoLootMessage", string);
             PhatLootsMessages.overflow = loadString("OverflowMessage", string);
             PhatLootsMessages.timeRemaining = loadString("TimeRemainingMessage", string);
+            PhatLootsMessages.mobDropped = loadString("MobDroppedItemMessage", string);
             PhatLootsMessages.formatAll();
         } catch (Exception missingProp) {
             PhatLoots.logger.severe("Failed to load PhatLoots Config");
