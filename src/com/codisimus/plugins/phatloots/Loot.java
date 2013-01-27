@@ -6,10 +6,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Random;
-import net.minecraft.server.v1_4_6.NBTTagCompound;
+import net.minecraft.server.v1_4_R1.NBTTagCompound;
 import org.bukkit.Color;
 import org.bukkit.Material;
-import org.bukkit.craftbukkit.v1_4_6.inventory.CraftItemStack;
+import org.bukkit.craftbukkit.v1_4_R1.inventory.CraftItemStack;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BookMeta;
@@ -56,7 +56,7 @@ public class Loot {
     public Loot(ItemStack item, int bonus) {
         this.item = item;
         this.bonus = bonus;
-        net.minecraft.server.v1_4_6.ItemStack mis = CraftItemStack.asNMSCopy(item);
+        net.minecraft.server.v1_4_R1.ItemStack mis = CraftItemStack.asNMSCopy(item);
         NBTTagCompound tag = mis.getTag();
         if (tag != null) {
             name = tag.getString(ITEM_DESCRIPTION);
@@ -138,7 +138,7 @@ public class Loot {
         } else {
             this.name = name;
             if (name.isEmpty()) {
-                net.minecraft.server.v1_4_6.ItemStack mis = CraftItemStack.asNMSCopy(item);
+                net.minecraft.server.v1_4_R1.ItemStack mis = CraftItemStack.asNMSCopy(item);
                 NBTTagCompound tag = mis.getTag();
                 if (tag == null) {
                     return true;
@@ -301,7 +301,7 @@ public class Loot {
 
                 clone.setItemMeta(meta);
 
-                net.minecraft.server.v1_4_6.ItemStack mis = CraftItemStack.asNMSCopy(clone);
+                net.minecraft.server.v1_4_R1.ItemStack mis = CraftItemStack.asNMSCopy(clone);
                 NBTTagCompound tag = mis.getTag();
                 if (tag == null) {
                     tag = new NBTTagCompound();

@@ -159,9 +159,9 @@ public class PhatLoot {
 
         List<ItemStack> loot = lootIndividual();
         loot.addAll(lootCollective());
-        if (player != null && !PhatLootsMessages.mobDropped.isEmpty()) {
+        if (player != null && !PhatLootsMessages.mobDroppedMoney.isEmpty()) {
             for (ItemStack item : loot) {
-                player.sendMessage(PhatLootsMessages.mobDropped.replace("<item>", getItemName(item)));
+                player.sendMessage(PhatLootsMessages.mobDroppedMoney.replace("<item>", getItemName(item)));
             }
         }
         drops.addAll(loot);
@@ -175,7 +175,7 @@ public class PhatLoot {
             if (amount > 0 && !player.getGameMode().equals(GameMode.CREATIVE)
                     && PhatLoots.hasPermission(player, "moneyfrommobs")) {
                 String money = Econ.reward(player.getName(), amount);
-                player.sendMessage(money + " added to your account!");
+                player.sendMessage(PhatLootsMessages.mobDroppedMoney.replace("<amount>", money));
             }
         }
 
@@ -700,7 +700,7 @@ public class PhatLoot {
     }
 
     private String getItemName(ItemStack item) {
-        if (!item.hasItemMeta()) {
+        if (item.hasItemMeta()) {
             String name = item.getItemMeta().getDisplayName();
             if (name != null && !name.isEmpty()) {
                 return name;

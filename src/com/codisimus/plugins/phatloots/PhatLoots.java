@@ -115,6 +115,9 @@ public class PhatLoots extends JavaPlugin {
 
         /* Register Events */
         pm.registerEvents(new PhatLootsListener(), this);
+        if (pm.isPluginEnabled("EpicBossRecoded")) {
+            pm.registerEvents(new EBRListener(), this);
+        }
 
         /* Register the command found in the plugin.yml */
         PhatLootsCommand.command = (String) getDescription().getCommands().keySet().toArray()[0];
@@ -149,11 +152,15 @@ public class PhatLoots extends JavaPlugin {
      * @return true if the given player is allowed to loot the PhatLoot
      */
     public static boolean canLoot(Player player, PhatLoot phatLoot) {
-        return (!useRestricted || restricted.contains(phatLoot.name))
-               ? hasPermission(player, "loot.*") //Check for loot all permission
-                 ? true
-                 : hasPermission(player, "loot." + phatLoot.name) //Check if the Player has the specific loot permission
-               : true;
+        if (!useRestricted || restricted.contains(phatLoot.name)) {
+            if (hasPermission(player, "loot.*")) { //Check for loot all permission
+                return true;
+            } else {
+                return hasPermission(player, "loot." + phatLoot.name); //Check if the Player has the specific loot permission
+            }
+        } else {
+            return true;
+        }
     }
 
     /**

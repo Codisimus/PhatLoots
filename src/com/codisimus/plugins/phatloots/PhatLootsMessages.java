@@ -12,7 +12,8 @@ public class PhatLootsMessages {
     static String autoLoot;
     static String timeRemaining;
     static String overflow;
-    static String mobDropped;
+    static String mobDroppedMoney;
+    static String mobDroppedItem;
 
     /**
      * Formats all messages
@@ -24,7 +25,8 @@ public class PhatLootsMessages {
         autoLoot = format(autoLoot);
         timeRemaining = format(timeRemaining);
         overflow = format(overflow);
-        mobDropped = format(mobDropped);
+        mobDroppedMoney = format(mobDroppedMoney);
+        mobDroppedItem = format(mobDroppedItem);
     }
 
     /**

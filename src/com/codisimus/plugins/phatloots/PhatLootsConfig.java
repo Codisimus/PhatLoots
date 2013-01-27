@@ -45,7 +45,7 @@ public class PhatLootsConfig {
             PhatLoots.defaultSeconds = Integer.parseInt(defaultResetTime[3]);
 
             PhatLoots.defaultGlobal = loadBool("GlobalResetByDefault", false);
-            PhatLoots.defaultRound = loadBool("defaultRound", false);
+            PhatLoots.defaultRound = loadBool("RoundDownTimeByDefault", false);
             PhatLoots.defaultNumberOfLoots = loadInt("DefaultItemsPerColl", 1);
 
             PhatLootsListener.chestName = loadString("ChestName", "<name>");
@@ -58,7 +58,8 @@ public class PhatLootsConfig {
             PhatLootsMessages.autoLoot = loadString("AutoLootMessage", string);
             PhatLootsMessages.overflow = loadString("OverflowMessage", string);
             PhatLootsMessages.timeRemaining = loadString("TimeRemainingMessage", string);
-            PhatLootsMessages.mobDropped = loadString("MobDroppedItemMessage", string);
+            PhatLootsMessages.mobDroppedMoney = loadString("MobDroppedMoneyMessage", string);
+            PhatLootsMessages.mobDroppedItem = loadString("MobDroppedItemMessage", string);
             PhatLootsMessages.formatAll();
         } catch (Exception missingProp) {
             PhatLoots.logger.severe("Failed to load PhatLoots Config");
