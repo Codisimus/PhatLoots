@@ -75,15 +75,15 @@ public class PhatLootsCommand implements CommandExecutor {
                 }
             }
 
-            Player player = PhatLoots.server.getPlayer(args[1]);
+            Player player = PhatLoots.server.getPlayer(args[2]);
             if (player == null) {
-                sender.sendMessage("§6" + args[1] + " §4is not online");
+                sender.sendMessage("§6" + args[2] + " §4is not online");
                 return true;
             }
 
-            PhatLoot phatLoot = PhatLoots.getPhatLoot(args[2]);
+            PhatLoot phatLoot = PhatLoots.getPhatLoot(args[1]);
             if (phatLoot == null) {
-                sender.sendMessage("§4PhatLoot §6" + args[2] + "§4 does not exist");
+                sender.sendMessage("§4PhatLoot §6" + args[1] + "§4 does not exist");
                 return true;
             }
 
@@ -165,7 +165,7 @@ public class PhatLootsCommand implements CommandExecutor {
                 PhatLoot delete = PhatLoots.getPhatLoot(args[1]);
 
                 if (delete == null) {
-                    player.sendMessage("§4PhatLoot §6" + args[0] + "§4 does not exist");
+                    player.sendMessage("§4PhatLoot §6" + args[1] + "§4 does not exist");
                 } else {
                     PhatLoots.removePhatLoot(delete);
                     player.sendMessage("§5PhatLoot §6" + delete.name + "§5 was deleted!");
@@ -1071,13 +1071,13 @@ public class PhatLootsCommand implements CommandExecutor {
 
             player.sendMessage("§5All Chests in PhatLoot §6"
                     + name + "§5 have been reset.");
-        }
+        } else {
+            Block block = player.getTargetBlock(TRANSPARENT, 10);
 
-        Block block = player.getTargetBlock(TRANSPARENT, 10);
-
-        for (PhatLoot phatLoot: getPhatLoots(player, name)) {
-            phatLoot.reset(block);
-            player.sendMessage("§5Target Block has been reset.");
+            for (PhatLoot phatLoot: getPhatLoots(player, name)) {
+                phatLoot.reset(block);
+                player.sendMessage("§5Target Block has been reset.");
+            }
         }
     }
 
@@ -1091,7 +1091,7 @@ public class PhatLootsCommand implements CommandExecutor {
         player.sendMessage("§2/"+command+" <Name>§b Loot a virtual Chest for the given PhatLoot");
         player.sendMessage("§2/"+command+" list§b List all PhatLoots");
         player.sendMessage("§2/"+command+" info [Name]§b List info of PhatLoot");
-        player.sendMessage("§2/"+command+" give <PhatLoot> <Name>§b Force Player to open a PhatLoot");
+        player.sendMessage("§2/"+command+" give <Name> <Player>§b Force Player to open a PhatLoot");
         player.sendMessage("§2/"+command+" reset§b Reset looted times for target Block");
         player.sendMessage("§2/"+command+" reset <Name>§b Reset looted times for PhatLoot");
         player.sendMessage("§2/"+command+" reset all§b Reset looted times for all PhatLoots");
