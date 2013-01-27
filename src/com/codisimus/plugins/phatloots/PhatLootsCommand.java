@@ -1098,6 +1098,7 @@ public class PhatLootsCommand implements CommandExecutor {
         player.sendMessage("§7If Name is not specified then all PhatLoots linked to the target Block will be affected");
         player.sendMessage("§6Amount may be a number §4(100)§6 or range §4(100-500)");
         player.sendMessage("§2/"+command+" time [Name] <Days> <Hrs> <Mins> <Secs>§b Set cooldown time for PhatLoot");
+        player.sendMessage("§2/"+command+" time [Name] never§b Set PhatLoot to only be lootable once per chest");
         player.sendMessage("§2/"+command+" global [Name] true§b Set PhatLoot to a global cooldown");
         player.sendMessage("§2/"+command+" global [Name] false§b Set PhatLoot to an individual cooldown");
         player.sendMessage("§2/"+command+" round [Name] <true|false>§b Set if cooldown times should round down (ex. Daily/Hourly loots)");
