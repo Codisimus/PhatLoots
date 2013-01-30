@@ -99,6 +99,8 @@ public class PhatLootsCommand implements CommandExecutor {
         if (!(sender instanceof Player)) {
             if (args.length == 1 && args[0].equals("rl")) {
                 PhatLoots.rl();
+            } else if (args.length == 2 && args[0].equals("reset")) {
+                reset(null, args[1]);
             }
             return false;
         }
@@ -1026,7 +1028,9 @@ public class PhatLootsCommand implements CommandExecutor {
                     phatLoots.reset(null);
                 }
 
-                player.sendMessage("§5All Chests in each PhatLoot have been reset.");
+                if (player != null) {
+                    player.sendMessage("§5All Chests in each PhatLoot have been reset.");
+                }
                 return;
             }
 
@@ -1035,16 +1039,20 @@ public class PhatLootsCommand implements CommandExecutor {
 
             //Cancel if the PhatLoot does not exist
             if (!PhatLoots.hasPhatLoot(name)) {
-                player.sendMessage("§4PhatLoot §6" + name + "§4 does not exsist.");
+                if (player != null) {
+                    player.sendMessage("§4PhatLoot §6" + name + "§4 does not exsist.");
+                }
                 return;
             }
 
             //Reset all Chests linked to the PhatLoot
             phatLoot.reset(null);
 
-            player.sendMessage("§5All Chests in PhatLoot §6"
-                    + name + "§5 have been reset.");
-        } else {
+            if (player != null) {
+                player.sendMessage("§5All Chests in PhatLoot §6"
+                                    + name + "§5 have been reset.");
+            }
+        } else if (player != null) {
             Block block = player.getTargetBlock(TRANSPARENT, 10);
 
             for (PhatLoot phatLoot: getPhatLoots(player, name)) {
