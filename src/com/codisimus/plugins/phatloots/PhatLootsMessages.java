@@ -36,7 +36,7 @@ public class PhatLootsMessages {
      * @return The formatted String
      */
     private static String format(String string) {
-        return string.replace("&", "§")
+        return string.replace("&", "�")
                 .replace("<ae>", "æ").replace("<AE>", "Æ")
                 .replace("<o/>", "ø").replace("<O/>", "Ø")
                 .replace("<a>", "å").replace("<A>", "Å");

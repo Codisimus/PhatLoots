@@ -3,7 +3,6 @@ package com.codisimus.plugins.phatloots;
 import com.codisimus.plugins.chestlock.ChestLock;
 import com.codisimus.plugins.chestlock.Safe;
 import com.google.common.collect.Sets;
-import java.io.File;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -79,13 +78,13 @@ public class PhatLootsCommand implements CommandExecutor {
 
             Player player = PhatLoots.server.getPlayer(args[2]);
             if (player == null) {
-                sender.sendMessage("ยง6" + args[2] + " ยง4is not online");
+                sender.sendMessage("ง6" + args[2] + " ง4is not online");
                 return true;
             }
 
             PhatLoot phatLoot = PhatLoots.getPhatLoot(args[1]);
             if (phatLoot == null) {
-                sender.sendMessage("ยง4PhatLoot ยง6" + args[1] + "ยง4 does not exist");
+                sender.sendMessage("ง4PhatLoot ง6" + args[1] + "ง4 does not exist");
                 return true;
             }
 
@@ -121,7 +120,7 @@ public class PhatLootsCommand implements CommandExecutor {
             //Cancel if the first argument is not a valid PhatLoot
             PhatLoot phatLoot = PhatLoots.getPhatLoot(args[0]);
             if (phatLoot == null) {
-                player.sendMessage("ยง4PhatLoot ยง6" + args[0] + "ยง4 does not exist");
+                player.sendMessage("ง4PhatLoot ง6" + args[0] + "ง4 does not exist");
                 return true;
             }
 
@@ -169,10 +168,10 @@ public class PhatLootsCommand implements CommandExecutor {
                 PhatLoot delete = PhatLoots.getPhatLoot(args[1]);
 
                 if (delete == null) {
-                    player.sendMessage("ยง4PhatLoot ยง6" + args[1] + "ยง4 does not exist");
+                    player.sendMessage("ง4PhatLoot ง6" + args[1] + "ง4 does not exist");
                 } else {
                     PhatLoots.removePhatLoot(delete);
-                    player.sendMessage("ยง5PhatLoot ยง6" + delete.name + "ยง5 was deleted!");
+                    player.sendMessage("ง5PhatLoot ง6" + delete.name + "ง5 was deleted!");
                 }
             } else {
                 sendCreateHelp(player);
@@ -382,7 +381,7 @@ public class PhatLootsCommand implements CommandExecutor {
                 case 'p':
                     phatLoot = s;
                     if (phatLoot == null) {
-                        player.sendMessage("ยง4PhatLoot ยง6" + s + "ยง4 does not exist");
+                        player.sendMessage("ง4PhatLoot ง6" + s + "ง4 does not exist");
                         return true;
                     }
                     break;
@@ -390,7 +389,7 @@ public class PhatLootsCommand implements CommandExecutor {
                 case 'c':
                     id = getCollID(s);
                     if (id == -1) {
-                        player.sendMessage("ยง4Must be written as c1, c2, c3, c4, or c5.");
+                        player.sendMessage("ง4Must be written as c1, c2, c3, c4, or c5.");
                         return true;
                     }
                     break;
@@ -399,7 +398,7 @@ public class PhatLootsCommand implements CommandExecutor {
                     baseAmount = getLowerBound(s);
                     bonusAmount = getUpperBound(s);
                     if (baseAmount == -1 || bonusAmount == -1) {
-                        player.sendMessage("ยง6" + s + "ยง4 is not a valid number or range");
+                        player.sendMessage("ง6" + s + "ง4 is not a valid number or range");
                         return true;
                     }
                     item.setAmount(baseAmount);
@@ -408,14 +407,14 @@ public class PhatLootsCommand implements CommandExecutor {
                 case '%':
                     percent = getPercent(player, s);
                     if (percent == -1) {
-                        player.sendMessage("ยง6" + s + "ยง4 is not a percent");
+                        player.sendMessage("ง6" + s + "ง4 is not a percent");
                         return true;
                     }
                     break;
                 case 'e':
                     Map<Enchantment, Integer> enchantments = getEnchantments(s);
                     if (enchantments == null) {
-                        player.sendMessage("ยง6" + s + "ยง4 is not a valid enchantment");
+                        player.sendMessage("ง6" + s + "ง4 is not a valid enchantment");
                         return true;
                     }
                     item.addUnsafeEnchantments(enchantments);
@@ -424,7 +423,7 @@ public class PhatLootsCommand implements CommandExecutor {
                 case 'd':
                     short data = getData(s);
                     if (data == -1) {
-                        player.sendMessage("ยง6" + s + "ยง4 is not a valid data/durability value");
+                        player.sendMessage("ง6" + s + "ง4 is not a valid data/durability value");
                         return true;
                     }
                     item.setDurability(data);
@@ -432,14 +431,14 @@ public class PhatLootsCommand implements CommandExecutor {
 
                 case 'n':
                     if (!s.matches("[a-zA-Z0-9]+")) {
-                        player.sendMessage("ยง4An item decription name may only contain letters and numbers");
+                        player.sendMessage("ง4An item decription name may only contain letters and numbers");
                         return true;
                     }
                     description = s;
                     break;
 
                 default:
-                    player.sendMessage("ยง6" + s + "ยง4 is not a valid parameter");
+                    player.sendMessage("ง6" + s + "ง4 is not a valid parameter");
                     return true;
                 }
             }
@@ -448,7 +447,7 @@ public class PhatLootsCommand implements CommandExecutor {
             Loot loot = new Loot(item, bonusAmount - baseAmount);
             loot.setProbability(percent);
             if (!loot.setName(description)) {
-                player.sendMessage("ยง4The Item had no lore to write to file. Perhaps use the plugin ยง6Loresยง4 to add some");
+                player.sendMessage("ง4The Item had no lore to write to file. Perhaps use the plugin ง6Loresง4 to add some");
                 return true;
                 //createDescription(player, description);
             }
@@ -612,12 +611,12 @@ public class PhatLootsCommand implements CommandExecutor {
     public static void make(Player player, String name) {
         //Cancel if the PhatLoot already exists
         if (PhatLoots.hasPhatLoot(name)) {
-            player.sendMessage("ยง4A PhatLoot named ยง6" + name + "ยง4 already exists.");
+            player.sendMessage("ง4A PhatLoot named ง6" + name + "ง4 already exists.");
             return;
         }
 
         PhatLoots.addPhatLoot(new PhatLoot(name));
-        player.sendMessage("ยง5PhatLoot ยง6" + name + "ยง5 Made!");
+        player.sendMessage("ง5PhatLoot ง6" + name + "ง5 Made!");
     }
 
     /**
@@ -658,20 +657,20 @@ public class PhatLootsCommand implements CommandExecutor {
             break;
 
         default:
-            player.sendMessage("ยง4You must target a Chest/Dispenser.");
+            player.sendMessage("ง4You must target a Chest/Dispenser.");
             return;
         }
 
         //Cancel if the PhatLoot with the given name does not exist
         if (!PhatLoots.hasPhatLoot(name)) {
-            player.sendMessage("ยง4PhatLoot ยง6" + name + "ยง4 does not exsist.");
+            player.sendMessage("ง4PhatLoot ง6" + name + "ง4 does not exsist.");
             return;
         }
 
         PhatLoot phatLoot = PhatLoots.getPhatLoot(name);
 
         phatLoot.addChest(block);
-        player.sendMessage("ยง5Target Block has been linked to PhatLoot ยง5" + name);
+        player.sendMessage("ง5Target Block has been linked to PhatLoot ง5" + name);
         phatLoot.save();
     }
 
@@ -685,7 +684,7 @@ public class PhatLootsCommand implements CommandExecutor {
 
         for (PhatLoot phatLoot: getPhatLoots(player, name)) {
             phatLoot.removeChest(block);
-            player.sendMessage("ยง5Target Block has been unlinked from PhatLoot ยง6" + phatLoot.name);
+            player.sendMessage("ง5Target Block has been unlinked from PhatLoot ง6" + phatLoot.name);
             phatLoot.save();
         }
     }
@@ -706,8 +705,8 @@ public class PhatLootsCommand implements CommandExecutor {
             phatLoot.hours = hours;
             phatLoot.minutes = minutes;
             phatLoot.seconds = seconds;
-            player.sendMessage("ยง5Reset time for PhatLoot ยง6" + phatLoot.name
-                    + "ยง5 has been set to ยง6" + days + " days, "
+            player.sendMessage("ง5Reset time for PhatLoot ง6" + phatLoot.name
+                    + "ง5 has been set to ง6" + days + " days, "
                     + hours + " hours, " + minutes + " minutes, and "
                     + seconds + " seconds");
 
@@ -728,8 +727,8 @@ public class PhatLootsCommand implements CommandExecutor {
                 phatLoot.global = global;
                 phatLoot.reset(null);
 
-                player.sendMessage("ยง5PhatLoot ยง6" + phatLoot.name + "ยง5 has been set to ยง6"
-                        + (global ? "global" : "individual") + "ยง5 reset");
+                player.sendMessage("ง5PhatLoot ง6" + phatLoot.name + "ง5 has been set to ง6"
+                        + (global ? "global" : "individual") + "ง5 reset");
             }
         }
     }
@@ -745,7 +744,7 @@ public class PhatLootsCommand implements CommandExecutor {
         for (PhatLoot phatLoot: getPhatLoots(player, name)) {
             phatLoot.round = round;
 
-            player.sendMessage("ยง5PhatLoot ยง6" + phatLoot.name + "ยง5 has been set to ยง6"
+            player.sendMessage("ง5PhatLoot ง6" + phatLoot.name + "ง5 has been set to ง6"
                     + (round ? "" : "not") + "round down time");
             phatLoot.save();
         }
@@ -775,21 +774,21 @@ public class PhatLootsCommand implements CommandExecutor {
 
                         //Display the appropriate message
                         if (lootID == 0)  { //Individual Loot
-                            player.sendMessage("ยง6" + lootDescription
-                                    + "ยง5 removed as Loot for PhatLoot ยง6"
+                            player.sendMessage("ง6" + lootDescription
+                                    + "ง5 removed as Loot for PhatLoot ง6"
                                     + phatLoot.name);
                         } else { //Collective Loot
-                            player.sendMessage("ยง6" + lootDescription
-                                    + "ยง5 removed as Loot from ยง6coll"
-                                    + lootID + "ยง5, ยง6"
+                            player.sendMessage("ง6" + lootDescription
+                                    + "ง5 removed as Loot from ง6coll"
+                                    + lootID + "ง5, ง6"
                                     + phatLoot.getPercentRemaining(lootID)
-                                    + "%ยง5 remaining");
+                                    + "%ง5 remaining");
                         }
 
                         phatLoot.save();
                     } else {
-                        player.sendMessage("ยง6" + lootDescription
-                                + "ยง4 is already Loot for PhatLoot ยง6"
+                        player.sendMessage("ง6" + lootDescription
+                                + "ง4 is already Loot for PhatLoot ง6"
                                 + phatLoot.name);
                     }
 
@@ -806,21 +805,21 @@ public class PhatLootsCommand implements CommandExecutor {
 
                     //Display the appropriate message
                     if (lootID == 0) { //Individual Loot
-                        player.sendMessage("ยง6" + lootDescription
-                                + "ยง5 added as Loot for PhatLoot ยง6"
+                        player.sendMessage("ง6" + lootDescription
+                                + "ง5 added as Loot for PhatLoot ง6"
                                 + phatLoot.name);
                     } else { //Collective Loot
-                        player.sendMessage("ยง6" + lootDescription
-                                + "ยง5 added as Loot to ยง6coll"
-                                + lootID + "ยง5, ยง6"
+                        player.sendMessage("ง6" + lootDescription
+                                + "ง5 added as Loot to ง6coll"
+                                + lootID + "ง5, ง6"
                                 + phatLoot.getPercentRemaining(lootID)
-                                + "%ยง5 remaining");
+                                + "%ง5 remaining");
                     }
 
                     phatLoot.save();
                 } else {
-                    player.sendMessage("ยง6" + lootDescription
-                            + "ยง4 was not found as a Loot for PhatLoot ยง6"
+                    player.sendMessage("ง6" + lootDescription
+                            + "ง4 was not found as a Loot for PhatLoot ง6"
                             + phatLoot.name);
                 }
             }
@@ -838,18 +837,18 @@ public class PhatLootsCommand implements CommandExecutor {
         int lower = getLowerBound(amount);
         int upper = getUpperBound(amount);
         if (lower == -1 || upper == -1) {
-            player.sendMessage("ยง6" + amount + " ยง4is not a valid number or range");
+            player.sendMessage("ง6" + amount + " ง4is not a valid number or range");
         }
 
         for (PhatLoot phatLoot: getPhatLoots(player, name)) {
             phatLoot.moneyLower = lower;
             phatLoot.moneyUpper = upper;
 
-            player.sendMessage("ยง5Money for PhatLoot ยง6"
-                    + phatLoot.name + "ยง5 set to "
+            player.sendMessage("ง5Money for PhatLoot ง6"
+                    + phatLoot.name + "ง5 set to "
                     + (lower == upper
-                       ? "ยง6"
-                       : "a range from ยง6" + lower + "ยง5 to ยง6")
+                       ? "ง6"
+                       : "a range from ง6" + lower + "ง5 to ง6")
                     + upper);
             phatLoot.save();
         }
@@ -866,18 +865,18 @@ public class PhatLootsCommand implements CommandExecutor {
         int lower = getLowerBound(amount);
         int upper = getUpperBound(amount);
         if (lower == -1 || upper == -1) {
-            player.sendMessage("ยง6" + amount + " ยง4is not a valid number or range");
+            player.sendMessage("ง6" + amount + " ง4is not a valid number or range");
         }
 
         for (PhatLoot phatLoot: getPhatLoots(player, name)) {
             phatLoot.expLower = lower;
             phatLoot.expUpper = upper;
 
-            player.sendMessage("ยง5Experience for PhatLoot ยง6"
-                    + phatLoot.name + "ยง5 set to "
+            player.sendMessage("ง5Experience for PhatLoot ง6"
+                    + phatLoot.name + "ง5 set to "
                     + (lower == upper
-                       ? "ยง6"
-                       : "a range from ยง6" + lower + "ยง5 to ยง6")
+                       ? "ง6"
+                       : "a range from ง6" + lower + "ง5 to ง6")
                     + upper);
             phatLoot.save();
         }
@@ -905,13 +904,13 @@ public class PhatLootsCommand implements CommandExecutor {
                     //Cancel if the Player is trying to duplicate the cmd
                     if (!add) {
                         phatLoot.commands.remove(cmd);
-                        player.sendMessage("ยง6" + cmd
-                                + "ยง5 removed as a command for PhatLoot ยง6"
+                        player.sendMessage("ง6" + cmd
+                                + "ง5 removed as a command for PhatLoot ง6"
                                 + phatLoot.name);
                         phatLoot.save();
                     } else {
-                        player.sendMessage("ยง6" + cmd
-                                + "ยง4 is already a command for PhatLoot ยง6"
+                        player.sendMessage("ง6" + cmd
+                                + "ง4 is already a command for PhatLoot ง6"
                                 + phatLoot.name);
                     }
 
@@ -925,13 +924,13 @@ public class PhatLootsCommand implements CommandExecutor {
                 //Cancel if the cmd is not present
                 if (add) {
                     phatLoot.commands.add(cmd);
-                    player.sendMessage("ยง6" + cmd
-                            + "ยง5 added as a command for PhatLoot ยง6"
+                    player.sendMessage("ง6" + cmd
+                            + "ง5 added as a command for PhatLoot ง6"
                             + phatLoot.name);
                     phatLoot.save();
                 } else {
-                    player.sendMessage("ยง6" + cmd
-                            + "ยง4 was not found as a command for PhatLoot ยง6"
+                    player.sendMessage("ง6" + cmd
+                            + "ง4 was not found as a command for PhatLoot ง6"
                             + phatLoot.name);
                 }
             }
@@ -944,7 +943,7 @@ public class PhatLootsCommand implements CommandExecutor {
      * @param player The Player requesting the list
      */
     public static void list(Player player) {
-        String list = "ยง5Current PhatLoots: ยง6";
+        String list = "ง5Current PhatLoots: ง6";
 
         //Concat each PhatLoot
         for (PhatLoot phatLoot: PhatLoots.getPhatLoots()) {
@@ -970,37 +969,37 @@ public class PhatLootsCommand implements CommandExecutor {
         case 1: //Display information for the one PhatLoot
             PhatLoot phatLoot = phatLoots.getFirst();
 
-            player.sendMessage("ยง2Name:ยงb " + phatLoot.name
-                    + " ยง2Global Reset:ยงb " + phatLoot.global
-                    + " ยง2Round Down:ยงb " + phatLoot.round);
-            player.sendMessage("ยง2Reset Time:ยงb " + phatLoot.days
+            player.sendMessage("ง2Name:งb " + phatLoot.name
+                    + " ง2Global Reset:งb " + phatLoot.global
+                    + " ง2Round Down:งb " + phatLoot.round);
+            player.sendMessage("ง2Reset Time:งb " + phatLoot.days
                     + " days, " + phatLoot.hours + " hours, "
                     + phatLoot.minutes + " minutes, and "
                     + phatLoot.seconds + " seconds.");
-            player.sendMessage("ยง2Moneyยงb: " + phatLoot.moneyLower + "-"
-                    + phatLoot.moneyUpper + " ยง2Experienceยงb: "
+            player.sendMessage("ง2Moneyงb: " + phatLoot.moneyLower + "-"
+                    + phatLoot.moneyUpper + " ง2Experienceงb: "
                     + phatLoot.expLower + "-" + phatLoot.expUpper);
-            player.sendMessage("ยง2# of collective loots:ยงb "
+            player.sendMessage("ง2# of collective loots:งb "
                     + phatLoot.numberCollectiveLoots);
 
             //Display Individual Loots if not empty
             String loots = phatLoot.getLoots(0);
             if (!loots.isEmpty()) {
-                player.sendMessage("ยง2IndividualLootsยงb: " + loots);
+                player.sendMessage("ง2IndividualLootsงb: " + loots);
             }
 
             //Display each Collective Loots that is not empty
             for (int i = 1; i <= 5; i++) {
                 loots = phatLoot.getLoots(i);
                 if (!loots.isEmpty()) {
-                    player.sendMessage("ยง2Coll" + i + "ยงb: " + loots);
+                    player.sendMessage("ง2Coll" + i + "งb: " + loots);
                 }
             }
 
             break;
 
         default: //List all PhatLoots
-            String list = "ยง5Linked PhatLoots: ยง6";
+            String list = "ง5Linked PhatLoots: ง6";
 
             //Concat each PhatLoot
             for (PhatLoot pl: phatLoots) {
@@ -1029,7 +1028,7 @@ public class PhatLootsCommand implements CommandExecutor {
                 }
 
                 if (player != null) {
-                    player.sendMessage("ยง5All Chests in each PhatLoot have been reset.");
+                    player.sendMessage("ง5All Chests in each PhatLoot have been reset.");
                 }
                 return;
             }
@@ -1040,7 +1039,7 @@ public class PhatLootsCommand implements CommandExecutor {
             //Cancel if the PhatLoot does not exist
             if (!PhatLoots.hasPhatLoot(name)) {
                 if (player != null) {
-                    player.sendMessage("ยง4PhatLoot ยง6" + name + "ยง4 does not exsist.");
+                    player.sendMessage("ง4PhatLoot ง6" + name + "ง4 does not exsist.");
                 }
                 return;
             }
@@ -1049,15 +1048,15 @@ public class PhatLootsCommand implements CommandExecutor {
             phatLoot.reset(null);
 
             if (player != null) {
-                player.sendMessage("ยง5All Chests in PhatLoot ยง6"
-                                    + name + "ยง5 have been reset.");
+                player.sendMessage("ง5All Chests in PhatLoot ง6"
+                                    + name + "ง5 have been reset.");
             }
         } else if (player != null) {
             Block block = player.getTargetBlock(TRANSPARENT, 10);
 
             for (PhatLoot phatLoot: getPhatLoots(player, name)) {
                 phatLoot.reset(block);
-                player.sendMessage("ยง5Target Block has been reset.");
+                player.sendMessage("ง5Target Block has been reset.");
             }
         }
     }
@@ -1068,18 +1067,18 @@ public class PhatLootsCommand implements CommandExecutor {
      * @param player The Player needing help
      */
     private static void sendHelp(Player player) {
-        player.sendMessage("ยงe     PhatLoots Help Page:");
-        player.sendMessage("ยง2/"+command+" <Name>ยงb Loot a virtual Chest for the given PhatLoot");
-        player.sendMessage("ยง2/"+command+" listยงb List all PhatLoots");
-        player.sendMessage("ยง2/"+command+" info [Name]ยงb List info of PhatLoot");
-        player.sendMessage("ยง2/"+command+" give <Name> <Player>ยงb Force Player to open a PhatLoot");
-        player.sendMessage("ยง2/"+command+" resetยงb Reset looted times for target Block");
-        player.sendMessage("ยง2/"+command+" reset <Name>ยงb Reset looted times for PhatLoot");
-        player.sendMessage("ยง2/"+command+" reset allยงb Reset looted times for all PhatLoots");
-        player.sendMessage("ยง2/"+command+" help createยงb Display PhatLoots Create Help Page");
-        player.sendMessage("ยง2/"+command+" help setupยงb Display PhatLoots Setup Help Page");
-        player.sendMessage("ยง2/"+command+" help lootยงb Display PhatLoots Manage Loot Help Page");
-        player.sendMessage("ยง2/"+command+" rlยงb Reload PhatLoots Plugin");
+        player.sendMessage("งe     PhatLoots Help Page:");
+        player.sendMessage("ง2/"+command+" <Name>งb Loot a virtual Chest for the given PhatLoot");
+        player.sendMessage("ง2/"+command+" listงb List all PhatLoots");
+        player.sendMessage("ง2/"+command+" info [Name]งb List info of PhatLoot");
+        player.sendMessage("ง2/"+command+" give <Name> <Player>งb Force Player to open a PhatLoot");
+        player.sendMessage("ง2/"+command+" resetงb Reset looted times for target Block");
+        player.sendMessage("ง2/"+command+" reset <Name>งb Reset looted times for PhatLoot");
+        player.sendMessage("ง2/"+command+" reset allงb Reset looted times for all PhatLoots");
+        player.sendMessage("ง2/"+command+" help createงb Display PhatLoots Create Help Page");
+        player.sendMessage("ง2/"+command+" help setupงb Display PhatLoots Setup Help Page");
+        player.sendMessage("ง2/"+command+" help lootงb Display PhatLoots Manage Loot Help Page");
+        player.sendMessage("ง2/"+command+" rlงb Reload PhatLoots Plugin");
     }
 
     /**
@@ -1088,12 +1087,12 @@ public class PhatLootsCommand implements CommandExecutor {
      * @param player The Player needing help
      */
     private static void sendCreateHelp(Player player) {
-        player.sendMessage("ยงe     PhatLoots Create Help Page:");
-        player.sendMessage("ยง7If Name is not specified then all PhatLoots linked to the target Block will be affected");
-        player.sendMessage("ยง2/"+command+" make <Name>ยงb Create PhatLoot with given name");
-        player.sendMessage("ยง2/"+command+" delete <Name>ยงb Delete PhatLoot");
-        player.sendMessage("ยง2/"+command+" link <Name>ยงb Link target Chest/Dispenser with PhatLoot");
-        player.sendMessage("ยง2/"+command+" unlink [Name]ยงb Unlink target Block from PhatLoot");
+        player.sendMessage("งe     PhatLoots Create Help Page:");
+        player.sendMessage("ง7If Name is not specified then all PhatLoots linked to the target Block will be affected");
+        player.sendMessage("ง2/"+command+" make <Name>งb Create PhatLoot with given name");
+        player.sendMessage("ง2/"+command+" delete <Name>งb Delete PhatLoot");
+        player.sendMessage("ง2/"+command+" link <Name>งb Link target Chest/Dispenser with PhatLoot");
+        player.sendMessage("ง2/"+command+" unlink [Name]งb Unlink target Block from PhatLoot");
     }
 
     /**
@@ -1102,18 +1101,18 @@ public class PhatLootsCommand implements CommandExecutor {
      * @param player The Player needing help
      */
     private static void sendSetupHelp(Player player) {
-        player.sendMessage("ยงe     PhatLoots Setup Help Page:");
-        player.sendMessage("ยง7If Name is not specified then all PhatLoots linked to the target Block will be affected");
-        player.sendMessage("ยง6Amount may be a number ยง4(100)ยง6 or range ยง4(100-500)");
-        player.sendMessage("ยง2/"+command+" time [Name] <Days> <Hrs> <Mins> <Secs>ยงb Set cooldown time for PhatLoot");
-        player.sendMessage("ยง2/"+command+" time [Name] neverยงb Set PhatLoot to only be lootable once per chest");
-        player.sendMessage("ยง2/"+command+" global [Name] trueยงb Set PhatLoot to a global cooldown");
-        player.sendMessage("ยง2/"+command+" global [Name] falseยงb Set PhatLoot to an individual cooldown");
-        player.sendMessage("ยง2/"+command+" round [Name] <true|false>ยงb Set if cooldown times should round down (ex. Daily/Hourly loots)");
-        player.sendMessage("ยง2/"+command+" money [Name] <Amount>ยงb Set money range to be looted");
-        player.sendMessage("ยง2/"+command+" exp [Name] <Amount>ยงb Set experience to be gained");
-        player.sendMessage("ยง2/"+command+" add cmd [Name] /<Command>ยงb Add a Command that will be executed upon looting");
-        player.sendMessage("ยง2/"+command+" remove cmd [Name] /<Command>ยงb Remove a Command that will be executed upon looting");
+        player.sendMessage("งe     PhatLoots Setup Help Page:");
+        player.sendMessage("ง7If Name is not specified then all PhatLoots linked to the target Block will be affected");
+        player.sendMessage("ง6Amount may be a number ง4(100)ง6 or range ง4(100-500)");
+        player.sendMessage("ง2/"+command+" time [Name] <Days> <Hrs> <Mins> <Secs>งb Set cooldown time for PhatLoot");
+        player.sendMessage("ง2/"+command+" time [Name] neverงb Set PhatLoot to only be lootable once per chest");
+        player.sendMessage("ง2/"+command+" global [Name] trueงb Set PhatLoot to a global cooldown");
+        player.sendMessage("ง2/"+command+" global [Name] falseงb Set PhatLoot to an individual cooldown");
+        player.sendMessage("ง2/"+command+" round [Name] <true|false>งb Set if cooldown times should round down (ex. Daily/Hourly loots)");
+        player.sendMessage("ง2/"+command+" money [Name] <Amount>งb Set money range to be looted");
+        player.sendMessage("ง2/"+command+" exp [Name] <Amount>งb Set experience to be gained");
+        player.sendMessage("ง2/"+command+" add cmd [Name] /<Command>งb Add a Command that will be executed upon looting");
+        player.sendMessage("ง2/"+command+" remove cmd [Name] /<Command>งb Remove a Command that will be executed upon looting");
     }
 
     /**
@@ -1122,22 +1121,22 @@ public class PhatLootsCommand implements CommandExecutor {
      * @param player The Player needing help
      */
     private static void sendLootHelp(Player player) {
-        player.sendMessage("ยงe     PhatLoots Manage Loot Help Page:");
-        player.sendMessage("ยง5A Parameter starts with the 1 character ยง2id");
-        player.sendMessage("ยง2pยงf: ยง5The Name of the PhatLoot ex. ยง6pEpic");
-        player.sendMessage("ยงbIf PhatLoot is not specified then all PhatLoots linked to the target Block will be affected");
-        player.sendMessage("ยง2dยงf: ยง5The data/durability value of the item ex. ยง6d5");
-        player.sendMessage("ยง2cยงf: ยง5The id of the collective loot to specify ex. ยง6c1");
-        player.sendMessage("ยง2#ยงf: ยง5The amount of the item ex. ยง6#10 ยง5or ยง6#1-64 ยง5(default: ยง61ยง5)");
-        player.sendMessage("ยง2%ยงf: ยง5The chance of looting the item ex. ยง6%50 ยง5or ยง6%0.1 ยง5(default: ยง6100ยง5)");
-        player.sendMessage("ยง2nยงf: ยง5The Name of the item description ex. ยง6nSuperSword");
-        player.sendMessage("ยง2eยงf: ยง5The item enchantment ex. ยง6earrow_fire");
-        player.sendMessage("ยงbEnchantment levels can be added. ex. ยง6arrow_fire(2)");
-        player.sendMessage("ยง2/"+command+" <add|remove> <Item|ID|hand> [Parameter1] [Parameter2]...");
-        player.sendMessage("ยงbex. ยง6/"+command+" add hand #1-16 nEnderNade %32");
-        player.sendMessage("ยงbex. ยง6/"+command+" add bow earrow_fire(2) earrow_unlimited %5");
-        player.sendMessage("ยงbTutorial Video:");
-        player.sendMessage("ยง1ยงnwww.youtu.be/tRQuKbRTaA4");
+        player.sendMessage("งe     PhatLoots Manage Loot Help Page:");
+        player.sendMessage("ง5A Parameter starts with the 1 character ง2id");
+        player.sendMessage("ง2pงf: ง5The Name of the PhatLoot ex. ง6pEpic");
+        player.sendMessage("งbIf PhatLoot is not specified then all PhatLoots linked to the target Block will be affected");
+        player.sendMessage("ง2dงf: ง5The data/durability value of the item ex. ง6d5");
+        player.sendMessage("ง2cงf: ง5The id of the collective loot to specify ex. ง6c1");
+        player.sendMessage("ง2#งf: ง5The amount of the item ex. ง6#10 ง5or ง6#1-64 ง5(default: ง61ง5)");
+        player.sendMessage("ง2%งf: ง5The chance of looting the item ex. ง6%50 ง5or ง6%0.1 ง5(default: ง6100ง5)");
+        player.sendMessage("ง2nงf: ง5The Name of the item description ex. ง6nSuperSword");
+        player.sendMessage("ง2eงf: ง5The item enchantment ex. ง6earrow_fire");
+        player.sendMessage("งbEnchantment levels can be added. ex. ง6arrow_fire(2)");
+        player.sendMessage("ง2/"+command+" <add|remove> <Item|ID|hand> [Parameter1] [Parameter2]...");
+        player.sendMessage("งbex. ง6/"+command+" add hand #1-16 nEnderNade %32");
+        player.sendMessage("งbex. ง6/"+command+" add bow earrow_fire(2) earrow_unlimited %5");
+        player.sendMessage("งbTutorial Video:");
+        player.sendMessage("ง1งnwww.youtu.be/tRQuKbRTaA4");
     }
 
     /**
@@ -1160,7 +1159,7 @@ public class PhatLootsCommand implements CommandExecutor {
             if (phatLoot != null ) {
                 phatLoots.add(phatLoot);
             } else {
-                player.sendMessage("ยง4PhatLoot ยง6" + name + "ยง4 does not exist.");
+                player.sendMessage("ง4PhatLoot ง6" + name + "ง4 does not exist.");
             }
         } else {
             //Cancel if the Player is not targeting a correct Block
@@ -1170,7 +1169,7 @@ public class PhatLootsCommand implements CommandExecutor {
             case ENDER_CHEST: break;
             case CHEST: break;
             default:
-                player.sendMessage("ยง4You must target a Chest/Dispenser.");
+                player.sendMessage("ง4You must target a Chest/Dispenser.");
                 return phatLoots;
             }
 
@@ -1178,7 +1177,7 @@ public class PhatLootsCommand implements CommandExecutor {
 
             //Inform the Player if the Block is not linked to any PhatLoots
             if (phatLoots.isEmpty()) {
-                player.sendMessage("ยง4Target Block is not linked to a PhatLoot");
+                player.sendMessage("ง4Target Block is not linked to a PhatLoot");
             }
         }
 
@@ -1264,7 +1263,7 @@ public class PhatLootsCommand implements CommandExecutor {
         //Verify that the item is valid
         if (material == null) {
             if (player != null) {
-                player.sendMessage("ยง6" + string + "ยง4 is not a valid item id");
+                player.sendMessage("ง6" + string + "ง4 is not a valid item id");
             }
             return null;
         }
@@ -1337,19 +1336,19 @@ public class PhatLootsCommand implements CommandExecutor {
             percent = Double.parseDouble(string);
             if (percent < 0) {
                 if (player != null) {
-                    player.sendMessage("ยง4The percent cannot be below 0");
+                    player.sendMessage("ง4The percent cannot be below 0");
                 }
             }
             if (percent > 100) {
                 if (player != null) {
-                    player.sendMessage("ยง4The percent cannot be above 100");
+                    player.sendMessage("ง4The percent cannot be above 100");
                 }
             } else {
                 return percent;
             }
         } catch (Exception notDouble) {
             if (player != null) {
-                player.sendMessage("ยง6" + string + "ยง4 is not a valid number");
+                player.sendMessage("ง6" + string + "ง4 is not a valid number");
             }
         }
         return -1;
