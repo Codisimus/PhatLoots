@@ -168,13 +168,13 @@ public class Loot {
             try {
                 file.createNewFile();
                 bWriter = new BufferedWriter(new FileWriter(file));
-                bWriter.write(meta.getDisplayName().replace('ง', '&'));
+                bWriter.write(meta.getDisplayName().replace('ยง', '&'));
 
                 List<String> lore = meta.getLore();
                 if (lore != null) {
                     for (String line : lore) {
                         bWriter.newLine();
-                        bWriter.write(line.replace('ง', '&'));
+                        bWriter.write(line.replace('ยง', '&'));
                     }
                 }
             } catch (Exception e) {
@@ -274,13 +274,13 @@ public class Loot {
                             //Add each remaining line of the File
                             List<String> lore = new LinkedList<String>();
                             while ((line = bReader.readLine()) != null) {
-                                line = line.replace('&', 'ง');
+                                line = line.replace('&', 'ยง');
                                 lore.add(line);
 
                                 //Check if part of a Class or Set
-                                if (line.matches("ง[0-9a-flno][0-9a-zA-Z]+ Class")) { //Color ClassNameOfLettersAndNumbersOfAnyLength Class
+                                if (line.matches("ยง[0-9a-flno][0-9a-zA-Z]+ Class")) { //Color ClassNameOfLettersAndNumbersOfAnyLength Class
                                     className = line.substring(2, line.length() - 6);
-                                } else if (line.matches("ง[0-9a-flno][0-9a-zA-Z]+ Set")) { //Color SetNameOfLettersAndNumbersOfAnyLength Set
+                                } else if (line.matches("ยง[0-9a-flno][0-9a-zA-Z]+ Set")) { //Color SetNameOfLettersAndNumbersOfAnyLength Set
                                     set = line.substring(2, line.length() - 4);
                                 }
                             }

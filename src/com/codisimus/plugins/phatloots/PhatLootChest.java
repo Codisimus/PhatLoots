@@ -112,9 +112,10 @@ public class PhatLootChest {
         if (item.getAmount() > item.getMaxStackSize()) {
             int id = item.getTypeId();
             short durability = item.getDurability();
+            byte data = item.getData().getData();
 
-            addLoot(new ItemStack(id, item.getMaxStackSize(), durability), player, inventory);
-            addLoot(new ItemStack(id, item.getAmount() - item.getMaxStackSize(), durability), player, inventory);
+            addLoot(new ItemStack(id, item.getMaxStackSize(), durability, data), player, inventory);
+            addLoot(new ItemStack(id, item.getAmount() - item.getMaxStackSize(), durability, data), player, inventory);
         }
 
         PlayerInventory sack = player.getInventory();

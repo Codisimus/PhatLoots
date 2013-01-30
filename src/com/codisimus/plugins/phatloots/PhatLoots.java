@@ -11,6 +11,7 @@ import net.milkbowl.vault.permission.Permission;
 import org.bukkit.Location;
 import org.bukkit.Server;
 import org.bukkit.Sound;
+import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
@@ -43,6 +44,7 @@ public class PhatLoots extends JavaPlugin {
     static JavaPlugin plugin;
     static String dataFolder;
     private static Permission permission;
+    private Properties p;
     private static HashMap<String, PhatLoot> phatLoots = new HashMap<String, PhatLoot>();
 
     /**
@@ -499,7 +501,7 @@ public class PhatLoots extends JavaPlugin {
 
         logger.info("PhatLoots reloaded");
         if (player != null) {
-            player.sendMessage("ง5PhatLoots reloaded");
+            player.sendMessage("ยง5PhatLoots reloaded");
         }
     }
 
