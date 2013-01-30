@@ -3,7 +3,6 @@ package com.codisimus.plugins.phatloots;
 import com.codisimus.plugins.chestlock.ChestLock;
 import com.codisimus.plugins.chestlock.Safe;
 import com.google.common.collect.Sets;
-import java.io.File;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
