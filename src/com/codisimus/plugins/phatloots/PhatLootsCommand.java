@@ -92,7 +92,7 @@ public class PhatLootsCommand implements CommandExecutor {
 
             Inventory inventory = PhatLoots.server.createInventory(player, 54, phatLoot.name);
             player.openInventory(inventory);
-            phatLoot.getLoot(player, new PhatLootChest(player.getLocation().getBlock()), inventory);
+            phatLoot.rollForLoot(player, new PhatLootChest(player.getLocation().getBlock()), inventory);
             return true;
         }
 
@@ -138,7 +138,7 @@ public class PhatLootsCommand implements CommandExecutor {
             //Open the Inventory
             player.openInventory(inventory);
 
-            phatLoot.getLoot(player, new PhatLootChest(player.getLocation().getBlock()), inventory);
+            phatLoot.rollForLoot(player, new PhatLootChest(player.getLocation().getBlock()), inventory);
             return true;
         }
 

@@ -141,7 +141,7 @@ public class PhatLootsListener implements Listener {
         PhatLootChest plChest = new PhatLootChest(block);
         for (PhatLoot phatLoot : PhatLoots.getPhatLoots()) {
             if (phatLoot.containsChest(plChest) && PhatLoots.canLoot(player, phatLoot)) {
-                phatLoot.getLoot(player, plChest, inventory);
+                phatLoot.rollForLoot(player, plChest, inventory);
                 phatLoot.save();
             }
         }
@@ -209,7 +209,7 @@ public class PhatLootsListener implements Listener {
         PhatLootChest plChest = new PhatLootChest(block);
         for (PhatLoot phatLoot : PhatLoots.getPhatLoots()) {
             if (phatLoot.containsChest(plChest) && PhatLoots.canLoot(player, phatLoot)) {
-                phatLoot.getLoot(player, plChest, inventory);
+                phatLoot.rollForLoot(player, plChest, inventory);
                 phatLoot.save();
             }
         }
@@ -258,8 +258,7 @@ public class PhatLootsListener implements Listener {
     public void onEntityDeath(EntityDeathEvent event) {
         PhatLoot phatLoot = PhatLoots.getPhatLoot(event.getEntityType().getName());
         if (phatLoot != null) {
-            event.setDroppedExp(phatLoot.getLoot(
-                    event.getEntity().getKiller(), event.getDrops()));
+            event.setDroppedExp(phatLoot.rollForLoot(event.getEntity().getKiller(), event.getDrops()));
         }
     }
 

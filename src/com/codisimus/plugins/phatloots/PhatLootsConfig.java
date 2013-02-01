@@ -34,7 +34,8 @@ public class PhatLootsConfig {
             PhatLoot.onlyDropOnPlayerKill = loadBool("OnlyDropLootWhenKilledByPlayer", false);
             PhatLoot.replaceMobLoot = loadBool("ReplaceMobLoot", true);
             PhatLoots.autoLoot = loadBool("AutoLoot", false);
-            PhatLoots.displayTimeRemaining = loadBool("DisplayTimeRemaining", true);
+            PhatLoot.displayTimeRemaining = loadBool("DisplayTimeRemaining", true);
+            PhatLoot.displayTimeRemaining = loadBool("DisplayMobTimeRemaining", true);
 
             PhatLootsCommand.setUnlockable = loadBool("SetChestsAsUnlockable", true);
 
@@ -58,6 +59,7 @@ public class PhatLootsConfig {
             PhatLootsMessages.autoLoot = loadString("AutoLootMessage", string);
             PhatLootsMessages.overflow = loadString("OverflowMessage", string);
             PhatLootsMessages.timeRemaining = loadString("TimeRemainingMessage", string);
+            PhatLootsMessages.mobTimeRemaining = loadString("MobTimeRemainingMessage", string);
             PhatLootsMessages.mobDroppedMoney = loadString("MobDroppedMoneyMessage", string);
             PhatLootsMessages.mobDroppedItem = loadString("MobDroppedItemMessage", string);
             PhatLootsMessages.formatAll();

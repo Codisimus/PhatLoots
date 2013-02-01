@@ -23,6 +23,8 @@ public class PhatLoot {
         COLLECTIVE8 = 8, COLLECTIVE9 = 9, COLLECTIVE10 = 10;
     static boolean onlyDropOnPlayerKill;
     static boolean replaceMobLoot;
+    static boolean displayTimeRemaining;
+    static boolean displayMobTimeRemaining;
 
     private static PhatLootsCommandSender cs = new PhatLootsCommandSender();
 
@@ -71,7 +73,7 @@ public class PhatLoot {
      * @param block The Block being looted
      */
     @SuppressWarnings("deprecation")
-    public void getLoot(Player player, PhatLootChest chest, Inventory inventory) {
+    public void rollForLoot(Player player, PhatLootChest chest, Inventory inventory) {
         //Get the user to be looked up for last time of use
         String user = player.getName();
         if (global) {
@@ -88,7 +90,7 @@ public class PhatLoot {
 
         //Display remaining time if it is not
         if (!timeRemaining.equals("0")) {
-            if (PhatLoots.displayTimeRemaining) {
+            if (displayTimeRemaining) {
                 player.sendMessage(PhatLootsMessages.timeRemaining.replace("<time>", timeRemaining));
             }
 
@@ -151,13 +153,29 @@ public class PhatLoot {
         setTime(chest, user);
     }
 
-    public int getLoot(Player player, List<ItemStack> drops) {
-        if (onlyDropOnPlayerKill && player == null) {
-            drops.clear();
-            return 0;
-        }
+    public int rollForLoot(Player player, List<ItemStack> drops) {
         if (replaceMobLoot) {
             drops.clear();
+        }
+        if (onlyDropOnPlayerKill && player == null) {
+            return 0;
+        }
+
+        //Find out how much time remains
+        String timeRemaining = getTimeRemaining(getMobLootTime(player.getName()));
+
+        //User can never loot the Chest again if timeRemaining is null
+        if (timeRemaining == null) {
+            return 0;
+        }
+
+        //Display remaining time if it is not
+        if (!timeRemaining.equals("0T")) {
+            if (displayMobTimeRemaining) {
+                player.sendMessage(PhatLootsMessages.mobTimeRemaining.replace("<time>", timeRemaining));
+            }
+
+            return 0;
         }
 
         List<ItemStack> loot = lootIndividual();
@@ -320,6 +338,27 @@ public class PhatLoot {
         }
 
         lootTimes.setProperty(chest.toString() + "'" + player, String.valueOf(System.currentTimeMillis()));
+    }
+
+    /**
+     * Retrieves the time for the given Player
+     *
+     * @param player The Player whose time is requested
+     * @return The time as an array of ints
+     */
+    public long getMobLootTime(String player) {
+        String string = lootTimes.getProperty(player);
+        long time = 0;
+
+        if (string != null) {
+            try {
+                time = Long.parseLong(string);
+            } catch (Exception corruptData) {
+                PhatLoots.logger.severe("Fixed corrupted time value!");
+            }
+        }
+
+        return time;
     }
 
     /**

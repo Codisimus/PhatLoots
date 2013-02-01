@@ -37,7 +37,6 @@ public class PhatLoots extends JavaPlugin {
     static boolean defaultRound;
     static boolean autoLock;
     static boolean autoLoot;
-    static boolean displayTimeRemaining;
     static boolean useRestricted;
     static HashSet<String> restricted = new HashSet<String>();
     static JavaPlugin plugin;
