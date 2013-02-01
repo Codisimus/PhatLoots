@@ -2,6 +2,8 @@ package com.codisimus.plugins.phatloots;
 
 import com.codisimus.plugins.chestlock.ChestLock;
 import com.codisimus.plugins.chestlock.Safe;
+import com.codisimus.plugins.regionown.Region;
+import com.codisimus.plugins.regionown.RegionSelector;
 import com.google.common.collect.Sets;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -186,10 +188,18 @@ public class PhatLootsCommand implements CommandExecutor {
                 return true;
             }
 
-            if (args.length == 2) {
+            switch (args.length) {
+            case 2:
                 link(player, args[1]);
-            } else {
+                break;
+            case 3:
+                if (args[2].equals("region")) {
+                    regionLink(player, args[1]);
+                    break;
+                }
+            default:
                 sendCreateHelp(player);
+                break;
             }
 
             return true;
@@ -675,6 +685,58 @@ public class PhatLootsCommand implements CommandExecutor {
     }
 
     /**
+     * Finds all Chests within the selected RegionOwn Region and links them to the specified PhatLoot
+     *
+     * @param player The Player who has a Region selected
+     * @param name The name of the PhatLoot the Chests will be linked to
+     */
+    public static void regionLink(Player player, String name) {
+        if (!PhatLoots.pm.isPluginEnabled("RegionOwn")) {
+            player.sendMessage("You must install RegionOwn to use that command");
+            return;
+        }
+
+        //Cancel if the PhatLoot with the given name does not exist
+        if (!PhatLoots.hasPhatLoot(name)) {
+            player.sendMessage("§4PhatLoot §6" + name + "§4 does not exsist.");
+            return;
+        }
+
+        PhatLoot phatLoot = PhatLoots.getPhatLoot(name);
+
+        if (RegionSelector.isSelecting(player)) {
+            RegionSelector.endSelection(player);
+        }
+
+        if (!RegionSelector.hasSelection(player)) {
+            player.sendMessage("You must first select a Region");
+            return;
+        }
+
+        Region region = RegionSelector.getSelection(player);
+        int chests = 0;
+
+        for (Block block : region.getBlocks()) {
+            if (block.getType() == Material.CHEST) {
+                Chest chest = (Chest) block.getState();
+                Inventory inventory = chest.getInventory();
+
+                //Linked the left side if it is a DoubleChest
+                if (inventory instanceof DoubleChestInventory) {
+                    chest = (Chest) ((DoubleChestInventory) inventory).getLeftSide().getHolder();
+                    block = chest.getBlock();
+                }
+
+                phatLoot.addChest(block);
+                chests++;
+            }
+        }
+
+        player.sendMessage("§6" + chests + "§5 chests have been linked to PhatLoot §5" + name);
+        phatLoot.save();
+    }
+
+    /**
      * Unlinks the target Block from the specified PhatLoots
      *
      * @param player The Player unlinking the Block they are targeting
@@ -1092,6 +1154,7 @@ public class PhatLootsCommand implements CommandExecutor {
         player.sendMessage("§2/"+command+" make <Name>§b Create PhatLoot with given name");
         player.sendMessage("§2/"+command+" delete <Name>§b Delete PhatLoot");
         player.sendMessage("§2/"+command+" link <Name>§b Link target Chest/Dispenser with PhatLoot");
+        player.sendMessage("§2/"+command+" link <Name> region§b Link all Chests within the selected RegionOwn Region");
         player.sendMessage("§2/"+command+" unlink [Name]§b Unlink target Block from PhatLoot");
     }
 

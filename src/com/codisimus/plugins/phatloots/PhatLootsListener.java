@@ -1,10 +1,7 @@
 package com.codisimus.plugins.phatloots;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.Properties;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -13,7 +10,6 @@ import org.bukkit.block.Dispenser;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
-import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
@@ -21,7 +17,6 @@ import org.bukkit.event.block.BlockPhysicsEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.world.WorldLoadEvent;
 import org.bukkit.inventory.DoubleChestInventory;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
@@ -34,38 +29,6 @@ import org.bukkit.inventory.InventoryHolder;
 public class PhatLootsListener implements Listener {
     static String chestName;
     private static HashMap<String, ForgettableInventory> inventories = new HashMap<String, ForgettableInventory>();
-
-    /**
-     * Attempts to load OldChestData for newly loaded Worlds
-     *
-     * @param event The WorldLoadEvent that occurred
-     */
-    @EventHandler (ignoreCancelled = true, priority = EventPriority.MONITOR)
-    public void onWorldLoad(WorldLoadEvent event) {
-        FileInputStream fis = null;
-        for (File file: new File(PhatLoots.dataFolder + "/PhatLoots/").listFiles()) {
-            String name = file.getName();
-            if (name.endsWith(".properties")) {
-                try {
-                    //Load the Properties file for reading
-                    Properties p = new Properties();
-                    fis = new FileInputStream(file);
-                    p.load(fis);
-
-                    if (p.containsKey("OldChestsData")) {
-                        PhatLoots.getPhatLoot(name.substring(0, name.length() - 11))
-                                .setChests(p.getProperty("OldChestsData"));
-                    }
-                } catch (Exception loadFailed) {
-                } finally {
-                    try {
-                        fis.close();
-                    } catch (Exception e) {
-                    }
-                }
-            }
-        }
-    }
 
     /**
      * Checks if a Player loots a PhatLootChest
@@ -324,10 +287,10 @@ public class PhatLootsListener implements Listener {
      */
     private Player getNearestPlayer(Location location) {
         Player nearestPlayer = null;
-        double shortestDistance = 50;
+        double shortestDistance = 2500;
         for (Player player: location.getWorld().getPlayers()) {
             Location playerLocation = player.getLocation();
-            double distanceToPlayer = location.distance(playerLocation);
+            double distanceToPlayer = location.distanceSquared(playerLocation);
             if (distanceToPlayer < shortestDistance) {
                 nearestPlayer = player;
                 shortestDistance = distanceToPlayer;

@@ -1,6 +1,8 @@
 package com.codisimus.plugins.phatloots;
 
 import java.util.*;
+import org.apache.commons.lang.WordUtils;
+import org.apache.commons.lang.time.DateUtils;
 import org.bukkit.Color;
 import org.bukkit.GameMode;
 import org.bukkit.block.Block;
@@ -32,7 +34,7 @@ public class PhatLoot {
     public LinkedList<String> commands = new LinkedList<String>(); //Commands that will be run upon looting the Chest
 
     @SuppressWarnings("unchecked")
-	public LinkedList<Loot>[] loots = (LinkedList<Loot>[])new LinkedList[6]; //List of items that may be given
+    public LinkedList<Loot>[] loots = (LinkedList<Loot>[]) new LinkedList[6]; //List of items that may be given
 
     public int days = PhatLoots.defaultDays; //Reset time (will never reset if any are negative)
     public int hours = PhatLoots.defaultHours;
@@ -43,7 +45,6 @@ public class PhatLoot {
     public boolean round = PhatLoots.defaultRound;
 
     LinkedList<PhatLootChest> chests = new LinkedList<PhatLootChest>(); //List of PhatLootChests that activate the Warp
-    LinkedList<String> oldChests = new LinkedList<String>(); //List of PhatLootChests from unloaded Worlds
 
     Properties lootTimes = new Properties(); //PhatLootChest'PlayerName=Year'Day'Hour'Minute'Second
 
@@ -68,7 +69,7 @@ public class PhatLoot {
      * @param block The Block being looted
      */
     @SuppressWarnings("deprecation")
-	public void getLoot(Player player, PhatLootChest chest, Inventory inventory) {
+    public void getLoot(Player player, PhatLootChest chest, Inventory inventory) {
         //Get the user to be looked up for last time of use
         String user = player.getName();
         if (global) {
@@ -200,93 +201,31 @@ public class PhatLoot {
      * @param time The given time
      * @return the remaining time until the PhatLootChest resets
      */
-    public String getTimeRemaining(int[] time) {
-        //Return 0 if a time was not given
-        if (time == null) {
-            return "0";
-        }
-
+    public String getTimeRemaining(long time) {
         //Return null if the reset time is set to never
         if (days < 0 || hours < 0 || minutes < 0 || seconds < 0) {
             return null;
         }
 
         //Calculate the time that the Warp will reset
-        int resetYear = time[0];
-        int resetDay = time[1] + days;
-        int resetHour = time[2] + hours;
-        int resetMinute = time[3] + minutes;
-        int resetSecond = time[4] + seconds;
+        time += days * DateUtils.MILLIS_PER_DAY
+                + hours * DateUtils.MILLIS_PER_HOUR
+                + minutes * DateUtils.MILLIS_PER_MINUTE
+                + seconds * DateUtils.MILLIS_PER_SECOND;
 
-        //Update time values into the correct format
-        while (resetSecond >= 60) {
-            resetMinute++;
-            resetSecond = resetSecond - 60;
-        }
-        while (resetMinute >= 60) {
-            resetHour++;
-            resetMinute = resetMinute - 60;
-        }
-        while (resetHour >= 24) {
-            resetDay++;
-            resetHour = resetHour - 24;
-        }
-        while (resetDay >= 366) {
-            resetYear++;
-            resetDay = resetDay - 365;
-        }
+        long timeRemaining = time - System.currentTimeMillis();
 
-        Calendar calendar = Calendar.getInstance();
-        int year = calendar.get(Calendar.YEAR);
-        int day = calendar.get(Calendar.DAY_OF_YEAR);
-        int hour = calendar.get(Calendar.HOUR_OF_DAY);
-        int minute = calendar.get(Calendar.MINUTE);
-        int second = calendar.get(Calendar.SECOND);
-
-        String msg = "";
-
-        //Return 0 if the current time is later than the reset time
-        if (year > resetYear) {
+        if (timeRemaining > DateUtils.MILLIS_PER_DAY) {
+            return (int) timeRemaining / DateUtils.MILLIS_PER_DAY + " day(s)";
+        } else if (timeRemaining > DateUtils.MILLIS_PER_HOUR) {
+            return (int) timeRemaining / DateUtils.MILLIS_PER_HOUR + " hour(s)";
+        } else if (timeRemaining > DateUtils.MILLIS_PER_MINUTE) {
+            return (int) timeRemaining / DateUtils.MILLIS_PER_MINUTE + " minute(s)";
+        } else if (timeRemaining > DateUtils.MILLIS_PER_SECOND) {
+            return (int) timeRemaining / DateUtils.MILLIS_PER_SECOND + " second(s)";
+        } else {
             return "0";
         }
-
-        if (year < resetYear) {
-            msg = msg.concat((resetYear - year - 1) + " years, ");
-            resetDay = resetDay + 365;
-        }
-
-        if (day > resetDay) {
-            return "0";
-        }
-
-        if (day < resetDay) {
-            msg = msg.concat((resetDay - day - 1) + " days, ");
-            resetHour = resetHour + 24;
-        }
-
-        if (hour > resetHour) {
-            return "0";
-        }
-
-        if (hour < resetHour) {
-            msg = msg.concat((resetHour - hour - 1) + " hours, ");
-            resetMinute = resetMinute + 60;
-        }
-
-        if (minute > resetMinute) {
-            return "0";
-        }
-
-        if (minute < resetMinute) {
-            msg = msg.concat((resetMinute - minute - 1) + " minutes, ");
-            resetSecond = resetSecond + 60;
-        }
-
-        if (second >= resetSecond) {
-            return "0";
-        }
-
-        return msg.concat((resetSecond - second) + " seconds");
     }
 
     /**
@@ -359,40 +298,26 @@ public class PhatLoot {
 
     /**
      * Updates the Player's time value in the Map with the current time
-     * The time is saved as an array with YEAR, DAY, HOUR, MINUTE, SECOND
      *
      * @param chest The PhatLootChest to set the time for
      * @param player The Player whose time is to be updated
      */
     public void setTime(PhatLootChest chest, String player) {
-        int[] time = new int[5];
         Calendar calendar = Calendar.getInstance();
 
         if (round) {
-            if (seconds != 0) {
-                time[4] = calendar.get(Calendar.SECOND);
-                time[3] = calendar.get(Calendar.MINUTE);
-                time[2] = calendar.get(Calendar.HOUR_OF_DAY);
-            } else if (minutes != 0) {
-                time[3] = calendar.get(Calendar.MINUTE);
-                time[2] = calendar.get(Calendar.HOUR_OF_DAY);
-            } else if (hours != 0) {
-                time[2] = calendar.get(Calendar.HOUR_OF_DAY);
+            if (seconds == 0) {
+                calendar.clear(Calendar.SECOND);
+                if (minutes == 0) {
+                    calendar.clear(Calendar.MINUTE);
+                    if (hours == 0) {
+                        calendar.clear(Calendar.HOUR_OF_DAY);
+                    }
+                }
             }
-
-            time[1] = calendar.get(Calendar.DAY_OF_YEAR);
-            time[0] = calendar.get(Calendar.YEAR);
-        } else {
-            time[0] = calendar.get(Calendar.YEAR);
-            time[1] = calendar.get(Calendar.DAY_OF_YEAR);
-            time[2] = calendar.get(Calendar.HOUR_OF_DAY);
-            time[3] = calendar.get(Calendar.MINUTE);
-            time[4] = calendar.get(Calendar.SECOND);
         }
 
-        String timeString = time[0] + "'" + time[1] + "'" + time[2]
-                            + "'" + time[3] + "'" + time[4];
-        lootTimes.setProperty(chest.toString() + "'" + player, timeString);
+        lootTimes.setProperty(chest.toString() + "'" + player, String.valueOf(System.currentTimeMillis()));
     }
 
     /**
@@ -402,19 +327,13 @@ public class PhatLoot {
      * @param player The Player whose time is requested
      * @return The time as an array of ints
      */
-    public int[] getTime(PhatLootChest chest, String player) {
-        int[] time = new int[5];
-        String key = chest.toString() + "'" + player;
+    public long getTime(PhatLootChest chest, String player) {
+        String string = lootTimes.getProperty(chest.toString() + "'" + player);
+        long time = 0;
 
-        String string = lootTimes.getProperty(key);
-        if (string == null) {
-            return null;
-        }
-
-        String[] timeString = string.split("'");
-        for (int i = 0; i < 5; i++) {
+        if (string != null) {
             try {
-                time[i] = Integer.parseInt(timeString[i]);
+                time = Long.parseLong(string);
             } catch (Exception corruptData) {
                 PhatLoots.logger.severe("Fixed corrupted time value!");
             }
@@ -537,7 +456,6 @@ public class PhatLoot {
 
                 //Check if the World is not loaded
                 if (PhatLoots.server.getWorld(chestData[0]) == null) {
-                    oldChests.add(chest);
                     continue;
                 }
 
@@ -546,56 +464,6 @@ public class PhatLoot {
                         Integer.parseInt(chestData[2]), Integer.parseInt(chestData[3]));
 
                 chests.add(phatLootChest);
-            } catch (Exception invalidChest) {
-                PhatLoots.logger.info("Error occured while loading PhatLoot "
-                                        + '"' + name + '"' + ", " + '"' + chest
-                                        + '"' + " is not a valid PhatLootChest");
-                invalidChest.printStackTrace();
-            }
-        }
-    }
-
-    /**
-     * Loads data from the outdated save file
-     *
-     * @param string The data of the Chests
-     */
-    public void setOldChests(String data) {
-        //Cancel if no data was provided
-        if (data.isEmpty()) {
-            return;
-        }
-
-        int index;
-
-        //Load data for each PhatLootChest
-        for (String chest: data.split("; ")) {
-            try {
-                String[] chestData = chest.split("\\{", 2);
-
-                //Load the Block Location data of the Chest
-                String[] blockData = chestData[0].split("'");
-
-                //Construct a a new PhatLootChest with the Location data
-                PhatLootChest phatLootChest = new PhatLootChest(blockData[0], Integer.parseInt(blockData[1]),
-                        Integer.parseInt(blockData[2]), Integer.parseInt(blockData[3]));
-
-                //Load the HashMap of loot times of the Chest
-                for (String user: chestData[1].substring(0, chestData[1].length() - 1).split(", ")) {
-                    //Don't load if the data if it is corrupt or empty
-                    if ((index = user.indexOf('@')) != -1) {
-                        String timeString = user.substring(index + 1);
-                        lootTimes.setProperty(phatLootChest.toString() + "'"
-                                        + user.substring(0, index), timeString);
-                    }
-                }
-
-                //Check if the World is not loaded
-                if (PhatLoots.server.getWorld(blockData[0]) == null) {
-                    oldChests.add(chestData[0]);
-                } else {
-                    chests.add(phatLootChest);
-                }
             } catch (Exception invalidChest) {
                 PhatLoots.logger.info("Error occured while loading PhatLoot "
                                         + '"' + name + '"' + ", " + '"' + chest
@@ -636,7 +504,6 @@ public class PhatLoot {
         if (chest == null) {
             chests.add(new PhatLootChest(block));
         }
-        save();
     }
 
     /**
@@ -706,6 +573,24 @@ public class PhatLoot {
                 return name;
             }
         }
-        return item.getType().toString();
+        return WordUtils.capitalizeFully(item.getType().toString().replace("_", " "));
+    }
+
+    public void convertLootTimes() {
+        Calendar cal = Calendar.getInstance();
+        for (Object key : lootTimes.keySet()) {
+            try {
+                String s = key.toString();
+                String[] fields = lootTimes.getProperty(s).split("'");
+                cal.set(Calendar.YEAR, Integer.parseInt(fields[0]));
+                cal.set(Calendar.DAY_OF_YEAR, Integer.parseInt(fields[1]));
+                cal.set(Calendar.HOUR_OF_DAY, Integer.parseInt(fields[2]));
+                cal.set(Calendar.MINUTE, Integer.parseInt(fields[3]));
+                cal.set(Calendar.SECOND, Integer.parseInt(fields[4]));
+                lootTimes.setProperty(s, String.valueOf(cal.getTimeInMillis()));
+            } catch (Exception ex) {
+                PhatLoots.logger.severe(name + ".loottimes has been corrupted");
+            }
+        }
     }
 }

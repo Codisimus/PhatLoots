@@ -231,22 +231,7 @@ public class PhatLoots extends JavaPlugin {
                     phatLoot.numberCollectiveLoots = Integer.parseInt(p.getProperty("ItemsPerColl"));
 
                     //Load the data of all the PhatLootsChests
-                    String chestData = p.getProperty("ChestsData");
-                    if (chestData.contains("@")) {
-                        phatLoot.setOldChests(chestData);
-                    } else {
-                        phatLoot.setChests(chestData);
-                    }
-
-                    //Try to Load old data (incase the old Worlds are now present)
-                    if (p.containsKey("OldChestsData")) {
-                        chestData = p.getProperty("OldChestsData");
-                        if (chestData.contains("@")) {
-                            phatLoot.setOldChests(chestData);
-                        } else {
-                            phatLoot.setChests(chestData);
-                        }
-                    }
+                    phatLoot.setChests(p.getProperty("ChestsData"));
 
                     phatLoots.put(phatLoot.name, phatLoot);
 
@@ -257,6 +242,9 @@ public class PhatLoots extends JavaPlugin {
                     if (file.exists()) {
                         fis = new FileInputStream(file);
                         phatLoot.lootTimes.load(fis);
+                        if (phatLoot.lootTimes.values().toString().contains("'")) {
+                            phatLoot.convertLootTimes();
+                        }
                     } else {
                         phatLoot.save();
                     }
@@ -377,15 +365,6 @@ public class PhatLoots extends JavaPlugin {
                 value = value.substring(2);
             }
             p.setProperty("ChestsData", value);
-
-            value = "";
-            for (String chest: phatLoot.oldChests) {
-                value = value.concat(", " + chest);
-            }
-            if (!value.isEmpty()) {
-                value = value.substring(2);
-            }
-            p.setProperty("OldChestsData", value);
 
             //Write the PhatLoot Properties to file
             fos = new FileOutputStream(dataFolder + "/PhatLoots/"
