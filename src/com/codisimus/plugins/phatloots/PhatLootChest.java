@@ -173,4 +173,26 @@ public class PhatLootChest {
     public String toString() {
         return world + "'" + x + "'" + y + "'" + z;
     }
+
+    @Override
+    public boolean equals(Object object) {
+        if (object instanceof PhatLootChest) {
+            PhatLootChest chest = (PhatLootChest) object;
+            return chest.x == x
+                   && chest.y == y
+                   && chest.z == z
+                   && chest.world.equals(world);
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 47 * hash + (this.world != null ? this.world.hashCode() : 0);
+        hash = 47 * hash + this.x;
+        hash = 47 * hash + this.y;
+        hash = 47 * hash + this.z;
+        return hash;
+    }
 }

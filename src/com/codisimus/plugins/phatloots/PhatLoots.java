@@ -292,7 +292,7 @@ public class PhatLoots extends JavaPlugin {
                                         + phatLoot.expUpper);
 
             String value = "";
-            for (String cmd: phatLoot.commands) {
+            for (String cmd : phatLoot.commands) {
                 value = value.concat(", /" + cmd);
             }
             if (!value.isEmpty()) {
@@ -301,7 +301,7 @@ public class PhatLoots extends JavaPlugin {
             p.setProperty("Commands", value);
 
             value = "";
-            for (Loot loot: phatLoot.loots[0]) {
+            for (Loot loot : phatLoot.getLootTable(PhatLoot.INDIVIDUAL)) {
                 value = value.concat(", " + loot.toString());
             }
             if (!value.isEmpty()) {
@@ -310,7 +310,7 @@ public class PhatLoots extends JavaPlugin {
             p.setProperty("IndividualLoots", value);
 
             value = "";
-            for (Loot loot: phatLoot.loots[1]) {
+            for (Loot loot : phatLoot.getLootTable(PhatLoot.COLLECTIVE1)) {
                 value = value.concat(", " + loot.toString());
             }
             if (!value.isEmpty()) {
@@ -319,7 +319,7 @@ public class PhatLoots extends JavaPlugin {
             p.setProperty("Coll1", value);
 
             value = "";
-            for (Loot loot: phatLoot.loots[2]) {
+            for (Loot loot : phatLoot.getLootTable(PhatLoot.COLLECTIVE2)) {
                 value = value.concat(", " + loot.toString());
             }
             if (!value.isEmpty()) {
@@ -328,7 +328,7 @@ public class PhatLoots extends JavaPlugin {
             p.setProperty("Coll2", value);
 
             value = "";
-            for (Loot loot: phatLoot.loots[3]) {
+            for (Loot loot : phatLoot.getLootTable(PhatLoot.COLLECTIVE3)) {
                 value = value.concat(", " + loot.toString());
             }
             if (!value.isEmpty()) {
@@ -337,7 +337,7 @@ public class PhatLoots extends JavaPlugin {
             p.setProperty("Coll3", value);
 
             value = "";
-            for (Loot loot: phatLoot.loots[4]) {
+            for (Loot loot : phatLoot.getLootTable(PhatLoot.COLLECTIVE4)) {
                 value = value.concat(", " + loot.toString());
             }
             if (!value.isEmpty()) {
@@ -346,7 +346,7 @@ public class PhatLoots extends JavaPlugin {
             p.setProperty("Coll4", value);
 
             value = "";
-            for (Loot loot: phatLoot.loots[5]) {
+            for (Loot loot : phatLoot.getLootTable(PhatLoot.COLLECTIVE5)) {
                 value = value.concat(", " + loot.toString());
             }
             if (!value.isEmpty()) {
@@ -354,11 +354,55 @@ public class PhatLoots extends JavaPlugin {
             }
             p.setProperty("Coll5", value);
 
-            p.setProperty("ItemsPerColl",
-                            Integer.toString(phatLoot.numberCollectiveLoots));
+            value = "";
+            for (Loot loot : phatLoot.getLootTable(PhatLoot.COLLECTIVE6)) {
+                value = value.concat(", " + loot.toString());
+            }
+            if (!value.isEmpty()) {
+                value = value.substring(2);
+            }
+            p.setProperty("Coll6", value);
 
             value = "";
-            for (PhatLootChest chest: phatLoot.chests) {
+            for (Loot loot : phatLoot.getLootTable(PhatLoot.COLLECTIVE7)) {
+                value = value.concat(", " + loot.toString());
+            }
+            if (!value.isEmpty()) {
+                value = value.substring(2);
+            }
+            p.setProperty("Coll7", value);
+
+            value = "";
+            for (Loot loot : phatLoot.getLootTable(PhatLoot.COLLECTIVE8)) {
+                value = value.concat(", " + loot.toString());
+            }
+            if (!value.isEmpty()) {
+                value = value.substring(2);
+            }
+            p.setProperty("Coll8", value);
+
+            value = "";
+            for (Loot loot : phatLoot.getLootTable(PhatLoot.COLLECTIVE9)) {
+                value = value.concat(", " + loot.toString());
+            }
+            if (!value.isEmpty()) {
+                value = value.substring(2);
+            }
+            p.setProperty("Coll9", value);
+
+            value = "";
+            for (Loot loot : phatLoot.getLootTable(PhatLoot.COLLECTIVE10)) {
+                value = value.concat(", " + loot.toString());
+            }
+            if (!value.isEmpty()) {
+                value = value.substring(2);
+            }
+            p.setProperty("Coll10", value);
+
+            p.setProperty("ItemsPerColl", Integer.toString(phatLoot.numberCollectiveLoots));
+
+            value = "";
+            for (PhatLootChest chest : phatLoot.getChests()) {
                 value = value.concat(", " + chest.toString());
             }
             if (!value.isEmpty()) {
@@ -449,11 +493,10 @@ public class PhatLoots extends JavaPlugin {
     public static LinkedList<PhatLoot> getPhatLoots(Block block) {
         LinkedList<PhatLoot> phatLootList = new LinkedList<PhatLoot>();
 
-        for (PhatLoot phatLoot: phatLoots.values()) {
-            for (PhatLootChest chest: phatLoot.chests) {
-                if (chest.isBlock(block)) {
-                    phatLootList.add(phatLoot);
-                }
+        PhatLootChest chest = new PhatLootChest(block);
+        for (PhatLoot phatLoot : phatLoots.values()) {
+            if (phatLoot.containsChest(chest)) {
+                phatLootList.add(phatLoot);
             }
         }
 

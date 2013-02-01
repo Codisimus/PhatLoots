@@ -138,9 +138,9 @@ public class PhatLootsListener implements Listener {
         default: return;
         }
 
-        for (PhatLoot phatLoot: PhatLoots.getPhatLoots()) {
-            PhatLootChest plChest = phatLoot.findChest(block);
-            if (plChest != null && PhatLoots.canLoot(player, phatLoot)) {
+        PhatLootChest plChest = new PhatLootChest(block);
+        for (PhatLoot phatLoot : PhatLoots.getPhatLoots()) {
+            if (phatLoot.containsChest(plChest) && PhatLoots.canLoot(player, phatLoot)) {
                 phatLoot.getLoot(player, plChest, inventory);
                 phatLoot.save();
             }
@@ -206,10 +206,10 @@ public class PhatLootsListener implements Listener {
         Dispenser dispenser = (Dispenser) block.getState();
         Inventory inventory = dispenser.getInventory();
 
-        for (PhatLoot phatLoot: PhatLoots.getPhatLoots()) {
-            PhatLootChest chest = phatLoot.findChest(block);
-            if (chest != null) {
-                phatLoot.getLoot(player, chest, inventory);
+        PhatLootChest plChest = new PhatLootChest(block);
+        for (PhatLoot phatLoot : PhatLoots.getPhatLoots()) {
+            if (phatLoot.containsChest(plChest) && PhatLoots.canLoot(player, phatLoot)) {
+                phatLoot.getLoot(player, plChest, inventory);
                 phatLoot.save();
             }
         }
@@ -270,8 +270,9 @@ public class PhatLootsListener implements Listener {
      * @return True if the given Block is linked to a PhatLoot
      */
     public boolean isPhatLootChest(Block block) {
+        PhatLootChest plChest = new PhatLootChest(block);
         for (PhatLoot phatLoot: PhatLoots.getPhatLoots()) {
-            if (phatLoot.findChest(block) != null) {
+            if (phatLoot.containsChest(plChest)) {
                 return true;
             }
         }

@@ -824,55 +824,22 @@ public class PhatLootsCommand implements CommandExecutor {
     public static void setLoot(Player player, String name, boolean add, int lootID, Loot loot) {
         String lootDescription = loot.toInfoString();
 
-        for (PhatLoot phatLoot: getPhatLoots(player, name)) {
-            boolean done = false;
-            //Try to find the Loot
-            for (Loot tempLoot: phatLoot.loots[lootID]) {
-                if (loot.equals(tempLoot)) {
-                    /*The Loot was found*/
-                    //Cancel if the Player is trying to duplicate the Loot
-                    if (!add) {
-                        phatLoot.loots[lootID].remove(loot);
-
-                        //Display the appropriate message
-                        if (lootID == 0)  { //Individual Loot
-                            player.sendMessage("§6" + lootDescription
-                                    + "§5 removed as Loot for PhatLoot §6"
-                                    + phatLoot.name);
-                        } else { //Collective Loot
-                            player.sendMessage("§6" + lootDescription
-                                    + "§5 removed as Loot from §6coll"
-                                    + lootID + "§5, §6"
-                                    + phatLoot.getPercentRemaining(lootID)
-                                    + "%§5 remaining");
-                        }
-
-                        phatLoot.save();
-                    } else {
-                        player.sendMessage("§6" + lootDescription
-                                + "§4 is already Loot for PhatLoot §6"
-                                + phatLoot.name);
-                    }
-
-                    done = true;
-                    break;
-                }
-            }
-
-            if (!done) {
-                /*The Loot was not found*/
-                //Cancel if the Loot is not present
-                if (add) {
-                    phatLoot.loots[lootID].add(loot);
+        for (PhatLoot phatLoot : getPhatLoots(player, name)) {
+            HashSet<Loot> lootTable = phatLoot.getLootTable(lootID);
+            if (lootTable.contains(loot)) {
+                /*The Loot was found*/
+                //Cancel if the Player is trying to duplicate the Loot
+                if (!add) {
+                    lootTable.remove(loot);
 
                     //Display the appropriate message
-                    if (lootID == 0) { //Individual Loot
+                    if (lootID == 0)  { //Individual Loot
                         player.sendMessage("§6" + lootDescription
-                                + "§5 added as Loot for PhatLoot §6"
+                                + "§5 removed as Loot for PhatLoot §6"
                                 + phatLoot.name);
                     } else { //Collective Loot
                         player.sendMessage("§6" + lootDescription
-                                + "§5 added as Loot to §6coll"
+                                + "§5 removed as Loot from §6coll"
                                 + lootID + "§5, §6"
                                 + phatLoot.getPercentRemaining(lootID)
                                 + "%§5 remaining");
@@ -881,9 +848,35 @@ public class PhatLootsCommand implements CommandExecutor {
                     phatLoot.save();
                 } else {
                     player.sendMessage("§6" + lootDescription
-                            + "§4 was not found as a Loot for PhatLoot §6"
+                            + "§4 is already Loot for PhatLoot §6"
                             + phatLoot.name);
                 }
+                break;
+            }
+
+            /*The Loot was not found*/
+            //Cancel if the Loot is not present
+            if (add) {
+                lootTable.add(loot);
+
+                //Display the appropriate message
+                if (lootID == 0) { //Individual Loot
+                    player.sendMessage("§6" + lootDescription
+                            + "§5 added as Loot for PhatLoot §6"
+                            + phatLoot.name);
+                } else { //Collective Loot
+                    player.sendMessage("§6" + lootDescription
+                            + "§5 added as Loot to §6coll"
+                            + lootID + "§5, §6"
+                            + phatLoot.getPercentRemaining(lootID)
+                            + "%§5 remaining");
+                }
+
+                phatLoot.save();
+            } else {
+                player.sendMessage("§6" + lootDescription
+                        + "§4 was not found as a Loot for PhatLoot §6"
+                        + phatLoot.name);
             }
         }
     }
@@ -1045,14 +1038,14 @@ public class PhatLootsCommand implements CommandExecutor {
                     + phatLoot.numberCollectiveLoots);
 
             //Display Individual Loots if not empty
-            String loots = phatLoot.getLoots(0);
+            String loots = phatLoot.lootTableToString(PhatLoot.INDIVIDUAL);
             if (!loots.isEmpty()) {
                 player.sendMessage("§2IndividualLoots§b: " + loots);
             }
 
             //Display each Collective Loots that is not empty
-            for (int i = 1; i <= 5; i++) {
-                loots = phatLoot.getLoots(i);
+            for (int i = 1; i <= 10; i++) {
+                loots = phatLoot.lootTableToString(i);
                 if (!loots.isEmpty()) {
                     player.sendMessage("§2Coll" + i + "§b: " + loots);
                 }
@@ -1248,7 +1241,7 @@ public class PhatLootsCommand implements CommandExecutor {
     }
 
     /**
-     * Retrieves an int value from the given string that starts with coll
+     * Retrieves an int value from the given string
      *
      * @param player The Player that will receive error messages
      * @param string The String that contains the id
@@ -1260,7 +1253,7 @@ public class PhatLootsCommand implements CommandExecutor {
         } catch (Exception ex) {
         }
 
-        if (id < 1 || id > 5) {
+        if (id < 1 || id > 10) {
             return -1;
         }
 

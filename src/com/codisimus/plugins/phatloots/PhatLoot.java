@@ -17,6 +17,10 @@ import org.bukkit.inventory.ItemStack;
  * @author Codisimus
  */
 public class PhatLoot {
+    public static final int
+        INDIVIDUAL = 0, COLLECTIVE1 = 1, COLLECTIVE2 = 2, COLLECTIVE3 = 3,
+        COLLECTIVE4 = 4, COLLECTIVE5 = 5, COLLECTIVE6 = 6, COLLECTIVE7 = 7,
+        COLLECTIVE8 = 8, COLLECTIVE9 = 9, COLLECTIVE10 = 10;
     static boolean onlyDropOnPlayerKill;
     static boolean replaceMobLoot;
 
@@ -34,7 +38,7 @@ public class PhatLoot {
     public LinkedList<String> commands = new LinkedList<String>(); //Commands that will be run upon looting the Chest
 
     @SuppressWarnings("unchecked")
-    public LinkedList<Loot>[] loots = (LinkedList<Loot>[]) new LinkedList[6]; //List of items that may be given
+    private HashSet<Loot>[] lootTables = (HashSet<Loot>[]) new HashSet[11]; //List of items that may be given
 
     public int days = PhatLoots.defaultDays; //Reset time (will never reset if any are negative)
     public int hours = PhatLoots.defaultHours;
@@ -44,7 +48,7 @@ public class PhatLoot {
     public boolean global = PhatLoots.defaultGlobal; //Reset Type
     public boolean round = PhatLoots.defaultRound;
 
-    LinkedList<PhatLootChest> chests = new LinkedList<PhatLootChest>(); //List of PhatLootChests that activate the Warp
+    private HashSet<PhatLootChest> chests = new HashSet<PhatLootChest>(); //List of PhatLootChests that activate the Warp
 
     Properties lootTimes = new Properties(); //PhatLootChest'PlayerName=Year'Day'Hour'Minute'Second
 
@@ -53,12 +57,10 @@ public class PhatLoot {
      *
      * @param name The name of the PhatLoot which will be created
      */
-    public PhatLoot (String name) {
+    public PhatLoot(String name) {
         this.name = name;
-
-        //Initialize lits of loots
-        for (int i = 0; i < 6; i++) {
-            loots[i] = new LinkedList<Loot>();
+        for (int i = 0; i < 11; i++) {
+            lootTables[i] = new HashSet<Loot>();
         }
     }
 
@@ -235,7 +237,7 @@ public class PhatLoot {
      */
     public List<ItemStack> lootIndividual() {
         List<ItemStack> itemList = new LinkedList<ItemStack>();
-        for (Loot loot: loots[0]) {
+        for (Loot loot : lootTables[INDIVIDUAL]) {
             //Roll for item
             if (PhatLoots.random.nextInt(100) + PhatLoots.random.nextDouble()
                     < loot.getProbability()) {
@@ -252,10 +254,10 @@ public class PhatLoot {
     public List<ItemStack> lootCollective() {
         List<ItemStack> itemList = new LinkedList<ItemStack>();
 
-        //Loot from each of the 5 collective loots
-        for (int i = 1; i <= 5; i++) {
+        //Loot from each of the 10 collective loots
+        for (int i = 1; i <= 10; i++) {
             //Make sure there are items that will be looted before entering the loop
-            if (!loots[i].isEmpty()) {
+            if (!lootTables[i].isEmpty()) {
                 //Do not loot if the probability does not add up to 100
                 if (getPercentRemaining(i) != 0) {
                     PhatLoots.logger.warning("Cannot loot Coll" + i + " of "
@@ -266,7 +268,7 @@ public class PhatLoot {
                     int j = 0;
 
                     //Add each loot to the array of Loots
-                    for (Loot loot: loots[i]) {
+                    for (Loot loot : lootTables[i]) {
                         //The amount of times the Loot is added is determined by the probability
                         for (int k = 0; k < loot.getProbability(); k++) {
                             try {
@@ -351,10 +353,9 @@ public class PhatLoot {
     public double getPercentRemaining(int id) {
         //Subtract the probabilty of each loot from 100
         double total = 100;
-        for (Loot loot: loots[id]) {
-            total = total - loot.getProbability();
+        for (Loot loot : lootTables[id]) {
+            total -= loot.getProbability();
         }
-
         return total;
     }
 
@@ -429,7 +430,7 @@ public class PhatLoot {
                 loot.setEnchantments(enchantments);
 
                 loot.name = item;
-                loots[id].add(loot);
+                lootTables[id].add(loot);
             } catch (Exception invalidLoot) {
                 PhatLoots.logger.info("Error occured while loading PhatLoot "
                                         + '"' + name + '"' + ", " + '"' + lootString
@@ -474,17 +475,37 @@ public class PhatLoot {
     }
 
     /**
+     * Returns the HashSet of Loots
+     *
+     * @param id The id of the LootTable
+     * @return The HashSet of Loots
+     */
+    public HashSet<Loot> getLootTable(int id) {
+        return lootTables[id];
+    }
+
+    /**
+     * Returns true if the given Loot is inside the specified LootTable
+     *
+     * @param id The id of the LootTable
+     * @return true if the LootTable contains the Loot
+     */
+    public boolean containsLoot(int id, Loot loot) {
+        return lootTables[id].contains(loot);
+    }
+
+    /**
      * Returns the List of Loots as a String
      *
-     * @param id The id of the Loots
+     * @param id The id of the LootTable
      * @return The List of Loots as a String
      */
-    public String getLoots(int id) {
+    public String lootTableToString(int id) {
         String list = "";
 
         //Concat each Loot onto the list
-        for (Loot loot: loots[id]) {
-            list = list.concat(loot.toInfoString());
+        for (Loot loot : lootTables[id]) {
+            list += loot.toInfoString();
         }
 
         if (!list.isEmpty()) {
@@ -500,41 +521,35 @@ public class PhatLoot {
      * @param block The given Block
      */
     public void addChest(Block block) {
-        PhatLootChest chest = findChest(block);
-        if (chest == null) {
-            chests.add(new PhatLootChest(block));
-        }
+        chests.add(new PhatLootChest(block));
     }
 
     /**
-     * removes the PhatLootChest for the given Block and links it to this PhatLoot
+     * Removes the PhatLootChest for the given Block from this PhatLoot
      *
      * @param block The given Block
      */
     public void removeChest(Block block) {
-        PhatLootChest chest = findChest(block);
-        if (chest != null) {
-            reset(block);
-            chests.remove(chest);
-        }
+        chests.remove(new PhatLootChest(block));
     }
 
     /**
-     * Returns the PhatLootChest that is associated with the given Block
+     * Returns whether the given PhatLootChest is linked to this PhatLoot
      *
-     * @param block The given Block
-     * @return The PhatLootChest that is associated with the given Block
+     * @param chest The given PhatLootChest
+     * @return true if the PhatLoot chest is linked
      */
-    public PhatLootChest findChest(Block block) {
-        //Iterate through chests to find the PhatLootChest of the given Block
-        for (PhatLootChest chest: chests) {
-            if (chest.isBlock(block)) {
-                return chest;
-            }
-        }
+    public boolean containsChest(PhatLootChest chest) {
+        return chests.contains(chest);
+    }
 
-        //Return null because the Button does not exist
-        return null;
+    /**
+     * Returns a Collection of PhatLootChests linked to this PhatLoot
+     *
+     * @return a Collection of linked chests
+     */
+    public Collection<PhatLootChest> getChests() {
+        return chests;
     }
 
     /**
@@ -549,8 +564,8 @@ public class PhatLoot {
             lootTimes.clear();
         } else {
             //Find the PhatLootChest of the given Block and reset it
-            String chest = findChest(block).toString() + "'";
-            for (String key: lootTimes.stringPropertyNames()) {
+            String chest = block.getWorld() + "'" + block.getX() + "'" + block.getY()+ "'" + block.getZ() + "'";
+            for (String key : lootTimes.stringPropertyNames()) {
                 if (key.startsWith(chest)) {
                     lootTimes.remove(key);
                 }
@@ -592,5 +607,14 @@ public class PhatLoot {
                 PhatLoots.logger.severe(name + ".loottimes has been corrupted");
             }
         }
+    }
+
+    public int phatLootChestHashCode(Block block) {
+        int hash = 7;
+        hash = 47 * hash + block.getWorld().getName().hashCode();
+        hash = 47 * hash + block.getX();
+        hash = 47 * hash + block.getY();
+        hash = 47 * hash + block.getZ();
+        return hash;
     }
 }
