@@ -1,5 +1,6 @@
 package com.codisimus.plugins.phatloots;
 
+import com.codisimus.plugins.regionown.Region;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -93,6 +94,11 @@ public class PhatLoots extends JavaPlugin {
         }
 
         dir = new File(dataFolder + "/Books");
+        if (!dir.isDirectory()) {
+            dir.mkdir();
+        }
+
+        dir = new File(dataFolder + "/MobRegions");
         if (!dir.isDirectory()) {
             dir.mkdir();
         }
@@ -265,7 +271,7 @@ public class PhatLoots extends JavaPlugin {
      * Also invokes the saveSigns() method
      */
     public static void saveAll() {
-        for (PhatLoot phatLoot: phatLoots.values()) {
+        for (PhatLoot phatLoot : phatLoots.values()) {
             savePhatLoot(phatLoot);
         }
     }

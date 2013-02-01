@@ -15,6 +15,7 @@ permissions:
     description: Needed to receive loots from any PhatLoot
   phatloots.moneyfrommobs:
     description: Needed to receive money from mobs
+    default: true
   phatloots.commandloot:
     description: Needed to receive loots through command
   phatloots.make:

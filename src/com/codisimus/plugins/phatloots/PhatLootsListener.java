@@ -1,5 +1,7 @@
 package com.codisimus.plugins.phatloots;
 
+import com.codisimus.plugins.regionown.Region;
+import com.codisimus.plugins.regionown.RegionOwn;
 import java.util.HashMap;
 import java.util.LinkedList;
 import org.bukkit.Location;
@@ -8,6 +10,7 @@ import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
 import org.bukkit.block.Dispenser;
 import org.bukkit.entity.HumanEntity;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -256,9 +259,21 @@ public class PhatLootsListener implements Listener {
      */
     @EventHandler (ignoreCancelled = true)
     public void onEntityDeath(EntityDeathEvent event) {
-        PhatLoot phatLoot = PhatLoots.getPhatLoot(event.getEntityType().getName());
+        LivingEntity entity = event.getEntity();
+        Location location = entity.getLocation();
+        String name = entity.getType().getName();
+
+        if (PhatLoots.pm.isPluginEnabled("RegionOwn")) {
+            for (Region region : RegionOwn.mobRegions.values()) {
+                if (region.contains(location)) {
+                    name += "@" + region.name;
+                }
+            }
+        }
+
+        PhatLoot phatLoot = PhatLoots.getPhatLoot(name);
         if (phatLoot != null) {
-            event.setDroppedExp(phatLoot.rollForLoot(event.getEntity().getKiller(), event.getDrops()));
+            event.setDroppedExp(phatLoot.rollForLoot(entity.getKiller(), event.getDrops()));
         }
     }
 

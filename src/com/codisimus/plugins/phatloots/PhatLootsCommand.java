@@ -673,7 +673,7 @@ public class PhatLootsCommand implements CommandExecutor {
 
         //Cancel if the PhatLoot with the given name does not exist
         if (!PhatLoots.hasPhatLoot(name)) {
-            player.sendMessage("§4PhatLoot §6" + name + "§4 does not exsist.");
+            player.sendMessage("§4PhatLoot §6" + name + "§4 does not exist.");
             return;
         }
 
@@ -698,7 +698,7 @@ public class PhatLootsCommand implements CommandExecutor {
 
         //Cancel if the PhatLoot with the given name does not exist
         if (!PhatLoots.hasPhatLoot(name)) {
-            player.sendMessage("§4PhatLoot §6" + name + "§4 does not exsist.");
+            player.sendMessage("§4PhatLoot §6" + name + "§4 does not exist.");
             return;
         }
 
@@ -1001,7 +1001,7 @@ public class PhatLootsCommand implements CommandExecutor {
         String list = "§5Current PhatLoots: §6";
 
         //Concat each PhatLoot
-        for (PhatLoot phatLoot: PhatLoots.getPhatLoots()) {
+        for (PhatLoot phatLoot : PhatLoots.getPhatLoots()) {
             list += phatLoot.name + ", ";
         }
 
@@ -1057,7 +1057,7 @@ public class PhatLootsCommand implements CommandExecutor {
             String list = "§5Linked PhatLoots: §6";
 
             //Concat each PhatLoot
-            for (PhatLoot pl: phatLoots) {
+            for (PhatLoot pl : phatLoots) {
                 list += pl.name + ", ";
             }
 
