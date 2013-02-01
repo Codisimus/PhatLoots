@@ -3,8 +3,6 @@ package com.codisimus.plugins.phatloots;
 import java.util.*;
 import org.bukkit.Color;
 import org.bukkit.GameMode;
-import org.bukkit.Location;
-import org.bukkit.Sound;
 import org.bukkit.block.Block;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
@@ -33,7 +31,8 @@ public class PhatLoot {
 
     public LinkedList<String> commands = new LinkedList<String>(); //Commands that will be run upon looting the Chest
 
-    public LinkedList<Loot>[] loots = (LinkedList<Loot>[])new LinkedList[6]; //List of items that may be given
+    @SuppressWarnings("unchecked")
+	public LinkedList<Loot>[] loots = (LinkedList<Loot>[])new LinkedList[6]; //List of items that may be given
 
     public int days = PhatLoots.defaultDays; //Reset time (will never reset if any are negative)
     public int hours = PhatLoots.defaultHours;
@@ -68,7 +67,8 @@ public class PhatLoot {
      * @param player The Player who is looting
      * @param block The Block being looted
      */
-    public void getLoot(Player player, PhatLootChest chest, Inventory inventory) {
+    @SuppressWarnings("deprecation")
+	public void getLoot(Player player, PhatLootChest chest, Inventory inventory) {
         //Get the user to be looked up for last time of use
         String user = player.getName();
         if (global) {
