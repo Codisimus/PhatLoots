@@ -5,10 +5,7 @@ import com.codisimus.plugins.chestlock.Safe;
 import com.codisimus.plugins.regionown.Region;
 import com.codisimus.plugins.regionown.RegionSelector;
 import com.google.common.collect.Sets;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.Map;
+import java.util.*;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
@@ -825,7 +822,7 @@ public class PhatLootsCommand implements CommandExecutor {
         String lootDescription = loot.toInfoString();
 
         for (PhatLoot phatLoot : getPhatLoots(player, name)) {
-            HashSet<Loot> lootTable = phatLoot.getLootTable(lootID);
+            TreeSet<Loot> lootTable = phatLoot.getLootTable(lootID);
             if (lootTable.contains(loot)) {
                 /*The Loot was found*/
                 //Cancel if the Player is trying to duplicate the Loot

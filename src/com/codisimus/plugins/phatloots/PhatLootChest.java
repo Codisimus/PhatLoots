@@ -135,7 +135,7 @@ public class PhatLootChest {
         //    brewingStand.getInventory().
         } else if (PhatLoots.autoLoot && sack.firstEmpty() != -1) {
             //Add the Loot to the Player's Inventory
-            player.sendMessage(PhatLootsMessages.autoLoot.replace("<item>", item.getType().name()));
+            player.sendMessage(PhatLootsMessages.autoLoot.replace("<item>", PhatLoot.getItemName(item)));
             sack.addItem(item);
             return false;
         } else {

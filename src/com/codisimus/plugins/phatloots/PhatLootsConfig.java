@@ -33,6 +33,7 @@ public class PhatLootsConfig {
 
             PhatLoot.onlyDropOnPlayerKill = loadBool("OnlyDropLootWhenKilledByPlayer", false);
             PhatLoot.replaceMobLoot = loadBool("ReplaceMobLoot", true);
+            PhatLoot.chanceOfDrop = loadInt("MobLootDropPercentage", 20) / 100;
             PhatLoots.autoLoot = loadBool("AutoLoot", false);
             PhatLoot.displayTimeRemaining = loadBool("DisplayTimeRemaining", true);
             PhatLoot.displayTimeRemaining = loadBool("DisplayMobTimeRemaining", true);

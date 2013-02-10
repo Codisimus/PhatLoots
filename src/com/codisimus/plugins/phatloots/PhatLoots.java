@@ -1,6 +1,5 @@
 package com.codisimus.plugins.phatloots;
 
-import com.codisimus.plugins.regionown.Region;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;

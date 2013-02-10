@@ -21,7 +21,7 @@ import org.bukkit.inventory.meta.LeatherArmorMeta;
  *
  * @author Codisimus
  */
-public class Loot {
+public class Loot implements Comparable {
     private final String TITLE = "title";
     private final String AUTHOR = "author";
     private final String PAGE = "page";
@@ -393,7 +393,7 @@ public class Loot {
     /**
      * Returns the String representation of this Loot in the following format
      * [ ] indicates an optional additional field
-     * MaterialID[:DyedColor][+Name]'Durability[+Enchantment1(level)&Enchantment2(level)...]'Amount[-Amount]'Probability
+     * [(DyedColor)]MaterialID[+Name]'Durability[+Enchantment1(level)&Enchantment2(level)...]'Amount[-Amount]'Probability
      *
      * @return The String representation of this Loot
      */
@@ -469,5 +469,18 @@ public class Loot {
         LeatherArmorMeta meta = (LeatherArmorMeta) item.getItemMeta();
         meta.setColor(color);
         item.setItemMeta(meta);
+    }
+
+    @Override
+    public int compareTo(Object object) {
+        if (!(object instanceof Loot)) {
+            Loot loot = (Loot) object;
+            if (loot.probability < probability) {
+                return 1;
+            } else if (loot.probability > probability) {
+                return -1;
+            }
+        }
+        return 0;
     }
 }

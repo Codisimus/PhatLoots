@@ -1,15 +1,20 @@
 package com.codisimus.plugins.phatloots;
 
 import java.util.*;
+import net.minecraft.server.v1_4_R1.NBTTagCompound;
 import org.apache.commons.lang.WordUtils;
 import org.apache.commons.lang.time.DateUtils;
 import org.bukkit.Color;
 import org.bukkit.GameMode;
 import org.bukkit.block.Block;
+import org.bukkit.craftbukkit.v1_4_R1.inventory.CraftItemStack;
 import org.bukkit.enchantments.Enchantment;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 
 /**
  * A PhatLoot is a reward made up of money and items
@@ -26,6 +31,7 @@ public class PhatLoot {
     static boolean displayTimeRemaining;
     static boolean displayMobTimeRemaining;
 
+    static float chanceOfDrop;
     private static PhatLootsCommandSender cs = new PhatLootsCommandSender();
 
     public String name; //A unique name for the Warp
@@ -40,7 +46,7 @@ public class PhatLoot {
     public LinkedList<String> commands = new LinkedList<String>(); //Commands that will be run upon looting the Chest
 
     @SuppressWarnings("unchecked")
-    private HashSet<Loot>[] lootTables = (HashSet<Loot>[]) new HashSet[11]; //List of items that may be given
+    private TreeSet<Loot>[] lootTables = (TreeSet<Loot>[]) new TreeSet[11]; //List of items that may be given
 
     public int days = PhatLoots.defaultDays; //Reset time (will never reset if any are negative)
     public int hours = PhatLoots.defaultHours;
@@ -50,7 +56,7 @@ public class PhatLoot {
     public boolean global = PhatLoots.defaultGlobal; //Reset Type
     public boolean round = PhatLoots.defaultRound;
 
-    private HashSet<PhatLootChest> chests = new HashSet<PhatLootChest>(); //List of PhatLootChests that activate the Warp
+    private LinkedList<PhatLootChest> chests = new LinkedList<PhatLootChest>(); //List of PhatLootChests that activate the Warp
 
     Properties lootTimes = new Properties(); //PhatLootChest'PlayerName=Year'Day'Hour'Minute'Second
 
@@ -62,7 +68,7 @@ public class PhatLoot {
     public PhatLoot(String name) {
         this.name = name;
         for (int i = 0; i < 11; i++) {
-            lootTables[i] = new HashSet<Loot>();
+            lootTables[i] = new TreeSet<Loot>();
         }
     }
 
@@ -154,11 +160,20 @@ public class PhatLoot {
     }
 
     public int rollForLoot(Player player, List<ItemStack> drops) {
-        if (replaceMobLoot) {
-            drops.clear();
-        }
         if (onlyDropOnPlayerKill && player == null) {
+            drops.clear();
             return 0;
+        }
+        if (replaceMobLoot) {
+            Iterator<ItemStack> itr = drops.iterator();
+            while (itr.hasNext()) {
+                net.minecraft.server.v1_4_R1.ItemStack mis = CraftItemStack.asNMSCopy(itr.next());
+
+                NBTTagCompound tag = mis.getTag();
+                if (tag == null || !tag.getBoolean("PhatLootMobLoot")) {
+                    itr.remove();
+                }
+            }
         }
 
         //Find out how much time remains
@@ -180,9 +195,9 @@ public class PhatLoot {
 
         List<ItemStack> loot = lootIndividual();
         loot.addAll(lootCollective());
-        if (player != null && !PhatLootsMessages.mobDroppedMoney.isEmpty()) {
+        if (player != null && !PhatLootsMessages.mobDroppedItem.isEmpty()) {
             for (ItemStack item : loot) {
-                player.sendMessage(PhatLootsMessages.mobDroppedMoney.replace("<item>", getItemName(item)));
+                player.sendMessage(PhatLootsMessages.mobDroppedItem.replace("<item>", getItemName(item)));
             }
         }
         drops.addAll(loot);
@@ -212,6 +227,39 @@ public class PhatLoot {
         }
 
         return 0;
+    }
+
+    public void rollForLoot(LivingEntity entity) {
+        LinkedList<ItemStack> loot = lootCollective();
+        if (loot.size() != 5) {
+            PhatLoots.logger.warning("Cannot add loot to " + entity.getType().getName() + " because the amount of loot was not equal to 5");
+        }
+
+        for (ItemStack item : loot) {
+            net.minecraft.server.v1_4_R1.ItemStack mis = CraftItemStack.asNMSCopy(item);
+
+            NBTTagCompound tag = mis.getTag();
+            if (tag == null) {
+                tag = new NBTTagCompound();
+            }
+
+            tag.setBoolean("PhatLootMobLoot", true);
+            mis.setTag(tag);
+            item = CraftItemStack.asCraftMirror(mis);
+        }
+
+        EntityEquipment eqp = entity.getEquipment();
+        eqp.setItemInHand(loot.removeFirst());
+        eqp.setHelmet(loot.removeFirst());
+        eqp.setChestplate(loot.removeFirst());
+        eqp.setLeggings(loot.removeFirst());
+        eqp.setBoots(loot.removeFirst());
+
+        eqp.setItemInHandDropChance(chanceOfDrop);
+        eqp.setHelmetDropChance(chanceOfDrop);
+        eqp.setChestplateDropChance(chanceOfDrop);
+        eqp.setLeggingsDropChance(chanceOfDrop);
+        eqp.setBootsDropChance(chanceOfDrop);
     }
 
     /**
@@ -269,8 +317,8 @@ public class PhatLoot {
      * Fills the Chest (Block) with loot
      * Items are rolled for in order until the maximum number is added to the Chest
      */
-    public List<ItemStack> lootCollective() {
-        List<ItemStack> itemList = new LinkedList<ItemStack>();
+    public LinkedList<ItemStack> lootCollective() {
+        LinkedList<ItemStack> itemList = new LinkedList<ItemStack>();
 
         //Loot from each of the 10 collective loots
         for (int i = 1; i <= 10; i++) {
@@ -281,33 +329,18 @@ public class PhatLoot {
                     PhatLoots.logger.warning("Cannot loot Coll" + i + " of "
                             + name + " because the probability does not equal 100%");
                 } else {
-                    //Create an array of 100 Loots
-                    Loot[] collLoots = new Loot[100];
-                    int j = 0;
-
-                    //Add each loot to the array of Loots
-                    for (Loot loot : lootTables[i]) {
-                        //The amount of times the Loot is added is determined by the probability
-                        for (int k = 0; k < loot.getProbability(); k++) {
-                            try {
-                                collLoots[j] = loot;
-                            } catch (ArrayIndexOutOfBoundsException e) {
-                                PhatLoots.logger.warning("Cannot loot Coll" + i
-                                        + " of " + name + " because the probability does not equal 100%");
+                    //Roll for weighted loot
+                    int numberLooted = 0;
+                    while (numberLooted < numberCollectiveLoots) {
+                        int j = 100;
+                        for (Loot loot : lootTables[i]) {
+                            j -= loot.getProbability();
+                            if (j <= 0) {
+                                itemList.add(loot.getItem());
+                                break;
                             }
-                            j++;
                         }
-                    }
-
-                    if (j < 100) {
-                        PhatLoots.logger.warning("Cannot loot Coll" + i + " of "
-                                + name + " because the probability does not equal 100%");
-                    }
-
-                    //Loot the specified number of items
-                    for (int numberLooted = 0; numberLooted < numberCollectiveLoots; numberLooted++) {
-                        //Generate a random int to determine the index of the array that holds the Loot
-                        itemList.add(collLoots[PhatLoots.random.nextInt(100)].getItem());
+                        numberCollectiveLoots++;
                     }
                 }
             }
@@ -424,8 +457,9 @@ public class PhatLoot {
                 //Check for Dyed Color
                 Color color = null;
                 if (item.startsWith("(")) {
-                    color = Color.fromRGB(Integer.parseInt(item.substring(1, 8)));
-                    item = item.substring(9);
+                    int index = item.indexOf(')');
+                    color = Color.fromRGB(Integer.parseInt(item.substring(1, index)));
+                    item = item.substring(index + 1);
                 }
                 //Check for Name of Item Description
                 if (item.contains("+")) {
@@ -519,7 +553,7 @@ public class PhatLoot {
      * @param id The id of the LootTable
      * @return The HashSet of Loots
      */
-    public HashSet<Loot> getLootTable(int id) {
+    public TreeSet<Loot> getLootTable(int id) {
         return lootTables[id];
     }
 
@@ -620,7 +654,7 @@ public class PhatLoot {
         PhatLoots.savePhatLoot(this);
     }
 
-    private String getItemName(ItemStack item) {
+    public static String getItemName(ItemStack item) {
         if (item.hasItemMeta()) {
             String name = item.getItemMeta().getDisplayName();
             if (name != null && !name.isEmpty()) {

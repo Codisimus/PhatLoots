@@ -17,6 +17,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPhysicsEvent;
+import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
@@ -274,6 +275,31 @@ public class PhatLootsListener implements Listener {
         PhatLoot phatLoot = PhatLoots.getPhatLoot(name);
         if (phatLoot != null) {
             event.setDroppedExp(phatLoot.rollForLoot(entity.getKiller(), event.getDrops()));
+        }
+    }
+
+    /**
+     * Manages Mob loot spawns
+     *
+     * @param event The CreatureSpawnEvent that occurred
+     */
+    @EventHandler (ignoreCancelled = true)
+    public void onMobSpawn(CreatureSpawnEvent event) {
+        LivingEntity entity = event.getEntity();
+        Location location = entity.getLocation();
+        String name = entity.getType().getName() + "spawn";
+
+        if (PhatLoots.pm.isPluginEnabled("RegionOwn")) {
+            for (Region region : RegionOwn.mobRegions.values()) {
+                if (region.contains(location)) {
+                    name += "@" + region.name;
+                }
+            }
+        }
+
+        PhatLoot phatLoot = PhatLoots.getPhatLoot(name);
+        if (phatLoot != null) {
+            phatLoot.rollForLoot(event.getEntity());
         }
     }
 
