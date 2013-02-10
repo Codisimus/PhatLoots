@@ -141,7 +141,16 @@ public class Loot implements Comparable {
                 net.minecraft.server.v1_4_R1.ItemStack mis = CraftItemStack.asNMSCopy(item);
                 NBTTagCompound tag = mis.getTag();
                 if (tag == null) {
-                    return true;
+                    if (item.hasItemMeta()) {
+                        ItemMeta meta = item.getItemMeta();
+                        if (meta.hasDisplayName()) {
+                            name = meta.getDisplayName();
+                        } else {
+                            return true;
+                        }
+                    } else {
+                        return true;
+                    }
                 } else {
                     this.name = name = tag.getString(ITEM_DESCRIPTION);
                 }
