@@ -482,14 +482,12 @@ public class Loot implements Comparable {
 
     @Override
     public int compareTo(Object object) {
-        if (!(object instanceof Loot)) {
+        if (object instanceof Loot) {
             Loot loot = (Loot) object;
             if (loot.probability < probability) {
                 return 1;
-            } else if (loot.probability > probability) {
-                return -1;
             }
         }
-        return 0;
+        return -1;
     }
 }

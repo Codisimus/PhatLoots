@@ -36,7 +36,7 @@ public class PhatLootsConfig {
             PhatLoot.chanceOfDrop = loadInt("MobLootDropPercentage", 20) / 100;
             PhatLoots.autoLoot = loadBool("AutoLoot", false);
             PhatLoot.displayTimeRemaining = loadBool("DisplayTimeRemaining", true);
-            PhatLoot.displayTimeRemaining = loadBool("DisplayMobTimeRemaining", true);
+            PhatLoot.displayMobTimeRemaining = loadBool("DisplayMobTimeRemaining", true);
 
             PhatLootsCommand.setUnlockable = loadBool("SetChestsAsUnlockable", true);
 

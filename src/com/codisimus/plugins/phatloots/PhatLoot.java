@@ -56,7 +56,7 @@ public class PhatLoot {
     public boolean global = PhatLoots.defaultGlobal; //Reset Type
     public boolean round = PhatLoots.defaultRound;
 
-    private LinkedList<PhatLootChest> chests = new LinkedList<PhatLootChest>(); //List of PhatLootChests that activate the Warp
+    private HashSet<PhatLootChest> chests = new HashSet<PhatLootChest>(); //List of Chests linked to this PhatLoot
 
     Properties lootTimes = new Properties(); //PhatLootChest'PlayerName=Year'Day'Hour'Minute'Second
 
@@ -448,7 +448,7 @@ public class PhatLoot {
         }
 
         //Load data for each loot
-        for (String lootString: lootsString.split(", ")) {
+        for (String lootString : lootsString.split(", ")) {
             try {
                 String[] lootData = lootString.split("'");
 
