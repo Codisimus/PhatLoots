@@ -185,7 +185,7 @@ public class PhatLoot {
         }
 
         //Display remaining time if it is not
-        if (!timeRemaining.equals("0T")) {
+        if (!timeRemaining.equals("0")) {
             if (displayMobTimeRemaining) {
                 player.sendMessage(PhatLootsMessages.mobTimeRemaining.replace("<time>", timeRemaining));
             }
@@ -377,7 +377,7 @@ public class PhatLoot {
      * Retrieves the time for the given Player
      *
      * @param player The Player whose time is requested
-     * @return The time as an array of ints
+     * @return The time as a long
      */
     public long getMobLootTime(String player) {
         String string = lootTimes.getProperty(player);
