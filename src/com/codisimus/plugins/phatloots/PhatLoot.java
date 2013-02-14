@@ -1,5 +1,6 @@
 package com.codisimus.plugins.phatloots;
 
+import java.io.FileOutputStream;
 import java.util.*;
 import net.minecraft.server.v1_4_R1.NBTTagCompound;
 import org.apache.commons.lang.WordUtils;
@@ -176,21 +177,23 @@ public class PhatLoot {
             }
         }
 
-        //Find out how much time remains
-        String timeRemaining = getTimeRemaining(getMobLootTime(player.getName()));
+        if (player == null) {
+            //Find out how much time remains
+            String timeRemaining = getTimeRemaining(getMobLootTime(player.getName()));
 
-        //User can never loot the Chest again if timeRemaining is null
-        if (timeRemaining == null) {
-            return 0;
-        }
-
-        //Display remaining time if it is not
-        if (!timeRemaining.equals("0")) {
-            if (displayMobTimeRemaining) {
-                player.sendMessage(PhatLootsMessages.mobTimeRemaining.replace("<time>", timeRemaining));
+            //User can never loot the Mob again if timeRemaining is null
+            if (timeRemaining == null) {
+                return 0;
             }
 
-            return 0;
+            //Display remaining time if it is not
+            if (!timeRemaining.equals("0")) {
+                if (displayMobTimeRemaining) {
+                    player.sendMessage(PhatLootsMessages.mobTimeRemaining.replace("<time>", timeRemaining));
+                }
+
+                return 0;
+            }
         }
 
         List<ItemStack> loot = lootIndividual();
@@ -320,8 +323,8 @@ public class PhatLoot {
     public LinkedList<ItemStack> lootCollective() {
         LinkedList<ItemStack> itemList = new LinkedList<ItemStack>();
 
-        //Loot from each of the 10 collective loots
-        for (int i = 1; i <= 10; i++) {
+        //Loot from each of the first 5 collective loots
+        for (int i = 1; i <= 5; i++) {
             //Make sure there are items that will be looted before entering the loop
             if (!lootTables[i].isEmpty()) {
                 //Do not loot if the probability does not add up to 100
@@ -332,7 +335,7 @@ public class PhatLoot {
                     //Roll for weighted loot
                     int numberLooted = 0;
                     while (numberLooted < numberCollectiveLoots) {
-                        int j = 100;
+                        int j = PhatLoots.random.nextInt(100);
                         for (Loot loot : lootTables[i]) {
                             j -= loot.getProbability();
                             if (j <= 0) {
@@ -340,7 +343,7 @@ public class PhatLoot {
                                 break;
                             }
                         }
-                        numberCollectiveLoots++;
+                        numberLooted++;
                     }
                 }
             }
@@ -371,6 +374,7 @@ public class PhatLoot {
         }
 
         lootTimes.setProperty(chest.toString() + "'" + player, String.valueOf(System.currentTimeMillis()));
+        saveLootTimes();
     }
 
     /**
@@ -644,7 +648,7 @@ public class PhatLoot {
                 }
             }
         }
-        save();
+        saveLootTimes();
     }
 
     /**
@@ -652,6 +656,26 @@ public class PhatLoot {
      */
     public void save() {
         PhatLoots.savePhatLoot(this);
+    }
+
+    /**
+     * Writes the PhatLoot loot times to file
+     */
+    public void saveLootTimes() {
+        FileOutputStream fos = null;
+        try {
+            fos = new FileOutputStream(PhatLoots.dataFolder + "/PhatLoots/"
+                                        + name + ".loottimes");
+            lootTimes.store(fos, null);
+        } catch (Exception saveFailed) {
+            PhatLoots.logger.severe("Save Failed!");
+            saveFailed.printStackTrace();
+        } finally {
+            try {
+                fos.close();
+            } catch (Exception e) {
+            }
+        }
     }
 
     public static String getItemName(ItemStack item) {
@@ -680,6 +704,7 @@ public class PhatLoot {
                 PhatLoots.logger.severe(name + ".loottimes has been corrupted");
             }
         }
+        saveLootTimes();
     }
 
     public int phatLootChestHashCode(Block block) {

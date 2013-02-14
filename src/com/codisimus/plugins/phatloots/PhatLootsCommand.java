@@ -99,8 +99,10 @@ public class PhatLootsCommand implements CommandExecutor {
                 PhatLoots.rl();
             } else if (args.length == 2 && args[0].equals("reset")) {
                 reset(null, args[1]);
+            } else {
+                return false;
             }
-            return false;
+            return true;
         }
 
         Player player = (Player) sender;

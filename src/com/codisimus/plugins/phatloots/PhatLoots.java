@@ -74,6 +74,8 @@ public class PhatLoots extends JavaPlugin {
             return;
         }
 
+        PhatLootsListener.mobRegions = pm.isPluginEnabled("RegionOwn");
+
         /* Create data folders */
         File dir = this.getDataFolder();
         if (!dir.isDirectory()) {
@@ -93,11 +95,6 @@ public class PhatLoots extends JavaPlugin {
         }
 
         dir = new File(dataFolder + "/Books");
-        if (!dir.isDirectory()) {
-            dir.mkdir();
-        }
-
-        dir = new File(dataFolder + "/MobRegions");
         if (!dir.isDirectory()) {
             dir.mkdir();
         }
@@ -418,12 +415,6 @@ public class PhatLoots extends JavaPlugin {
             fos = new FileOutputStream(dataFolder + "/PhatLoots/"
                                         + phatLoot.name + ".properties");
             p.store(fos, null);
-            fos.close();
-
-            //Write the PhatLoot Loot times to file
-            fos = new FileOutputStream(dataFolder + "/PhatLoots/"
-                                        + phatLoot.name + ".loottimes");
-            phatLoot.lootTimes.store(fos, null);
         } catch (Exception saveFailed) {
             logger.severe("Save Failed!");
             saveFailed.printStackTrace();
@@ -500,6 +491,27 @@ public class PhatLoots extends JavaPlugin {
         PhatLootChest chest = new PhatLootChest(block);
         for (PhatLoot phatLoot : phatLoots.values()) {
             if (phatLoot.containsChest(chest)) {
+                phatLootList.add(phatLoot);
+            }
+        }
+
+        return phatLootList;
+    }
+
+    /**
+     * Iterates through every PhatLoot to find PhatLoots linked with the given Block
+     * PhatLoots are only added to the List if the Player has permission to loot them
+     *
+     * @param block The given Block
+     * @param player The given Player
+     * @return The LinkedList of PhatLoots
+     */
+    public static LinkedList<PhatLoot> getPhatLoots(Block block, Player player) {
+        LinkedList<PhatLoot> phatLootList = new LinkedList<PhatLoot>();
+
+        PhatLootChest chest = new PhatLootChest(block);
+        for (PhatLoot phatLoot : phatLoots.values()) {
+            if (phatLoot.containsChest(chest) && canLoot(player, phatLoot)) {
                 phatLootList.add(phatLoot);
             }
         }

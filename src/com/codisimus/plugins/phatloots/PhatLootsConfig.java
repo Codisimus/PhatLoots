@@ -33,7 +33,7 @@ public class PhatLootsConfig {
 
             PhatLoot.onlyDropOnPlayerKill = loadBool("OnlyDropLootWhenKilledByPlayer", false);
             PhatLoot.replaceMobLoot = loadBool("ReplaceMobLoot", true);
-            PhatLoot.chanceOfDrop = loadInt("MobLootDropPercentage", 20) / 100;
+            PhatLoot.chanceOfDrop = (float) (loadDouble("MobLootDropPercentage", 20.0) / 100);
             PhatLoots.autoLoot = loadBool("AutoLoot", false);
             PhatLoot.displayTimeRemaining = loadBool("DisplayTimeRemaining", true);
             PhatLoot.displayMobTimeRemaining = loadBool("DisplayMobTimeRemaining", true);
@@ -104,6 +104,23 @@ public class PhatLootsConfig {
             return Integer.parseInt(string);
         } catch (Exception e) {
             PhatLoots.logger.severe("The setting for " + key + " must be a valid integer");
+            PhatLoots.logger.severe("DO NOT POST A TICKET FOR THIS MESSAGE, IT WILL JUST BE IGNORED");
+            return defaultValue;
+        }
+    }
+
+    /**
+     * Loads the given key and prints an error if the key is not an Double
+     *
+     * @param key The key to be loaded
+     * @return The Double value of the loaded key
+     */
+    private static double loadDouble(String key, double defaultValue) {
+        String string = loadString(key, null);
+        try {
+            return Double.parseDouble(string);
+        } catch (Exception e) {
+            PhatLoots.logger.severe("The setting for " + key + " must be a valid decimal");
             PhatLoots.logger.severe("DO NOT POST A TICKET FOR THIS MESSAGE, IT WILL JUST BE IGNORED");
             return defaultValue;
         }

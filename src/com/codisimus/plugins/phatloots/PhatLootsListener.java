@@ -3,6 +3,7 @@ package com.codisimus.plugins.phatloots;
 import com.codisimus.plugins.regionown.Region;
 import com.codisimus.plugins.regionown.RegionOwn;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -33,6 +34,7 @@ import org.bukkit.inventory.InventoryHolder;
 public class PhatLootsListener implements Listener {
     static String chestName;
     private static HashMap<String, ForgettableInventory> inventories = new HashMap<String, ForgettableInventory>();
+    static boolean mobRegions = false;
 
     /**
      * Checks if a Player loots a PhatLootChest
@@ -45,6 +47,8 @@ public class PhatLootsListener implements Listener {
         Chest chest = null;
         Inventory inventory = null;
         Block block = event.getClickedBlock();
+        LinkedList<PhatLoot> phatLoots;
+
         switch (block.getType()) {
         case DISPENSER:
             //Return if the Dispenser was not punched
@@ -53,7 +57,8 @@ public class PhatLootsListener implements Listener {
             }
 
             //Return if the Dispenser is not a PhatLootChest
-            if (!isPhatLootChest(block)) {
+            phatLoots = PhatLoots.getPhatLoots(block, player);
+            if (phatLoots.isEmpty()) {
                 return;
             }
 
@@ -62,34 +67,33 @@ public class PhatLootsListener implements Listener {
 
             break;
 
-        case CHEST: //Fall through
+        case CHEST:
+            chest = (Chest) block.getState();
+            inventory = chest.getInventory();
+
+            //We only care about the left side because that is the Block that would be linked
+            if (inventory instanceof DoubleChestInventory) {
+                chest = (Chest) ((DoubleChestInventory) inventory).getLeftSide().getHolder();
+                block = chest.getBlock();
+            }
+            //Fall through
         case ENDER_CHEST:
             //Return if the Chest was not opened
-            if (!event.getAction().equals(Action.RIGHT_CLICK_BLOCK)) {
+            if (event.getAction() != Action.RIGHT_CLICK_BLOCK) {
                 return;
             }
 
-            if (block.getType() == Material.CHEST) {
-                chest = (Chest) block.getState();
-                inventory = chest.getInventory();
-
-                //We only care about the left side because that is the Block that would be linked
-                if (inventory instanceof DoubleChestInventory) {
-                    chest = (Chest) ((DoubleChestInventory) inventory).getLeftSide().getHolder();
-                    block = chest.getBlock();
-                }
-            }
-
             //Return if the Chest is not a PhatLootChest
-            LinkedList<PhatLoot> phatLoots = PhatLoots.getPhatLoots(block);
+            phatLoots = PhatLoots.getPhatLoots(block, player);
             if (phatLoots.isEmpty()) {
                 return;
             }
 
             boolean global = true;
-            for (PhatLoot phatLoot: phatLoots) {
+            for (PhatLoot phatLoot : phatLoots) {
                 if (!phatLoot.global) {
                     global = false;
+                    break;
                 }
             }
 
@@ -102,16 +106,7 @@ public class PhatLootsListener implements Listener {
             if (fInventory != null) {
                 inventory = fInventory.getInventory();
             } else {
-                String phatLootName = "PhatLoots Chest";
-                for (PhatLoot phatLoot: phatLoots) {
-                    if (PhatLoots.canLoot(player, phatLoot)) {
-                        phatLootName = phatLoot.name;
-                        break;
-                    }
-                }
-
-                phatLootName = phatLootName.replace('_', ' ');
-                String name = chestName.replace("<name>", phatLootName);
+                String name = chestName.replace("<name>", phatLoots.getFirst().name.replace('_', ' '));
 
                 //Create a new Inventory for the Player
                 inventory = PhatLoots.server.createInventory(chest,
@@ -143,11 +138,9 @@ public class PhatLootsListener implements Listener {
         }
 
         PhatLootChest plChest = new PhatLootChest(block);
-        for (PhatLoot phatLoot : PhatLoots.getPhatLoots()) {
-            if (phatLoot.containsChest(plChest) && PhatLoots.canLoot(player, phatLoot)) {
-                phatLoot.rollForLoot(player, plChest, inventory);
-                phatLoot.save();
-            }
+        for (PhatLoot phatLoot : phatLoots) {
+            phatLoot.rollForLoot(player, plChest, inventory);
+            phatLoot.saveLootTimes();
         }
     }
 
@@ -201,21 +194,13 @@ public class PhatLootsListener implements Listener {
             return;
         }
 
-        //Return if the Player does not have permission to receive loots
-        if (!PhatLoots.hasPermission(player, "use")) {
-            player.sendMessage(PhatLootsMessages.permission);
-            return;
-        }
-
         Dispenser dispenser = (Dispenser) block.getState();
         Inventory inventory = dispenser.getInventory();
 
         PhatLootChest plChest = new PhatLootChest(block);
-        for (PhatLoot phatLoot : PhatLoots.getPhatLoots()) {
-            if (phatLoot.containsChest(plChest) && PhatLoots.canLoot(player, phatLoot)) {
-                phatLoot.rollForLoot(player, plChest, inventory);
-                phatLoot.save();
-            }
+        for (PhatLoot phatLoot : PhatLoots.getPhatLoots(block, player)) {
+            phatLoot.rollForLoot(player, plChest, inventory);
+            phatLoot.saveLootTimes();
         }
     }
 
@@ -264,11 +249,9 @@ public class PhatLootsListener implements Listener {
         Location location = entity.getLocation();
         String name = entity.getType().getName();
 
-        if (PhatLoots.pm.isPluginEnabled("RegionOwn")) {
-            for (Region region : RegionOwn.mobRegions.values()) {
-                if (region.contains(location)) {
-                    name += "@" + region.name;
-                }
+        for (Region region : RegionOwn.mobRegions.values()) {
+            if (region.contains(location)) {
+                name += "@" + region.name;
             }
         }
 
@@ -287,13 +270,12 @@ public class PhatLootsListener implements Listener {
     public void onMobSpawn(CreatureSpawnEvent event) {
         LivingEntity entity = event.getEntity();
         Location location = entity.getLocation();
-        String name = entity.getType().getName() + "spawn";
+        String name = entity.getType().getName() + "Spawn";
 
-        if (PhatLoots.pm.isPluginEnabled("RegionOwn")) {
-            for (Region region : RegionOwn.mobRegions.values()) {
-                if (region.contains(location)) {
-                    name += "@" + region.name;
-                }
+        for (Region region : RegionOwn.mobRegions.values()) {
+            if (region.contains(location)) {
+                name += "@" + region.name;
+                break;
             }
         }
 
@@ -311,7 +293,7 @@ public class PhatLootsListener implements Listener {
      */
     public boolean isPhatLootChest(Block block) {
         PhatLootChest plChest = new PhatLootChest(block);
-        for (PhatLoot phatLoot: PhatLoots.getPhatLoots()) {
+        for (PhatLoot phatLoot : PhatLoots.getPhatLoots()) {
             if (phatLoot.containsChest(plChest)) {
                 return true;
             }
