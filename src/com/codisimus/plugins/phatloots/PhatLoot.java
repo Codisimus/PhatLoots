@@ -173,7 +173,7 @@ public class PhatLoot {
 
             //Give money to the Player if there is money to give
             if (amount > 0 && !player.getGameMode().equals(GameMode.CREATIVE)
-                    && PhatLoots.hasPermission(player, "moneyfrommobs")) {
+                    && player.hasPermission("phatloots.moneyfrommobs")) {
                 String money = Econ.reward(player.getName(), amount);
                 player.sendMessage(PhatLootsMessages.mobDroppedMoney.replace("<amount>", money));
             }
@@ -640,7 +640,7 @@ public class PhatLoot {
     }
 
     /**
-     * removes the PhatLootChest for the given Block and links it to this PhatLoot
+     * Removes the PhatLootChest for the given Block and links it to this PhatLoot
      *
      * @param block The given Block
      */

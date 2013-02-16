@@ -43,7 +43,7 @@ public class PhatLootsListener implements Listener {
     @EventHandler (ignoreCancelled = true, priority = EventPriority.MONITOR)
     public void onWorldLoad(WorldLoadEvent event) {
         FileInputStream fis = null;
-        for (File file: new File(PhatLoots.dataFolder + "/PhatLoots/").listFiles()) {
+        for (File file: new File(PhatLoots.dataFolder + File.separator + "PhatLoots").listFiles()) {
             String name = file.getName();
             if (name.endsWith(".properties")) {
                 try {
@@ -235,7 +235,7 @@ public class PhatLootsListener implements Listener {
         }
 
         //Return if the Player does not have permission to receive loots
-        if (!PhatLoots.hasPermission(player, "use")) {
+        if (!player.hasPermission("phatloots.use")) {
             player.sendMessage(PhatLootsMessages.permission);
             return;
         }
@@ -280,7 +280,7 @@ public class PhatLootsListener implements Listener {
         }
 
         //Cancel if the Block was not broken by an Admin
-        if (!PhatLoots.hasPermission(player, "admin")) {
+        if (!player.hasPermission("phatloots.admin")) {
             player.sendMessage(PhatLootsMessages.permission);
             event.setCancelled(true);
         }

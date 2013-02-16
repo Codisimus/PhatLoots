@@ -18,7 +18,7 @@ public class PhatLootsConfig {
         FileInputStream fis = null;
         try {
             //Copy the file from the jar if it is missing
-            File file = new File(PhatLoots.dataFolder + "/config.properties");
+            File file = new File(PhatLoots.dataFolder + File.separator + "config.properties");
             if (!file.exists()) {
                 PhatLoots.plugin.saveResource("config.properties", true);
             }
