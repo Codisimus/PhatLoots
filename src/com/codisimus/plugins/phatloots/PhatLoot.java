@@ -491,7 +491,12 @@ public class PhatLoot {
 
                 String data = lootData[1];
                 Map<Enchantment, Integer> enchantments = null;
+                boolean autoEnchant = false;
                 //Check for Enchantments
+                if (lootData[1].endsWith("auto")) {
+                    autoEnchant = true;
+                    lootData[1] = lootData[1].substring(0, lootData[1].length() - 5);
+                }
                 if (data.contains("+")) {
                     int index = data.indexOf('+');
                     enchantments = PhatLootsCommand.getEnchantments(
@@ -519,6 +524,9 @@ public class PhatLoot {
                     enchantments = PhatLootsCommand.getEnchantments(data);
                 }
                 loot.setEnchantments(enchantments);
+                if (autoEnchant) {
+                    loot.autoEnchant = true;
+                }
 
                 loot.name = item;
                 lootTables[id].add(loot);

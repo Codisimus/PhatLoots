@@ -325,6 +325,7 @@ public class PhatLootsCommand implements CommandExecutor {
             int baseAmount = 1; //Stack size of the Loot item (defaulted to 1)
             int bonusAmount = 1; //Amount to possibly increase the Stack size of the Loot item (defaulted to 1)
             double percent = 100; //The chance of receiving the Loot item (defaulted to 100)
+            boolean autoEnchant = false; //Whether or not the Loot Item should be automatically enchanted at time of Looting
 
             ItemStack item = getItemStack(sender, args[1]); //The Loot item
             if (item == null) {
@@ -368,13 +369,18 @@ public class PhatLootsCommand implements CommandExecutor {
                         return true;
                     }
                     break;
+
                 case 'e':
-                    Map<Enchantment, Integer> enchantments = getEnchantments(s);
-                    if (enchantments == null) {
-                        sender.sendMessage("§6" + s + "§4 is not a valid enchantment");
-                        return true;
+                    if (s.equals("auto")) {
+                        autoEnchant = true;
+                    } else {
+                        Map<Enchantment, Integer> enchantments = getEnchantments(s);
+                        if (enchantments == null) {
+                            sender.sendMessage("§6" + s + "§4 is not a valid enchantment");
+                            return true;
+                        }
+                        item.addUnsafeEnchantments(enchantments);
                     }
-                    item.addUnsafeEnchantments(enchantments);
                     break;
 
                 case 'd':
@@ -403,6 +409,9 @@ public class PhatLootsCommand implements CommandExecutor {
             //Construct the Loot
             Loot loot = new Loot(item, bonusAmount - baseAmount);
             loot.setProbability(percent);
+            if (autoEnchant) {
+                loot.autoEnchant = true;
+            }
             if (!loot.setName(description)) {
                 sender.sendMessage("§4The Item had no lore to write to file. Perhaps use the plugin §6Lores§4 to add some");
                 return true;
@@ -675,7 +684,7 @@ public class PhatLootsCommand implements CommandExecutor {
         PhatLoot phatLoot = PhatLoots.getPhatLoot(name);
 
         phatLoot.addChest(block);
-        sender.sendMessage("§5Target " + blockName + " has been linked to PhatLoot §5" + name);
+        sender.sendMessage("§5Target " + blockName + " has been linked to PhatLoot §6" + name);
         phatLoot.save();
     }
 
@@ -1218,7 +1227,7 @@ public class PhatLootsCommand implements CommandExecutor {
         sender.sendMessage("§2#§f: §5The amount of the item ex. §6#10 §5or §6#1-64 §5(default: §61§5)");
         sender.sendMessage("§2%§f: §5The chance of looting the item ex. §6%50 §5or §6%0.1 §5(default: §6100§5)");
         sender.sendMessage("§2n§f: §5The Name of the item description ex. §6nSuperSword");
-        sender.sendMessage("§2e§f: §5The item enchantment ex. §6earrow_fire");
+        sender.sendMessage("§2e§f: §5The item enchantment ex. §6earrow_fire §5or §6eauto");
         sender.sendMessage("§bEnchantment levels can be added. ex. §6arrow_fire(2)");
         sender.sendMessage("§2/"+command+" <add|remove> <Item|ID|hand> [Parameter1] [Parameter2]...");
         sender.sendMessage("§bex. §6/"+command+" add hand #1-16 nEnderNade %32");

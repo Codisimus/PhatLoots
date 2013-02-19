@@ -33,7 +33,7 @@ public class Loot implements Comparable {
     private int bonus = 0;
     private double probability;
     protected String name;
-    protected boolean autoEnchant = true;
+    protected boolean autoEnchant;
 
     /**
      * Constructs a new Loot with the given Item data and probability
@@ -835,6 +835,11 @@ public class Loot implements Comparable {
         Map<Enchantment, Integer> enchantments = item.getEnchantments();
         if (!enchantments.isEmpty()) {
             string += "+" + enchantmentsToString(); //+Enchantment1(level)&Enchantment2(level)...
+            if (autoEnchant) {
+                string += "&auto";
+            }
+        } else if (autoEnchant) {
+            string += "+auto";
         }
 
         string += "'" + item.getAmount(); //'Amount
