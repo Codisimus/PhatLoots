@@ -133,18 +133,7 @@ public class PhatLoot {
             }
         }
 
-        //Execute each command
-        for (String cmd : commands) {
-            if (cmd.matches(".*%[0-9]*[.]?[0-9]+")) {
-                int index = cmd.lastIndexOf('%');
-                double percent = Double.parseDouble(cmd.substring(index + 1));
-                if (PhatLoots.random.nextInt(100) + PhatLoots.random.nextDouble() < percent) {
-                    PhatLoots.server.dispatchCommand(cs, cmd.substring(0, index).replace("<player>", player.getName()));
-                }
-            } else {
-                PhatLoots.server.dispatchCommand(cs, cmd.replace("<player>", player.getName()));
-            }
-        }
+        lootCommands(player);
 
         //Give individual loots
         boolean itemsInChest = chest.addLoots(lootIndividual(), player, inventory);
@@ -226,18 +215,7 @@ public class PhatLoot {
             }
         }
 
-        //Execute each command
-        for (String cmd : commands) {
-            if (cmd.matches(".*%[0-9]*[.]?[0-9]+")) {
-                int index = cmd.lastIndexOf('%');
-                double percent = Double.parseDouble(cmd.substring(index + 1));
-                if (PhatLoots.random.nextInt(100) + PhatLoots.random.nextDouble() < percent) {
-                    PhatLoots.server.dispatchCommand(cs, cmd.substring(0, index).replace("<player>", player.getName()));
-                }
-            } else {
-                PhatLoots.server.dispatchCommand(cs, cmd.replace("<player>", player.getName()));
-            }
-        }
+        lootCommands(player);
 
         //Roll for exp amount if the range is above 0
         if (expUpper > 0) {
@@ -312,6 +290,27 @@ public class PhatLoot {
             return (int) timeRemaining / DateUtils.MILLIS_PER_SECOND + " second(s)";
         } else {
             return "0";
+        }
+    }
+
+    /**
+     * Executes commands of the PhatLoot
+     * Each command is rolled for
+     *
+     * @param player The Player looting
+     */
+    public void lootCommands(Player player) {
+        //Execute each command
+        for (String cmd : commands) {
+            if (cmd.matches(".*%[0-9]*[.]?[0-9]+")) {
+                int index = cmd.lastIndexOf('%');
+                double percent = Double.parseDouble(cmd.substring(index + 1));
+                if (PhatLoots.random.nextInt(100) + PhatLoots.random.nextDouble() < percent) {
+                    PhatLoots.server.dispatchCommand(cs, cmd.substring(0, index).replace("<player>", player.getName()));
+                }
+            } else {
+                PhatLoots.server.dispatchCommand(cs, cmd.replace("<player>", player.getName()));
+            }
         }
     }
 
