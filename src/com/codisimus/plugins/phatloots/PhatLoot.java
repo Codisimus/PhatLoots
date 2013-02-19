@@ -212,7 +212,7 @@ public class PhatLoot {
 
             //Give money to the Player if there is money to give
             if (amount > 0 && !player.getGameMode().equals(GameMode.CREATIVE)
-                    && PhatLoots.hasPermission(player, "moneyfrommobs")) {
+                    && player.hasPermission("phatloots.moneyfrommobs")) {
                 String money = Econ.reward(player.getName(), amount);
                 player.sendMessage(PhatLootsMessages.mobDroppedMoney.replace("<amount>", money));
             }

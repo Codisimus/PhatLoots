@@ -194,6 +194,12 @@ public class PhatLootsListener implements Listener {
             return;
         }
 
+        //Return if the Player does not have permission to receive loots
+        if (!player.hasPermission("phatloots.use")) {
+            player.sendMessage(PhatLootsMessages.permission);
+            return;
+        }
+
         Dispenser dispenser = (Dispenser) block.getState();
         Inventory inventory = dispenser.getInventory();
 
@@ -232,7 +238,7 @@ public class PhatLootsListener implements Listener {
         }
 
         //Cancel if the Block was not broken by an Admin
-        if (!PhatLoots.hasPermission(player, "admin")) {
+        if (!player.hasPermission("phatloots.admin")) {
             player.sendMessage(PhatLootsMessages.permission);
             event.setCancelled(true);
         }

@@ -5,7 +5,8 @@ author: Codisimus
 website: www.codisimus.com
 description: Chests with randomly generated money/items
 load: postworld
-softdepend: [Vault, EpicBossRecoded]
+depend: [Vault]
+softdepend: [EpicBossRecoded]
 commands:
   loot:
     description: Used to setup PhatLoot Chests and rewards

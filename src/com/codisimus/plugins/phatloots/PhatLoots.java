@@ -7,11 +7,11 @@ import java.io.IOException;
 import java.util.*;
 import java.util.logging.Logger;
 import net.milkbowl.vault.economy.Economy;
-import net.milkbowl.vault.permission.Permission;
 import org.bukkit.Location;
 import org.bukkit.Server;
 import org.bukkit.Sound;
 import org.bukkit.block.Block;
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.plugin.PluginManager;
@@ -41,7 +41,6 @@ public class PhatLoots extends JavaPlugin {
     static HashSet<String> restricted = new HashSet<String>();
     static JavaPlugin plugin;
     static String dataFolder;
-    private static Permission permission;
     private static HashMap<String, PhatLoot> phatLoots = new HashMap<String, PhatLoot>();
 
     /**
@@ -84,17 +83,17 @@ public class PhatLoots extends JavaPlugin {
 
         dataFolder = dir.getPath();
 
-        dir = new File(dataFolder + "/PhatLoots");
+        dir = new File(dataFolder + File.separator + "PhatLoots");
         if (!dir.isDirectory()) {
             dir.mkdir();
         }
 
-        dir = new File(dataFolder + "/Item Descriptions");
+        dir = new File(dataFolder + File.separator + "Item Descriptions");
         if (!dir.isDirectory()) {
             dir.mkdir();
         }
 
-        dir = new File(dataFolder + "/Books");
+        dir = new File(dataFolder + File.separator + "Books");
         if (!dir.isDirectory()) {
             dir.mkdir();
         }
@@ -103,13 +102,7 @@ public class PhatLoots extends JavaPlugin {
         loadData();
         PhatLootsConfig.load();
 
-        /* Link Permissions/Economy */
-        RegisteredServiceProvider<Permission> permissionProvider =
-                getServer().getServicesManager().getRegistration(Permission.class);
-        if (permissionProvider != null) {
-            permission = permissionProvider.getProvider();
-        }
-
+        /* Link Economy */
         RegisteredServiceProvider<Economy> economyProvider =
                 getServer().getServicesManager().getRegistration(Economy.class);
         if (economyProvider != null) {
@@ -137,17 +130,6 @@ public class PhatLoots extends JavaPlugin {
     }
 
     /**
-     * Returns boolean value of whether the given player has the specific permission
-     *
-     * @param player The Player who is being checked for permission
-     * @param type The String of the permission, ex. admin
-     * @return true if the given player has the specific permission
-     */
-    public static boolean hasPermission(Player player, String type) {
-        return permission.has(player, "phatloots." + type);
-    }
-
-    /**
      * Returns true if the given player is allowed to loot the specified PhatLoot
      *
      * @param player The Player who is being checked for permission
@@ -156,10 +138,10 @@ public class PhatLoots extends JavaPlugin {
      */
     public static boolean canLoot(Player player, PhatLoot phatLoot) {
         if (!useRestricted || restricted.contains(phatLoot.name)) {
-            if (hasPermission(player, "loot.*")) { //Check for loot all permission
+            if (player.hasPermission("phatloots.loot.*")) { //Check for loot all permission
                 return true;
             } else {
-                return hasPermission(player, "loot." + phatLoot.name); //Check if the Player has the specific loot permission
+                return player.hasPermission("phatloots.loot." + phatLoot.name); //Check if the Player has the specific loot permission
             }
         } else {
             return true;
@@ -171,7 +153,7 @@ public class PhatLoots extends JavaPlugin {
      */
     public static void loadData() {
         FileInputStream fis = null;
-        for (File file: new File(dataFolder + "/PhatLoots/").listFiles()) {
+        for (File file: new File(dataFolder + File.separator + "PhatLoots").listFiles()) {
             String name = file.getName();
             if (name.endsWith(".properties")) {
                 try {
@@ -238,8 +220,8 @@ public class PhatLoots extends JavaPlugin {
 
                     fis.close();
 
-                    file = new File(dataFolder + "/PhatLoots/"
-                                    + phatLoot.name + ".loottimes");
+                    file = new File(dataFolder + File.separator +"PhatLoots"
+                                    + File.separator + phatLoot.name + ".loottimes");
                     if (file.exists()) {
                         fis = new FileInputStream(file);
                         phatLoot.lootTimes.load(fis);
@@ -412,9 +394,15 @@ public class PhatLoots extends JavaPlugin {
             p.setProperty("ChestsData", value);
 
             //Write the PhatLoot Properties to file
-            fos = new FileOutputStream(dataFolder + "/PhatLoots/"
-                                        + phatLoot.name + ".properties");
+            fos = new FileOutputStream(dataFolder + File.separator + "PhatLoots"
+                                        + File.separator + phatLoot.name + ".properties");
             p.store(fos, null);
+            fos.close();
+
+            //Write the PhatLoot Loot times to file
+            fos = new FileOutputStream(dataFolder + File.separator + "PhatLoots"
+            							+ File.separator + phatLoot.name + ".loottimes");
+            phatLoot.lootTimes.store(fos, null);
         } catch (Exception saveFailed) {
             logger.severe("Save Failed!");
             saveFailed.printStackTrace();
@@ -461,11 +449,11 @@ public class PhatLoots extends JavaPlugin {
      */
     public static void removePhatLoot(PhatLoot phatLoot) {
         phatLoots.remove(phatLoot.name);
-        File trash = new File(dataFolder + "/PhatLoots/"
-                                + phatLoot.name + ".properties");
+        File trash = new File(dataFolder + File.separator + "PhatLoots"
+        				+ File.separator + phatLoot.name + ".properties");
         trash.delete();
-        trash = new File(dataFolder + "/PhatLoots/"
-                        + phatLoot.name + ".lootTimes");
+        trash = new File(dataFolder + File.separator + "PhatLoots"
+        				+ File.separator + phatLoot.name + ".lootTimes");
         trash.delete();
     }
 
@@ -531,13 +519,13 @@ public class PhatLoots extends JavaPlugin {
      *
      * @param player The Player reloading the data
      */
-    public static void rl(Player player) {
+    public static void rl(CommandSender sender) {
         phatLoots.clear();
         loadData();
 
         logger.info("PhatLoots reloaded");
-        if (player != null) {
-            player.sendMessage("§5PhatLoots reloaded");
+        if (sender instanceof Player) {
+            sender.sendMessage("§5PhatLoots reloaded");
         }
     }
 
