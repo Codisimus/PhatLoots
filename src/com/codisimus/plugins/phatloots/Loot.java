@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Random;
 import net.minecraft.server.v1_4_R1.NBTTagCompound;
+import org.apache.commons.lang.WordUtils;
 import org.bukkit.Color;
 import org.bukkit.Material;
 import org.bukkit.craftbukkit.v1_4_R1.inventory.CraftItemStack;
@@ -162,6 +163,8 @@ public class Loot implements Comparable {
                     dir.mkdir();
                 }
                 return true;
+            } else if (name.equals("Auto")) {
+                return true;
             }
 
             File file = new File(PhatLoots.dataFolder + "/Item Descriptions/" + name + ".txt");
@@ -259,6 +262,68 @@ public class Loot implements Comparable {
                     file = files[random.nextInt(files.length)];
                     //String fileName = file.getName();
                     //tag.setString(ITEM_DESCRIPTION, fileName.substring(0, fileName.length() - 4));
+                } else if (name.equals("Auto")) {
+                    int tier = 0;
+                    for (Integer enchant : item.getEnchantments().values()) {
+                        tier += enchant;
+                    }
+                    Material mat = item.getType();
+                    switch (mat) {
+                    case DIAMOND_SWORD:
+                    case DIAMOND_AXE:
+                    case DIAMOND_HELMET:
+                    case DIAMOND_CHESTPLATE:
+                    case DIAMOND_LEGGINGS:
+                    case DIAMOND_BOOTS:
+                        tier += 30;
+                        break;
+
+                    case IRON_SWORD:
+                    case IRON_AXE:
+                    case IRON_HELMET:
+                    case IRON_CHESTPLATE:
+                    case IRON_LEGGINGS:
+                    case IRON_BOOTS:
+                        tier += 20;
+                        break;
+
+                    case GOLD_SWORD:
+                    case GOLD_AXE:
+                    case GOLD_HELMET:
+                    case GOLD_CHESTPLATE:
+                    case GOLD_LEGGINGS:
+                    case GOLD_BOOTS:
+                        tier += 20;
+                        break;
+
+                    case STONE_SWORD:
+                    case STONE_AXE:
+                    case CHAINMAIL_HELMET:
+                    case CHAINMAIL_CHESTPLATE:
+                    case CHAINMAIL_LEGGINGS:
+                    case CHAINMAIL_BOOTS:
+                        tier += 10;
+                        break;
+
+                    case BOW:
+                        tier = tier * 3;
+                        break;
+
+                    default: break;
+                    }
+
+                    String material = WordUtils.capitalizeFully(mat.toString().replace("_", " "));
+                    meta.setDisplayName(getTieredName(material, tier));
+
+                    clone.setItemMeta(meta);
+                    net.minecraft.server.v1_4_R1.ItemStack mis = CraftItemStack.asNMSCopy(clone);
+                    NBTTagCompound tag = mis.getTag();
+                    if (tag == null) {
+                        tag = new NBTTagCompound();
+                    }
+
+                    mis.setTag(tag);
+                    return CraftItemStack.asCraftMirror(mis);
                 } else {
                     file = new File(PhatLoots.dataFolder
                             + "/Item Descriptions/" + name + ".txt");
@@ -340,6 +405,39 @@ public class Loot implements Comparable {
      */
     public double getProbability() {
         return probability;
+    }
+
+    private String getTieredName(String material, int tier) {
+        if (tier > 0) {
+            if (tier > 10) {
+                if (tier > 20) {
+                    if (tier > 30) {
+                        if (tier > 50) {
+                            if (tier > 65) {
+                                if (tier > 80) {
+                                    if (tier > 100) {
+                                        if (tier > 150) {
+                                            if (tier > 200) {
+                                                return "§5" + material + " (Epic)";
+                                            }
+                                        }
+                                        return "§1" + material + " (Mythic)";
+                                    }
+                                    return "§9" + material + " (Legendary)";
+                                }
+                                return "§3" + material + " (Ultra Rare)";
+                            }
+                            return "§b" + material + " (Super Rare)";
+                        }
+                        return "§2" + material + " (Very Rare)";
+                    }
+                    return "§a" + material + " (Rare)";
+                }
+                return "§f" + material + " (Uncommon)";
+            }
+            return "§7" + material + " (Common)";
+        }
+        return "§8" + material + " (Poor)";
     }
 
     /**
