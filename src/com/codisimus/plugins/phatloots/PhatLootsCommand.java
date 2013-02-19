@@ -55,43 +55,6 @@ public class PhatLootsCommand implements CommandExecutor {
      */
     @Override
     public boolean onCommand(CommandSender sender, Command command, String alias, String[] args) {
-        //loot give command
-        if (args.length > 0 && args[0].equals("give")) {
-            if (args.length != 3) {
-                if (sender instanceof Player) {
-                    sendHelp(sender);
-                    return true;
-                } else {
-                    return false;
-                }
-            }
-
-            //Cancel if the sender does not have the needed permission
-            if (sender instanceof Player) {
-                if (!sender.hasPermission("phatloots.give")) {
-                    sender.sendMessage(PhatLootsMessages.permission);
-                    return true;
-                }
-            }
-
-            Player player = PhatLoots.server.getPlayer(args[2]);
-            if (player == null) {
-                sender.sendMessage("§6" + args[2] + " §4is not online");
-                return true;
-            }
-
-            PhatLoot phatLoot = PhatLoots.getPhatLoot(args[1]);
-            if (phatLoot == null) {
-                sender.sendMessage("§4PhatLoot §6" + args[1] + "§4 does not exist");
-                return true;
-            }
-
-            Inventory inventory = PhatLoots.server.createInventory(player, 54, phatLoot.name);
-            player.openInventory(inventory);
-            phatLoot.rollForLoot(player, new PhatLootChest(player.getLocation().getBlock()), inventory);
-            return true;
-        }
-
         //Display the help page if the sender did not add any arguments
         if (args.length == 0) {
             sendHelp(sender);
@@ -552,6 +515,41 @@ public class PhatLootsCommand implements CommandExecutor {
                 sendHelp(sender);
                 return true;
             }
+
+        case GIVE:
+            if (args.length != 3) {
+                if (sender instanceof Player) {
+                    sendHelp(sender);
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+
+            //Cancel if the sender does not have the needed permission
+            if (sender instanceof Player) {
+                if (!sender.hasPermission("phatloots.give")) {
+                    sender.sendMessage(PhatLootsMessages.permission);
+                    return true;
+                }
+            }
+
+            Player player = PhatLoots.server.getPlayer(args[2]);
+            if (player == null) {
+                sender.sendMessage("§6" + args[2] + " §4is not online");
+                return true;
+            }
+
+            PhatLoot pLoot = PhatLoots.getPhatLoot(args[1]);
+            if (pLoot == null) {
+                sender.sendMessage("§4PhatLoot §6" + args[1] + "§4 does not exist");
+                return true;
+            }
+
+            Inventory inventory = PhatLoots.server.createInventory(player, 54, pLoot.name);
+            player.openInventory(inventory);
+            pLoot.rollForLoot(player, new PhatLootChest(player.getLocation().getBlock()), inventory);
+            return true;
 
         case RL:
             //Cancel if the sender does not have permission to use the command
