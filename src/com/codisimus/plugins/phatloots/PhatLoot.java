@@ -323,8 +323,7 @@ public class PhatLoot {
         List<ItemStack> itemList = new LinkedList<ItemStack>();
         for (Loot loot : lootTables[INDIVIDUAL]) {
             //Roll for item
-            if (PhatLoots.random.nextInt(100) + PhatLoots.random.nextDouble()
-                    < loot.getProbability()) {
+            if (loot.rollForLoot()) {
                 itemList.add(loot.getItem());
             }
         }
