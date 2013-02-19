@@ -255,9 +255,11 @@ public class PhatLootsListener implements Listener {
         Location location = entity.getLocation();
         String name = entity.getType().getName();
 
-        for (Region region : RegionOwn.mobRegions.values()) {
-            if (region.contains(location)) {
-                name += "@" + region.name;
+        if (mobRegions) {
+            for (Region region : RegionOwn.mobRegions.values()) {
+                if (region.contains(location)) {
+                    name += "@" + region.name;
+                }
             }
         }
 
@@ -278,10 +280,12 @@ public class PhatLootsListener implements Listener {
         Location location = entity.getLocation();
         String name = entity.getType().getName() + "Spawn";
 
-        for (Region region : RegionOwn.mobRegions.values()) {
-            if (region.contains(location)) {
-                name += "@" + region.name;
-                break;
+        if (mobRegions) {
+            for (Region region : RegionOwn.mobRegions.values()) {
+                if (region.contains(location)) {
+                    name += "@" + region.name;
+                    break;
+                }
             }
         }
 

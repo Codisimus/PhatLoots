@@ -326,18 +326,25 @@ public class PhatLootsCommand implements CommandExecutor {
 
             if (args[1].equals("cmd")) {
                 String name = null;
+                double percent = 100;
                 String cmd = "";
                 int i = 2;
 
-                if (args.length > 2){
-                    if (PhatLoots.hasPhatLoot(args[2])) {
-                        name = args[2];
+                if (args.length > i) {
+                    if (PhatLoots.hasPhatLoot(args[i])) {
+                        name = args[i];
                         i++;
+                    }
+                    if (args.length > i) {
+                        if (args[i].matches("%[0-9]*[.]?[0-9]+")) {
+                            percent = Double.parseDouble(args[i]);
+                            i++;
+                        }
                     }
                 }
 
                 while (i < args.length) {
-                    cmd = cmd.concat(args[i].concat(" "));
+                    cmd += args[i]+ " ";
                     i++;
                 }
 
@@ -345,7 +352,7 @@ public class PhatLootsCommand implements CommandExecutor {
                     cmd = cmd.substring(0, cmd.length() - 1);
                 }
 
-                setCommand(sender, name, add, cmd);
+                setCommand(sender, name, percent, add, cmd);
                 return true;
             }
 
@@ -625,7 +632,7 @@ public class PhatLootsCommand implements CommandExecutor {
     	}
 
         //Cancel if the sender is not targeting a correct Block
-        Block block  = ((Player)sender).getTargetBlock(TRANSPARENT, 10);
+        Block block  = ((Player) sender).getTargetBlock(TRANSPARENT, 10);
         String blockName = "Block";
         switch (block.getType()) {
         case CHEST:
@@ -738,9 +745,9 @@ public class PhatLootsCommand implements CommandExecutor {
             return;
     	}
 
-        Block block = ((Player)sender).getTargetBlock(TRANSPARENT, 10);
+        Block block = ((Player) sender).getTargetBlock(TRANSPARENT, 10);
         String blockName = "Block";
-        for (PhatLoot phatLoot: getPhatLoots(sender, name)) {
+        for (PhatLoot phatLoot : getPhatLoots(sender, name)) {
             phatLoot.removeChest(block);
             switch (block.getType()) {
             case CHEST:
@@ -767,7 +774,7 @@ public class PhatLootsCommand implements CommandExecutor {
      * @param seconds The amount of seconds
      */
     public static void time(CommandSender sender, String name, int days, int hours, int minutes, int seconds) {
-        for (PhatLoot phatLoot: getPhatLoots(sender, name)) {
+        for (PhatLoot phatLoot : getPhatLoots(sender, name)) {
             phatLoot.days = days;
             phatLoot.hours = hours;
             phatLoot.minutes = minutes;
@@ -789,7 +796,7 @@ public class PhatLootsCommand implements CommandExecutor {
      * @param global The new value of global
      */
     public static void global(CommandSender sender, String name, boolean global) {
-        for (PhatLoot phatLoot: getPhatLoots(sender, name)) {
+        for (PhatLoot phatLoot : getPhatLoots(sender, name)) {
             if (phatLoot.global != global) {
                 phatLoot.global = global;
                 phatLoot.reset(null);
@@ -808,7 +815,7 @@ public class PhatLootsCommand implements CommandExecutor {
      * @param round The new value of round
      */
     public static void round(CommandSender sender, String name, boolean round) {
-        for (PhatLoot phatLoot: getPhatLoots(sender, name)) {
+        for (PhatLoot phatLoot : getPhatLoots(sender, name)) {
             phatLoot.round = round;
 
             sender.sendMessage("§5PhatLoot §6" + phatLoot.name + "§5 has been set to §6"
@@ -949,12 +956,16 @@ public class PhatLootsCommand implements CommandExecutor {
      *
      * @param sender The CommandSender modifying the PhatLoot
      * @param name The name of the PhatLoot to be modified or null to indicate all linked PhatLoots
+     * @param double The percent chance of looting the command
      * @param add True if the command is to be added
      * @param cmd The command to be added/removed
      */
-    public static void setCommand(CommandSender sender, String name, boolean add, String cmd) {
+    public static void setCommand(CommandSender sender, String name, double percent, boolean add, String cmd) {
         if (cmd.startsWith("/")) {
             cmd = cmd.substring(1);
+        }
+        if (percent < 100) {
+            cmd += '%' + percent;
         }
 
         for (PhatLoot phatLoot : getPhatLoots(sender, name)) {
@@ -1188,8 +1199,10 @@ public class PhatLootsCommand implements CommandExecutor {
         sender.sendMessage("§2/"+command+" round [Name] <true|false>§b Set if cooldown times should round down (ex. Daily/Hourly loots)");
         sender.sendMessage("§2/"+command+" money [Name] <Amount>§b Set money range to be looted");
         sender.sendMessage("§2/"+command+" exp [Name] <Amount>§b Set experience to be gained");
-        sender.sendMessage("§2/"+command+" add cmd [Name] /<Command>§b Add a Command that will be executed upon looting");
+        sender.sendMessage("§2/"+command+" add cmd [Name] [Percent] /<Command>§b Add a Command that will be executed upon looting");
         sender.sendMessage("§2/"+command+" remove cmd [Name] /<Command>§b Remove a Command that will be executed upon looting");
+        sender.sendMessage("§5To add a percent chance to a cmd use % similar to item loot");
+        sender.sendMessage("§bex. §1/"+command+" add cmd Test %50 /lightning <player>");
     }
 
     /**

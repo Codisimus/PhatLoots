@@ -134,8 +134,16 @@ public class PhatLoot {
         }
 
         //Execute each command
-        for (String cmd: commands) {
-            PhatLoots.server.dispatchCommand(cs, cmd.replace("<player>", player.getName()));
+        for (String cmd : commands) {
+            if (cmd.matches(".*%[0-9]*[.]?[0-9]+")) {
+                int index = cmd.lastIndexOf('%');
+                double percent = Double.parseDouble(cmd.substring(index + 1));
+                if (PhatLoots.random.nextInt(100) + PhatLoots.random.nextDouble() < percent) {
+                    PhatLoots.server.dispatchCommand(cs, cmd.substring(0, index).replace("<player>", player.getName()));
+                }
+            } else {
+                PhatLoots.server.dispatchCommand(cs, cmd.replace("<player>", player.getName()));
+            }
         }
 
         //Give individual loots
@@ -219,8 +227,16 @@ public class PhatLoot {
         }
 
         //Execute each command
-        for (String cmd: commands) {
-            PhatLoots.server.dispatchCommand(cs, cmd.replace("<player>", player.getName()));
+        for (String cmd : commands) {
+            if (cmd.matches(".*%[0-9]*[.]?[0-9]+")) {
+                int index = cmd.lastIndexOf('%');
+                double percent = Double.parseDouble(cmd.substring(index + 1));
+                if (PhatLoots.random.nextInt(100) + PhatLoots.random.nextDouble() < percent) {
+                    PhatLoots.server.dispatchCommand(cs, cmd.substring(0, index).replace("<player>", player.getName()));
+                }
+            } else {
+                PhatLoots.server.dispatchCommand(cs, cmd.replace("<player>", player.getName()));
+            }
         }
 
         //Roll for exp amount if the range is above 0
