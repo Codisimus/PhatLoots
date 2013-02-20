@@ -31,6 +31,8 @@ public class PhatLootsConfig {
             PhatLoots.useRestricted = loadBool("PermissionNeededOnlyForRestrictedPhatLoots", false);
             PhatLoots.restricted.addAll(Arrays.asList(loadString("RestrictedPhatLoots", "Rare, Epic, Donator").split(", ")));
 
+            Loot.tierNotify = loadInt("MinimumTierNotification", 80);
+
             PhatLoot.onlyDropOnPlayerKill = loadBool("OnlyDropLootWhenKilledByPlayer", false);
             PhatLoot.replaceMobLoot = loadBool("ReplaceMobLoot", true);
             PhatLoot.chanceOfDrop = (float) (loadDouble("MobLootDropPercentage", 20.0) / 100);

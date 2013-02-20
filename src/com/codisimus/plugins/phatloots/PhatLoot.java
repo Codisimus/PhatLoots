@@ -174,7 +174,7 @@ public class PhatLoot {
             }
         }
 
-        if (player == null) {
+        if (player != null) {
             //Find out how much time remains
             String timeRemaining = getTimeRemaining(getMobLootTime(player.getName()));
 

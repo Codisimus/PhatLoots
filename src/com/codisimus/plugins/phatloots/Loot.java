@@ -23,12 +23,13 @@ import org.bukkit.inventory.meta.LeatherArmorMeta;
  * @author Codisimus
  */
 public class Loot implements Comparable {
-    private final String TITLE = "title";
-    private final String AUTHOR = "author";
-    private final String PAGE = "page";
-    private final String ITEM_DESCRIPTION = "item_description";
-    private final String SET = "set";
-    private final String CLASS = "class";
+    private final static String TITLE = "title";
+    private final static String AUTHOR = "author";
+    private final static String PAGE = "page";
+    private final static String ITEM_DESCRIPTION = "item_description";
+    private final static String SET = "set";
+    private final static String CLASS = "class";
+    static int tierNotify;
     private ItemStack item;
     private int bonus = 0;
     private double probability;
@@ -624,6 +625,10 @@ public class Loot implements Comparable {
 
                     String material = WordUtils.capitalizeFully(mat.toString().replace("_", " "));
                     meta.setDisplayName(getTieredName(material, totalLevel));
+
+                    if (totalLevel > tierNotify) {
+                        PhatLoots.logger.info(meta.getDisplayName() + "(Tier " + totalLevel + ") has been generated");
+                    }
 
                     clone.setItemMeta(meta);
                     net.minecraft.server.v1_4_R1.ItemStack mis = CraftItemStack.asNMSCopy(clone);
