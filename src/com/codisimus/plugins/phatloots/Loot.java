@@ -246,13 +246,13 @@ public class Loot implements Comparable {
             case LEATHER_BOOTS:
                 roll = roll();
                 level = 0;
-                if (roll >= 85) {
+                if (roll >= 80) {
                     level++;
-                    if (roll >= 95) {
+                    if (roll >= 90) {
                         level++;
-                        if (roll >= 99) {
+                        if (roll >= 95) {
                             level++;
-                            if (roll >= 99.9) {
+                            if (roll >= 99) {
                                 level++;
                             }
                         }
@@ -263,13 +263,13 @@ public class Loot implements Comparable {
                 }
                 roll = roll();
                 level = 0;
-                if (roll >= 85) {
+                if (roll >= 80) {
                     level++;
-                    if (roll >= 95) {
+                    if (roll >= 90) {
                         level++;
-                        if (roll >= 99) {
+                        if (roll >= 95) {
                             level++;
-                            if (roll >= 99.9) {
+                            if (roll >= 99) {
                                 level++;
                             }
                         }
@@ -280,13 +280,13 @@ public class Loot implements Comparable {
                 }
                 roll = roll();
                 level = 0;
-                if (roll >= 85) {
+                if (roll >= 80) {
                     level++;
-                    if (roll >= 95) {
+                    if (roll >= 90) {
                         level++;
-                        if (roll >= 99) {
+                        if (roll >= 95) {
                             level++;
-                            if (roll >= 99.9) {
+                            if (roll >= 99) {
                                 level++;
                             }
                         }
@@ -297,13 +297,13 @@ public class Loot implements Comparable {
                 }
                 roll = roll();
                 level = 0;
-                if (roll >= 85) {
+                if (roll >= 80) {
                     level++;
-                    if (roll >= 95) {
+                    if (roll >= 90) {
                         level++;
-                        if (roll >= 99) {
+                        if (roll >= 95) {
                             level++;
-                            if (roll >= 99.9) {
+                            if (roll >= 99) {
                                 level++;
                             }
                         }
@@ -314,7 +314,7 @@ public class Loot implements Comparable {
                 }
                 roll = roll();
                 level = 0;
-                if (roll >= 85) {
+                if (roll >= 90) {
                     level++;
                     if (roll >= 95) {
                         level++;
@@ -340,15 +340,15 @@ public class Loot implements Comparable {
             case WOOD_AXE:
                 roll = roll();
                 level = 0;
-                if (roll >= 85) {
+                if (roll >= 80) {
                     level++;
-                    if (roll >= 95) {
+                    if (roll >= 90) {
                         level++;
-                        if (roll >= 99) {
+                        if (roll >= 94) {
                             level++;
-                            if (roll >= 99.5) {
+                            if (roll >= 97) {
                                 level++;
-                                if (roll >= 99.9) {
+                                if (roll >= 99) {
                                     level++;
                                 }
                             }
@@ -360,15 +360,15 @@ public class Loot implements Comparable {
                 }
                 roll = roll();
                 level = 0;
-                if (roll >= 85) {
+                if (roll >= 80) {
                     level++;
-                    if (roll >= 95) {
+                    if (roll >= 90) {
                         level++;
-                        if (roll >= 99) {
+                        if (roll >= 94) {
                             level++;
-                            if (roll >= 99.5) {
+                            if (roll >= 97) {
                                 level++;
-                                if (roll >= 99.9) {
+                                if (roll >= 99) {
                                     level++;
                                 }
                             }
@@ -380,15 +380,15 @@ public class Loot implements Comparable {
                 }
                 roll = roll();
                 level = 0;
-                if (roll >= 85) {
+                if (roll >= 80) {
                     level++;
-                    if (roll >= 95) {
+                    if (roll >= 90) {
                         level++;
-                        if (roll >= 99) {
+                        if (roll >= 94) {
                             level++;
-                            if (roll >= 99.5) {
+                            if (roll >= 97) {
                                 level++;
-                                if (roll >= 99.9) {
+                                if (roll >= 99) {
                                     level++;
                                 }
                             }
@@ -400,7 +400,7 @@ public class Loot implements Comparable {
                 }
                 roll = roll();
                 level = 0;
-                if (roll >= 90) {
+                if (roll >= 95) {
                     level++;
                     if (roll >= 99) {
                         level++;
@@ -411,7 +411,7 @@ public class Loot implements Comparable {
                 }
                 roll = roll();
                 level = 0;
-                if (roll >= 90) {
+                if (roll >= 95) {
                     level++;
                     if (roll >= 99) {
                         level++;
@@ -422,7 +422,7 @@ public class Loot implements Comparable {
                 }
                 roll = roll();
                 level = 0;
-                if (roll >= 85) {
+                if (roll >= 90) {
                     level++;
                     if (roll >= 95) {
                         level++;
@@ -436,7 +436,7 @@ public class Loot implements Comparable {
                 }
                 roll = roll();
                 level = 0;
-                if (roll >= 85) {
+                if (roll >= 90) {
                     level++;
                     if (roll >= 95) {
                         level++;
@@ -453,15 +453,15 @@ public class Loot implements Comparable {
             case BOW:
                 roll = roll();
                 level = 0;
-                if (roll >= 85) {
+                if (roll >= 80) {
                     level++;
-                    if (roll >= 95) {
+                    if (roll >= 90) {
                         level++;
-                        if (roll >= 99) {
+                        if (roll >= 94) {
                             level++;
-                            if (roll >= 99.5) {
+                            if (roll >= 97) {
                                 level++;
-                                if (roll >= 99.9) {
+                                if (roll >= 99) {
                                     level++;
                                 }
                             }
@@ -473,7 +473,7 @@ public class Loot implements Comparable {
                 }
                 roll = roll();
                 level = 0;
-                if (roll >= 90) {
+                if (roll >= 95) {
                     level++;
                     if (roll >= 99) {
                         level++;
@@ -500,7 +500,7 @@ public class Loot implements Comparable {
                 }
                 roll = roll();
                 level = 0;
-                if (roll >= 85) {
+                if (roll >= 90) {
                     level++;
                     if (roll >= 95) {
                         level++;
@@ -723,30 +723,28 @@ public class Loot implements Comparable {
     }
 
     private String getTieredName(String material, int level) {
-        if (level > 0) {
-            if (level > 10) {
-                if (level > 20) {
-                    if (level > 30) {
-                        if (level > 50) {
-                            if (level > 65) {
-                                if (level > 80) {
-                                    if (level > 100) {
-                                        if (level > 150) {
-                                            if (level > 200) {
-                                                return "§5" + material + " (Epic)";
-                                            }
+        if (level >= 5) {
+            if (level >= 20) {
+                if (level >= 30) {
+                    if (level >= 50) {
+                        if (level >= 65) {
+                            if (level >= 80) {
+                                if (level >= 100) {
+                                    if (level >= 150) {
+                                        if (level >= 200) {
+                                            return "§5" + material + " (Legendary)";
                                         }
-                                        return "§1" + material + " (Mythic)";
+                                        return "§4" + material + " (Mythic)";
                                     }
-                                    return "§9" + material + " (Legendary)";
+                                    return "§2" + material + " (Epic)";
                                 }
-                                return "§3" + material + " (Ultra Rare)";
+                                return "§1" + material + " (Ultra Rare)";
                             }
-                            return "§b" + material + " (Super Rare)";
+                            return "§9" + material + " (Super Rare)";
                         }
-                        return "§2" + material + " (Very Rare)";
+                        return "§3" + material + " (Very Rare)";
                     }
-                    return "§a" + material + " (Rare)";
+                    return "§b" + material + " (Rare)";
                 }
                 return "§f" + material + " (Uncommon)";
             }
