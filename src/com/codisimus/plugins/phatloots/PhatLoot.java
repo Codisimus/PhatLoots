@@ -2,20 +2,17 @@ package com.codisimus.plugins.phatloots;
 
 import java.io.FileOutputStream;
 import java.util.*;
-import net.minecraft.server.v1_4_R1.NBTTagCompound;
 import org.apache.commons.lang.WordUtils;
 import org.apache.commons.lang.time.DateUtils;
 import org.bukkit.Color;
 import org.bukkit.GameMode;
 import org.bukkit.block.Block;
-import org.bukkit.craftbukkit.v1_4_R1.inventory.CraftItemStack;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 
 /**
  * A PhatLoot is a reward made up of money and items
@@ -164,14 +161,6 @@ public class PhatLoot {
         }
         if (replaceMobLoot) {
             Iterator<ItemStack> itr = drops.iterator();
-            while (itr.hasNext()) {
-                net.minecraft.server.v1_4_R1.ItemStack mis = CraftItemStack.asNMSCopy(itr.next());
-
-                NBTTagCompound tag = mis.getTag();
-                if (tag == null || !tag.getBoolean("PhatLootMobLoot")) {
-                    itr.remove();
-                }
-            }
         }
 
         if (player != null) {
@@ -230,19 +219,6 @@ public class PhatLoot {
         LinkedList<ItemStack> loot = lootCollective();
         if (loot.size() != 5) {
             PhatLoots.logger.warning("Cannot add loot to " + entity.getType().getName() + " because the amount of loot was not equal to 5");
-        }
-
-        for (ItemStack item : loot) {
-            net.minecraft.server.v1_4_R1.ItemStack mis = CraftItemStack.asNMSCopy(item);
-
-            NBTTagCompound tag = mis.getTag();
-            if (tag == null) {
-                tag = new NBTTagCompound();
-            }
-
-            tag.setBoolean("PhatLootMobLoot", true);
-            mis.setTag(tag);
-            item = CraftItemStack.asCraftMirror(mis);
         }
 
         EntityEquipment eqp = entity.getEquipment();

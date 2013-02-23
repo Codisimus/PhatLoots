@@ -1,16 +1,12 @@
 package com.codisimus.plugins.phatloots;
 
 import java.io.*;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Random;
-import net.minecraft.server.v1_4_R1.NBTTagCompound;
+import java.util.*;
 import org.apache.commons.lang.WordUtils;
 import org.bukkit.Color;
 import org.bukkit.Material;
-import org.bukkit.craftbukkit.v1_4_R1.inventory.CraftItemStack;
+import org.bukkit.configuration.Configuration;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BookMeta;
@@ -26,15 +22,40 @@ public class Loot implements Comparable {
     private final static String TITLE = "title";
     private final static String AUTHOR = "author";
     private final static String PAGE = "page";
-    private final static String ITEM_DESCRIPTION = "item_description";
-    private final static String SET = "set";
-    private final static String CLASS = "class";
+    private final static String ARMOR = "ARMOR";
+    private final static String SWORD = "SWORD";
+    private final static String AXE = "AXE";
+    private final static String BOW = "BOW";
+    private final static Enchantment[] ARMOR_ENCHANTMENTS = new Enchantment[] {
+            Enchantment.PROTECTION_ENVIRONMENTAL, Enchantment.PROTECTION_FIRE,
+            Enchantment.PROTECTION_EXPLOSIONS, Enchantment.PROTECTION_PROJECTILE,
+            Enchantment.THORNS, Enchantment.DURABILITY
+    };
+    private final static Enchantment[] SWORD_ENCHANTMENTS = new Enchantment[] {
+            Enchantment.DAMAGE_ALL, Enchantment.DAMAGE_UNDEAD,
+            Enchantment.DAMAGE_ARTHROPODS, Enchantment.KNOCKBACK,
+            Enchantment.FIRE_ASPECT, Enchantment.LOOT_BONUS_MOBS,
+            Enchantment.DURABILITY
+    };
+    private final static Enchantment[] AXE_ENCHANTMENTS = new Enchantment[] {
+            Enchantment.DAMAGE_ALL, Enchantment.DAMAGE_UNDEAD,
+            Enchantment.DAMAGE_ARTHROPODS, Enchantment.KNOCKBACK,
+            Enchantment.FIRE_ASPECT, Enchantment.LOOT_BONUS_MOBS,
+            Enchantment.DURABILITY
+    };
+    private final static Enchantment[] BOW_ENCHANTMENTS = new Enchantment[] {
+            Enchantment.ARROW_DAMAGE, Enchantment.ARROW_KNOCKBACK,
+            Enchantment.ARROW_FIRE, Enchantment.ARROW_INFINITE,
+            Enchantment.DURABILITY
+    };
     static int tierNotify;
     private ItemStack item;
     private int bonus = 0;
     private double probability;
     protected String name;
     protected boolean autoEnchant;
+    static Configuration loreConfig;
+    static Configuration enchantmentConfig;
 
     /**
      * Constructs a new Loot with the given Item data and probability
@@ -59,11 +80,6 @@ public class Loot implements Comparable {
     public Loot(ItemStack item, int bonus) {
         this.item = item;
         this.bonus = bonus;
-        net.minecraft.server.v1_4_R1.ItemStack mis = CraftItemStack.asNMSCopy(item);
-        NBTTagCompound tag = mis.getTag();
-        if (tag != null) {
-            name = tag.getString(ITEM_DESCRIPTION);
-        }
     }
 
     /**
@@ -141,23 +157,17 @@ public class Loot implements Comparable {
         } else {
             this.name = name;
             if (name.isEmpty()) {
-                net.minecraft.server.v1_4_R1.ItemStack mis = CraftItemStack.asNMSCopy(item);
-                NBTTagCompound tag = mis.getTag();
-                if (tag == null) {
-                    if (item.hasItemMeta()) {
-                        ItemMeta meta = item.getItemMeta();
-                        if (meta.hasDisplayName()) {
-                            name = meta.getDisplayName();
-                        } else {
-                            return true;
-                        }
+                if (item.hasItemMeta()) {
+                    ItemMeta meta = item.getItemMeta();
+                    if (meta.hasDisplayName()) {
+                        name = meta.getDisplayName().replace('§', '&');
                     } else {
                         return true;
                     }
                 } else {
-                    this.name = name = tag.getString(ITEM_DESCRIPTION);
+                    return true;
                 }
-            } else if (name.equals("Random")) {
+            } else if (name.equalsIgnoreCase("Random")) {
                 String folder = item.getType() + item.getEnchantments().toString();
                 File dir = new File(PhatLoots.dataFolder
                         + "/Item Descriptions/" + folder);
@@ -165,7 +175,7 @@ public class Loot implements Comparable {
                     dir.mkdir();
                 }
                 return true;
-            } else if (name.equals("Auto")) {
+            } else if (name.equalsIgnoreCase("Auto")) {
                 return true;
             }
 
@@ -220,9 +230,8 @@ public class Loot implements Comparable {
         ItemStack clone = item.clone();
 
         if (autoEnchant) {
-            double roll;
-            int level;
-
+            String type;
+            Enchantment[] enchantments;
             switch (item.getType()) {
             case DIAMOND_HELMET:
             case DIAMOND_CHESTPLATE:
@@ -244,277 +253,55 @@ public class Loot implements Comparable {
             case LEATHER_CHESTPLATE:
             case LEATHER_LEGGINGS:
             case LEATHER_BOOTS:
-                roll = roll();
-                level = 0;
-                if (roll >= 80) {
-                    level++;
-                    if (roll >= 90) {
-                        level++;
-                        if (roll >= 95) {
-                            level++;
-                            if (roll >= 99) {
-                                level++;
-                            }
-                        }
-                    }
-                }
-                if (level > 0) {
-                    clone.addUnsafeEnchantment(Enchantment.PROTECTION_ENVIRONMENTAL, level);
-                }
-                roll = roll();
-                level = 0;
-                if (roll >= 80) {
-                    level++;
-                    if (roll >= 90) {
-                        level++;
-                        if (roll >= 95) {
-                            level++;
-                            if (roll >= 99) {
-                                level++;
-                            }
-                        }
-                    }
-                }
-                if (level > 0) {
-                    clone.addUnsafeEnchantment(Enchantment.PROTECTION_FIRE, level);
-                }
-                roll = roll();
-                level = 0;
-                if (roll >= 80) {
-                    level++;
-                    if (roll >= 90) {
-                        level++;
-                        if (roll >= 95) {
-                            level++;
-                            if (roll >= 99) {
-                                level++;
-                            }
-                        }
-                    }
-                }
-                if (level > 0) {
-                    clone.addUnsafeEnchantment(Enchantment.PROTECTION_EXPLOSIONS, level);
-                }
-                roll = roll();
-                level = 0;
-                if (roll >= 80) {
-                    level++;
-                    if (roll >= 90) {
-                        level++;
-                        if (roll >= 95) {
-                            level++;
-                            if (roll >= 99) {
-                                level++;
-                            }
-                        }
-                    }
-                }
-                if (level > 0) {
-                    clone.addUnsafeEnchantment(Enchantment.PROTECTION_PROJECTILE, level);
-                }
-                roll = roll();
-                level = 0;
-                if (roll >= 90) {
-                    level++;
-                    if (roll >= 95) {
-                        level++;
-                        if (roll >= 99) {
-                            level++;
-                        }
-                    }
-                }
-                if (level > 0) {
-                    clone.addUnsafeEnchantment(Enchantment.THORNS, level);
-                }
+                type = ARMOR;
+                enchantments = ARMOR_ENCHANTMENTS;
                 break;
 
             case DIAMOND_SWORD:
-            case DIAMOND_AXE:
             case IRON_SWORD:
-            case IRON_AXE:
             case GOLD_SWORD:
-            case GOLD_AXE:
             case STONE_SWORD:
-            case STONE_AXE:
             case WOOD_SWORD:
+                type = SWORD;
+                enchantments = SWORD_ENCHANTMENTS;
+                break;
+
+            case DIAMOND_AXE:
+            case IRON_AXE:
+            case GOLD_AXE:
+            case STONE_AXE:
             case WOOD_AXE:
-                roll = roll();
-                level = 0;
-                if (roll >= 80) {
-                    level++;
-                    if (roll >= 90) {
-                        level++;
-                        if (roll >= 94) {
-                            level++;
-                            if (roll >= 97) {
-                                level++;
-                                if (roll >= 99) {
-                                    level++;
-                                }
-                            }
-                        }
-                    }
-                }
-                if (level > 0) {
-                    clone.addUnsafeEnchantment(Enchantment.DAMAGE_ALL, level);
-                }
-                roll = roll();
-                level = 0;
-                if (roll >= 80) {
-                    level++;
-                    if (roll >= 90) {
-                        level++;
-                        if (roll >= 94) {
-                            level++;
-                            if (roll >= 97) {
-                                level++;
-                                if (roll >= 99) {
-                                    level++;
-                                }
-                            }
-                        }
-                    }
-                }
-                if (level > 0) {
-                    clone.addUnsafeEnchantment(Enchantment.DAMAGE_UNDEAD, level);
-                }
-                roll = roll();
-                level = 0;
-                if (roll >= 80) {
-                    level++;
-                    if (roll >= 90) {
-                        level++;
-                        if (roll >= 94) {
-                            level++;
-                            if (roll >= 97) {
-                                level++;
-                                if (roll >= 99) {
-                                    level++;
-                                }
-                            }
-                        }
-                    }
-                }
-                if (level > 0) {
-                    clone.addUnsafeEnchantment(Enchantment.DAMAGE_ARTHROPODS, level);
-                }
-                roll = roll();
-                level = 0;
-                if (roll >= 95) {
-                    level++;
-                    if (roll >= 99) {
-                        level++;
-                    }
-                }
-                if (level > 0) {
-                    clone.addUnsafeEnchantment(Enchantment.KNOCKBACK, level);
-                }
-                roll = roll();
-                level = 0;
-                if (roll >= 95) {
-                    level++;
-                    if (roll >= 99) {
-                        level++;
-                    }
-                }
-                if (level > 0) {
-                    clone.addUnsafeEnchantment(Enchantment.FIRE_ASPECT, level);
-                }
-                roll = roll();
-                level = 0;
-                if (roll >= 90) {
-                    level++;
-                    if (roll >= 95) {
-                        level++;
-                        if (roll >= 99) {
-                            level++;
-                        }
-                    }
-                }
-                if (level > 0) {
-                    clone.addUnsafeEnchantment(Enchantment.LOOT_BONUS_MOBS, level);
-                }
-                roll = roll();
-                level = 0;
-                if (roll >= 90) {
-                    level++;
-                    if (roll >= 95) {
-                        level++;
-                        if (roll >= 99) {
-                            level++;
-                        }
-                    }
-                }
-                if (level > 0) {
-                    clone.addUnsafeEnchantment(Enchantment.DURABILITY, level);
-                }
+                type = AXE;
+                enchantments = AXE_ENCHANTMENTS;
                 break;
 
             case BOW:
-                roll = roll();
-                level = 0;
-                if (roll >= 80) {
-                    level++;
-                    if (roll >= 90) {
-                        level++;
-                        if (roll >= 94) {
-                            level++;
-                            if (roll >= 97) {
-                                level++;
-                                if (roll >= 99) {
-                                    level++;
-                                }
-                            }
-                        }
-                    }
-                }
-                if (level > 0) {
-                    clone.addUnsafeEnchantment(Enchantment.ARROW_DAMAGE, level);
-                }
-                roll = roll();
-                level = 0;
-                if (roll >= 95) {
-                    level++;
-                    if (roll >= 99) {
-                        level++;
-                    }
-                }
-                if (level > 0) {
-                    clone.addUnsafeEnchantment(Enchantment.ARROW_KNOCKBACK, level);
-                }
-                roll = roll();
-                level = 0;
-                if (roll >= 99) {
-                    level++;
-                }
-                if (level > 0) {
-                    clone.addUnsafeEnchantment(Enchantment.ARROW_FIRE, level);
-                }
-                roll = roll();
-                level = 0;
-                if (roll >= 99) {
-                    level++;
-                }
-                if (level > 0) {
-                    clone.addUnsafeEnchantment(Enchantment.ARROW_INFINITE, level);
-                }
-                roll = roll();
-                level = 0;
-                if (roll >= 90) {
-                    level++;
-                    if (roll >= 95) {
-                        level++;
-                        if (roll >= 99) {
-                            level++;
-                        }
-                    }
-                }
-                if (level > 0) {
-                    clone.addUnsafeEnchantment(Enchantment.DURABILITY, level);
-                }
+                type = BOW;
+                enchantments = BOW_ENCHANTMENTS;
                 break;
 
-            default: break;
+            default:
+                type = "";
+                enchantments = new Enchantment[0];
+                break;
+            }
+
+            for (Enchantment enchantment : enchantments) {
+                ConfigurationSection config = enchantmentConfig.getConfigurationSection(type + '.' + enchantment);
+                double totalPercent = 0;
+                int level = 0;
+                double roll = roll();
+                for (String string : config.getKeys(false)) {
+                    totalPercent += config.getDouble(string);
+                    if (totalPercent > roll) {
+                        break;
+                    } else {
+                        level++;
+                    }
+                }
+                if (level > 0) {
+                    clone.addUnsafeEnchantment(enchantment, level);
+                }
             }
         }
 
@@ -558,9 +345,6 @@ public class Loot implements Comparable {
 
                 clone.setItemMeta(bookMeta);
             } else {
-                String className = null;
-                String set = null;
-
                 File file;
                 if (name.equals("Random")) {
                     String folder = clone.getType() + clone.getEnchantments().toString();
@@ -572,73 +356,9 @@ public class Loot implements Comparable {
                     //String fileName = file.getName();
                     //tag.setString(ITEM_DESCRIPTION, fileName.substring(0, fileName.length() - 4));
                 } else if (name.equals("Auto")) {
-                    int totalLevel = 0;
-                    for (Integer level : clone.getEnchantments().values()) {
-                        totalLevel += level;
-                    }
-                    totalLevel = totalLevel * 5;
-
-                    Material mat = item.getType();
-                    switch (mat) {
-                    case DIAMOND_SWORD:
-                    case DIAMOND_AXE:
-                    case DIAMOND_HELMET:
-                    case DIAMOND_CHESTPLATE:
-                    case DIAMOND_LEGGINGS:
-                    case DIAMOND_BOOTS:
-                        totalLevel += 30;
-                        break;
-
-                    case IRON_SWORD:
-                    case IRON_AXE:
-                    case IRON_HELMET:
-                    case IRON_CHESTPLATE:
-                    case IRON_LEGGINGS:
-                    case IRON_BOOTS:
-                        totalLevel += 20;
-                        break;
-
-                    case GOLD_SWORD:
-                    case GOLD_AXE:
-                    case GOLD_HELMET:
-                    case GOLD_CHESTPLATE:
-                    case GOLD_LEGGINGS:
-                    case GOLD_BOOTS:
-                        totalLevel += 20;
-                        break;
-
-                    case STONE_SWORD:
-                    case STONE_AXE:
-                    case CHAINMAIL_HELMET:
-                    case CHAINMAIL_CHESTPLATE:
-                    case CHAINMAIL_LEGGINGS:
-                    case CHAINMAIL_BOOTS:
-                        totalLevel += 10;
-                        break;
-
-                    case BOW:
-                        totalLevel = totalLevel * 3;
-                        break;
-
-                    default: break;
-                    }
-
-                    String material = WordUtils.capitalizeFully(mat.toString().replace("_", " "));
-                    meta.setDisplayName(getTieredName(material, totalLevel));
-
-                    if (totalLevel > tierNotify) {
-                        PhatLoots.logger.info(meta.getDisplayName() + "(Tier " + totalLevel + ") has been generated");
-                    }
-
+                    meta.setDisplayName(getTieredName(clone));
                     clone.setItemMeta(meta);
-                    net.minecraft.server.v1_4_R1.ItemStack mis = CraftItemStack.asNMSCopy(clone);
-                    NBTTagCompound tag = mis.getTag();
-                    if (tag == null) {
-                        tag = new NBTTagCompound();
-                    }
-
-                    mis.setTag(tag);
-                    return CraftItemStack.asCraftMirror(mis);
+                    return clone;
                 } else {
                     file = new File(PhatLoots.dataFolder
                             + "/Item Descriptions/" + name + ".txt");
@@ -654,7 +374,7 @@ public class Loot implements Comparable {
                         if (line != null) {
                             //Add color to the Name line
                             if (line.charAt(0) == '&') {
-                                line = line.replace('&', '\u00a7');
+                                line = line.replace('&', '§');
                             }
 
                             //Set the Name of the Item
@@ -665,13 +385,6 @@ public class Loot implements Comparable {
                             while ((line = bReader.readLine()) != null) {
                                 line = line.replace('&', '§');
                                 lore.add(line);
-
-                                //Check if part of a Class or Set
-                                if (line.matches("§[0-9a-flno][0-9a-zA-Z]+ Class")) { //Color ClassNameOfLettersAndNumbersOfAnyLength Class
-                                    className = line.substring(2, line.length() - 6);
-                                } else if (line.matches("§[0-9a-flno][0-9a-zA-Z]+ Set")) { //Color SetNameOfLettersAndNumbersOfAnyLength Set
-                                    set = line.substring(2, line.length() - 4);
-                                }
                             }
                             meta.setLore(lore);
                         }
@@ -689,24 +402,6 @@ public class Loot implements Comparable {
                 }
 
                 clone.setItemMeta(meta);
-
-                net.minecraft.server.v1_4_R1.ItemStack mis = CraftItemStack.asNMSCopy(clone);
-                NBTTagCompound tag = mis.getTag();
-                if (tag == null) {
-                    tag = new NBTTagCompound();
-                }
-
-                tag.setString(ITEM_DESCRIPTION, name);
-                if (className != null && !className.isEmpty()) {
-                    tag.setString(CLASS, className);
-                }
-                if (set != null && !set.isEmpty()) {
-                    tag.setString(SET, set);
-                }
-
-                mis.setTag(tag);
-
-                clone = CraftItemStack.asCraftMirror(mis);
             }
         }
 
@@ -722,35 +417,272 @@ public class Loot implements Comparable {
         return probability;
     }
 
-    private String getTieredName(String material, int level) {
-        if (level >= 5) {
-            if (level >= 20) {
-                if (level >= 30) {
-                    if (level >= 50) {
-                        if (level >= 65) {
-                            if (level >= 80) {
-                                if (level >= 100) {
-                                    if (level >= 150) {
-                                        if (level >= 200) {
-                                            return "§5" + material + " (Legendary)";
-                                        }
-                                        return "§4" + material + " (Mythic)";
-                                    }
-                                    return "§2" + material + " (Epic)";
-                                }
-                                return "§1" + material + " (Ultra Rare)";
-                            }
-                            return "§9" + material + " (Super Rare)";
-                        }
-                        return "§3" + material + " (Very Rare)";
-                    }
-                    return "§b" + material + " (Rare)";
-                }
-                return "§f" + material + " (Uncommon)";
+    private String getTieredName(ItemStack item) {
+        Material mat = item.getType();
+        StringBuilder nameBuiler = new StringBuilder();
+        nameBuiler.append(WordUtils.capitalizeFully(mat.toString().replace('_', ' ')));
+        Map<Enchantment, Integer> enchantments = item.getEnchantments();
+
+        String type;
+        Enchantment enchantment;
+        int level;
+        String lore;
+        switch (mat) {
+        case DIAMOND_HELMET:
+        case DIAMOND_CHESTPLATE:
+        case DIAMOND_LEGGINGS:
+        case DIAMOND_BOOTS:
+        case IRON_HELMET:
+        case IRON_CHESTPLATE:
+        case IRON_LEGGINGS:
+        case IRON_BOOTS:
+        case GOLD_HELMET:
+        case GOLD_CHESTPLATE:
+        case GOLD_LEGGINGS:
+        case GOLD_BOOTS:
+        case CHAINMAIL_HELMET:
+        case CHAINMAIL_CHESTPLATE:
+        case CHAINMAIL_LEGGINGS:
+        case CHAINMAIL_BOOTS:
+        case LEATHER_HELMET:
+        case LEATHER_CHESTPLATE:
+        case LEATHER_LEGGINGS:
+        case LEATHER_BOOTS:
+            type = ARMOR;
+            enchantment = Enchantment.PROTECTION_FIRE;
+            level = getLevel(enchantments, enchantment);
+            lore = loreConfig.getString(type + '.' + enchantment.getName() + '.' + level);
+            if (lore != null) {
+                nameBuiler.insert(0, ' ');
+                nameBuiler.insert(0, lore);
             }
-            return "§7" + material + " (Common)";
+            enchantment = enchantments.containsKey(Enchantment.THORNS)
+                          ? Enchantment.THORNS
+                          : Enchantment.DURABILITY;
+            level = getLevel(enchantments, enchantment);
+            lore = loreConfig.getString(type + '.' + enchantment.getName() + '.' + level);
+            if (lore != null) {
+                nameBuiler.insert(0, ' ');
+                nameBuiler.insert(0, lore);
+            }
+            enchantment = getTrump(enchantments, Enchantment.PROTECTION_ENVIRONMENTAL, Enchantment.PROTECTION_PROJECTILE, Enchantment.PROTECTION_EXPLOSIONS);
+            level = getLevel(enchantments, enchantment);
+            lore = loreConfig.getString(type + '.' + enchantment.getName() + '.' + level);
+            if (lore != null) {
+                nameBuiler.append(' ');
+                nameBuiler.append(lore);
+            }
+            break;
+
+        case DIAMOND_SWORD:
+        case IRON_SWORD:
+        case GOLD_SWORD:
+        case STONE_SWORD:
+        case WOOD_SWORD:
+            type = SWORD;
+            enchantment = getTrump(enchantments, Enchantment.DAMAGE_ARTHROPODS, Enchantment.DAMAGE_ALL);
+            level = getLevel(enchantments, enchantment);
+            lore = loreConfig.getString(type + '.' + enchantment.getName() + '.' + level);
+            if (lore != null) {
+                nameBuiler.replace(nameBuiler.length() - 5, nameBuiler.length(), lore);
+            }
+            enchantment = enchantments.containsKey(Enchantment.FIRE_ASPECT)
+                          ? Enchantment.FIRE_ASPECT
+                          : Enchantment.DURABILITY;
+            level = getLevel(enchantments, enchantment);
+            lore = loreConfig.getString(type + '.' + enchantment.getName() + '.' + level);
+            if (lore != null) {
+                nameBuiler.insert(0, ' ');
+                nameBuiler.insert(0, lore);
+            }
+            enchantment = Enchantment.LOOT_BONUS_MOBS;
+            level = getLevel(enchantments, enchantment);
+            lore = loreConfig.getString(type + '.' + enchantment.getName() + '.' + level);
+            if (lore != null) {
+                nameBuiler.append(' ');
+                nameBuiler.append(lore);
+            }
+            enchantment = getTrump(enchantments, Enchantment.KNOCKBACK, Enchantment.DAMAGE_UNDEAD);
+            level = getLevel(enchantments, enchantment);
+            lore = loreConfig.getString(type + '.' + enchantment.getName() + '.' + level);
+            if (lore != null) {
+                nameBuiler.append(' ');
+                nameBuiler.append(lore);
+            }
+            break;
+
+        case DIAMOND_AXE:
+        case IRON_AXE:
+        case GOLD_AXE:
+        case STONE_AXE:
+        case WOOD_AXE:
+            type = AXE;
+            enchantment = getTrump(enchantments, Enchantment.DAMAGE_ARTHROPODS, Enchantment.DAMAGE_ALL);
+            level = getLevel(enchantments, enchantment);
+            lore = loreConfig.getString(type + '.' + enchantment.getName() + '.' + level);
+            if (lore != null) {
+                nameBuiler.replace(nameBuiler.length() - 5, nameBuiler.length(), lore);
+            }
+            enchantment = enchantments.containsKey(Enchantment.FIRE_ASPECT)
+                          ? Enchantment.FIRE_ASPECT
+                          : Enchantment.DURABILITY;
+            level = getLevel(enchantments, enchantment);
+            lore = loreConfig.getString(type + '.' + enchantment.getName() + '.' + level);
+            if (lore != null) {
+                nameBuiler.insert(0, ' ');
+                nameBuiler.insert(0, lore);
+            }
+            enchantment = Enchantment.LOOT_BONUS_MOBS;
+            level = getLevel(enchantments, enchantment);
+            lore = loreConfig.getString(type + '.' + enchantment.getName() + '.' + level);
+            if (lore != null) {
+                nameBuiler.append(' ');
+                nameBuiler.append(lore);
+            }
+            enchantment = getTrump(enchantments, Enchantment.KNOCKBACK, Enchantment.DAMAGE_UNDEAD);
+            level = getLevel(enchantments, enchantment);
+            lore = loreConfig.getString(type + '.' + enchantment.getName() + '.' + level);
+            if (lore != null) {
+                nameBuiler.append(' ');
+                nameBuiler.append(lore);
+            }
+            break;
+
+        case BOW:
+            type = BOW;
+            enchantment = Enchantment.ARROW_DAMAGE;
+            level = getLevel(enchantments, enchantment);
+            lore = loreConfig.getString(type + '.' + enchantment.getName() + '.' + level);
+            if (lore != null) {
+                nameBuiler.replace(0, name.length(), lore);
+            }
+            enchantment = Enchantment.DURABILITY;
+            level = getLevel(enchantments, enchantment);
+            lore = loreConfig.getString(type + '.' + enchantment.getName() + '.' + level);
+            if (lore != null) {
+                nameBuiler.insert(0, ' ');
+                nameBuiler.insert(0, lore);
+            }
+            enchantment = Enchantment.ARROW_FIRE;
+            level = getLevel(enchantments, enchantment);
+            lore = loreConfig.getString(type + '.' + enchantment.getName() + '.' + level);
+            if (lore != null) {
+                nameBuiler.insert(0, ' ');
+                nameBuiler.insert(0, lore);
+            }
+            enchantment = Enchantment.ARROW_INFINITE;
+            level = getLevel(enchantments, enchantment);
+            lore = loreConfig.getString(type + '.' + enchantment.getName() + '.' + level);
+            if (lore != null) {
+                nameBuiler.append(' ');
+                nameBuiler.append(lore);
+            }
+            enchantment = Enchantment.ARROW_KNOCKBACK;
+            level = getLevel(enchantments, enchantment);
+            lore = loreConfig.getString(type + '.' + enchantment.getName() + '.' + level);
+            if (lore != null) {
+                nameBuiler.append(' ');
+                nameBuiler.append(lore);
+            }
+            break;
+
+        default: break;
         }
-        return "§8" + material + " (Poor)";
+
+        int tier = 0;
+        for (Integer i : enchantments.values()) {
+            tier += i;
+        }
+        tier = tier * 5;
+
+        switch (mat) {
+        case DIAMOND_SWORD:
+        case DIAMOND_AXE:
+        case DIAMOND_HELMET:
+        case DIAMOND_CHESTPLATE:
+        case DIAMOND_LEGGINGS:
+        case DIAMOND_BOOTS:
+            tier += 30;
+            break;
+
+        case IRON_SWORD:
+        case IRON_AXE:
+        case IRON_HELMET:
+        case IRON_CHESTPLATE:
+        case IRON_LEGGINGS:
+        case IRON_BOOTS:
+            tier += 20;
+            break;
+
+        case GOLD_SWORD:
+        case GOLD_AXE:
+        case GOLD_HELMET:
+        case GOLD_CHESTPLATE:
+        case GOLD_LEGGINGS:
+        case GOLD_BOOTS:
+            tier += 20;
+            break;
+
+        case STONE_SWORD:
+        case STONE_AXE:
+        case CHAINMAIL_HELMET:
+        case CHAINMAIL_CHESTPLATE:
+        case CHAINMAIL_LEGGINGS:
+        case CHAINMAIL_BOOTS:
+            tier += 10;
+            break;
+
+        case BOW:
+            tier = tier * 3;
+            break;
+
+        default: break;
+        }
+
+        String name = nameBuiler.toString();
+
+        if (tier >= 5) {
+            if (tier >= 20) {
+                if (tier >= 30) {
+                    if (tier >= 50) {
+                        if (tier >= 65) {
+                            if (tier >= 80) {
+                                if (tier >= 100) {
+                                    if (tier >= 150) {
+                                        if (tier >= 200) {
+                                            name = "§5" + name + " (Legendary)";
+                                        } else {
+                                            name = "§4" + name + " (Mythic)";
+                                        }
+                                    } else {
+                                        name = "§2" + name + " (Epic)";
+                                    }
+                                } else {
+                                    name = "§1" + name + " (Ultra Rare)";
+                                }
+                            } else {
+                                name = "§9" + name + " (Super Rare)";
+                            }
+                        } else {
+                            name = "§3" + name + " (Very Rare)";
+                        }
+                    } else {
+                        name = "§b" + name + " (Rare)";
+                    }
+                } else {
+                    name = "§f" + name + " (Uncommon)";
+                }
+            } else {
+                name = "§7" + name + " (Common)";
+            }
+        } else {
+            name = "§8" + name + " (Poor)";
+        }
+
+        if (tier > tierNotify) {
+            PhatLoots.logger.info(name + " [Tier " + tier + "] has been generated");
+        }
+        return name;
     }
 
     /**
@@ -905,5 +837,25 @@ public class Loot implements Comparable {
             }
         }
         return -1;
+    }
+
+    private Enchantment getTrump(Map<Enchantment, Integer> enchantments, Enchantment... enchants) {
+        int highestLevel = -1;
+        Enchantment trump = null;
+        for (Enchantment enchant : enchants) {
+            int level = getLevel(enchantments, enchant);
+            if (level > highestLevel) {
+                trump = enchant;
+                highestLevel = level;
+            }
+        }
+        return trump;
+    }
+
+    private int getLevel(Map<Enchantment, Integer> enchantments, Enchantment enchantment) {
+        Integer level = enchantments.get(enchantment);
+        return level == null
+               ? 0
+               : level;
     }
 }

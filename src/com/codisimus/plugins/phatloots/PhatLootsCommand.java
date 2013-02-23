@@ -371,7 +371,7 @@ public class PhatLootsCommand implements CommandExecutor {
                     break;
 
                 case 'e':
-                    if (s.equals("auto")) {
+                    if (s.equalsIgnoreCase("auto")) {
                         autoEnchant = true;
                     } else {
                         Map<Enchantment, Integer> enchantments = getEnchantments(s);

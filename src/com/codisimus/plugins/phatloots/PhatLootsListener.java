@@ -3,7 +3,6 @@ package com.codisimus.plugins.phatloots;
 import com.codisimus.plugins.regionown.Region;
 import com.codisimus.plugins.regionown.RegionOwn;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedList;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -263,7 +262,10 @@ public class PhatLootsListener implements Listener {
             }
         }
 
-        PhatLoot phatLoot = PhatLoots.getPhatLoot(name);
+        PhatLoot phatLoot = PhatLoots.getPhatLoot(name + '@' + location.getWorld().getName());
+        if (phatLoot == null) {
+            phatLoot = PhatLoots.getPhatLoot(name);
+        }
         if (phatLoot != null) {
             event.setDroppedExp(phatLoot.rollForLoot(entity.getKiller(), event.getDrops()));
         }
@@ -289,7 +291,10 @@ public class PhatLootsListener implements Listener {
             }
         }
 
-        PhatLoot phatLoot = PhatLoots.getPhatLoot(name);
+        PhatLoot phatLoot = PhatLoots.getPhatLoot(name + '@' + location.getWorld().getName());
+        if (phatLoot == null) {
+            phatLoot = PhatLoots.getPhatLoot(name);
+        }
         if (phatLoot != null) {
             phatLoot.rollForLoot(event.getEntity());
         }
