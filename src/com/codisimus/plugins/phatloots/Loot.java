@@ -12,6 +12,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BookMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
+import org.bukkit.inventory.meta.SkullMeta;
 
 /**
  * A Loot is a ItemStack and with a probability of looting
@@ -745,7 +746,7 @@ public class Loot implements Comparable {
     /**
      * Returns the String representation of this Loot in the following format
      * [ ] indicates an optional additional field
-     * [(DyedColor)]MaterialID[+Name]'Durability[+Enchantment1(level)&Enchantment2(level)...]'Amount[-Amount]'Probability
+     * [(DyedColor|SkullOwner)]MaterialID[+Name]'Durability[+Enchantment1(level)&Enchantment2(level)...]'Amount[-Amount]'Probability
      *
      * @return The String representation of this Loot
      */
@@ -756,6 +757,10 @@ public class Loot implements Comparable {
         if (id >= 298 && id <= 301) {
             if (item.hasItemMeta()) {
                 string = "(" + ((LeatherArmorMeta) item.getItemMeta()).getColor().asRGB() + ")" + string; //:DyedColor
+            }
+        } else if (id == 144) {
+            if (item.hasItemMeta()) {
+                string = "(" + ((SkullMeta) item.getItemMeta()).getOwner() + ")" + string; //:SkullOwner
             }
         }
 
@@ -822,9 +827,15 @@ public class Loot implements Comparable {
         return hash;
     }
 
-    void setColor(Color color) {
+    public void setColor(Color color) {
         LeatherArmorMeta meta = (LeatherArmorMeta) item.getItemMeta();
         meta.setColor(color);
+        item.setItemMeta(meta);
+    }
+
+    public void setSkullOwner(String owner) {
+        SkullMeta meta = (SkullMeta) item.getItemMeta();
+        meta.setOwner(owner);
         item.setItemMeta(meta);
     }
 

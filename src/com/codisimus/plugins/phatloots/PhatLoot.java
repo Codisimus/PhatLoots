@@ -13,6 +13,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.SkullMeta;
 
 /**
  * A PhatLoot is a reward made up of money and items
@@ -450,9 +451,15 @@ public class PhatLoot {
                 int itemID;
                 //Check for Dyed Color
                 Color color = null;
+                String skullOwner = null;
                 if (item.startsWith("(")) {
                     int index = item.indexOf(')');
-                    color = Color.fromRGB(Integer.parseInt(item.substring(1, index)));
+                    String string = item.substring(1, index);
+                    if (string.matches("[0-9]+")) {
+                        color = Color.fromRGB(Integer.parseInt(item.substring(1, index)));
+                    } else {
+                        skullOwner = item.substring(1, index);
+                    }
                     item = item.substring(index + 1);
                 }
                 //Check for Name of Item Description
@@ -491,6 +498,8 @@ public class PhatLoot {
                 Loot loot = new Loot(itemID, lower, upper);
                 if (color != null) {
                     loot.setColor(color);
+                } else if (skullOwner != null) {
+                    loot.setSkullOwner(skullOwner);
                 }
                 loot.setProbability(Double.parseDouble(lootData[3]));
 
