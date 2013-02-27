@@ -7,6 +7,7 @@ import org.bukkit.Color;
 import org.bukkit.Material;
 import org.bukkit.configuration.Configuration;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BookMeta;
@@ -55,8 +56,8 @@ public class Loot implements Comparable {
     private double probability;
     protected String name;
     protected boolean autoEnchant;
-    static Configuration loreConfig;
-    static Configuration enchantmentConfig;
+    static FileConfiguration loreConfig;
+    static FileConfiguration enchantmentConfig;
 
     /**
      * Constructs a new Loot with the given Item data and probability
@@ -288,20 +289,22 @@ public class Loot implements Comparable {
             }
 
             for (Enchantment enchantment : enchantments) {
-                ConfigurationSection config = enchantmentConfig.getConfigurationSection(type + '.' + enchantment);
-                double totalPercent = 0;
-                int level = 0;
-                double roll = roll();
-                for (String string : config.getKeys(false)) {
-                    totalPercent += config.getDouble(string);
-                    if (totalPercent > roll) {
-                        break;
-                    } else {
-                        level++;
+                if (enchantmentConfig.contains(type + '.' + enchantment)) {
+                    ConfigurationSection config = enchantmentConfig.getConfigurationSection(type + '.' + enchantment);
+                    double totalPercent = 0;
+                    int level = 0;
+                    double roll = roll();
+                    for (String string : config.getKeys(false)) {
+                        totalPercent += config.getDouble(string);
+                        if (totalPercent > roll) {
+                            break;
+                        } else {
+                            level++;
+                        }
                     }
-                }
-                if (level > 0) {
-                    clone.addUnsafeEnchantment(enchantment, level);
+                    if (level > 0) {
+                        clone.addUnsafeEnchantment(enchantment, level);
+                    }
                 }
             }
         }
@@ -845,6 +848,12 @@ public class Loot implements Comparable {
             Loot loot = (Loot) object;
             if (loot.probability < probability) {
                 return 1;
+            } else if (loot.probability > probability) {
+                return -1;
+            } else {
+                if (this.equals(loot)) {
+                    return 0;
+                }
             }
         }
         return -1;

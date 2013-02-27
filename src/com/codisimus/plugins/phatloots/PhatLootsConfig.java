@@ -2,13 +2,9 @@ package com.codisimus.plugins.phatloots;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.Properties;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.bukkit.configuration.InvalidConfigurationException;
+import org.bukkit.configuration.file.YamlConfiguration;
 
 /**
  * Loads Plugin and manages Data/Permissions
@@ -24,9 +20,8 @@ public class PhatLootsConfig {
             if (!file.exists()) {
                 PhatLoots.plugin.saveResource("lores.yml", true);
             }
-            PhatLoots.plugin.getConfig().load(file);
 
-            Loot.loreConfig = PhatLoots.plugin.getConfig();
+            Loot.loreConfig = YamlConfiguration.loadConfiguration(file);
         } catch (Exception ex) {
             PhatLoots.logger.severe("Failed to load lores.yml");
         }
@@ -36,9 +31,8 @@ public class PhatLootsConfig {
             if (!file.exists()) {
                 PhatLoots.plugin.saveResource("enchantments.yml", true);
             }
-            PhatLoots.plugin.getConfig().load(file);
 
-            Loot.enchantmentConfig = PhatLoots.plugin.getConfig();
+            Loot.enchantmentConfig = YamlConfiguration.loadConfiguration(file);
         } catch (Exception ex) {
             PhatLoots.logger.severe("Failed to load enchantments.yml");
         }
