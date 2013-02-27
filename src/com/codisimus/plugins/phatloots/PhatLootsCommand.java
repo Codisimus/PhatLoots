@@ -672,7 +672,7 @@ public class PhatLootsCommand implements CommandExecutor {
         PhatLoot phatLoot = PhatLoots.getPhatLoot(name);
 
         phatLoot.addChest(block);
-        sender.sendMessage("§5Target " + blockName + " has been linked to PhatLoot §5" + name);
+        sender.sendMessage("§5Target " + blockName + " has been linked to PhatLoot §6" + name);
         phatLoot.save();
     }
 
@@ -868,6 +868,9 @@ public class PhatLootsCommand implements CommandExecutor {
                        ? "§6"
                        : "a range from §6" + lower + "§5 to §6")
                     + upper);
+            if (PhatLoots.econ == null) {
+            	sender.sendMessage("§4Vault is not enabled! Players will receive error on loot.");
+            }
             phatLoot.save();
         }
     }

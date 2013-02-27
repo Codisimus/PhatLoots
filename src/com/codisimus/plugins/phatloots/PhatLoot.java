@@ -1,6 +1,9 @@
 package com.codisimus.plugins.phatloots;
 
 import java.util.*;
+
+import net.milkbowl.vault.economy.EconomyResponse;
+
 import org.bukkit.Color;
 import org.bukkit.GameMode;
 import org.bukkit.block.Block;
@@ -102,9 +105,16 @@ public class PhatLoot {
 
             //Give money to the Player if there is money to give
             if (amount > 0) {
-                String money = Econ.reward(player.getName(), amount);
-                player.sendMessage(PhatLootsMessages.moneyLooted
-                        .replace("<amount>", money));
+            	if (PhatLoots.econ != null) {
+            		EconomyResponse r = PhatLoots.econ.depositPlayer(player.getName(), amount);
+            		if (r.transactionSuccess()) {
+            			String money = PhatLoots.econ.format(amount).replace(".00", "");
+            			player.sendMessage(PhatLootsMessages.moneyLooted
+                                .replace("<amount>", money));
+            		}
+            	} else {
+            		player.sendMessage("§4Vault is not enabled, so no money can be processed.");
+            	}
             }
         }
 
@@ -117,7 +127,7 @@ public class PhatLoot {
             if (amount > 0) {
                 player.giveExp(amount);
                 player.sendMessage(PhatLootsMessages.experienceLooted
-                        .replace("<amount>", String.valueOf(amount)));
+                		.replace("<amount>", String.valueOf(amount)));
             }
         }
 
@@ -174,8 +184,15 @@ public class PhatLoot {
             //Give money to the Player if there is money to give
             if (amount > 0 && !player.getGameMode().equals(GameMode.CREATIVE)
                     && player.hasPermission("phatloots.moneyfrommobs")) {
-                String money = Econ.reward(player.getName(), amount);
-                player.sendMessage(PhatLootsMessages.mobDroppedMoney.replace("<amount>", money));
+            	if (PhatLoots.econ != null) {
+            		EconomyResponse r = PhatLoots.econ.depositPlayer(player.getName(), amount);
+            		if (r.transactionSuccess()) {
+            			String money = PhatLoots.econ.format(amount).replace(".00", "");
+            			player.sendMessage(PhatLootsMessages.mobDroppedMoney.replace("<amount>", money));
+            		}
+            	} else {
+            		player.sendMessage("§4Vault is not enabled, so no money can be processed.");
+            	}
             }
         }
 

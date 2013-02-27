@@ -5,8 +5,7 @@ author: Codisimus
 website: www.codisimus.com
 description: Chests with randomly generated money/items
 load: postworld
-depend: [Vault]
-softdepend: [EpicBossRecoded]
+softdepend: [EpicBossRecoded, Vault]
 commands:
   loot:
     description: Used to setup PhatLoot Chests and rewards
@@ -20,6 +19,8 @@ permissions:
     description: Needed to receive loots through command
   phatloots.make:
     description: Needed to make a PhatLoot (/loot make, /loot delete, /loot link, /loot unlink, /loot description, /loot add, /loot remove, /loot money, /loot time, /loot type)
+  phatloots.rl:
+    description: Needed to reload PhatLoots (/loot rl)
   phatloots.reset:
     description: Needed to reset the list of users who looted PhatLoots (/loot reset)
   phatloots.list:

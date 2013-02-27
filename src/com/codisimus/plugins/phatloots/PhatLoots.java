@@ -28,6 +28,7 @@ public class PhatLoots extends JavaPlugin {
     static Logger logger;
     static PluginManager pm;
     static Random random = new Random();
+    static Economy econ = null;
     static int defaultDays;
     static int defaultHours;
     static int defaultMinutes;
@@ -67,13 +68,6 @@ public class PhatLoots extends JavaPlugin {
         pm = server.getPluginManager();
         plugin = this;
 
-        /* Disable this plugin if Vault is not present */
-        if (!pm.isPluginEnabled("Vault")) {
-            logger.severe("Please install Vault in order to use this plugin!");
-            pm.disablePlugin(this);
-            return;
-        }
-
         /* Create data folders */
         File dir = this.getDataFolder();
         if (!dir.isDirectory()) {
@@ -102,11 +96,7 @@ public class PhatLoots extends JavaPlugin {
         PhatLootsConfig.load();
 
         /* Link Economy */
-        RegisteredServiceProvider<Economy> economyProvider =
-                getServer().getServicesManager().getRegistration(Economy.class);
-        if (economyProvider != null) {
-            Econ.economy = economyProvider.getProvider();
-        }
+        setupEconomy();
 
         /* Register Events */
         pm.registerEvents(new PhatLootsListener(), this);
@@ -461,6 +451,23 @@ public class PhatLoots extends JavaPlugin {
         }
 
         return phatLootList;
+    }
+    
+    /**
+     * Checks for and registers Vault as economy service provider.
+     * 
+     * @return Not null if successful
+     */
+    private boolean setupEconomy() {
+        if (getServer().getPluginManager().getPlugin("Vault") == null) {
+            return false;
+        }
+        RegisteredServiceProvider<Economy> rsp = getServer().getServicesManager().getRegistration(Economy.class);
+        if (rsp == null) {
+            return false;
+        }
+        econ = rsp.getProvider();
+        return econ != null;
     }
 
     /**

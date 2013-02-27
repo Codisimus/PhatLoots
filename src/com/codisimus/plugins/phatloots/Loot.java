@@ -120,7 +120,7 @@ public class Loot {
             FileOutputStream fos = null;
             try {
                 fos = new FileOutputStream(PhatLoots.dataFolder
-                        + "/Books/" + title + ".properties");
+                        + File.separator + "Books" + File.separator + title + ".properties");
                 book.store(fos, null);
                 fos.close();
             } catch (Exception saveFailed) {
@@ -148,14 +148,14 @@ public class Loot {
             } else if (name.equals("Random")) {
                 String folder = item.getType() + item.getEnchantments().toString();
                 File dir = new File(PhatLoots.dataFolder
-                        + "/Item Descriptions/" + folder);
+                        + File.separator + "Item Descriptions" + File.separator + folder);
                 if (!dir.isDirectory()) {
                     dir.mkdir();
                 }
                 return true;
             }
 
-            File file = new File(PhatLoots.dataFolder + "/Item Descriptions/" + name + ".txt");
+            File file = new File(PhatLoots.dataFolder + File.separator + "Item Descriptions" + File.separator + name + ".txt");
             if (file.exists()) {
                 return true;
             }
@@ -213,10 +213,10 @@ public class Loot {
                 FileInputStream fis = null;
                 try {
                     fis = new FileInputStream(PhatLoots.dataFolder
-                            + "/Books/" + name + ".properties");
+                            + File.separator + "Books" + File.separator + name + ".properties");
                     book.load(fis);
                 } catch (Exception loadFailed) {
-                    PhatLoots.logger.severe("Failed to load Book" + name);
+                    PhatLoots.logger.severe("Failed to load Book " + name);
                     loadFailed.printStackTrace();
                 } finally {
                     try {
@@ -244,7 +244,7 @@ public class Loot {
                 if (name.equals("Random")) {
                     String folder = clone.getType() + clone.getEnchantments().toString();
                     File dir = new File(PhatLoots.dataFolder
-                            + "/Item Descriptions/" + folder);
+                            + File.separator + "Item Descriptions" + File.separator + folder);
                     File[] files = dir.listFiles();
                     Random random = new Random();
                     file = files[random.nextInt(files.length)];
@@ -252,7 +252,7 @@ public class Loot {
                     //tag.setString(ITEM_DESCRIPTION, fileName.substring(0, fileName.length() - 4));
                 } else {
                     file = new File(PhatLoots.dataFolder
-                            + "/Item Descriptions/" + name + ".txt");
+                            + File.separator + "Item Descriptions" + File.separator + name + ".txt");
                 }
                 if (file.exists()) {
                     FileReader fReader = null;
