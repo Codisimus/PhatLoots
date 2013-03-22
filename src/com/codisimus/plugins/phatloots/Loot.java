@@ -106,14 +106,14 @@ public class Loot implements Comparable, ConfigurationSerializable {
     }
 
     public Loot(Map<String, Object> map) {
-        this.item = ((ItemStack) map.get("ItemStack"));
-        this.amountBonus = ((Integer) map.get("BonusAmount")).intValue();
-        this.durabilityBonus = ((Integer) map.get("BonusDurability")).intValue();
-        this.probability = ((Double) map.get("Probability")).doubleValue();
-        this.autoEnchant = ((Boolean) map.get("AutoEnchant")).booleanValue();
-        this.generateName = ((Boolean) map.get("GenerateName")).booleanValue();
-        this.randomLore = ((Boolean) map.get("RandomLore")).booleanValue();
-        this.tieredName = ((Boolean) map.get("Tiered")).booleanValue();
+        this.item = (ItemStack) map.get("ItemStack");
+        this.amountBonus = (Integer) map.get("BonusAmount");
+        this.durabilityBonus = (Integer) map.get("BonusDurability");
+        this.probability = (Double) map.get("Probability");
+        this.autoEnchant = (Boolean) map.get("AutoEnchant");
+        this.generateName = (Boolean) map.get("GenerateName");
+        this.randomLore = (Boolean) map.get("RandomLore");
+        this.tieredName = (Boolean) map.get("Tiered");
     }
 
     /**
@@ -308,52 +308,100 @@ public class Loot implements Comparable, ConfigurationSerializable {
 
             if (meta.hasLore()) {
                 ListIterator itr = meta.getLore().listIterator();
-                while (itr.hasNext()) {
-                    String string = (String) itr.next();
-                    if (string.equals("<dam>")) {
-                        if (clone.containsEnchantment(Enchantment.DAMAGE_ALL)) {
-                            int baseLow = getBaseDamage(clone.getType());
-                            int baseHigh = (int) (baseLow * 1.5D) + 2;
-                            int lvl = ((Integer) clone.getEnchantments().get(Enchantment.DAMAGE_ALL)).intValue();
-                            int low = baseLow + lvl;
-                            int high = baseHigh + 3 * lvl;
-                            itr.set(damageString.replace("<amount>", low + "-" + high));
-                        } else {
-                            itr.remove();
+                switch (item.getType()) {
+                case DIAMOND_HELMET:
+                case DIAMOND_CHESTPLATE:
+                case DIAMOND_LEGGINGS:
+                case DIAMOND_BOOTS:
+                case IRON_HELMET:
+                case IRON_CHESTPLATE:
+                case IRON_LEGGINGS:
+                case IRON_BOOTS:
+                case GOLD_HELMET:
+                case GOLD_CHESTPLATE:
+                case GOLD_LEGGINGS:
+                case GOLD_BOOTS:
+                case CHAINMAIL_HELMET:
+                case CHAINMAIL_CHESTPLATE:
+                case CHAINMAIL_LEGGINGS:
+                case CHAINMAIL_BOOTS:
+                case LEATHER_HELMET:
+                case LEATHER_CHESTPLATE:
+                case LEATHER_LEGGINGS:
+                case LEATHER_BOOTS:
+                    break;
+
+                case BOW:
+                    while (itr.hasNext()) {
+                        String string = (String) itr.next();
+                        if (string.equals(DAMAGE)) {
+                            if (clone.containsEnchantment(Enchantment.DAMAGE_ALL)) {
+                                int baseLow = 1;
+                                int baseHigh = 10;
+                                int lvl = clone.getEnchantments().get(Enchantment.ARROW_DAMAGE);
+                                double bonus = lvl == 0
+                                               ? 0
+                                               : 0.25;
+                                bonus += (0.25 * lvl);
+                                int low = baseLow + (int) (baseLow * bonus);
+                                int high = baseHigh + (int) (baseHigh * bonus);
+                                itr.set(damageString.replace("<amount>", low + "-" + high));
+                            } else {
+                                itr.remove();
+                            }
+                        } else if (string.equals(FIRE)) {
+                            if (clone.containsEnchantment(Enchantment.ARROW_FIRE)) {
+                                itr.set(fireString.replace("<amount>", "4"));
+                            } else {
+                                itr.remove();
+                            }
                         }
-                    } else {
-                        if (string.equals("<holy>")) {
+                    }
+                    break;
+
+                default:
+                    while (itr.hasNext()) {
+                        String string = (String) itr.next();
+                        if (string.equals(DAMAGE)) {
+                            if (clone.containsEnchantment(Enchantment.DAMAGE_ALL)) {
+                                int baseLow = getBaseDamage(clone.getType());
+                                int baseHigh = (int) (baseLow * 1.5D) + 2;
+                                int lvl = clone.getEnchantments().get(Enchantment.DAMAGE_ALL);
+                                int low = baseLow + lvl;
+                                int high = baseHigh + 3 * lvl;
+                                itr.set(damageString.replace("<amount>", low + "-" + high));
+                            } else {
+                                itr.remove();
+                            }
+                        } else if (string.equals(HOLY)) {
                             if (clone.containsEnchantment(Enchantment.DAMAGE_UNDEAD)) {
-                                int lvl = ((Integer) clone.getEnchantments().get(Enchantment.DAMAGE_UNDEAD)).intValue();
+                                int lvl = clone.getEnchantments().get(Enchantment.DAMAGE_UNDEAD);
                                 int low = lvl;
                                 int high = 4 * lvl;
                                 itr.set(holyString.replace("<amount>", low + "-" + high));
                             } else {
                                 itr.remove();
                             }
-                        } else {
-                            if (string.equals("<bug>")) {
-                                if (clone.containsEnchantment(Enchantment.DAMAGE_ARTHROPODS)) {
-                                    int lvl = ((Integer) clone.getEnchantments().get(Enchantment.DAMAGE_ARTHROPODS)).intValue();
-                                    int low = lvl;
-                                    int high = 4 * lvl;
-                                    itr.set(bugString.replace("<amount>", low + "-" + high));
-                                } else {
-                                    itr.remove();
-                                }
+                        } else if (string.equals(BUG)) {
+                            if (clone.containsEnchantment(Enchantment.DAMAGE_ARTHROPODS)) {
+                                int lvl = clone.getEnchantments().get(Enchantment.DAMAGE_ARTHROPODS);
+                                int low = lvl;
+                                int high = 4 * lvl;
+                                itr.set(bugString.replace("<amount>", low + "-" + high));
                             } else {
-                                if (string.equals("<fire>")) {
-                                    if (clone.containsEnchantment(Enchantment.FIRE_ASPECT)) {
-                                        int lvl = ((Integer) clone.getEnchantments().get(Enchantment.FIRE_ASPECT)).intValue();
-                                        int amount = 4 * lvl;
-                                        itr.set(fireString.replace("<amount>", String.valueOf(amount)));
-                                    } else {
-                                        itr.remove();
-                                    }
-                                }
+                                itr.remove();
+                            }
+                        } else if (string.equals(FIRE)) {
+                            if (clone.containsEnchantment(Enchantment.FIRE_ASPECT)) {
+                                int lvl = clone.getEnchantments().get(Enchantment.FIRE_ASPECT);
+                                int amount = 4 * lvl;
+                                itr.set(fireString.replace("<amount>", String.valueOf(amount)));
+                            } else {
+                                itr.remove();
                             }
                         }
                     }
+                    break;
                 }
             }
 
