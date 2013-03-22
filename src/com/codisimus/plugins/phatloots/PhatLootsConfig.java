@@ -63,6 +63,12 @@ public class PhatLootsConfig {
         Loot.holyString = config.getString("<holy>");
         Loot.fireString = config.getString("<fire>");
         Loot.bugString = config.getString("<bug>");
+        Loot.thornsString = config.getString("<thorns>");
+        Loot.defenseString = config.getString("<def>");
+        Loot.fireDefenseString = config.getString("<firedef>");
+        Loot.rangeDefenseString = config.getString("<rangedef>");
+        Loot.blastDefenseString = config.getString("<blastdef>");
+        Loot.fallDefenseString = config.getString("<falldef>");
 
 
         /* DEFAULTS */

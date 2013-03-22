@@ -49,6 +49,12 @@ ChestName: §6<name>
 <holy>: §6+<amount> holy damage
 <fire>: §4+<amount> fire
 <bug>: §4+<amount> bug repellent
+<thorns>: §4<chance>% chance of 1-4 damage
+<def>: §2<amount> defense
+<firedef>: §4+<amount> fire defense
+<rangedef>: §4+<amount> range defense
+<blastdef>: §4+<amount> explosion defense
+<falldef>: §4+<amount> fall defense
 
 
 ################## DEFAULTS ##################

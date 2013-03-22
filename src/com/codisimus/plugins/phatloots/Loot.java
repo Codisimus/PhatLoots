@@ -43,6 +43,12 @@ public class Loot implements Comparable, ConfigurationSerializable {
     private static final String HOLY = "<holy>";
     private static final String FIRE = "<fire>";
     private static final String BUG = "<bug>";
+    private static final String THORNS = "<thorns>";
+    private static final String DEFENSE = "<def>";
+    private static final String FIRE_DEFENSE = "<firedef>";
+    private static final String RANGE_DEFENSE = "<rangedef>";
+    private static final String BLAST_DEFENSE = "<blastdef>";
+    private static final String FALL_DEFENSE = "<falldef>";
     private static final Enchantment[] ARMOR_ENCHANTMENTS = {
         Enchantment.PROTECTION_ENVIRONMENTAL, Enchantment.PROTECTION_FIRE,
         Enchantment.PROTECTION_EXPLOSIONS, Enchantment.PROTECTION_PROJECTILE,
@@ -72,6 +78,12 @@ public class Loot implements Comparable, ConfigurationSerializable {
     static String holyString;
     static String bugString;
     static String fireString;
+    static String thornsString;
+    static String defenseString;
+    static String fireDefenseString;
+    static String rangeDefenseString;
+    static String blastDefenseString;
+    static String fallDefenseString;
     private ItemStack item;
     private int amountBonus = 0;
     private int durabilityBonus = 0;
@@ -329,6 +341,68 @@ public class Loot implements Comparable, ConfigurationSerializable {
                 case LEATHER_CHESTPLATE:
                 case LEATHER_LEGGINGS:
                 case LEATHER_BOOTS:
+                    while (itr.hasNext()) {
+                        String string = (String) itr.next();
+                        if (string.equals(THORNS)) {
+                            if (clone.containsEnchantment(Enchantment.THORNS)) {
+                                int lvl = clone.getEnchantments().get(Enchantment.THORNS);
+                                itr.set(thornsString.replace("<chance>", String.valueOf(15 * lvl)));
+                            } else {
+                                itr.remove();
+                            }
+                        } else if (string.equals(DEFENSE)) {
+                            if (clone.containsEnchantment(Enchantment.PROTECTION_ENVIRONMENTAL)) {
+                                int amount = getBaseArmor(clone.getType());
+                                int lvl = clone.getEnchantments().get(Enchantment.PROTECTION_ENVIRONMENTAL);
+                                int epf = (int) Math.floor((6 + lvl * lvl) * 0.75 / 3);
+                                int low = amount + (int) Math.ceil(epf / 2);
+                                int high = amount + epf;
+                                itr.set(defenseString.replace("<amount>", low + "-" + high));
+                            } else {
+                                itr.remove();
+                            }
+                        } else if (string.equals(FIRE_DEFENSE)) {
+                            if (clone.containsEnchantment(Enchantment.PROTECTION_FIRE)) {
+                                int lvl = clone.getEnchantments().get(Enchantment.PROTECTION_FIRE);
+                                int epf = (int) Math.floor((6 + lvl * lvl) * 1.25 / 3);
+                                int low = (int) Math.ceil(epf / 2);
+                                int high = epf;
+                                itr.set(fireDefenseString.replace("<amount>", low + "-" + high));
+                            } else {
+                                itr.remove();
+                            }
+                        } else if (string.equals(RANGE_DEFENSE)) {
+                            if (clone.containsEnchantment(Enchantment.PROTECTION_PROJECTILE)) {
+                                int lvl = clone.getEnchantments().get(Enchantment.PROTECTION_PROJECTILE);
+                                int epf = (int) Math.floor((6 + lvl * lvl) * 1.5 / 3);
+                                int low = (int) Math.ceil(epf / 2);
+                                int high = epf;
+                                itr.set(fireDefenseString.replace("<amount>", low + "-" + high));
+                            } else {
+                                itr.remove();
+                            }
+                        } else if (string.equals(BLAST_DEFENSE)) {
+                            if (clone.containsEnchantment(Enchantment.PROTECTION_EXPLOSIONS)) {
+                                int lvl = clone.getEnchantments().get(Enchantment.PROTECTION_EXPLOSIONS);
+                                int epf = (int) Math.floor((6 + lvl * lvl) * 1.5 / 3);
+                                int low = (int) Math.ceil(epf / 2);
+                                int high = epf;
+                                itr.set(fireDefenseString.replace("<amount>", low + "-" + high));
+                            } else {
+                                itr.remove();
+                            }
+                        } else if (string.equals(FALL_DEFENSE)) {
+                            if (clone.containsEnchantment(Enchantment.PROTECTION_FALL)) {
+                                int lvl = clone.getEnchantments().get(Enchantment.PROTECTION_FALL);
+                                int epf = (int) Math.floor((6 + lvl * lvl) * 2.5 / 3);
+                                int low = (int) Math.ceil(epf / 2);
+                                int high = epf;
+                                itr.set(fireDefenseString.replace("<amount>", low + "-" + high));
+                            } else {
+                                itr.remove();
+                            }
+                        }
+                    }
                     break;
 
                 case BOW:
@@ -719,6 +793,32 @@ public class Loot implements Comparable, ConfigurationSerializable {
         case DIAMOND_AXE: return 6;
         case DIAMOND_SWORD: return 7;
         default: return 1;
+        }
+    }
+
+    private int getBaseArmor(Material type) {
+        switch (type) {
+        case LEATHER_BOOTS: return 1;
+        case LEATHER_LEGGINGS: return 2;
+        case LEATHER_CHESTPLATE: return 3;
+        case LEATHER_HELMET: return 1;
+        case GOLD_BOOTS: return 1;
+        case GOLD_LEGGINGS: return 3;
+        case GOLD_CHESTPLATE: return 5;
+        case GOLD_HELMET: return 1;
+        case CHAINMAIL_BOOTS: return 2;
+        case CHAINMAIL_LEGGINGS: return 4;
+        case CHAINMAIL_CHESTPLATE: return 5;
+        case CHAINMAIL_HELMET: return 1;
+        case IRON_BOOTS: return 2;
+        case IRON_LEGGINGS: return 5;
+        case IRON_CHESTPLATE: return 6;
+        case IRON_HELMET: return 2;
+        case DIAMOND_BOOTS: return 3;
+        case DIAMOND_LEGGINGS: return 6;
+        case DIAMOND_CHESTPLATE: return 8;
+        case DIAMOND_HELMET: return 3;
+        default: return 0;
         }
     }
 
