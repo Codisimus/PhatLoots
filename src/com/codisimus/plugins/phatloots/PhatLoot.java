@@ -234,7 +234,7 @@ public class PhatLoot implements ConfigurationSerializable {
         }
         drops.addAll(loot);
 
-        if ((this.moneyUpper > 0) && (player != null)) {
+        if (moneyUpper > 0 && player != null) {
             int amount = PhatLoots.random.nextInt(moneyUpper + 1 - moneyLower);
             amount += moneyLower;
 
@@ -253,9 +253,13 @@ public class PhatLoot implements ConfigurationSerializable {
 
         lootCommands(player);
 
-        if (this.expUpper > 0) {
+        if (expUpper > 0) {
             int amount = PhatLoots.random.nextInt(expUpper + 1 - expLower);
-            return amount + expLower;
+            amount += expLower;
+            if (player != null && PhatLootsConfig.mobDroppedExperience != null) {
+                player.sendMessage(PhatLootsConfig.mobDroppedExperience.replace("<amount>", String.valueOf(amount)));
+            }
+            return amount;
         }
 
         return 0;

@@ -37,13 +37,14 @@ Messages:
     MobTimeRemaining: §4You must wait §6<time>§4 to receive more loot!
     MobDroppedMoney: §5You loot §6<amount>.
     MobDroppedItem:
+    MobDroppedExperience:
 
 ##PhatLoot Chests will display this name at the top of the Chest GUI
 ##<name> will be replaced with the name of the linked PhatLoot
 ChestName: §6<name>
 
 #Damage estimates (as ranges) may be added to the lore of loot
-#Do so by making a line of lore one of the following tags 
+#Do so by making a line of lore one of the following tags
 <dam>: §2<amount> damage
 <holy>: §6+<amount> holy damage
 <fire>: §4+<amount> fire

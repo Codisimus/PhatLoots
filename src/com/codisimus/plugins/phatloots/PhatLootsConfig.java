@@ -29,14 +29,21 @@ public class PhatLootsConfig {
     static String mobTimeRemaining;
     static String mobDroppedMoney;
     static String mobDroppedItem;
+    static String mobDroppedExperience;
 
     public static void load() {
         PhatLoots.plugin.saveDefaultConfig();
         FileConfiguration config = PhatLoots.plugin.getConfig();
 
+
+        /* MOB LOOTS */
+
         PhatLoot.replaceMobLoot = config.getBoolean("ReplaceMobLoot");
         PhatLoot.onlyDropOnPlayerKill = config.getBoolean("OnlyDropLootWhenKilledByPlayer");
         PhatLoot.chanceOfDrop = (float) (config.getDouble("MobLootDropPercentage") / 100.0D);
+
+
+        /* MESSAGES */
 
         ConfigurationSection section = config.getConfigurationSection("Messages");
         permission = section.getString("Permission");
@@ -48,6 +55,7 @@ public class PhatLootsConfig {
         mobTimeRemaining = section.getString("MobTimeRemaining");
         mobDroppedMoney = section.getString("MobDroppedMoney");
         mobDroppedItem = section.getString("MobDroppedItem");
+        mobDroppedExperience = section.getString("MobDroppedExperience");
 
         PhatLootsListener.chestName = config.getString("ChestName");
 
@@ -55,6 +63,9 @@ public class PhatLootsConfig {
         Loot.holyString = config.getString("<holy>");
         Loot.fireString = config.getString("<fire>");
         Loot.bugString = config.getString("<bug>");
+
+
+        /* DEFAULTS */
 
         section = config.getConfigurationSection("Defaults");
         defaultGlobal = section.getBoolean("GlobalReset");
@@ -68,10 +79,17 @@ public class PhatLootsConfig {
         defaultMinutes = section.getInt("Minutes");
         defaultSeconds = section.getInt("Seconds");
 
+
+        /* OTHER */
+
         restrictAll = config.getBoolean("RestrictAll");
         restricted.addAll(config.getStringList("RestrictedPhatLoots"));
         Loot.tierNotify = config.getInt("MinimumTierNotification");
         PhatLootsCommand.setUnlockable = config.getBoolean("SetChestsAsUnlockable");
+
+
+        /* LORES.YML */
+
         try {
             File file = new File(PhatLoots.dataFolder + File.separator + "lores.yml");
             if (!file.exists()) {
@@ -83,6 +101,9 @@ public class PhatLootsConfig {
             PhatLoots.logger.severe("Failed to load lores.yml");
             ex.printStackTrace();
         }
+
+
+        /* ENCHANTMENTS.YML */
 
         try {
             File file = new File(PhatLoots.dataFolder + File.separator + "enchantments.yml");
