@@ -67,6 +67,11 @@ public class PhatLootsListener implements Listener {
             break;
 
         case CHEST:
+            //Return if the Chest was not opened
+            if (event.getAction() != Action.RIGHT_CLICK_BLOCK) {
+                return;
+            }
+
             chest = (Chest) block.getState();
             inventory = chest.getInventory();
 
@@ -75,7 +80,59 @@ public class PhatLootsListener implements Listener {
                 chest = (Chest) ((DoubleChestInventory) inventory).getLeftSide().getHolder();
                 block = chest.getBlock();
             }
-            //Fall through
+
+            //Return if the Chest is not a PhatLootChest
+            phatLoots = PhatLoots.getPhatLoots(block, player);
+            if (phatLoots.isEmpty()) {
+                return;
+            }
+
+            boolean individual = false;
+            for (PhatLoot phatLoot : phatLoots) {
+                if (!phatLoot.global) {
+                    individual = true;
+                    break;
+                }
+            }
+
+            if (individual) {
+                //Create the custom key using the Player Name and Block location
+                final String KEY = player.getName() + "@" + block.getLocation().toString();
+
+                //Grab the custom Inventory belonging to the Player
+                ForgettableInventory fInventory = inventories.get(KEY);
+                if (fInventory != null) {
+                    inventory = fInventory.getInventory();
+                } else {
+                    String name = chestName.replace("<name>", phatLoots.getFirst().name.replace('_', ' '));
+
+                    //Create a new Inventory for the Player
+                    inventory = PhatLoots.server.createInventory(chest,
+                                                                 inventory == null
+                                                                 ? 27
+                                                                 : inventory.getSize()
+                                                                 , name);
+
+                    fInventory = new ForgettableInventory(PhatLoots.plugin, inventory) {
+                        @Override
+                        protected void execute() {
+                            inventories.remove(KEY);
+                        }
+                    };
+                    inventories.put(KEY, fInventory);
+                }
+
+                //Forget the Inventory in the scheduled time
+                fInventory.schedule();
+
+                //Swap the Inventories
+                event.setCancelled(true);
+                player.openInventory(inventory);
+                PhatLoots.openInventory(player, inventory, block.getLocation(), false);
+            }
+
+            break;
+
         case ENDER_CHEST:
             //Return if the Chest was not opened
             if (event.getAction() != Action.RIGHT_CLICK_BLOCK) {
@@ -195,7 +252,7 @@ public class PhatLootsListener implements Listener {
 
         //Return if the Player does not have permission to receive loots
         if (!player.hasPermission("phatloots.use")) {
-            player.sendMessage(PhatLootsMessages.permission);
+            player.sendMessage(PhatLootsConfig.permission);
             return;
         }
 
@@ -238,7 +295,7 @@ public class PhatLootsListener implements Listener {
 
         //Cancel if the Block was not broken by an Admin
         if (!player.hasPermission("phatloots.admin")) {
-            player.sendMessage(PhatLootsMessages.permission);
+            player.sendMessage(PhatLootsConfig.permission);
             event.setCancelled(true);
         }
     }

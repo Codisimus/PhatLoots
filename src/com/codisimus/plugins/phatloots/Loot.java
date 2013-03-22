@@ -1,14 +1,27 @@
 package com.codisimus.plugins.phatloots;
 
-import java.io.*;
-import java.util.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileReader;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.ListIterator;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Random;
+import java.util.TreeMap;
+import java.util.logging.Logger;
 import org.apache.commons.lang.WordUtils;
 import org.bukkit.Color;
 import org.bukkit.Material;
-import org.bukkit.configuration.Configuration;
+import org.bukkit.Server;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.serialization.ConfigurationSerializable;
+import org.bukkit.configuration.serialization.SerializableAs;
 import org.bukkit.enchantments.Enchantment;
+import org.bukkit.inventory.ItemFactory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BookMeta;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -20,68 +33,87 @@ import org.bukkit.inventory.meta.SkullMeta;
  *
  * @author Codisimus
  */
-public class Loot implements Comparable {
-    private final static String TITLE = "title";
-    private final static String AUTHOR = "author";
-    private final static String PAGE = "page";
-    private final static String ARMOR = "ARMOR";
-    private final static String SWORD = "SWORD";
-    private final static String AXE = "AXE";
-    private final static String BOW = "BOW";
-    private final static Enchantment[] ARMOR_ENCHANTMENTS = new Enchantment[] {
-            Enchantment.PROTECTION_ENVIRONMENTAL, Enchantment.PROTECTION_FIRE,
-            Enchantment.PROTECTION_EXPLOSIONS, Enchantment.PROTECTION_PROJECTILE,
-            Enchantment.THORNS, Enchantment.DURABILITY
+@SerializableAs("Loot")
+public class Loot implements Comparable, ConfigurationSerializable {
+    private static final String ARMOR = "ARMOR";
+    private static final String SWORD = "SWORD";
+    private static final String AXE = "AXE";
+    private static final String BOW = "BOW";
+    private static final String DAMAGE = "<dam>";
+    private static final String HOLY = "<holy>";
+    private static final String FIRE = "<fire>";
+    private static final String BUG = "<bug>";
+    private static final Enchantment[] ARMOR_ENCHANTMENTS = {
+        Enchantment.PROTECTION_ENVIRONMENTAL, Enchantment.PROTECTION_FIRE,
+        Enchantment.PROTECTION_EXPLOSIONS, Enchantment.PROTECTION_PROJECTILE,
+        Enchantment.THORNS, Enchantment.DURABILITY
     };
-    private final static Enchantment[] SWORD_ENCHANTMENTS = new Enchantment[] {
-            Enchantment.DAMAGE_ALL, Enchantment.DAMAGE_UNDEAD,
-            Enchantment.DAMAGE_ARTHROPODS, Enchantment.KNOCKBACK,
-            Enchantment.FIRE_ASPECT, Enchantment.LOOT_BONUS_MOBS,
-            Enchantment.DURABILITY
+    private static final Enchantment[] SWORD_ENCHANTMENTS = {
+        Enchantment.DAMAGE_ALL, Enchantment.DAMAGE_UNDEAD,
+        Enchantment.DAMAGE_ARTHROPODS, Enchantment.KNOCKBACK,
+        Enchantment.FIRE_ASPECT, Enchantment.LOOT_BONUS_MOBS,
+        Enchantment.DURABILITY
     };
-    private final static Enchantment[] AXE_ENCHANTMENTS = new Enchantment[] {
-            Enchantment.DAMAGE_ALL, Enchantment.DAMAGE_UNDEAD,
-            Enchantment.DAMAGE_ARTHROPODS, Enchantment.KNOCKBACK,
-            Enchantment.FIRE_ASPECT, Enchantment.LOOT_BONUS_MOBS,
-            Enchantment.DURABILITY
+    private static final Enchantment[] AXE_ENCHANTMENTS = {
+        Enchantment.DAMAGE_ALL, Enchantment.DAMAGE_UNDEAD,
+        Enchantment.DAMAGE_ARTHROPODS, Enchantment.KNOCKBACK,
+        Enchantment.FIRE_ASPECT, Enchantment.LOOT_BONUS_MOBS,
+        Enchantment.DURABILITY
     };
-    private final static Enchantment[] BOW_ENCHANTMENTS = new Enchantment[] {
-            Enchantment.ARROW_DAMAGE, Enchantment.ARROW_KNOCKBACK,
-            Enchantment.ARROW_FIRE, Enchantment.ARROW_INFINITE,
-            Enchantment.DURABILITY
+    private static final Enchantment[] BOW_ENCHANTMENTS = {
+        Enchantment.ARROW_DAMAGE, Enchantment.ARROW_KNOCKBACK,
+        Enchantment.ARROW_FIRE, Enchantment.ARROW_INFINITE,
+        Enchantment.DURABILITY
     };
     static int tierNotify;
-    private ItemStack item;
-    private int bonus = 0;
-    private double probability;
-    protected String name;
-    protected boolean autoEnchant;
     static FileConfiguration loreConfig;
     static FileConfiguration enchantmentConfig;
+    static String damageString;
+    static String holyString;
+    static String bugString;
+    static String fireString;
+    private ItemStack item;
+    private int amountBonus = 0;
+    private int durabilityBonus = 0;
+    private double probability;
+    boolean autoEnchant;
+    private boolean generateName;
+    private boolean randomLore;
+    private boolean tieredName;
+    String name;
 
     /**
-     * Constructs a new Loot with the given Item data and probability
+     * Constructs a new Loot with the given Item data
      *
      * @param id The Material id of the item
      * @param amountLower The lower bound of the stack size of the item
      * @param amountUpper The upper bound of the stack size of the item
-     * @param probability The chance of looting the item
      */
     public Loot(int id, int amountLower, int amountUpper) {
         item = new ItemStack(id, amountLower);
-        bonus = amountUpper - amountLower;
+        amountBonus = (amountUpper - amountLower);
     }
 
     /**
-     * Constructs a new Loot with the given ItemStack and probability
+     * Constructs a new Loot with the given ItemStack and bonus amount
      *
-     * @param item The ItemStack that will be looted
-     * @param bonus The amount of extra Items that may be looted
-     * @param probability The chance of looting the item
+     * @param item The given ItemStack
+     * @param amountBonus The extra amount for the loot
      */
-    public Loot(ItemStack item, int bonus) {
+    public Loot(ItemStack item, int amountBonus) {
         this.item = item;
-        this.bonus = bonus;
+        this.amountBonus = amountBonus;
+    }
+
+    public Loot(Map<String, Object> map) {
+        this.item = ((ItemStack) map.get("ItemStack"));
+        this.amountBonus = ((Integer) map.get("BonusAmount")).intValue();
+        this.durabilityBonus = ((Integer) map.get("BonusDurability")).intValue();
+        this.probability = ((Double) map.get("Probability")).doubleValue();
+        this.autoEnchant = ((Boolean) map.get("AutoEnchant")).booleanValue();
+        this.generateName = ((Boolean) map.get("GenerateName")).booleanValue();
+        this.randomLore = ((Boolean) map.get("RandomLore")).booleanValue();
+        this.tieredName = ((Boolean) map.get("Tiered")).booleanValue();
     }
 
     /**
@@ -94,7 +126,7 @@ public class Loot implements Comparable {
     }
 
     /**
-     * Sets the Data/Durability value of the Loot Item
+     * Sets the Durability value of the Loot Item
      *
      * @param durability The Durability to be set
      */
@@ -104,114 +136,9 @@ public class Loot implements Comparable {
         }
     }
 
-    /**
-     * Adds Enchantments to the Loot Item
-     *
-     * @param enchantments The Enchantments to be added and their levels
-     */
     public void setEnchantments(Map<Enchantment, Integer> enchantments) {
         if (enchantments != null) {
             item.addUnsafeEnchantments(enchantments);
-        }
-    }
-
-    /**
-     * Set the name of the description file for the Loot
-     *
-     * @param name The Name of the Item Description File
-     * @return False if the description file still needs to be created
-     */
-    public boolean setName(String name) {
-        //Check if the Loot is a WrittenBook
-        if (item.getType() == Material.WRITTEN_BOOK) {
-            Properties book = new Properties();
-            BookMeta bookMeta = (BookMeta) item.getItemMeta();
-
-            //Store the Title and Author of the Book
-            String title = bookMeta.getTitle();
-            book.setProperty(TITLE, title);
-            book.setProperty(AUTHOR, bookMeta.getAuthor());
-
-            //Store all the Pages
-            for (int i = 1; i < bookMeta.getPageCount() + 1; i++) {
-                book.setProperty(PAGE + i, bookMeta.getPage(i));
-            }
-
-            //Write the Book Properties to file
-            FileOutputStream fos = null;
-            try {
-                fos = new FileOutputStream(PhatLoots.dataFolder
-                        + "/Books/" + title + ".properties");
-                book.store(fos, null);
-                fos.close();
-            } catch (Exception saveFailed) {
-                PhatLoots.logger.severe("Failed to write Book to File");
-                saveFailed.printStackTrace();
-            } finally {
-                try {
-                    fos.close();
-                } catch (Exception e) {
-                }
-            }
-
-            this.name = title;
-            return true;
-        } else {
-            this.name = name;
-            if (name.isEmpty()) {
-                if (item.hasItemMeta()) {
-                    ItemMeta meta = item.getItemMeta();
-                    if (meta.hasDisplayName()) {
-                        name = meta.getDisplayName().replace('§', '&');
-                    } else {
-                        return true;
-                    }
-                } else {
-                    return true;
-                }
-            } else if (name.equalsIgnoreCase("Random")) {
-                String folder = item.getType() + item.getEnchantments().toString();
-                File dir = new File(PhatLoots.dataFolder
-                        + "/Item Descriptions/" + folder);
-                if (!dir.isDirectory()) {
-                    dir.mkdir();
-                }
-                return true;
-            } else if (name.equalsIgnoreCase("Auto")) {
-                return true;
-            }
-
-            File file = new File(PhatLoots.dataFolder + "/Item Descriptions/" + name + ".txt");
-            if (file.exists()) {
-                return true;
-            }
-            if (!item.hasItemMeta()) {
-                return false;
-            }
-            ItemMeta meta = item.getItemMeta();
-
-            BufferedWriter bWriter = null;
-            try {
-                file.createNewFile();
-                bWriter = new BufferedWriter(new FileWriter(file));
-                bWriter.write(meta.getDisplayName().replace('§', '&'));
-
-                List<String> lore = meta.getLore();
-                if (lore != null) {
-                    for (String line : lore) {
-                        bWriter.newLine();
-                        bWriter.write(line.replace('§', '&'));
-                    }
-                }
-            } catch (Exception e) {
-            } finally {
-                try {
-                    bWriter.close();
-                } catch (Exception e) {
-                }
-            }
-
-            return true;
         }
     }
 
@@ -224,9 +151,9 @@ public class Loot implements Comparable {
     }
 
     /**
-     * Returns the item with the bonus amount
+     * Returns the item with the bonus amount, enchantments, etc.
      *
-     * @return The item with the bonus amount
+     * @return A clone of the Loot item
      */
     public ItemStack getItem() {
         ItemStack clone = item.clone();
@@ -289,19 +216,20 @@ public class Loot implements Comparable {
             }
 
             for (Enchantment enchantment : enchantments) {
-                if (enchantmentConfig.contains(type + '.' + enchantment)) {
-                    ConfigurationSection config = enchantmentConfig.getConfigurationSection(type + '.' + enchantment);
-                    double totalPercent = 0;
+                String key = type + '.' + enchantment.getName();
+                if (enchantmentConfig.contains(key)) {
+                    ConfigurationSection config = enchantmentConfig.getConfigurationSection(key);
+                    double totalPercent = 0.0D;
                     int level = 0;
                     double roll = roll();
                     for (String string : config.getKeys(false)) {
                         totalPercent += config.getDouble(string);
                         if (totalPercent > roll) {
                             break;
-                        } else {
-                            level++;
                         }
+                        level++;
                     }
+
                     if (level > 0) {
                         clone.addUnsafeEnchantment(enchantment, level);
                     }
@@ -309,64 +237,28 @@ public class Loot implements Comparable {
             }
         }
 
-        if (bonus > 0) {
-            clone.setAmount(clone.getAmount() + PhatLoots.random.nextInt(bonus));
+        if (amountBonus > 0) {
+            clone.setAmount(clone.getAmount() + PhatLoots.random.nextInt(amountBonus));
         }
 
-        if (!name.isEmpty()) {
+        if (durabilityBonus > 0) {
+            clone.setDurability((short) (clone.getDurability() + PhatLoots.random.nextInt(durabilityBonus)));
+        }
+
+        if ((generateName) || (tieredName) || (randomLore)) {
             ItemMeta meta = clone.hasItemMeta()
                             ? clone.getItemMeta()
                             : PhatLoots.server.getItemFactory().getItemMeta(clone.getType());
 
-            //Check if the Loot is a WrittenBook
-            if (clone.getType() == Material.WRITTEN_BOOK) {
-                //Load the contents of the Book from it's File
-                Properties book = new Properties();
-                FileInputStream fis = null;
-                try {
-                    fis = new FileInputStream(PhatLoots.dataFolder
-                            + "/Books/" + name + ".properties");
-                    book.load(fis);
-                } catch (Exception loadFailed) {
-                    PhatLoots.logger.severe("Failed to load Book" + name);
-                    loadFailed.printStackTrace();
-                } finally {
-                    try {
-                        fis.close();
-                    } catch (Exception e) {
-                    }
-                }
+            StringBuilder nameBuilder = new StringBuilder();
+            if (randomLore) {
+                String folder = clone.getType() + clone.getEnchantments().toString();
+                File dir = new File(PhatLoots.dataFolder + File.separator + "Item Descriptions" + File.separator + folder);
 
-                //Set the Title and Author of the Book
-                BookMeta bookMeta = (BookMeta) meta;
-                bookMeta.setTitle(book.getProperty(TITLE));
-                bookMeta.setAuthor(book.getProperty(AUTHOR));
+                File[] files = dir.listFiles();
+                Random random = new Random();
+                File file = files[random.nextInt(files.length)];
 
-                //Set all the Pages
-                for (int i = 1; book.containsKey(PAGE + i); i++) {
-                    bookMeta.addPage(book.getProperty(PAGE + i));
-                }
-
-                clone.setItemMeta(bookMeta);
-            } else {
-                File file;
-                if (name.equals("Random")) {
-                    String folder = clone.getType() + clone.getEnchantments().toString();
-                    File dir = new File(PhatLoots.dataFolder
-                            + "/Item Descriptions/" + folder);
-                    File[] files = dir.listFiles();
-                    Random random = new Random();
-                    file = files[random.nextInt(files.length)];
-                    //String fileName = file.getName();
-                    //tag.setString(ITEM_DESCRIPTION, fileName.substring(0, fileName.length() - 4));
-                } else if (name.equals("Auto")) {
-                    meta.setDisplayName(getTieredName(clone));
-                    clone.setItemMeta(meta);
-                    return clone;
-                } else {
-                    file = new File(PhatLoots.dataFolder
-                            + "/Item Descriptions/" + name + ".txt");
-                }
                 if (file.exists()) {
                     FileReader fReader = null;
                     BufferedReader bReader = null;
@@ -376,23 +268,20 @@ public class Loot implements Comparable {
 
                         String line = bReader.readLine();
                         if (line != null) {
-                            //Add color to the Name line
                             if (line.charAt(0) == '&') {
                                 line = line.replace('&', '§');
                             }
 
-                            //Set the Name of the Item
-                            meta.setDisplayName(line);
+                            nameBuilder.append(line);
 
-                            //Add each remaining line of the File
-                            List<String> lore = new LinkedList<String>();
+                            List lore = new LinkedList();
                             while ((line = bReader.readLine()) != null) {
                                 line = line.replace('&', '§');
                                 lore.add(line);
                             }
                             meta.setLore(lore);
                         }
-                    } catch (Exception e) {
+                    } catch (Exception ex) {
                     } finally {
                         try {
                             fReader.close();
@@ -401,12 +290,74 @@ public class Loot implements Comparable {
                         }
                     }
                 } else {
-                    PhatLoots.logger.severe("The " + name
-                            + " Item Description File cannot be found");
+                    PhatLoots.logger.severe("The Item Description " + file.getName() + " cannot be read");
                 }
-
-                clone.setItemMeta(meta);
+            } else {
+                nameBuilder.append(WordUtils.capitalizeFully(clone.getType().toString().replace('_', ' ')));
             }
+
+            if (this.generateName) {
+                generateName(clone, nameBuilder);
+            }
+
+            if (this.tieredName) {
+                getTieredName(clone, nameBuilder);
+            }
+
+            meta.setDisplayName(nameBuilder.toString());
+
+            if (meta.hasLore()) {
+                ListIterator itr = meta.getLore().listIterator();
+                while (itr.hasNext()) {
+                    String string = (String) itr.next();
+                    if (string.equals("<dam>")) {
+                        if (clone.containsEnchantment(Enchantment.DAMAGE_ALL)) {
+                            int baseLow = getBaseDamage(clone.getType());
+                            int baseHigh = (int) (baseLow * 1.5D) + 2;
+                            int lvl = ((Integer) clone.getEnchantments().get(Enchantment.DAMAGE_ALL)).intValue();
+                            int low = baseLow + lvl;
+                            int high = baseHigh + 3 * lvl;
+                            itr.set(damageString.replace("<amount>", low + "-" + high));
+                        } else {
+                            itr.remove();
+                        }
+                    } else {
+                        if (string.equals("<holy>")) {
+                            if (clone.containsEnchantment(Enchantment.DAMAGE_UNDEAD)) {
+                                int lvl = ((Integer) clone.getEnchantments().get(Enchantment.DAMAGE_UNDEAD)).intValue();
+                                int low = lvl;
+                                int high = 4 * lvl;
+                                itr.set(holyString.replace("<amount>", low + "-" + high));
+                            } else {
+                                itr.remove();
+                            }
+                        } else {
+                            if (string.equals("<bug>")) {
+                                if (clone.containsEnchantment(Enchantment.DAMAGE_ARTHROPODS)) {
+                                    int lvl = ((Integer) clone.getEnchantments().get(Enchantment.DAMAGE_ARTHROPODS)).intValue();
+                                    int low = lvl;
+                                    int high = 4 * lvl;
+                                    itr.set(bugString.replace("<amount>", low + "-" + high));
+                                } else {
+                                    itr.remove();
+                                }
+                            } else {
+                                if (string.equals("<fire>")) {
+                                    if (clone.containsEnchantment(Enchantment.FIRE_ASPECT)) {
+                                        int lvl = ((Integer) clone.getEnchantments().get(Enchantment.FIRE_ASPECT)).intValue();
+                                        int amount = 4 * lvl;
+                                        itr.set(fireString.replace("<amount>", String.valueOf(amount)));
+                                    } else {
+                                        itr.remove();
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            clone.setItemMeta(meta);
         }
 
         return clone;
@@ -418,15 +369,12 @@ public class Loot implements Comparable {
      * @return The chance of looting
      */
     public double getProbability() {
-        return probability;
+        return this.probability;
     }
 
-    private String getTieredName(ItemStack item) {
+    private void generateName(ItemStack item, StringBuilder nameBuilder) {
         Material mat = item.getType();
-        StringBuilder nameBuiler = new StringBuilder();
-        nameBuiler.append(WordUtils.capitalizeFully(mat.toString().replace('_', ' ')));
-        Map<Enchantment, Integer> enchantments = item.getEnchantments();
-
+        Map enchantments = item.getEnchantments();
         String type;
         Enchantment enchantment;
         int level;
@@ -457,8 +405,8 @@ public class Loot implements Comparable {
             level = getLevel(enchantments, enchantment);
             lore = loreConfig.getString(type + '.' + enchantment.getName() + '.' + level);
             if (lore != null) {
-                nameBuiler.insert(0, ' ');
-                nameBuiler.insert(0, lore);
+                nameBuilder.insert(0, ' ');
+                nameBuilder.insert(0, lore);
             }
             enchantment = enchantments.containsKey(Enchantment.THORNS)
                           ? Enchantment.THORNS
@@ -466,15 +414,15 @@ public class Loot implements Comparable {
             level = getLevel(enchantments, enchantment);
             lore = loreConfig.getString(type + '.' + enchantment.getName() + '.' + level);
             if (lore != null) {
-                nameBuiler.insert(0, ' ');
-                nameBuiler.insert(0, lore);
+                nameBuilder.insert(0, ' ');
+                nameBuilder.insert(0, lore);
             }
             enchantment = getTrump(enchantments, Enchantment.PROTECTION_ENVIRONMENTAL, Enchantment.PROTECTION_PROJECTILE, Enchantment.PROTECTION_EXPLOSIONS);
             level = getLevel(enchantments, enchantment);
             lore = loreConfig.getString(type + '.' + enchantment.getName() + '.' + level);
             if (lore != null) {
-                nameBuiler.append(' ');
-                nameBuiler.append(lore);
+                nameBuilder.append(' ');
+                nameBuilder.append(lore);
             }
             break;
 
@@ -488,7 +436,7 @@ public class Loot implements Comparable {
             level = getLevel(enchantments, enchantment);
             lore = loreConfig.getString(type + '.' + enchantment.getName() + '.' + level);
             if (lore != null) {
-                nameBuiler.replace(nameBuiler.length() - 5, nameBuiler.length(), lore);
+                nameBuilder.replace(nameBuilder.length() - 5, nameBuilder.length(), lore);
             }
             enchantment = enchantments.containsKey(Enchantment.FIRE_ASPECT)
                           ? Enchantment.FIRE_ASPECT
@@ -496,22 +444,22 @@ public class Loot implements Comparable {
             level = getLevel(enchantments, enchantment);
             lore = loreConfig.getString(type + '.' + enchantment.getName() + '.' + level);
             if (lore != null) {
-                nameBuiler.insert(0, ' ');
-                nameBuiler.insert(0, lore);
+                nameBuilder.insert(0, ' ');
+                nameBuilder.insert(0, lore);
             }
             enchantment = Enchantment.LOOT_BONUS_MOBS;
             level = getLevel(enchantments, enchantment);
             lore = loreConfig.getString(type + '.' + enchantment.getName() + '.' + level);
             if (lore != null) {
-                nameBuiler.append(' ');
-                nameBuiler.append(lore);
+                nameBuilder.append(' ');
+                nameBuilder.append(lore);
             }
             enchantment = getTrump(enchantments, Enchantment.KNOCKBACK, Enchantment.DAMAGE_UNDEAD);
             level = getLevel(enchantments, enchantment);
             lore = loreConfig.getString(type + '.' + enchantment.getName() + '.' + level);
             if (lore != null) {
-                nameBuiler.append(' ');
-                nameBuiler.append(lore);
+                nameBuilder.append(' ');
+                nameBuilder.append(lore);
             }
             break;
 
@@ -525,7 +473,7 @@ public class Loot implements Comparable {
             level = getLevel(enchantments, enchantment);
             lore = loreConfig.getString(type + '.' + enchantment.getName() + '.' + level);
             if (lore != null) {
-                nameBuiler.replace(nameBuiler.length() - 5, nameBuiler.length(), lore);
+                nameBuilder.replace(nameBuilder.length() - 5, nameBuilder.length(), lore);
             }
             enchantment = enchantments.containsKey(Enchantment.FIRE_ASPECT)
                           ? Enchantment.FIRE_ASPECT
@@ -533,22 +481,22 @@ public class Loot implements Comparable {
             level = getLevel(enchantments, enchantment);
             lore = loreConfig.getString(type + '.' + enchantment.getName() + '.' + level);
             if (lore != null) {
-                nameBuiler.insert(0, ' ');
-                nameBuiler.insert(0, lore);
+                nameBuilder.insert(0, ' ');
+                nameBuilder.insert(0, lore);
             }
             enchantment = Enchantment.LOOT_BONUS_MOBS;
             level = getLevel(enchantments, enchantment);
             lore = loreConfig.getString(type + '.' + enchantment.getName() + '.' + level);
             if (lore != null) {
-                nameBuiler.append(' ');
-                nameBuiler.append(lore);
+                nameBuilder.append(' ');
+                nameBuilder.append(lore);
             }
             enchantment = getTrump(enchantments, Enchantment.KNOCKBACK, Enchantment.DAMAGE_UNDEAD);
             level = getLevel(enchantments, enchantment);
             lore = loreConfig.getString(type + '.' + enchantment.getName() + '.' + level);
             if (lore != null) {
-                nameBuiler.append(' ');
-                nameBuiler.append(lore);
+                nameBuilder.append(' ');
+                nameBuilder.append(lore);
             }
             break;
 
@@ -558,46 +506,51 @@ public class Loot implements Comparable {
             level = getLevel(enchantments, enchantment);
             lore = loreConfig.getString(type + '.' + enchantment.getName() + '.' + level);
             if (lore != null) {
-                nameBuiler.replace(0, name.length(), lore);
+                nameBuilder.replace(0, name.length(), lore);
             }
             enchantment = Enchantment.DURABILITY;
             level = getLevel(enchantments, enchantment);
             lore = loreConfig.getString(type + '.' + enchantment.getName() + '.' + level);
             if (lore != null) {
-                nameBuiler.insert(0, ' ');
-                nameBuiler.insert(0, lore);
+                nameBuilder.insert(0, ' ');
+                nameBuilder.insert(0, lore);
             }
             enchantment = Enchantment.ARROW_FIRE;
             level = getLevel(enchantments, enchantment);
             lore = loreConfig.getString(type + '.' + enchantment.getName() + '.' + level);
             if (lore != null) {
-                nameBuiler.insert(0, ' ');
-                nameBuiler.insert(0, lore);
+                nameBuilder.insert(0, ' ');
+                nameBuilder.insert(0, lore);
             }
             enchantment = Enchantment.ARROW_INFINITE;
             level = getLevel(enchantments, enchantment);
             lore = loreConfig.getString(type + '.' + enchantment.getName() + '.' + level);
             if (lore != null) {
-                nameBuiler.append(' ');
-                nameBuiler.append(lore);
+                nameBuilder.append(' ');
+                nameBuilder.append(lore);
             }
             enchantment = Enchantment.ARROW_KNOCKBACK;
             level = getLevel(enchantments, enchantment);
             lore = loreConfig.getString(type + '.' + enchantment.getName() + '.' + level);
             if (lore != null) {
-                nameBuiler.append(' ');
-                nameBuiler.append(lore);
+                nameBuilder.append(' ');
+                nameBuilder.append(lore);
             }
             break;
 
         default: break;
         }
+    }
+
+    private void getTieredName(ItemStack item, StringBuilder nameBuilder) {
+        Material mat = item.getType();
+        Map<Enchantment, Integer> enchantments = item.getEnchantments();
 
         int tier = 0;
         for (Integer i : enchantments.values()) {
-            tier += i;
+            tier += i.intValue();
         }
-        tier = tier * 5;
+        tier *= 5;
 
         switch (mat) {
         case DIAMOND_SWORD:
@@ -642,9 +595,6 @@ public class Loot implements Comparable {
 
         default: break;
         }
-
-        String name = nameBuiler.toString();
-
         if (tier >= 5) {
             if (tier >= 20) {
                 if (tier >= 30) {
@@ -654,39 +604,74 @@ public class Loot implements Comparable {
                                 if (tier >= 100) {
                                     if (tier >= 150) {
                                         if (tier >= 200) {
-                                            name = "§5" + name + " (Legendary)";
+                                            nameBuilder.insert(0, "§5");
+                                            nameBuilder.append(" (Legendary)");
                                         } else {
-                                            name = "§4" + name + " (Mythic)";
+                                            nameBuilder.insert(0, "§4");
+                                            nameBuilder.append(" (Mythic)");
                                         }
                                     } else {
-                                        name = "§2" + name + " (Epic)";
+                                        nameBuilder.insert(0, "§2");
+                                        nameBuilder.append(" (Epic)");
                                     }
                                 } else {
-                                    name = "§1" + name + " (Ultra Rare)";
+                                    nameBuilder.insert(0, "§1");
+                                    nameBuilder.append(" (Ultra Rare)");
                                 }
                             } else {
-                                name = "§9" + name + " (Super Rare)";
+                                nameBuilder.insert(0, "§9");
+                                nameBuilder.append(" (Super Rare)");
                             }
                         } else {
-                            name = "§3" + name + " (Very Rare)";
+                            nameBuilder.insert(0, "§3");
+                            nameBuilder.append(" (Very Rare)");
                         }
                     } else {
-                        name = "§b" + name + " (Rare)";
+                        nameBuilder.insert(0, "§b");
+                        nameBuilder.append(" (Rare)");
                     }
                 } else {
-                    name = "§f" + name + " (Uncommon)";
+                    nameBuilder.insert(0, "§f");
+                    nameBuilder.append(" (Uncommon)");
                 }
             } else {
-                name = "§7" + name + " (Common)";
+                nameBuilder.insert(0, "§7");
+                nameBuilder.append(" (Common)");
             }
         } else {
-            name = "§8" + name + " (Poor)";
+            nameBuilder.insert(0, "§8");
+            nameBuilder.append(" (Poor)");
         }
 
         if (tier > tierNotify) {
-            PhatLoots.logger.info(name + " [Tier " + tier + "] has been generated");
+            PhatLoots.logger.info(nameBuilder.toString() + " [Tier " + tier + "] has been generated");
         }
-        return name;
+    }
+
+    private int getBaseDamage(Material type) {
+        switch (type) {
+        case WOOD_SPADE: return 1;
+        case WOOD_PICKAXE: return 2;
+        case WOOD_AXE: return 3;
+        case WOOD_SWORD: return 4;
+        case GOLD_SPADE: return 1;
+        case GOLD_PICKAXE: return 2;
+        case GOLD_AXE: return 3;
+        case GOLD_SWORD: return 4;
+        case STONE_SPADE: return 2;
+        case STONE_PICKAXE: return 3;
+        case STONE_AXE: return 4;
+        case STONE_SWORD: return 5;
+        case IRON_SPADE: return 3;
+        case IRON_PICKAXE: return 4;
+        case IRON_AXE: return 5;
+        case IRON_SWORD: return 6;
+        case DIAMOND_SPADE: return 4;
+        case DIAMOND_PICKAXE: return 5;
+        case DIAMOND_AXE: return 6;
+        case DIAMOND_SWORD: return 7;
+        default: return 1;
+        }
     }
 
     /**
@@ -698,7 +683,7 @@ public class Loot implements Comparable {
     public String enchantmentsToString() {
         Map<Enchantment, Integer> enchantments = item.getEnchantments();
         String string = "";
-        for (Enchantment enchantment: enchantments.keySet()) {
+        for (Enchantment enchantment : enchantments.keySet()) {
             string += "&" + enchantment.getName();
 
             int level = enchantments.get(enchantment);
@@ -709,99 +694,29 @@ public class Loot implements Comparable {
         return string.substring(1);
     }
 
-    /**
-     * Returns the info of this Loot as a String in the following format
-     * [ ] indicates an optional additional field
-     * Amount[-Amount] of Name [with data Durability] [with enchantments Enchantment1(level)&Enchantment2(level)...] @ Probability%
-     *
-     * @return The info of this Loot as a String that is readable by humans
-     */
-    public String toInfoString() {
-        int amount = item.getAmount();
-        String string = String.valueOf(amount);
-
-        if (bonus != 0) {
-            string += "-" + (amount + bonus);
-        }
-
-        string += " of " + (name.isEmpty()
-                            ? item.getType().name()
-                            : name);
-
-        short durability = item.getDurability();
-        if (durability > 0) {
-            string += " with data " + durability;
-        }
-
-        Map<Enchantment, Integer> enchantments = item.getEnchantments();
-        if (!enchantments.isEmpty()) {
-            string += " with enchantments " + enchantmentsToString();
-        }
-
-        string += " @ " + (Math.floor(probability) == probability
-                           ? String.valueOf((int) probability)
-                           : String.valueOf(probability))
-                + "%";
-
-        return string;
-    }
-
-    /**
-     * Returns the String representation of this Loot in the following format
-     * [ ] indicates an optional additional field
-     * [(DyedColor|SkullOwner)]MaterialID[+Name]'Durability[+Enchantment1(level)&Enchantment2(level)...]'Amount[-Amount]'Probability
-     *
-     * @return The String representation of this Loot
-     */
     @Override
     public String toString() {
-        String string = String.valueOf(item.getTypeId()); //MaterialID
-        int id = item.getTypeId();
-        if (id >= 298 && id <= 301) {
-            if (item.hasItemMeta()) {
-                string = "(" + ((LeatherArmorMeta) item.getItemMeta()).getColor().asRGB() + ")" + string; //:DyedColor
-            }
-        } else if (id == 144) {
-            if (item.hasItemMeta()) {
-                string = "(" + ((SkullMeta) item.getItemMeta()).getOwner() + ")" + string; //:SkullOwner
-            }
+        StringBuilder sb = new StringBuilder();
+
+        int amount = item.getAmount();
+        sb.append(amount);
+        if (amountBonus > 0) {
+            sb.append('-');
+            sb.append(amount + amountBonus);
         }
 
-        //Check if Item has a Description
-        if (!name.isEmpty()) {
-            string += "+" + name; //+Name
+        sb.append(" of ");
+        if (tieredName) {
+            sb.append("tiered ");
         }
+        sb.append(PhatLoot.getItemName(item));
 
-        string += "'" + item.getDurability(); //'Durability
+        sb.append(" @ ");
+        sb.append(Math.floor(probability) == probability ? String.valueOf((int) probability) : String.valueOf(probability));
 
-        //Check if Item has Enchantments
-        Map<Enchantment, Integer> enchantments = item.getEnchantments();
-        if (!enchantments.isEmpty()) {
-            string += "+" + enchantmentsToString(); //+Enchantment1(level)&Enchantment2(level)...
-            if (autoEnchant) {
-                string += "&auto";
-            }
-        } else if (autoEnchant) {
-            string += "+auto";
-        }
+        sb.append("%");
 
-        string += "'" + item.getAmount(); //'Amount
-
-        //Check if Amount is a range
-        if (bonus != 0) {
-            string += "-" + (item.getAmount() + bonus); //-Amount
-        }
-
-        string += "'"; //'
-
-        //Check if Probability is an int
-        String prob = Math.floor(probability) == probability
-                      ? String.valueOf((int) probability) //Remove ".0"
-                      : String.valueOf(probability);
-
-        string += prob; //Probability
-
-        return string;
+        return sb.toString();
     }
 
     @Override
@@ -811,51 +726,44 @@ public class Loot implements Comparable {
         }
 
         Loot loot = (Loot) object;
-        return loot.name.equals(name)
-                && loot.item.getAmount() == item.getAmount()
-                && loot.item.getDurability() == item.getDurability()
-                && loot.item.getTypeId() == item.getTypeId()
-                && loot.bonus == bonus
-                && loot.probability == probability
-                && loot.item.getEnchantments().entrySet().equals(item.getEnchantments().entrySet());
+        return (loot.item.equals(item))
+                && (loot.amountBonus == amountBonus)
+                && (loot.durabilityBonus == durabilityBonus)
+                && (loot.autoEnchant == autoEnchant)
+                && (loot.generateName == generateName)
+                && (loot.randomLore == randomLore)
+                && (loot.tieredName == tieredName);
     }
 
     @Override
     public int hashCode() {
-        int hash = 3;
-        hash = 97 * hash + (this.item != null ? this.item.hashCode() : 0);
-        hash = 97 * hash + this.bonus;
-        hash = 97 * hash + (int) (Double.doubleToLongBits(this.probability) ^ (Double.doubleToLongBits(this.probability) >>> 32));
-        hash = 97 * hash + (this.name != null ? this.name.hashCode() : 0);
+        int hash = 7;
+        hash = 37 * hash + (item != null ? item.hashCode() : 0);
+        hash = 37 * hash + amountBonus;
+        hash = 37 * hash + durabilityBonus;
+        hash = 37 * hash + (int) (Double.doubleToLongBits(probability) ^ Double.doubleToLongBits(probability) >>> 32);
+        hash = 37 * hash + (autoEnchant ? 1 : 0);
+        hash = 37 * hash + (generateName ? 1 : 0);
+        hash = 37 * hash + (randomLore ? 1 : 0);
+        hash = 37 * hash + (tieredName ? 1 : 0);
         return hash;
-    }
-
-    public void setColor(Color color) {
-        LeatherArmorMeta meta = (LeatherArmorMeta) item.getItemMeta();
-        meta.setColor(color);
-        item.setItemMeta(meta);
-    }
-
-    public void setSkullOwner(String owner) {
-        SkullMeta meta = (SkullMeta) item.getItemMeta();
-        meta.setOwner(owner);
-        item.setItemMeta(meta);
     }
 
     @Override
     public int compareTo(Object object) {
-        if (object instanceof Loot) {
+        if ((object instanceof Loot)) {
             Loot loot = (Loot) object;
             if (loot.probability < probability) {
                 return 1;
-            } else if (loot.probability > probability) {
+            }
+            if (loot.probability > probability) {
                 return -1;
-            } else {
-                if (this.equals(loot)) {
-                    return 0;
-                }
+            }
+            if (equals(loot)) {
+                return 0;
             }
         }
+
         return -1;
     }
 
@@ -874,8 +782,114 @@ public class Loot implements Comparable {
 
     private int getLevel(Map<Enchantment, Integer> enchantments, Enchantment enchantment) {
         Integer level = enchantments.get(enchantment);
-        return level == null
-               ? 0
-               : level;
+        return level == null ? 0 : level;
+    }
+
+    @Override
+    public Map<String, Object> serialize() {
+        Map map = new TreeMap();
+        map.put("ItemStack", item);
+        map.put("BonusAmount", Integer.valueOf(amountBonus));
+        map.put("BonusDurability", Integer.valueOf(durabilityBonus));
+        map.put("Probability", Double.valueOf(probability));
+        map.put("AutoEnchant", Boolean.valueOf(autoEnchant));
+        map.put("GenerateName", Boolean.valueOf(generateName));
+        map.put("RandomLore", Boolean.valueOf(randomLore));
+        map.put("Tiered", Boolean.valueOf(tieredName));
+        return map;
+    }
+
+    /* OLD */
+
+    public void setColor(Color color) {
+        LeatherArmorMeta meta = (LeatherArmorMeta) item.getItemMeta();
+        meta.setColor(color);
+        item.setItemMeta(meta);
+    }
+
+    public void setSkullOwner(String owner) {
+        SkullMeta meta = (SkullMeta) item.getItemMeta();
+        meta.setOwner(owner);
+        item.setItemMeta(meta);
+    }
+
+    public void updateItemStack() {
+        if (!this.name.isEmpty()) {
+            ItemMeta meta = item.hasItemMeta() ? item.getItemMeta() : PhatLoots.server.getItemFactory().getItemMeta(item.getType());
+
+            if (this.item.getType() == Material.WRITTEN_BOOK) {
+                Properties book = new Properties();
+                FileInputStream fis = null;
+                try {
+                    fis = new FileInputStream(new StringBuilder().append(PhatLoots.dataFolder).append(File.separator).append("Books").append(File.separator).append(this.name).append(".properties").toString());
+
+                    book.load(fis);
+                } catch (Exception e) {
+                    PhatLoots.logger.severe(new StringBuilder().append("Failed to load Book").append(this.name).toString());
+                    e.printStackTrace();
+                } finally {
+                    try {
+                        fis.close();
+                    } catch (Exception e) {
+                    }
+                }
+                BookMeta bookMeta = (BookMeta) meta;
+                bookMeta.setTitle(book.getProperty("TITLE"));
+                bookMeta.setAuthor(book.getProperty("AUTHOR"));
+
+                for (int i = 1; book.containsKey(new StringBuilder().append("PAGE").append(i).toString()); i++) {
+                    bookMeta.addPage(new String[]{book.getProperty(new StringBuilder().append("PAGE").append(i).toString())});
+                }
+
+                this.item.setItemMeta(bookMeta);
+            } else {
+                if (this.name.equals("Random")) {
+                    this.randomLore = true;
+                    return;
+                }
+                if (this.name.equals("Auto")) {
+                    this.generateName = true;
+                    this.tieredName = true;
+                    return;
+                }
+                File file = new File(new StringBuilder().append(PhatLoots.dataFolder).append(File.separator).append("Item Descriptions").append(File.separator).append(this.name).append(".txt").toString());
+
+                if (file.exists()) {
+                    FileReader fReader = null;
+                    BufferedReader bReader = null;
+                    try {
+                        fReader = new FileReader(file);
+                        bReader = new BufferedReader(fReader);
+
+                        String line = bReader.readLine();
+                        if (line != null) {
+                            if (line.charAt(0) == '&') {
+                                line = line.replace('&', '§');
+                            }
+
+                            meta.setDisplayName(line);
+
+                            List lore = new LinkedList();
+                            while ((line = bReader.readLine()) != null) {
+                                line = line.replace('&', '§');
+                                lore.add(line);
+                            }
+                            meta.setLore(lore);
+                        }
+                    } catch (Exception ex) {
+                    } finally {
+                        try {
+                            fReader.close();
+                            bReader.close();
+                        } catch (Exception ex) {
+                        }
+                    }
+                } else {
+                    PhatLoots.logger.severe(new StringBuilder().append("The ").append(this.name).append(" Item Description File cannot be found").toString());
+                }
+
+                this.item.setItemMeta(meta);
+            }
+        }
     }
 }

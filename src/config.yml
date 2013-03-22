@@ -1,0 +1,110 @@
+##Config file for PhatLoots
+##Plugin made by Codisimus
+
+
+################## MOB LOOTS #################
+
+##If set to true then the items normally dropped by mobs will vanish
+##If set to false then Mob PhatLoot items will be in addition to the normally dropped loot
+##In either case, a mob's loot will not be affected if it doesn't have a PhatLoot file
+ReplaceMobLoot: true
+
+
+##If set to true then Mobs will not drop any items/exp unless they are killed by a Player
+OnlyDropLootWhenKilledByPlayer: false
+
+
+##If Mobs spawn with items through this plugin, this the chance that the item will be dropped (0 - 100)
+MobLootDropPercentage: 20
+
+
+
+################## MESSAGES ##################
+
+##These are the messages that Players will see while using PhatLoots
+##Blank messages will not be shown
+##Use § to specify colors for messages (ex. §3hi§a.)
+##<time> will be replaced by the amount of time remaining
+##<item> will be replaced by the name of the item
+##<amount> will be replaced by the amount of money/experience
+Messages:
+    Permission: §4You do not have permission to do that.
+    ExperienceLooted: §5You gained §6<amount>§5 experience from looting the chest.
+    MoneyLooted: &5You looted &6<amount>§5 from the chest.
+    AutoLoot: §5You looted §6<item>§5 from the chest.
+    Overflow: §5The Chest is overflowing with loot!
+    TimeRemaining: §4You must wait §6<time>§4 to receive more loot!
+    MobTimeRemaining: §4You must wait §6<time>§4 to receive more loot!
+    MobDroppedMoney: §5You loot §6<amount>.
+    MobDroppedItem:
+
+##PhatLoot Chests will display this name at the top of the Chest GUI
+##<name> will be replaced with the name of the linked PhatLoot
+ChestName: §6<name>
+
+#Damage estimates (as ranges) may be added to the lore of loot
+#Do so by making a line of lore one of the following tags 
+<dam>: §2<amount> damage
+<holy>: §6+<amount> holy damage
+<fire>: §4+<amount> fire
+<bug>: §4+<amount> bug repellent
+
+
+################## DEFAULTS ##################
+
+Defaults:
+    ##Amount of time before the PhatLoot is lootable again
+    ##Change Days to -1 in order for it to never reset
+    ResetTime:
+        Days: 1
+        Hours: 0
+        Minutes: 0
+        Seconds: 0
+
+
+    ##If set to true, items will go straight to player's inventory
+    ##Once their inventory is full, items will show up in the chest
+    AutoLoot: false
+
+
+    ##If set to true, when looted by one person, everyone must wait to loot it again (first person there gets the loot)
+    ##If set to false, when a player loots a Chest they must wait the specified time to loot again
+    GlobalReset: false
+
+
+    ##If set to true, loot times will be rounded down to 0
+    ##This is good if doing Daily or Hourly loots
+    ##ex.ResetTime = 1 Day, 0 Hours, 0 Minutes, and 0 Seconds
+    ##   RoundDownTime = true
+    ##   Player loots at Day 100, Hour 20, Minute 37, and Second 49
+    ##   Values that are 0 in the ResetTime are rounded down
+    ##   The loot time is set to Day 100, Hour 0, Minute 0, and Second 0
+    ##   This way, the Player can loot the next day even if it is not 24 hours later
+    ##If ResetTime = 0 Day, 0 Hours, 5 Minutes, and 0 Seconds
+    ##   then only the Seconds value is rounded down (not values to the left of Minutes)
+    RoundDownTime: false
+
+
+    ##The number of items that will be received from the collective loots
+    ItemsPerColl: 1
+
+
+
+################### OTHER ####################
+
+##Players need permission to use restricted PhatLoots
+##'phatloots.loot.Epic' or 'phatloots.loot.*' would be needed to loot Epic if it is restricted
+RestrictAll: false
+RestrictedPhatLoots:
+    - Rare
+    - Epic
+    - Donator
+
+
+##Whenever an Item is generated that has a Tier above this number it will be logged
+MinimumTierNotification: 50
+
+
+##This setting is only used if you have the plugin ChestLock
+##If set to true then PhatLoot Chests will be automatically set as unlockable
+SetChestsAsUnlockable: true

@@ -51,6 +51,15 @@ public class PhatLootChest {
         isDispenser = block.getTypeId() == 23;
     }
 
+    public PhatLootChest(String[] data) {
+        world = data[0];
+        x = Integer.parseInt(data[1]);
+        y = Integer.parseInt(data[2]);
+        z = Integer.parseInt(data[3]);
+        Block block = PhatLoots.server.getWorld(world).getBlockAt(x, y, z);
+        isDispenser = block.getTypeId() == 23;
+    }
+
     /**
      * Returns the Block that this Chest Represents
      *
@@ -97,24 +106,24 @@ public class PhatLootChest {
         return world.equals(block.getWorld().getName());
     }
 
-    public boolean addLoots(List<ItemStack> itemList, Player player, Inventory inventory) {
+    public boolean addLoots(List<ItemStack> itemList, Player player, Inventory inventory, boolean autoLoot) {
         boolean itemsInChest = false;
         for (ItemStack item: itemList) {
-            if (addLoot(item, player, inventory)) {
+            if (addLoot(item, player, inventory, autoLoot)) {
                 itemsInChest = true;
             }
         }
         return itemsInChest;
     }
 
-    public boolean addLoot(ItemStack item, Player player, Inventory inventory) {
+    public boolean addLoot(ItemStack item, Player player, Inventory inventory, boolean autoLoot) {
         //Make sure loots do not exceed the stack size
         if (item.getAmount() > item.getMaxStackSize()) {
             int id = item.getTypeId();
             short durability = item.getDurability();
 
-            addLoot(new ItemStack(id, item.getMaxStackSize(), durability), player, inventory);
-            addLoot(new ItemStack(id, item.getAmount() - item.getMaxStackSize(), durability), player, inventory);
+            addLoot(new ItemStack(id, item.getMaxStackSize(), durability), player, inventory, autoLoot);
+            addLoot(new ItemStack(id, item.getAmount() - item.getMaxStackSize(), durability), player, inventory, autoLoot);
         }
 
         PlayerInventory sack = player.getInventory();
@@ -130,12 +139,11 @@ public class PhatLootChest {
             }
 
             return false;
-        //} else if (isBrewingStand) {
-        //    BrewingStand brewingStand = (BrewingStand) getBlock().getState();
-        //    brewingStand.getInventory().
-        } else if (PhatLoots.autoLoot && sack.firstEmpty() != -1) {
+        } else if (autoLoot && sack.firstEmpty() != -1) {
             //Add the Loot to the Player's Inventory
-            player.sendMessage(PhatLootsMessages.autoLoot.replace("<item>", PhatLoot.getItemName(item)));
+            if (PhatLootsConfig.autoLoot != null) {
+                player.sendMessage(PhatLootsConfig.autoLoot.replace("<item>", PhatLoot.getItemName(item)));
+            }
             sack.addItem(item);
             return false;
         } else {
@@ -159,7 +167,7 @@ public class PhatLootChest {
         Block block = getBlock();
         block.getWorld().dropItemNaturally(block.getLocation(), item);
         if (player != null) {
-            player.sendMessage(PhatLootsMessages.overflow.replace("<item>", item.getType().name()));
+            player.sendMessage(PhatLootsConfig.overflow.replace("<item>", item.getType().name()));
         }
     }
 
@@ -189,10 +197,10 @@ public class PhatLootChest {
     @Override
     public int hashCode() {
         int hash = 7;
-        hash = 47 * hash + (this.world != null ? this.world.hashCode() : 0);
-        hash = 47 * hash + this.x;
-        hash = 47 * hash + this.y;
-        hash = 47 * hash + this.z;
+        hash = 47 * hash + (world != null ? world.hashCode() : 0);
+        hash = 47 * hash + x;
+        hash = 47 * hash + y;
+        hash = 47 * hash + z;
         return hash;
     }
 }
