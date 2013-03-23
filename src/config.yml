@@ -18,6 +18,10 @@ OnlyDropLootWhenKilledByPlayer: false
 MobLootDropPercentage: 20
 
 
+##This value is used when a Mob is killed with an item that has the Looting enchantment
+LootingBonusPerLevel: 5
+
+
 
 ################## MESSAGES ##################
 

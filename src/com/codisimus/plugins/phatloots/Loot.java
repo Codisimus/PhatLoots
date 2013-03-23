@@ -155,8 +155,8 @@ public class Loot implements Comparable, ConfigurationSerializable {
         }
     }
 
-    public boolean rollForLoot() {
-        return roll() < probability;
+    public boolean rollForLoot(double lootingBonus) {
+        return roll() < (probability - lootingBonus);
     }
 
     private double roll() {

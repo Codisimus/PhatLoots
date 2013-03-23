@@ -34,6 +34,7 @@ public class PhatLoot implements ConfigurationSerializable {
     static boolean displayTimeRemaining;
     static boolean displayMobTimeRemaining;
     static float chanceOfDrop;
+    static double lootingBonusPerLvl;
     private static PhatLootsCommandSender cs = new PhatLootsCommandSender();
     public String name; //A unique name for the Warp
     public int numberCollectiveLoots = PhatLootsConfig.defaultNumberOfLoots; //Amount of loots received from each collective loot
@@ -42,8 +43,7 @@ public class PhatLoot implements ConfigurationSerializable {
     public int expLower; //Range of experience gained when looting
     public int expUpper;
     public LinkedList<String> commands = new LinkedList<String>(); //Commands that will be run upon looting the Chest
-    private ArrayList<Loot>[] lootTables = (ArrayList[]) new ArrayList[11];
-    ; //List of items that may be given
+    private ArrayList<Loot>[] lootTables = (ArrayList[]) new ArrayList[11]; //List of items that may be given
 
     public int days = PhatLootsConfig.defaultDays; //Reset time (will never reset if any are negative)
     public int hours = PhatLootsConfig.defaultHours;
@@ -159,9 +159,9 @@ public class PhatLoot implements ConfigurationSerializable {
 
         lootCommands(player);
 
-        boolean itemsInChest = chest.addLoots(lootIndividual(), player, inventory, autoLoot);
+        boolean itemsInChest = chest.addLoots(lootIndividual(0), player, inventory, autoLoot);
 
-        if (chest.addLoots(lootCollective(), player, inventory, autoLoot)) {
+        if (chest.addLoots(lootCollective(0), player, inventory, autoLoot)) {
             itemsInChest = true;
         }
 
@@ -183,6 +183,12 @@ public class PhatLoot implements ConfigurationSerializable {
     }
 
     public int rollForLoot(Player player, List<ItemStack> drops) {
+        double lootingBonus = 0;
+        ItemStack weapon = player == null ? null : player.getItemInHand();
+        if (weapon != null) {
+            lootingBonus = lootingBonusPerLvl * weapon.getEnchantmentLevel(Enchantment.LOOT_BONUS_MOBS);
+        }
+
         if (onlyDropOnPlayerKill && player == null) {
             drops.clear();
             return 0;
@@ -217,8 +223,8 @@ public class PhatLoot implements ConfigurationSerializable {
             }
         }
 
-        List<ItemStack> loot = lootIndividual();
-        loot.addAll(lootCollective());
+        List<ItemStack> loot = lootIndividual(lootingBonus);
+        loot.addAll(lootCollective(lootingBonus));
         if (player != null && PhatLootsConfig.mobDroppedItem != null) {
             for (ItemStack item : loot) {
                 String msg = PhatLootsConfig.mobDroppedItem.replace("<item>", getItemName(item));
@@ -266,7 +272,7 @@ public class PhatLoot implements ConfigurationSerializable {
     }
 
     public void rollForLoot(LivingEntity entity) {
-        LinkedList<ItemStack> loot = lootCollective();
+        LinkedList<ItemStack> loot = lootCollective(0);
         if (loot.size() != 5) {
             PhatLoots.logger.warning("Cannot add loot to " + entity.getType().getName() + " because the amount of loot was not equal to 5");
         }
@@ -351,11 +357,11 @@ public class PhatLoot implements ConfigurationSerializable {
      * Each item is rolled for to determine if it will by added to the Chest
      * Money is rolled for to determine how much will be given within the range
      */
-    public List<ItemStack> lootIndividual() {
+    public List<ItemStack> lootIndividual(double lootingBonus) {
         List<ItemStack> itemList = new LinkedList<ItemStack>();
         for (Loot loot : lootTables[INDIVIDUAL]) {
             //Roll for item
-            if (loot.rollForLoot()) {
+            if (loot.rollForLoot(lootingBonus)) {
                 itemList.add(loot.getItem());
             }
         }
@@ -366,7 +372,7 @@ public class PhatLoot implements ConfigurationSerializable {
      * Fills the Chest (Block) with loot
      * Items are rolled for in order until the maximum number is added to the Chest
      */
-    public LinkedList<ItemStack> lootCollective() {
+    public LinkedList<ItemStack> lootCollective(double lootingBonus) {
         LinkedList<ItemStack> itemList = new LinkedList<ItemStack>();
 
         //Loot from each of the first 5 collective loots
@@ -381,7 +387,7 @@ public class PhatLoot implements ConfigurationSerializable {
                     //Roll for weighted loot
                     int numberLooted = 0;
                     while (numberLooted < numberCollectiveLoots) {
-                        int j = PhatLoots.random.nextInt(100);
+                        int j = Math.min(100, PhatLoots.random.nextInt(100) + (int) lootingBonus);
                         for (Loot loot : lootTables[i]) {
                             j -= loot.getProbability();
                             if (j <= 0) {

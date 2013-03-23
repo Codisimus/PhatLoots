@@ -41,6 +41,7 @@ public class PhatLootsConfig {
         PhatLoot.replaceMobLoot = config.getBoolean("ReplaceMobLoot");
         PhatLoot.onlyDropOnPlayerKill = config.getBoolean("OnlyDropLootWhenKilledByPlayer");
         PhatLoot.chanceOfDrop = (float) (config.getDouble("MobLootDropPercentage") / 100.0D);
+        PhatLoot.lootingBonusPerLvl = config.getDouble("LootingBonusPerLevel");
 
 
         /* MESSAGES */
