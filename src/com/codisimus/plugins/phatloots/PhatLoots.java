@@ -66,17 +66,17 @@ public class PhatLoots extends JavaPlugin {
 
         dataFolder = dir.getPath();
 
-        dir = new File(dataFolder + File.separator + "PhatLoots");
+        dir = new File(dataFolder + File.separator + "LootTables");
         if (!dir.isDirectory()) {
             dir.mkdir();
         }
 
-        dir = new File(dataFolder + File.separator + "Item Descriptions");
+        dir = new File(dataFolder + File.separator + "Chests");
         if (!dir.isDirectory()) {
             dir.mkdir();
         }
 
-        dir = new File(dataFolder + File.separator + "Books");
+        dir = new File(dataFolder + File.separator + "LootTimes");
         if (!dir.isDirectory()) {
             dir.mkdir();
         }
