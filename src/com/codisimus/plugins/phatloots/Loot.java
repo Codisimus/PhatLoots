@@ -13,6 +13,7 @@ import java.util.Random;
 import java.util.TreeMap;
 import java.util.logging.Logger;
 import org.apache.commons.lang.WordUtils;
+import org.bukkit.Bukkit;
 import org.bukkit.Color;
 import org.bukkit.Material;
 import org.bukkit.Server;
@@ -258,7 +259,7 @@ public class Loot implements Comparable, ConfigurationSerializable {
         }
 
         ItemMeta meta = clone.hasItemMeta()
-                        ? clone.getItemMeta().clone()
+                        ? clone.getItemMeta()
                         : PhatLoots.server.getItemFactory().getItemMeta(clone.getType());
 
         if (generateName || tieredName || randomLore) {
@@ -317,6 +318,7 @@ public class Loot implements Comparable, ConfigurationSerializable {
             }
 
             meta.setDisplayName(nameBuilder.toString());
+            clone.setItemMeta(meta);
         }
 
         if (meta.hasLore()) {
@@ -479,10 +481,11 @@ public class Loot implements Comparable, ConfigurationSerializable {
                 }
                 break;
             }
+            meta = clone.getItemMeta();
             meta.setLore(lore);
+            clone.setItemMeta(meta);
         }
 
-        clone.setItemMeta(meta);
         return clone;
     }
 
