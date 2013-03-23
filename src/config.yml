@@ -45,16 +45,16 @@ ChestName: §6<name>
 
 #Damage estimates (as ranges) may be added to the lore of loot
 #Do so by making a line of lore one of the following tags
-<dam>: §2<amount> damage
+<dam>: §5<amount> damage
 <holy>: §6+<amount> holy damage
 <fire>: §4+<amount> fire
-<bug>: §4+<amount> bug repellent
-<thorns>: §4<chance>% chance of 1-4 damage
-<def>: §2<amount> defense
+<bug>: §2+<amount> bug repellent
+<thorns>: §8<chance>% chance of 1-4 damage
+<def>: §5<amount> defense
 <firedef>: §4+<amount> fire defense
-<rangedef>: §4+<amount> range defense
-<blastdef>: §4+<amount> explosion defense
-<falldef>: §4+<amount> fall defense
+<rangedef>: §2+<amount> range defense
+<blastdef>: §1+<amount> explosion defense
+<falldef>: §b+<amount> fall defense
 
 
 ################## DEFAULTS ##################
