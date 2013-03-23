@@ -26,8 +26,8 @@ import org.bukkit.inventory.ItemStack;
  */
 public class PhatLootsCommand implements CommandExecutor {
     private static enum Action {
-        HELP, MAKE, DELETE, LINK, UNLINK, TIME, GLOBAL, ROUND, ADD,
-        REMOVE, MONEY, EXP, LIST, INFO, GIVE, RESET, CLEAN, RL
+        HELP, MAKE, DELETE, LINK, UNLINK, TIME, GLOBAL, AUTOLOOT, ROUND,
+        ADD, REMOVE, MONEY, EXP, LIST, INFO, GIVE, RESET, CLEAN, RL
     }
     private static enum Help { CREATE, SETUP, LOOT }
     private static final HashSet<Byte> TRANSPARENT = Sets.newHashSet(
@@ -95,10 +95,10 @@ public class PhatLootsCommand implements CommandExecutor {
         switch (action) {
         case MAKE:
             //Cancel if the sender does not have permission to use the command
-        	if (!sender.hasPermission("phatloots.make")) {
-        		sender.sendMessage(PhatLootsConfig.permission);
-        		return true;
-        	}
+            if (!sender.hasPermission("phatloots.make")) {
+                    sender.sendMessage(PhatLootsConfig.permission);
+                    return true;
+            }
 
             if (args.length == 2) {
                 make(sender, args[1]);
@@ -110,10 +110,10 @@ public class PhatLootsCommand implements CommandExecutor {
 
         case DELETE:
             //Cancel if the sender does not have permission to use the command
-        	if (!sender.hasPermission("phatloots.make")) {
-        		sender.sendMessage(PhatLootsConfig.permission);
-                return true;
-        	}
+            if (!sender.hasPermission("phatloots.make")) {
+                    sender.sendMessage(PhatLootsConfig.permission);
+            return true;
+            }
 
             if (args.length == 2) {
                 PhatLoot delete = PhatLoots.getPhatLoot(args[1]);
@@ -131,11 +131,11 @@ public class PhatLootsCommand implements CommandExecutor {
             return true;
 
         case LINK:
-        	//Cancel if the sender does not have permission to use the command
-        	if (!sender.hasPermission("phatloots.make")) {
-                    sender.sendMessage(PhatLootsConfig.permission);
-                    return true;
-        	}
+            //Cancel if the sender does not have permission to use the command
+            if (!sender.hasPermission("phatloots.make")) {
+                sender.sendMessage(PhatLootsConfig.permission);
+                return true;
+            }
 
             if (args.length == 2) {
                 link(sender, args[1]);
@@ -146,11 +146,12 @@ public class PhatLootsCommand implements CommandExecutor {
             return true;
 
         case UNLINK:
-        	//Cancel if the sender does not have permission to use the command
-        	if (!sender.hasPermission("phatloots.make")) {
-                    sender.sendMessage(PhatLootsConfig.permission);
-                    return true;
-        	}
+            //Cancel if the sender does not have permission to use the command
+            if (!sender.hasPermission("phatloots.make")) {
+                sender.sendMessage(PhatLootsConfig.permission);
+                return true;
+            }
+
             switch (args.length) {
             case 1:
                 unlink(sender, null);
@@ -167,10 +168,10 @@ public class PhatLootsCommand implements CommandExecutor {
 
         case TIME:
             //Cancel if the sender does not have permission to use the command
-        	if (!sender.hasPermission("phatloots.make")) {
-                    sender.sendMessage(PhatLootsConfig.permission);
-                    return true;
-        	}
+            if (!sender.hasPermission("phatloots.make")) {
+                sender.sendMessage(PhatLootsConfig.permission);
+                return true;
+            }
 
 
             switch (args.length) {
@@ -216,10 +217,10 @@ public class PhatLootsCommand implements CommandExecutor {
 
         case GLOBAL:
             //Cancel if the sender does not have permission to use the command
-        	if (!sender.hasPermission("phatloots.make")) {
-                    sender.sendMessage(PhatLootsConfig.permission);
-                    return true;
-        	}
+            if (!sender.hasPermission("phatloots.make")) {
+                sender.sendMessage(PhatLootsConfig.permission);
+                return true;
+            }
 
             switch (args.length) {
             case 2: //Name is not provided
@@ -244,12 +245,42 @@ public class PhatLootsCommand implements CommandExecutor {
             sendSetupHelp(sender);
             return true;
 
+        case AUTOLOOT:
+            //Cancel if the sender does not have permission to use the command
+            if (!sender.hasPermission("phatloots.make")) {
+                sender.sendMessage(PhatLootsConfig.permission);
+                return true;
+            }
+
+            switch (args.length) {
+            case 2: //Name is not provided
+                try {
+                    autoLoot(sender, null, Boolean.parseBoolean(args[1]));
+                    return true;
+                } catch (Exception notBool) {
+                    break;
+                }
+
+            case 3: //Name is provided
+                try {
+                    autoLoot(sender, args[1], Boolean.parseBoolean(args[2]));
+                    return true;
+                } catch (Exception notBool) {
+                    break;
+                }
+
+            default: break;
+            }
+
+            sendSetupHelp(sender);
+            return true;
+
         case ROUND:
             //Cancel if the sender does not have permission to use the command
-        	if (!sender.hasPermission("phatloots.make")) {
-                    sender.sendMessage(PhatLootsConfig.permission);
-                    return true;
-        	}
+            if (!sender.hasPermission("phatloots.make")) {
+                sender.sendMessage(PhatLootsConfig.permission);
+                return true;
+            }
 
             switch (args.length) {
             case 2: //Name is not provided
@@ -827,6 +858,26 @@ public class PhatLootsCommand implements CommandExecutor {
     }
 
     /**
+     * Modifies autoLoot of the specified PhatLoot
+     *
+     * @param sender The CommandSender modifying the PhatLoot
+     * @param name The name of the PhatLoot to be modified or null to indicate all linked PhatLoots
+     * @param autoLoot The new value of global
+     */
+    public static void autoLoot(CommandSender sender, String name, boolean autoLoot) {
+        for (PhatLoot phatLoot : getPhatLoots(sender, name)) {
+            if (phatLoot.autoLoot != autoLoot) {
+                phatLoot.autoLoot = autoLoot;
+                phatLoot.reset(null);
+
+                sender.sendMessage("§5PhatLoot §6" + phatLoot.name + "§5 has been set to"
+                        + (autoLoot ? "automatically add Loot to the looters inventory." : "open the chest inventory for the looter."));
+            }
+            phatLoot.save();
+        }
+    }
+
+    /**
      * Modifies round of the specified PhatLoot
      *
      * @param sender The CommandSender modifying the PhatLoot
@@ -1287,13 +1338,12 @@ public class PhatLootsCommand implements CommandExecutor {
         sender.sendMessage("§6Amount may be a number §4(100)§6 or range §4(100-500)");
         sender.sendMessage("§2/"+command+" time [Name] <Days> <Hrs> <Mins> <Secs>§b Set cooldown time for PhatLoot");
         sender.sendMessage("§2/"+command+" time [Name] never§b Set PhatLoot to only be lootable once per chest");
-        sender.sendMessage("§2/"+command+" global [Name] true§b Set PhatLoot to a global cooldown");
-        sender.sendMessage("§2/"+command+" global [Name] false§b Set PhatLoot to an individual cooldown");
+        sender.sendMessage("§2/"+command+" global [Name] <true|false>§b Set PhatLoot to global or individual");
+        sender.sendMessage("§2/"+command+" autoloot [Name] <true|false>§b Set if Items are automatically looted");
         sender.sendMessage("§2/"+command+" round [Name] <true|false>§b Set if cooldown times should round down (ex. Daily/Hourly loots)");
         sender.sendMessage("§2/"+command+" money [Name] <Amount>§b Set money range to be looted");
         sender.sendMessage("§2/"+command+" exp [Name] <Amount>§b Set experience to be gained");
-        sender.sendMessage("§2/"+command+" add cmd [Name] [Percent] /<Command>§b Add a Command that will be executed upon looting");
-        sender.sendMessage("§2/"+command+" remove cmd [Name] /<Command>§b Remove a Command that will be executed upon looting");
+        sender.sendMessage("§2/"+command+" <add|remove> cmd [Name] [Percent] /<Command>§b Set a Command that will be executed upon looting");
         sender.sendMessage("§5To add a percent chance to a cmd use % similar to item loot");
         sender.sendMessage("§bex. §1/"+command+" add cmd Test %50 /lightning <player>");
     }
