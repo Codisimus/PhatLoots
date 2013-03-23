@@ -692,7 +692,7 @@ public class PhatLootsCommand implements CommandExecutor {
 
         phatLoot.addChest(block);
         sender.sendMessage("§5Target " + blockName + " has been linked to PhatLoot §6" + name);
-        phatLoot.save();
+        phatLoot.saveChests();
     }
 
     /**
@@ -744,7 +744,7 @@ public class PhatLootsCommand implements CommandExecutor {
         }
 
         player.sendMessage("§6" + chests + "§5 chests have been linked to PhatLoot §5" + name);
-        phatLoot.save();
+        phatLoot.saveChests();
     }
 
     /**
@@ -773,7 +773,7 @@ public class PhatLootsCommand implements CommandExecutor {
                 break;
             }
             sender.sendMessage("§5Target " + blockName + " has been unlinked from PhatLoot §6" + phatLoot.name);
-            phatLoot.save();
+            phatLoot.saveChests();
         }
     }
 
@@ -818,6 +818,7 @@ public class PhatLootsCommand implements CommandExecutor {
                 sender.sendMessage("§5PhatLoot §6" + phatLoot.name + "§5 has been set to §6"
                         + (global ? "global" : "individual") + "§5 reset");
             }
+            phatLoot.save();
         }
     }
 

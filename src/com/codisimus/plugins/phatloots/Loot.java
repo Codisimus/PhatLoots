@@ -261,7 +261,7 @@ public class Loot implements Comparable, ConfigurationSerializable {
                         ? clone.getItemMeta().clone()
                         : PhatLoots.server.getItemFactory().getItemMeta(clone.getType());
 
-        if ((generateName) || (tieredName) || (randomLore)) {
+        if (generateName || tieredName || randomLore) {
             StringBuilder nameBuilder = new StringBuilder();
             if (randomLore) {
                 String folder = clone.getType() + clone.getEnchantments().toString();
