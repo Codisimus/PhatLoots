@@ -6,6 +6,7 @@ import com.codisimus.plugins.regionown.Region;
 import com.codisimus.plugins.regionown.RegionSelector;
 import com.google.common.collect.Sets;
 import java.util.*;
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
@@ -320,7 +321,6 @@ public class PhatLootsCommand implements CommandExecutor {
             }
 
             String phatLoot = null; //Name of the PhatLoot (may be set to 'hand')
-            String description = ""; //Name of the Description File (defaulted to null or unused)
             int id = 0; //The ID of the Loot collection (defaulted to 0 == IndividualLoots)
             int baseAmount = 1; //Stack size of the Loot item (defaulted to 1)
             int bonusAmount = 1; //Amount to possibly increase the Stack size of the Loot item (defaulted to 1)
@@ -533,7 +533,7 @@ public class PhatLootsCommand implements CommandExecutor {
             }
 
         case GIVE:
-            if (args.length != 3) {
+            if (args.length < 3) {
                 if (sender instanceof Player) {
                     sendHelp(sender);
                     return true;
@@ -550,19 +550,23 @@ public class PhatLootsCommand implements CommandExecutor {
                 }
             }
 
-            Player player = PhatLoots.server.getPlayer(args[2]);
+            Player player = PhatLoots.server.getPlayer(args[1]);
             if (player == null) {
-                sender.sendMessage("§6" + args[2] + " §4is not online");
+                sender.sendMessage("§6" + args[1] + " §4is not online");
                 return true;
             }
 
-            PhatLoot pLoot = PhatLoots.getPhatLoot(args[1]);
+            PhatLoot pLoot = PhatLoots.getPhatLoot(args[2]);
             if (pLoot == null) {
-                sender.sendMessage("§4PhatLoot §6" + args[1] + "§4 does not exist");
+                sender.sendMessage("§4PhatLoot §6" + args[2] + "§4 does not exist");
                 return true;
             }
 
-            Inventory inventory = PhatLoots.server.createInventory(player, 54, pLoot.name);
+            String name = args.length == 3
+                          ? pLoot.name
+                          : concatArgs(args, 3);
+
+            Inventory inventory = PhatLoots.server.createInventory(player, 54, name);
             player.openInventory(inventory);
             pLoot.rollForLoot(player, new PhatLootChest(player.getLocation().getBlock()), inventory);
             return true;
@@ -1245,7 +1249,7 @@ public class PhatLootsCommand implements CommandExecutor {
         sender.sendMessage("§2/"+command+" <Name>§b Loot a virtual Chest for the given PhatLoot");
         sender.sendMessage("§2/"+command+" list§b List all PhatLoots");
         sender.sendMessage("§2/"+command+" info [Name]§b List info of PhatLoot");
-        sender.sendMessage("§2/"+command+" give <Name> <Player>§b Force Sender to open a PhatLoot");
+        sender.sendMessage("§2/"+command+" give <Player> <PhatLoot> [Title]§b Force Player to open a PhatLoot");
         sender.sendMessage("§2/"+command+" reset§b Reset looted times for target Block");
         sender.sendMessage("§2/"+command+" reset <Name>§b Reset looted times for PhatLoot");
         sender.sendMessage("§2/"+command+" reset all§b Reset looted times for all PhatLoots");
@@ -1342,8 +1346,8 @@ public class PhatLootsCommand implements CommandExecutor {
         } else {
         	//Cancel is the sender is console
         	if (!(sender instanceof Player)) {
-        		sender.sendMessage("§4You cannot do this from the console!");
-        		return phatLoots;
+                    sender.sendMessage("§4You cannot do this from the console!");
+                    return phatLoots;
         	}
 
             //Cancel if the sender is not targeting a correct Block
@@ -1442,7 +1446,7 @@ public class PhatLootsCommand implements CommandExecutor {
         	}
         }
 
-        Material material = null;
+        Material material;
         if (string.matches("[0-9]+")) {
             int id = Integer.parseInt(string);
             material = Material.getMaterial(id);
@@ -1543,5 +1547,27 @@ public class PhatLootsCommand implements CommandExecutor {
             }
         }
         return -1;
+    }
+
+    /**
+     * Concats arguments together to create a sentence from words
+     * This also replaces & with § to add color codes
+     *
+     * @param sender the Player concating
+     * @param args the arguments to concat
+     * @param first Which argument should the sentence start with
+     * @return The new String that was created
+     */
+    private static String concatArgs(String[] args, int first) {
+        StringBuilder sb = new StringBuilder();
+        if (first > args.length) {
+            return "";
+        }
+        for (int i = first; i <= args.length - 1; i++) {
+            sb.append(" ");
+            sb.append(args[i]);
+        }
+        String string = sb.substring(1);
+        return ChatColor.translateAlternateColorCodes('&', string);
     }
 }
