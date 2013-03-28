@@ -42,7 +42,7 @@ public class PhatLoot implements ConfigurationSerializable {
     public int moneyUpper;
     public int expLower; //Range of experience gained when looting
     public int expUpper;
-    public LinkedList<String> commands = new LinkedList<String>(); //Commands that will be run upon looting the Chest
+    public ArrayList<String> commands = new ArrayList<String>(); //Commands that will be run upon looting the Chest
     private ArrayList<Loot>[] lootTables = (ArrayList[]) new ArrayList[11]; //List of items that may be given
 
     public int days = PhatLootsConfig.defaultDays; //Reset time (will never reset if any are negative)
@@ -96,6 +96,8 @@ public class PhatLoot implements ConfigurationSerializable {
             lootTables[i] = (ArrayList) nestedMap.get("Coll" + i);
             Collections.sort(lootTables[i]);
         }
+
+        commands = (ArrayList) map.get("Commands");
 
         loadChests();
         loadLootTimes();
@@ -764,6 +766,7 @@ public class PhatLoot implements ConfigurationSerializable {
         return hash;
     }
 
+    @Override
     public Map<String, Object> serialize() {
         Map map = new TreeMap();
         map.put("Name", name);
@@ -797,6 +800,7 @@ public class PhatLoot implements ConfigurationSerializable {
         }
         map.put("Loots", nestedMap);
 
+        map.put("Commands", commands);
         return map;
     }
 
