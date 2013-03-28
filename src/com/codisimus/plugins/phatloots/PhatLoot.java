@@ -97,7 +97,9 @@ public class PhatLoot implements ConfigurationSerializable {
             Collections.sort(lootTables[i]);
         }
 
-        commands = (ArrayList) map.get("Commands");
+        if (map.containsKey("Commands")) {
+            commands = (ArrayList) map.get("Commands");
+        }
 
         loadChests();
         loadLootTimes();
