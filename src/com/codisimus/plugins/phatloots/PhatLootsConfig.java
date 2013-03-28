@@ -3,6 +3,7 @@ package com.codisimus.plugins.phatloots;
 import java.io.File;
 import java.util.HashSet;
 import java.util.logging.Logger;
+import org.bukkit.ChatColor;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -47,29 +48,29 @@ public class PhatLootsConfig {
         /* MESSAGES */
 
         ConfigurationSection section = config.getConfigurationSection("Messages");
-        permission = section.getString("Permission");
-        experienceLooted = section.getString("ExperienceLooted");
-        moneyLooted = section.getString("MoneyLooted");
-        autoLoot = section.getString("AutoLoot");
-        overflow = section.getString("Overflow");
-        timeRemaining = section.getString("TimeRemaining");
-        mobTimeRemaining = section.getString("MobTimeRemaining");
-        mobDroppedMoney = section.getString("MobDroppedMoney");
-        mobDroppedItem = section.getString("MobDroppedItem");
-        mobDroppedExperience = section.getString("MobDroppedExperience");
+        permission = getString(section, "Permission");
+        experienceLooted = getString(section, "ExperienceLooted");
+        moneyLooted = getString(section, "MoneyLooted");
+        autoLoot = getString(section, "AutoLoot");
+        overflow = getString(section, "Overflow");
+        timeRemaining = getString(section, "TimeRemaining");
+        mobTimeRemaining = getString(section, "MobTimeRemaining");
+        mobDroppedMoney = getString(section, "MobDroppedMoney");
+        mobDroppedItem = getString(section, "MobDroppedItem");
+        mobDroppedExperience = getString(section, "MobDroppedExperience");
 
-        PhatLootsListener.chestName = config.getString("ChestName");
+        PhatLootsListener.chestName = getString(config, "ChestName");
 
-        Loot.damageString = config.getString("<dam>");
-        Loot.holyString = config.getString("<holy>");
-        Loot.fireString = config.getString("<fire>");
-        Loot.bugString = config.getString("<bug>");
-        Loot.thornsString = config.getString("<thorns>");
-        Loot.defenseString = config.getString("<def>");
-        Loot.fireDefenseString = config.getString("<firedef>");
-        Loot.rangeDefenseString = config.getString("<rangedef>");
-        Loot.blastDefenseString = config.getString("<blastdef>");
-        Loot.fallDefenseString = config.getString("<falldef>");
+        Loot.damageString = getString(config, "<dam>");
+        Loot.holyString = getString(config, "<holy>");
+        Loot.fireString = getString(config, "<fire>");
+        Loot.bugString = getString(config, "<bug>");
+        Loot.thornsString = getString(config, "<thorns>");
+        Loot.defenseString = getString(config, "<def>");
+        Loot.fireDefenseString = getString(config, "<firedef>");
+        Loot.rangeDefenseString = getString(config, "<rangedef>");
+        Loot.blastDefenseString = getString(config, "<blastdef>");
+        Loot.fallDefenseString = getString(config, "<falldef>");
 
 
         /* DEFAULTS */
@@ -91,6 +92,9 @@ public class PhatLootsConfig {
 
         restrictAll = config.getBoolean("RestrictAll");
         restricted.addAll(config.getStringList("RestrictedPhatLoots"));
+        for (String string : restricted) {
+            string = ChatColor.translateAlternateColorCodes('&', string);
+        }
         Loot.tierNotify = config.getInt("MinimumTierNotification");
         PhatLootsCommand.setUnlockable = config.getBoolean("SetChestsAsUnlockable");
 
@@ -123,5 +127,9 @@ public class PhatLootsConfig {
             PhatLoots.logger.severe("Failed to load enchantments.yml");
             ex.printStackTrace();
         }
+    }
+
+    private static String getString(ConfigurationSection config, String key) {
+        return ChatColor.translateAlternateColorCodes('&', config.getString(key));
     }
 }

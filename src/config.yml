@@ -27,38 +27,38 @@ LootingBonusPerLevel: 5
 
 ##These are the messages that Players will see while using PhatLoots
 ##Blank messages will not be shown
-##Use § to specify colors for messages (ex. §3hi§a.)
+##Use & to specify colors for messages (ex. &3hi&a.)
 ##<time> will be replaced by the amount of time remaining
 ##<item> will be replaced by the name of the item
 ##<amount> will be replaced by the amount of money/experience
 Messages:
-    Permission: §4You do not have permission to do that.
-    ExperienceLooted: §5You gained §6<amount>§5 experience from looting the chest.
-    MoneyLooted: &5You looted &6<amount>§5 from the chest.
-    AutoLoot: §5You looted §6<item>§5 from the chest.
-    Overflow: §5The Chest is overflowing with loot!
-    TimeRemaining: §4You must wait §6<time>§4 to receive more loot!
-    MobTimeRemaining: §4You must wait §6<time>§4 to receive more loot!
-    MobDroppedMoney: §5You loot §6<amount>.
-    MobDroppedItem:
-    MobDroppedExperience:
+    Permission: '&4You do not have permission to do that.'
+    ExperienceLooted: '&5You gained &6<amount>&5 experience from looting the chest.'
+    MoneyLooted: '&5You looted &6<amount>&5 from the chest.'
+    AutoLoot: '&5You looted &6<item>&5 from the chest.'
+    Overflow: '&5The Chest is overflowing with loot!'
+    TimeRemaining: '&4You must wait &6<time>&4 to receive more loot!'
+    MobTimeRemaining: '&4You must wait &6<time>&4 to receive more loot!'
+    MobDroppedMoney: '&5You loot &6<amount>.'
+    MobDroppedItem: ''
+    MobDroppedExperience: ''
 
 ##PhatLoot Chests will display this name at the top of the Chest GUI
 ##<name> will be replaced with the name of the linked PhatLoot
-ChestName: §6<name>
+ChestName: '&6<name>'
 
 #Damage estimates (as ranges) may be added to the lore of loot
 #Do so by making a line of lore one of the following tags
-<dam>: §5<amount> damage
-<holy>: §6+<amount> holy damage
-<fire>: §4+<amount> fire
-<bug>: §2+<amount> bug repellent
-<thorns>: §8<chance>% chance of 1-4 damage
-<def>: §5<amount> defense
-<firedef>: §4+<amount> fire defense
-<rangedef>: §2+<amount> range defense
-<blastdef>: §1+<amount> explosion defense
-<falldef>: §b+<amount> fall defense
+<dam>: '&5<amount> damage'
+<holy>: '&6+<amount> holy damage'
+<fire>: '&4+<amount> fire'
+<bug>: '&2+<amount> bug repellent'
+<thorns>: '&8<chance>% chance of 1-4 damage'
+<def>: '&5<amount> defense'
+<firedef>: '&4+<amount> fire defense'
+<rangedef>: '&2+<amount> range defense'
+<blastdef>: '&1+<amount> explosion defense'
+<falldef>: '&b+<amount> fall defense'
 
 
 ################## DEFAULTS ##################
@@ -107,9 +107,9 @@ Defaults:
 ##'phatloots.loot.Epic' or 'phatloots.loot.*' would be needed to loot Epic if it is restricted
 RestrictAll: false
 RestrictedPhatLoots:
-    - Rare
-    - Epic
-    - Donator
+    - 'Rare'
+    - 'Epic'
+    - 'Donator'
 
 
 ##Whenever an Item is generated that has a Tier above this number it will be logged
