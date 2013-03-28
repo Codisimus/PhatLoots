@@ -426,7 +426,6 @@ public class PhatLoot implements ConfigurationSerializable {
         }
 
         lootTimes.setProperty(chest.toString() + "'" + player, String.valueOf(System.currentTimeMillis()));
-        saveLootTimes();
     }
 
     /**
@@ -588,11 +587,10 @@ public class PhatLoot implements ConfigurationSerializable {
                 }
             }
         }
-        saveLootTimes();
     }
 
     public void clean(Block block) {
-        if ((this.days == 0) && (this.hours == 0) && (this.minutes == 0) && (this.seconds == 0)) {
+        if (days == 0 && hours == 0 && minutes == 0 && seconds == 0) {
             reset(block);
             return;
         }
@@ -611,12 +609,11 @@ public class PhatLoot implements ConfigurationSerializable {
 
         }
 
-        //Calculate the time that the chest will reset
         long time = System.currentTimeMillis()
-                    + days * DateUtils.MILLIS_PER_DAY
-                    + hours * DateUtils.MILLIS_PER_HOUR
-                    + minutes * DateUtils.MILLIS_PER_MINUTE
-                    + seconds * DateUtils.MILLIS_PER_SECOND;
+                    - days * DateUtils.MILLIS_PER_DAY
+                    - hours * DateUtils.MILLIS_PER_HOUR
+                    - minutes * DateUtils.MILLIS_PER_MINUTE
+                    - seconds * DateUtils.MILLIS_PER_SECOND;
 
         for (String key : keys) {
             if (Long.parseLong(lootTimes.getProperty(key)) < time) {

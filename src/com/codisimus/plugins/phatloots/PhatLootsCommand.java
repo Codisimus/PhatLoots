@@ -1603,7 +1603,6 @@ public class PhatLootsCommand implements CommandExecutor {
      * Concats arguments together to create a sentence from words
      * This also replaces & with § to add color codes
      *
-     * @param sender the Player concating
      * @param args the arguments to concat
      * @param first Which argument should the sentence start with
      * @return The new String that was created

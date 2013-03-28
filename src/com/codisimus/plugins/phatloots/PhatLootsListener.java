@@ -196,7 +196,6 @@ public class PhatLootsListener implements Listener {
         PhatLootChest plChest = new PhatLootChest(block);
         for (PhatLoot phatLoot : phatLoots) {
             phatLoot.rollForLoot(player, plChest, inventory);
-            phatLoot.saveLootTimes();
         }
     }
 
@@ -262,7 +261,6 @@ public class PhatLootsListener implements Listener {
         PhatLootChest plChest = new PhatLootChest(block);
         for (PhatLoot phatLoot : PhatLoots.getPhatLoots(block, player)) {
             phatLoot.rollForLoot(player, plChest, inventory);
-            phatLoot.saveLootTimes();
         }
     }
 
