@@ -259,7 +259,7 @@ public class Loot implements Comparable, ConfigurationSerializable {
         }
 
         ItemMeta meta = clone.hasItemMeta()
-                        ? clone.getItemMeta()
+                        ? clone.getItemMeta().clone()
                         : PhatLoots.server.getItemFactory().getItemMeta(clone.getType());
 
         if (generateName || tieredName || randomLore) {
