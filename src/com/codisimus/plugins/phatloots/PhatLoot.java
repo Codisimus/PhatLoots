@@ -575,7 +575,7 @@ public class PhatLoot implements ConfigurationSerializable {
             lootTimes.clear();
         } else {
             //Find the PhatLootChest of the given Block and reset it
-            String chest = block.getWorld() + "'" + block.getX() + "'" + block.getY() + "'" + block.getZ() + "'";
+            String chest = block.getWorld().getName() + "'" + block.getX() + "'" + block.getY() + "'" + block.getZ() + "'";
             for (String key : lootTimes.stringPropertyNames()) {
                 if (key.startsWith(chest)) {
                     lootTimes.remove(key);
@@ -590,18 +590,16 @@ public class PhatLoot implements ConfigurationSerializable {
             return;
         }
         Set<String> keys;
-        String chest;
         if (block == null) {
-            keys = this.lootTimes.stringPropertyNames();
+            keys = lootTimes.stringPropertyNames();
         } else {
             keys = new HashSet();
-            chest = block.getWorld() + "'" + block.getX() + "'" + block.getY() + "'" + block.getZ() + "'";
-            for (String key : this.lootTimes.stringPropertyNames()) {
+            String chest = block.getWorld().getName() + "'" + block.getX() + "'" + block.getY() + "'" + block.getZ() + "'";
+            for (String key : lootTimes.stringPropertyNames()) {
                 if (key.startsWith(chest)) {
                     keys.add(key);
                 }
             }
-
         }
 
         long time = System.currentTimeMillis()

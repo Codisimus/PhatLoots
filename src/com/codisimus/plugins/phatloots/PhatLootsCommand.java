@@ -1201,11 +1201,11 @@ public class PhatLootsCommand implements CommandExecutor {
                                     + name + "§5 have been reset.");
             }
         } else if (sender != null) {
-        	//Cancel is the sender is console
-        	if (!(sender instanceof Player)) {
-        		sender.sendMessage("§4You cannot do this from the console!");
-        		return;
-        	}
+            //Cancel is the sender is console
+            if (!(sender instanceof Player)) {
+                    sender.sendMessage("§4You cannot do this from the console!");
+                    return;
+            }
 
             Block block = ((Player) sender).getTargetBlock(TRANSPARENT, 10);
             String blockName = "Block";
@@ -1214,10 +1214,10 @@ public class PhatLootsCommand implements CommandExecutor {
                 switch (block.getType()) {
                 case CHEST:
                 case ENDER_CHEST:
-                	blockName = "Chest";
+                    blockName = "Chest";
                     break;
                 case DISPENSER:
-                	blockName = "Dispenser";
+                    blockName = "Dispenser";
                     break;
                 }
                 sender.sendMessage("§5Target "+ blockName + " has been reset.");
@@ -1268,8 +1268,8 @@ public class PhatLootsCommand implements CommandExecutor {
         } else if (sender != null) {
         	//Cancel is the sender is console
         	if (!(sender instanceof Player)) {
-        		sender.sendMessage("§4You cannot do this from the console!");
-        		return;
+                    sender.sendMessage("§4You cannot do this from the console!");
+                    return;
         	}
 
             Block block = ((Player) sender).getTargetBlock(TRANSPARENT, 10);
@@ -1279,10 +1279,10 @@ public class PhatLootsCommand implements CommandExecutor {
                 switch (block.getType()) {
                 case CHEST:
                 case ENDER_CHEST:
-                	blockName = "Chest";
+                    blockName = "Chest";
                     break;
                 case DISPENSER:
-                	blockName = "Dispenser";
+                    blockName = "Dispenser";
                     break;
                 }
                 sender.sendMessage("§5Target "+ blockName + " has been reset.");
