@@ -78,8 +78,8 @@ public class PhatLootsCommand implements CommandExecutor {
             if (sender instanceof Player) {
             	if (!sender.hasPermission("phatloots.commandloot")
             			|| !(PhatLoots.canLoot((Player) sender, phatLoot))) {
-            		sender.sendMessage(PhatLootsConfig.permission);
-            		return true;
+                    sender.sendMessage(PhatLootsConfig.permission);
+            	    return true;
             	}
             	Inventory inventory = PhatLoots.server.createInventory((Player) sender, 54, phatLoot.name);
 
@@ -96,8 +96,8 @@ public class PhatLootsCommand implements CommandExecutor {
         case MAKE:
             //Cancel if the sender does not have permission to use the command
             if (!sender.hasPermission("phatloots.make")) {
-                    sender.sendMessage(PhatLootsConfig.permission);
-                    return true;
+                sender.sendMessage(PhatLootsConfig.permission);
+                return true;
             }
 
             if (args.length == 2) {
@@ -111,8 +111,8 @@ public class PhatLootsCommand implements CommandExecutor {
         case DELETE:
             //Cancel if the sender does not have permission to use the command
             if (!sender.hasPermission("phatloots.make")) {
-                    sender.sendMessage(PhatLootsConfig.permission);
-            return true;
+                sender.sendMessage(PhatLootsConfig.permission);
+                return true;
             }
 
             if (args.length == 2) {

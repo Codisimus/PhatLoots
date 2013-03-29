@@ -141,9 +141,12 @@ public class PhatLootChest {
             return false;
         } else if (autoLoot && sack.firstEmpty() != -1) {
             //Add the Loot to the Player's Inventory
-            if (PhatLootsConfig.autoLoot != null) {
-                player.sendMessage(PhatLootsConfig.autoLoot.replace("<item>", PhatLoot.getItemName(item)));
-            }
+            String msg = PhatLootsConfig.autoLoot.replace("<item>", PhatLoot.getItemName(item));
+            int amount = item.getAmount();
+            msg = amount > 1
+                  ? msg.replace("<amount>", String.valueOf(item.getAmount()))
+                  : msg.replace("x<amount>", "").replace("<amount>", "");
+            player.sendMessage(msg);
             sack.addItem(item);
             return false;
         } else {
@@ -167,7 +170,12 @@ public class PhatLootChest {
         Block block = getBlock();
         block.getWorld().dropItemNaturally(block.getLocation(), item);
         if (player != null) {
-            player.sendMessage(PhatLootsConfig.overflow.replace("<item>", item.getType().name()));
+            String msg = PhatLootsConfig.overflow.replace("<item>", PhatLoot.getItemName(item));
+            int amount = item.getAmount();
+            msg = amount > 1
+                  ? msg.replace("<amount>", String.valueOf(item.getAmount()))
+                  : msg.replace("x<amount>", "").replace("<amount>", "");
+            player.sendMessage(msg);
         }
     }
 

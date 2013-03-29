@@ -4,25 +4,15 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileReader;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.ListIterator;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Random;
-import java.util.TreeMap;
-import java.util.logging.Logger;
+import java.util.*;
 import org.apache.commons.lang.WordUtils;
-import org.bukkit.Bukkit;
 import org.bukkit.Color;
 import org.bukkit.Material;
-import org.bukkit.Server;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.configuration.serialization.SerializableAs;
 import org.bukkit.enchantments.Enchantment;
-import org.bukkit.inventory.ItemFactory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BookMeta;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -381,7 +371,7 @@ public class Loot implements Comparable, ConfigurationSerializable {
                             int epf = (int) Math.floor((6 + lvl * lvl) * 1.5 / 3);
                             int low = (int) Math.ceil(epf / 2);
                             int high = epf;
-                            itr.set(fireDefenseString.replace("<amount>", low + "-" + high));
+                            itr.set(rangeDefenseString.replace("<amount>", low + "-" + high));
                         } else {
                             itr.remove();
                         }
@@ -391,7 +381,7 @@ public class Loot implements Comparable, ConfigurationSerializable {
                             int epf = (int) Math.floor((6 + lvl * lvl) * 1.5 / 3);
                             int low = (int) Math.ceil(epf / 2);
                             int high = epf;
-                            itr.set(fireDefenseString.replace("<amount>", low + "-" + high));
+                            itr.set(blastDefenseString.replace("<amount>", low + "-" + high));
                         } else {
                             itr.remove();
                         }
@@ -401,7 +391,7 @@ public class Loot implements Comparable, ConfigurationSerializable {
                             int epf = (int) Math.floor((6 + lvl * lvl) * 2.5 / 3);
                             int low = (int) Math.ceil(epf / 2);
                             int high = epf;
-                            itr.set(fireDefenseString.replace("<amount>", low + "-" + high));
+                            itr.set(fallDefenseString.replace("<amount>", low + "-" + high));
                         } else {
                             itr.remove();
                         }
