@@ -42,6 +42,8 @@ Messages:
     MobDroppedMoney: '&5You loot &6<amount>.'
     MobDroppedItem: ''
     MobDroppedExperience: ''
+    LootMessage: ''
+    LootBroadcast: ''
 
 ##PhatLoot Chests will display this name at the top of the Chest GUI
 ##<name> will be replaced with the name of the linked PhatLoot

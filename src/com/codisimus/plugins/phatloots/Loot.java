@@ -311,7 +311,7 @@ public class Loot implements Comparable, ConfigurationSerializable {
             clone.setItemMeta(meta);
         }
 
-        if (meta.hasLore()) {
+        if (meta != null && meta.hasLore()) {
             List<String> lore = meta.getLore();
             ListIterator<String> itr = lore.listIterator();
             switch (clone.getType()) {
@@ -471,7 +471,6 @@ public class Loot implements Comparable, ConfigurationSerializable {
                 }
                 break;
             }
-            meta = clone.getItemMeta();
             meta.setLore(lore);
             clone.setItemMeta(meta);
         }

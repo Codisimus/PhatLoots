@@ -129,6 +129,9 @@ public class PhatLoot implements ConfigurationSerializable {
 
         inventory.clear();
 
+        player.sendMessage(PhatLootsConfig.lootMessage.replace("<phatloot>", name));
+        PhatLoots.server.broadcastMessage(PhatLootsConfig.lootBroadcast.replace("<name>", player.getName()).replace("<phatloot>", name));
+
         if (moneyUpper > 0) {
             int amount = PhatLoots.random.nextInt(moneyUpper + 1 - moneyLower);
             amount += moneyLower;

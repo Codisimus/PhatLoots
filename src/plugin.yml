@@ -18,6 +18,7 @@ permissions:
     default: true
   phatloots.commandloot:
     description: Needed to receive loots through command
+    default: true
   phatloots.make:
     description: Needed to make a PhatLoot (/loot make, /loot delete, /loot link, /loot unlink, /loot description, /loot add, /loot remove, /loot money, /loot time, /loot type)
   phatloots.rl:

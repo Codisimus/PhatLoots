@@ -1296,6 +1296,12 @@ public class PhatLootsCommand implements CommandExecutor {
      * @param sender The CommandSender needing help
      */
     private static void sendHelp(CommandSender sender) {
+        if (!sender.hasPermission("phatloots.make") && !sender.hasPermission("phatloots.rl")
+                 && !sender.hasPermission("phatloots.reset") && !sender.hasPermission("phatloots.list")
+                 && !sender.hasPermission("phatloots.info") && !sender.hasPermission("phatloots.name")
+                 && !sender.hasPermission("phatloots.give")) {
+
+        }
         sender.sendMessage("§e     PhatLoots Help Page:");
         sender.sendMessage("§2/"+command+" <Name>§b Loot a virtual Chest for the given PhatLoot");
         sender.sendMessage("§2/"+command+" list§b List all PhatLoots");

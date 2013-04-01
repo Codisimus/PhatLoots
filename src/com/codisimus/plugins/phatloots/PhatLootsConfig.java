@@ -31,6 +31,8 @@ public class PhatLootsConfig {
     static String mobDroppedMoney;
     static String mobDroppedItem;
     static String mobDroppedExperience;
+    static String lootMessage;
+    static String lootBroadcast;
 
     public static void load() {
         PhatLoots.plugin.saveDefaultConfig();
@@ -58,6 +60,8 @@ public class PhatLootsConfig {
         mobDroppedMoney = getString(section, "MobDroppedMoney");
         mobDroppedItem = getString(section, "MobDroppedItem");
         mobDroppedExperience = getString(section, "MobDroppedExperience");
+        lootMessage = getString(section, "LootMessage");
+        lootBroadcast = getString(section, "LootBroadcast");
 
         PhatLootsListener.chestName = getString(config, "ChestName");
 
