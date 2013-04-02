@@ -23,6 +23,8 @@ public class PhatLootsConfig {
     static HashSet<String> restricted = new HashSet();
     static String permission;
     static String moneyLooted;
+    static String moneyCharged;
+    static String insufficientFunds;
     static String experienceLooted;
     static String autoLoot;
     static String timeRemaining;
@@ -53,6 +55,8 @@ public class PhatLootsConfig {
         permission = getString(section, "Permission");
         experienceLooted = getString(section, "ExperienceLooted");
         moneyLooted = getString(section, "MoneyLooted");
+        moneyCharged = getString(section, "MoneyCharged");
+        insufficientFunds = getString(section, "InsufficientFunds");
         autoLoot = getString(section, "AutoLoot");
         overflow = getString(section, "Overflow");
         timeRemaining = getString(section, "TimeRemaining");
@@ -101,6 +105,7 @@ public class PhatLootsConfig {
         }
         Loot.tierNotify = config.getInt("MinimumTierNotification");
         PhatLootsCommand.setUnlockable = config.getBoolean("SetChestsAsUnlockable");
+        PhatLoot.autoClose = config.getBoolean("AutoCloseOnInsufficientFunds");
 
 
         /* LORES.YML */

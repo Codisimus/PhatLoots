@@ -35,6 +35,8 @@ Messages:
     Permission: '&4You do not have permission to do that.'
     ExperienceLooted: '&5You gained &6<amount>&5 experience from looting the chest.'
     MoneyLooted: '&5You looted &6<amount>&5 from the chest.'
+    MoneyCharged: '&5You have been charged &6<amount>&5 to loot the chest.'
+    InsufficientFunds: '&4You must have &6<amount>&4 to do loot the chest.'
     AutoLoot: '&5You looted &6<item>&5 from the chest.'
     Overflow: '&5The Chest is overflowing with loot!'
     TimeRemaining: '&4You must wait &6<time>&4 to receive more loot!'
@@ -121,3 +123,7 @@ MinimumTierNotification: 50
 ##This setting is only used if you have the plugin ChestLock
 ##If set to true then PhatLoot Chests will be automatically set as unlockable
 SetChestsAsUnlockable: true
+
+
+##If set to true then the Chest will automattically close if the Player could not afford to loot it
+AutoCloseOnInsufficientFunds: true

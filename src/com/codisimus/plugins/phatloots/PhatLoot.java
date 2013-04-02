@@ -35,6 +35,7 @@ public class PhatLoot implements ConfigurationSerializable {
     static boolean displayMobTimeRemaining;
     static float chanceOfDrop;
     static double lootingBonusPerLvl;
+    static boolean autoClose;
     private static PhatLootsCommandSender cs = new PhatLootsCommandSender();
     public String name; //A unique name for the Warp
     public int numberCollectiveLoots = PhatLootsConfig.defaultNumberOfLoots; //Amount of loots received from each collective loot
@@ -129,9 +130,6 @@ public class PhatLoot implements ConfigurationSerializable {
 
         inventory.clear();
 
-        player.sendMessage(PhatLootsConfig.lootMessage.replace("<phatloot>", name));
-        PhatLoots.server.broadcastMessage(PhatLootsConfig.lootBroadcast.replace("<name>", player.getName()).replace("<phatloot>", name));
-
         if (moneyUpper > 0) {
             int amount = PhatLoots.random.nextInt(moneyUpper + 1 - moneyLower);
             amount += moneyLower;
@@ -142,6 +140,23 @@ public class PhatLoot implements ConfigurationSerializable {
                     if (r.transactionSuccess()) {
                         String money = PhatLoots.econ.format(amount).replace(".00", "");
                         player.sendMessage(PhatLootsConfig.moneyLooted.replace("<amount>", money));
+                    }
+                } else {
+                    player.sendMessage("§6Vault §4is not enabled, so no money can be processed.");
+                }
+            } else if (amount < 0) {
+                if (PhatLoots.econ != null) {
+                    EconomyResponse r = PhatLoots.econ.withdrawPlayer(player.getName(), amount);
+                    String money = PhatLoots.econ.format(amount).replace(".00", "");
+                    if (r.transactionSuccess()) {
+                        player.sendMessage(PhatLootsConfig.moneyCharged.replace("<amount>", money));
+                    } else {
+                        player.sendMessage(PhatLootsConfig.insufficientFunds.replace("<amount>", money));
+                        if (autoClose) {
+                            player.closeInventory();
+                            PhatLoots.closeInventory(player, inventory, chest.getBlock().getLocation(), global);
+                        }
+                        return;
                     }
                 } else {
                     player.sendMessage("§6Vault §4is not enabled, so no money can be processed.");
@@ -160,6 +175,9 @@ public class PhatLoot implements ConfigurationSerializable {
             }
         }
 
+        player.sendMessage(PhatLootsConfig.lootMessage.replace("<phatloot>", name));
+        PhatLoots.server.broadcastMessage(PhatLootsConfig.lootBroadcast.replace("<name>", player.getName()).replace("<phatloot>", name));
+
         lootCommands(player);
 
         boolean itemsInChest = chest.addLoots(lootIndividual(0), player, inventory, autoLoot);
@@ -174,7 +192,7 @@ public class PhatLoot implements ConfigurationSerializable {
 
         if (autoLoot && !itemsInChest) {
             player.closeInventory();
-            PhatLoots.closeInventory(player, inventory, chest.getBlock().getLocation(), Boolean.valueOf(global));
+            PhatLoots.closeInventory(player, inventory, chest.getBlock().getLocation(), global);
         }
 
         if (global && (days < 0 || hours < 0 || minutes < 0 || seconds < 0)) {
