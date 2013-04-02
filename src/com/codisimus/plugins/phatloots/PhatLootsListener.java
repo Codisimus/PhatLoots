@@ -9,9 +9,7 @@ import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
 import org.bukkit.block.Dispenser;
-import org.bukkit.entity.HumanEntity;
-import org.bukkit.entity.LivingEntity;
-import org.bukkit.entity.Player;
+import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
@@ -306,21 +304,7 @@ public class PhatLootsListener implements Listener {
     @EventHandler (ignoreCancelled = true)
     public void onEntityDeath(EntityDeathEvent event) {
         LivingEntity entity = event.getEntity();
-        Location location = entity.getLocation();
-        String name = entity.getType().getName();
-
-        if (mobRegions) {
-            for (Region region : RegionOwn.mobRegions.values()) {
-                if (region.contains(location)) {
-                    name += "@" + region.name;
-                }
-            }
-        }
-
-        PhatLoot phatLoot = PhatLoots.getPhatLoot(name + '@' + location.getWorld().getName());
-        if (phatLoot == null) {
-            phatLoot = PhatLoots.getPhatLoot(name);
-        }
+        PhatLoot phatLoot = getPhatLoot(entity, false);
         if (phatLoot != null) {
             event.setDroppedExp(phatLoot.rollForLoot(entity.getKiller(), event.getDrops()));
         }
@@ -334,25 +318,87 @@ public class PhatLootsListener implements Listener {
     @EventHandler (ignoreCancelled = true)
     public void onMobSpawn(CreatureSpawnEvent event) {
         LivingEntity entity = event.getEntity();
-        Location location = entity.getLocation();
-        String name = entity.getType().getName() + "Spawn";
+        PhatLoot phatLoot = getPhatLoot(entity, true);
+        if (phatLoot != null) {
+            phatLoot.rollForLoot(entity);
+        }
+    }
 
+    public PhatLoot getPhatLoot(Entity entity, boolean spawn) {
+        Location location = entity.getLocation();
+        EntityType entityType = entity.getType();
+        String type = entityType.getName();
+        if (spawn) {
+            type += "Spawn";
+        }
+
+        String specificType;
+        switch (entityType) {
+        case ZOMBIE:
+            Zombie zombie = (Zombie) entity;
+            if (zombie.isBaby()) {
+                specificType = "Baby";
+            } else if (zombie.isVillager()) {
+                specificType = "Villager";
+            } else {
+                specificType = "Normal";
+            }
+            break;
+        case SKELETON:
+            specificType = ((Skeleton) entity).getSkeletonType().toString();
+            break;
+        case VILLAGER:
+            specificType = ((Villager) entity).getProfession().toString();
+            break;
+        default:
+            specificType = null;
+            break;
+        }
+
+        String regionName = null;
         if (mobRegions) {
             for (Region region : RegionOwn.mobRegions.values()) {
                 if (region.contains(location)) {
-                    name += "@" + region.name;
+                    regionName = '@' + region.name;
                     break;
                 }
             }
         }
 
-        PhatLoot phatLoot = PhatLoots.getPhatLoot(name + '@' + location.getWorld().getName());
-        if (phatLoot == null) {
-            phatLoot = PhatLoots.getPhatLoot(name);
+        PhatLoot phatLoot;
+        String worldName = '@' + location.getWorld().getName();
+        if (specificType != null) {
+            if (regionName != null){
+                phatLoot = PhatLoots.getPhatLoot(specificType + type + regionName);
+                if (phatLoot != null) {
+                    return phatLoot;
+                }
+            }
+            phatLoot = PhatLoots.getPhatLoot(specificType + type + worldName);
+            if (phatLoot != null) {
+                return phatLoot;
+            }
         }
+
+        if (regionName != null){
+            phatLoot = PhatLoots.getPhatLoot(type + regionName);
+            if (phatLoot != null) {
+                return phatLoot;
+            }
+        }
+        phatLoot = PhatLoots.getPhatLoot(type + worldName);
         if (phatLoot != null) {
-            phatLoot.rollForLoot(event.getEntity());
+            return phatLoot;
         }
+
+        if (specificType != null) {
+            phatLoot = PhatLoots.getPhatLoot(specificType + type);
+            if (phatLoot != null) {
+                return phatLoot;
+            }
+        }
+
+        return PhatLoots.getPhatLoot(type);
     }
 
     /**

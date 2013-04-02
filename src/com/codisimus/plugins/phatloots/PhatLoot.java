@@ -200,7 +200,7 @@ public class PhatLoot implements ConfigurationSerializable {
             Iterator itr = drops.iterator();
             while (itr.hasNext()) {
                 ItemStack item = (ItemStack) itr.next();
-                if ((item.hasItemMeta()) && (item.getItemMeta().hasDisplayName())) {
+                if (item.hasItemMeta() && item.getItemMeta().hasDisplayName()) {
                     continue;
                 }
                 itr.remove();
@@ -342,11 +342,20 @@ public class PhatLoot implements ConfigurationSerializable {
                 int index = cmd.lastIndexOf('%');
                 double percent = Double.parseDouble(cmd.substring(index + 1));
                 if (PhatLoots.random.nextInt(100) + PhatLoots.random.nextDouble() < percent) {
-                    PhatLoots.server.dispatchCommand(cs, cmd.substring(0, index).replace("<player>", player.getName()));
+                    dispatchCommand(player, cmd.substring(0, index));
                 }
             } else {
-                PhatLoots.server.dispatchCommand(cs, cmd.replace("<player>", player.getName()));
+                dispatchCommand(player, cmd);
             }
+        }
+    }
+
+    public void dispatchCommand(Player player, String cmd) {
+        cmd = cmd.replace("<player>", player.getName());
+        if (cmd.startsWith("sudo ")) {
+            PhatLoots.server.dispatchCommand(player, cmd.substring(5));
+        } else {
+            PhatLoots.server.dispatchCommand(cs, cmd);
         }
     }
 
