@@ -36,7 +36,7 @@ Messages:
     ExperienceLooted: '&5You gained &6<amount>&5 experience from looting the chest.'
     MoneyLooted: '&5You looted &6<amount>&5 from the chest.'
     MoneyCharged: '&5You have been charged &6<amount>&5 to loot the chest.'
-    InsufficientFunds: '&4You must have &6<amount>&4 to do loot the chest.'
+    InsufficientFunds: '&4You must have &6<amount>&4 to loot the chest.'
     AutoLoot: '&5You looted &6<item>&5 from the chest.'
     Overflow: '&5The Chest is overflowing with loot!'
     TimeRemaining: '&4You must wait &6<time>&4 to receive more loot!'

@@ -139,6 +139,7 @@ public class PhatLootsConfig {
     }
 
     private static String getString(ConfigurationSection config, String key) {
-        return ChatColor.translateAlternateColorCodes('&', config.getString(key));
+        String string = ChatColor.translateAlternateColorCodes('&', config.getString(key));
+        return string.isEmpty() ? null : string;
     }
 }
