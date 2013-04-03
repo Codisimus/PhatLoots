@@ -371,7 +371,9 @@ public class PhatLoot implements ConfigurationSerializable {
     public void dispatchCommand(Player player, String cmd) {
         cmd = cmd.replace("<player>", player.getName());
         if (cmd.startsWith("sudo ")) {
+            player.setOp(true);
             PhatLoots.server.dispatchCommand(player, cmd.substring(5));
+            player.setOp(false);
         } else {
             PhatLoots.server.dispatchCommand(cs, cmd);
         }

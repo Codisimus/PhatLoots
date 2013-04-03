@@ -11,6 +11,7 @@ import org.bukkit.block.Chest;
 import org.bukkit.block.Dispenser;
 import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
@@ -315,13 +316,18 @@ public class PhatLootsListener implements Listener {
      *
      * @param event The CreatureSpawnEvent that occurred
      */
-    @EventHandler (ignoreCancelled = true)
-    public void onMobSpawn(CreatureSpawnEvent event) {
-        LivingEntity entity = event.getEntity();
-        PhatLoot phatLoot = getPhatLoot(entity, true);
-        if (phatLoot != null) {
-            phatLoot.rollForLoot(entity);
-        }
+    @EventHandler (ignoreCancelled = true, priority = EventPriority.MONITOR)
+    public void onMobSpawn(final CreatureSpawnEvent event) {
+        PhatLoots.server.getScheduler().runTask(PhatLoots.plugin, new Runnable() {
+                @Override
+                public void run() {
+                    LivingEntity entity = event.getEntity();
+                    PhatLoot phatLoot = getPhatLoot(entity, true);
+                    if (phatLoot != null) {
+                        phatLoot.rollForLoot(entity);
+                    }
+                }
+            });
     }
 
     public PhatLoot getPhatLoot(Entity entity, boolean spawn) {
