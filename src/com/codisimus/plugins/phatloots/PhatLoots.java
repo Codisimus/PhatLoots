@@ -49,7 +49,7 @@ public class PhatLoots extends JavaPlugin {
         try { new Metrics(this).start(); } catch (IOException e) {}
 
         ConfigurationSerialization.registerClass(PhatLoot.class, "PhatLoot");
-        ConfigurationSerialization.registerClass(Loot.class, "Loot");
+        ConfigurationSerialization.registerClass(OldLoot.class, "Loot");
 
         server = getServer();
         logger = getLogger();

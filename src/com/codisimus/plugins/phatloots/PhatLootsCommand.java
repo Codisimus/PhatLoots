@@ -27,7 +27,7 @@ import org.bukkit.inventory.ItemStack;
 public class PhatLootsCommand implements CommandExecutor {
     private static enum Action {
         HELP, MAKE, DELETE, LINK, UNLINK, TIME, GLOBAL, AUTOLOOT, ROUND,
-        ADD, REMOVE, MONEY, EXP, LIST, INFO, GIVE, RESET, CLEAN, RL
+        ADD, REMOVE, COST, MONEY, EXP, LIST, INFO, GIVE, RESET, CLEAN, RL
     }
     private static enum Help { CREATE, SETUP, LOOT }
     private static final HashSet<Byte> TRANSPARENT = Sets.newHashSet(
@@ -430,13 +430,45 @@ public class PhatLootsCommand implements CommandExecutor {
             }
 
             //Construct the Loot
-            Loot loot = new Loot(item, bonusAmount - baseAmount);
+            OldLoot loot = new OldLoot(item, bonusAmount - baseAmount);
             loot.setProbability(percent);
             if (autoEnchant) {
                 loot.autoEnchant = true;
             }
 
             setLoot(sender, phatLoot, add, id, loot);
+            return true;
+
+        case COST:
+            //Cancel if the sender does not have permission to use the command
+            if (!sender.hasPermission("phatloots.make")) {
+                sender.sendMessage(PhatLootsConfig.permission);
+                return true;
+            }
+
+            switch (args.length) {
+            case 2: //Name is not provided
+                try {
+                    setCost(sender, null, Integer.parseInt(args[1]));
+                    return true;
+                } catch (Exception notInt) {
+                    sendSetupHelp(sender);
+                    break;
+                }
+
+            case 3: //Name is provided
+                try {
+                    setCost(sender, args[1], Integer.parseInt(args[2]));
+                    return true;
+                } catch (Exception notInt) {
+                    sendSetupHelp(sender);
+                    break;
+                }
+
+            default: break;
+            }
+
+            sendSetupHelp(sender);
             return true;
 
         case MONEY:
@@ -903,11 +935,11 @@ public class PhatLootsCommand implements CommandExecutor {
      * @param lootID The id of the Loot, 0 for individual loots
      * @param loot The Loot that will be added/removed
      */
-    public static void setLoot(CommandSender sender, String name, boolean add, int lootID, Loot loot) {
+    public static void setLoot(CommandSender sender, String name, boolean add, int lootID, OldLoot loot) {
         String lootDescription = loot.toString();
 
         for (PhatLoot phatLoot : getPhatLoots(sender, name)) {
-            ArrayList<Loot> lootTable = phatLoot.getLootTable(lootID);
+            ArrayList<OldLoot> lootTable = phatLoot.getLootTable(lootID);
             ListIterator itr = lootTable.listIterator();
             boolean found = false;
             while (itr.hasNext()) {
@@ -966,6 +998,28 @@ public class PhatLootsCommand implements CommandExecutor {
                             + phatLoot.name);
                 }
             }
+        }
+    }
+
+    /**
+     * Sets the cost range of the specified PhatLoot
+     *
+     * @param sender The CommandSender modifying the PhatLoot
+     * @param name The name of the PhatLoot to be modified or null to indicate all linked PhatLoots
+     * @param amount The new cost
+     */
+    public static void setCost(CommandSender sender, String name, int amount) {
+        if (amount > 0) {
+            amount = -amount;
+        }
+
+        for (PhatLoot phatLoot : getPhatLoots(sender, name)) {
+            phatLoot.moneyLower = amount;
+            phatLoot.moneyUpper = amount;
+
+            sender.sendMessage("§5Players will now be charged §6"
+                    + -amount + "§5 to loot §6" + phatLoot.name);
+            phatLoot.save();
         }
     }
 
@@ -1497,9 +1551,9 @@ public class PhatLootsCommand implements CommandExecutor {
      */
     public static ItemStack getItemStack(CommandSender sender, String string) {
         if (string.equals("hand")) {
-        	if (sender instanceof Player) {
-        		return ((Player)sender).getItemInHand().clone();
-        	}
+            if (sender instanceof Player) {
+                return ((Player) sender).getItemInHand().clone();
+            }
         }
 
         Material material;

@@ -69,16 +69,16 @@ public class PhatLootsConfig {
 
         PhatLootsListener.chestName = getString(config, "ChestName");
 
-        Loot.damageString = getString(config, "<dam>");
-        Loot.holyString = getString(config, "<holy>");
-        Loot.fireString = getString(config, "<fire>");
-        Loot.bugString = getString(config, "<bug>");
-        Loot.thornsString = getString(config, "<thorns>");
-        Loot.defenseString = getString(config, "<def>");
-        Loot.fireDefenseString = getString(config, "<firedef>");
-        Loot.rangeDefenseString = getString(config, "<rangedef>");
-        Loot.blastDefenseString = getString(config, "<blastdef>");
-        Loot.fallDefenseString = getString(config, "<falldef>");
+        OldLoot.damageString = getString(config, "<dam>");
+        OldLoot.holyString = getString(config, "<holy>");
+        OldLoot.fireString = getString(config, "<fire>");
+        OldLoot.bugString = getString(config, "<bug>");
+        OldLoot.thornsString = getString(config, "<thorns>");
+        OldLoot.defenseString = getString(config, "<def>");
+        OldLoot.fireDefenseString = getString(config, "<firedef>");
+        OldLoot.rangeDefenseString = getString(config, "<rangedef>");
+        OldLoot.blastDefenseString = getString(config, "<blastdef>");
+        OldLoot.fallDefenseString = getString(config, "<falldef>");
 
 
         /* DEFAULTS */
@@ -103,7 +103,7 @@ public class PhatLootsConfig {
         for (String string : restricted) {
             string = ChatColor.translateAlternateColorCodes('&', string);
         }
-        Loot.tierNotify = config.getInt("MinimumTierNotification");
+        OldLoot.tierNotify = config.getInt("MinimumTierNotification");
         PhatLootsCommand.setUnlockable = config.getBoolean("SetChestsAsUnlockable");
         PhatLoot.autoClose = config.getBoolean("AutoCloseOnInsufficientFunds");
 
@@ -116,7 +116,7 @@ public class PhatLootsConfig {
                 PhatLoots.plugin.saveResource("lores.yml", true);
             }
 
-            Loot.loreConfig = YamlConfiguration.loadConfiguration(file);
+            OldLoot.loreConfig = YamlConfiguration.loadConfiguration(file);
         } catch (Exception ex) {
             PhatLoots.logger.severe("Failed to load lores.yml");
             ex.printStackTrace();
@@ -131,7 +131,7 @@ public class PhatLootsConfig {
                 PhatLoots.plugin.saveResource("enchantments.yml", true);
             }
 
-            Loot.enchantmentConfig = YamlConfiguration.loadConfiguration(file);
+            OldLoot.enchantmentConfig = YamlConfiguration.loadConfiguration(file);
         } catch (Exception ex) {
             PhatLoots.logger.severe("Failed to load enchantments.yml");
             ex.printStackTrace();

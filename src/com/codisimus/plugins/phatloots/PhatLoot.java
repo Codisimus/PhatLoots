@@ -44,7 +44,7 @@ public class PhatLoot implements ConfigurationSerializable {
     public int expLower; //Range of experience gained when looting
     public int expUpper;
     public ArrayList<String> commands = new ArrayList<String>(); //Commands that will be run upon looting the Chest
-    private ArrayList<Loot>[] lootTables = (ArrayList[]) new ArrayList[11]; //List of items that may be given
+    private ArrayList<OldLoot>[] lootTables = (ArrayList[]) new ArrayList[11]; //List of items that may be given
 
     public int days = PhatLootsConfig.defaultDays; //Reset time (will never reset if any are negative)
     public int hours = PhatLootsConfig.defaultHours;
@@ -64,7 +64,7 @@ public class PhatLoot implements ConfigurationSerializable {
     public PhatLoot(String name) {
         this.name = name;
         for (int i = 0; i < 11; i++) {
-            lootTables[i] = new ArrayList<Loot>();
+            lootTables[i] = new ArrayList<OldLoot>();
         }
     }
 
@@ -386,7 +386,7 @@ public class PhatLoot implements ConfigurationSerializable {
      */
     public List<ItemStack> lootIndividual(double lootingBonus) {
         List<ItemStack> itemList = new LinkedList<ItemStack>();
-        for (Loot loot : lootTables[INDIVIDUAL]) {
+        for (OldLoot loot : lootTables[INDIVIDUAL]) {
             //Roll for item
             if (loot.rollForLoot(lootingBonus)) {
                 itemList.add(loot.getItem());
@@ -415,7 +415,7 @@ public class PhatLoot implements ConfigurationSerializable {
                     int numberLooted = 0;
                     while (numberLooted < numberCollectiveLoots) {
                         int j = Math.min(100, PhatLoots.random.nextInt(100) + (int) lootingBonus);
-                        for (Loot loot : lootTables[i]) {
+                        for (OldLoot loot : lootTables[i]) {
                             j -= loot.getProbability();
                             if (j <= 0) {
                                 itemList.add(loot.getItem());
@@ -507,7 +507,7 @@ public class PhatLoot implements ConfigurationSerializable {
     public double getPercentRemaining(int id) {
         //Subtract the probabilty of each loot from 100
         double total = 100;
-        for (Loot loot : lootTables[id]) {
+        for (OldLoot loot : lootTables[id]) {
             total -= loot.getProbability();
         }
         return total;
@@ -519,7 +519,7 @@ public class PhatLoot implements ConfigurationSerializable {
      * @param id The id of the LootTable
      * @return The ArrayList of Loots
      */
-    public ArrayList<Loot> getLootTable(int id) {
+    public ArrayList<OldLoot> getLootTable(int id) {
         return lootTables[id];
     }
 
@@ -529,7 +529,7 @@ public class PhatLoot implements ConfigurationSerializable {
      * @param id The id of the LootTable
      * @return true if the LootTable contains the Loot
      */
-    public boolean containsLoot(int id, Loot loot) {
+    public boolean containsLoot(int id, OldLoot loot) {
         return lootTables[id].contains(loot);
     }
 
@@ -543,7 +543,7 @@ public class PhatLoot implements ConfigurationSerializable {
         String list = "";
 
         //Concat each Loot onto the list
-        for (Loot loot : lootTables[id]) {
+        for (OldLoot loot : lootTables[id]) {
             list += loot.toString();
         }
 
@@ -888,7 +888,7 @@ public class PhatLoot implements ConfigurationSerializable {
                     throw new RuntimeException();
                 }
 
-                Loot loot = new Loot(itemID, lower, upper);
+                OldLoot loot = new OldLoot(itemID, lower, upper);
                 if (color != null) {
                     loot.setColor(color);
                 } else {

@@ -2,6 +2,69 @@
 ##Plugin made by Codisimus
 
 
+################## Linkables #################
+
+##You may disable any of these features by setting them to false
+##You should disable all of these that you will not be using
+
+##Using Dispensers may cause significant lag if you have a decent amount of redstone on the server
+DispenserLoot: true
+
+##Using MobLoot may cause significant lag if there are numerous mobs on the server
+##ex. Zombie, Creeper, Skeleton, Spider, Player
+MobDropLoot: true
+##ex. ZombieSpawn, SkeletonSpawn, VillagerSpawn
+MobSpawnLoot: true
+
+##World Mob Loots should be disabled if you only have one World
+##ex. Zombie@MainWorld, Zombie@DungeonWorld
+WorldMobDropLoot: true
+##ex. ZombieSpawn@MainWorld, ZombieSpawn@DungeonWorld
+WorldMobSpawnLoot: true
+
+##Region Mob Loots are automatically disabled if RegionOwn is not installed
+##ex. Zombie@Graveyard, Spider@Nest
+RegionMobDropLoot: true
+RegionMobSpawnLoot: true
+
+##Mob Types should be enabled if you want to distinguish between different types of Zombies, Skeletons, Villagers, etc.
+##ex. BabyZombie, WitherSkeleton, PriestVillager
+MobTypes: true
+
+##Named Mobs should be enabled if you want to have specific Mob Loots for named Mobs
+##ex. ZombieBoss, Skeletor, Paul the Priest
+NamedMobs: true
+
+##Fishing Loot should be enabled to modify what Players can fish out of the water
+##ex. Fishing
+FishingLoot: true
+
+##Only Block Materials that are listed below will be able to be linked
+Blocks:
+    - Chest
+    - Trapped_Chest
+    - Ender_Chest
+    - Dispenser
+    - Melon_Block
+
+##Every block on the server that matches a Material below will be linked to the specified PhatLoot
+AutoLink:
+    Melon_Block: melons
+
+
+##If set to true then Mobs will not drop any items/exp unless they are killed by a Player
+OnlyDropLootWhenKilledByPlayer: false
+
+
+##If Mobs spawn with items through this plugin, this the chance that the item will be dropped (0 - 100)
+MobLootDropPercentage: 20
+
+
+##This value is used when a Mob is killed with an item that has the Looting enchantment
+LootingBonusPerLevel: 5
+
+
+
 ################## MOB LOOTS #################
 
 ##If set to true then the items normally dropped by mobs will vanish
