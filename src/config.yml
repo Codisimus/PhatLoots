@@ -42,26 +42,15 @@ FishingLoot: true
 ##Only Block Materials that are listed below will be able to be linked
 Blocks:
     - Chest
-    - Trapped_Chest
-    - Ender_Chest
+    - Trapped Chest
+    - Ender Chest
     - Dispenser
-    - Melon_Block
+    - Melon Block
 
 ##Every block on the server that matches a Material below will be linked to the specified PhatLoot
+##Blocks listed here need not be listed in 'Blocks' above
 AutoLink:
-    Melon_Block: melons
-
-
-##If set to true then Mobs will not drop any items/exp unless they are killed by a Player
-OnlyDropLootWhenKilledByPlayer: false
-
-
-##If Mobs spawn with items through this plugin, this the chance that the item will be dropped (0 - 100)
-MobLootDropPercentage: 20
-
-
-##This value is used when a Mob is killed with an item that has the Looting enchantment
-LootingBonusPerLevel: 5
+    Melon Block: melons
 
 
 

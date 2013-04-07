@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.HashSet;
 import java.util.logging.Logger;
 import org.bukkit.ChatColor;
+import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -41,17 +42,36 @@ public class PhatLootsConfig {
         FileConfiguration config = PhatLoots.plugin.getConfig();
 
 
+        /* LINKABLES */
+
+        for (String string : config.getStringList("Blocks")) {
+            Material mat = Material.matchMaterial(string);
+            if (mat != null) {
+                PhatLootsListener.types.put(mat, null);
+            }
+        }
+        ConfigurationSection section = config.getConfigurationSection("AutoLink");
+        for (String string : section.getKeys(false)) {
+            Material mat = Material.matchMaterial(string);
+            if (mat != null) {
+                PhatLootsListener.types.put(mat, section.getString(string));
+            }
+        }
+
+
         /* MOB LOOTS */
 
         PhatLoot.replaceMobLoot = config.getBoolean("ReplaceMobLoot");
         PhatLoot.onlyDropOnPlayerKill = config.getBoolean("OnlyDropLootWhenKilledByPlayer");
         PhatLoot.chanceOfDrop = (float) (config.getDouble("MobLootDropPercentage") / 100.0D);
         PhatLoot.lootingBonusPerLvl = config.getDouble("LootingBonusPerLevel");
+        MobListener.mobTypes = config.getBoolean("MobTypes");
+        MobListener.namedMobs = config.getBoolean("NamedMobs");
 
 
         /* MESSAGES */
 
-        ConfigurationSection section = config.getConfigurationSection("Messages");
+        section = config.getConfigurationSection("Messages");
         permission = getString(section, "Permission");
         experienceLooted = getString(section, "ExperienceLooted");
         moneyLooted = getString(section, "MoneyLooted");

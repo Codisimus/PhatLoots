@@ -56,8 +56,6 @@ public class PhatLoots extends JavaPlugin {
         pm = server.getPluginManager();
         plugin = this;
 
-        PhatLootsListener.mobRegions = pm.isPluginEnabled("RegionOwn");
-
         /* Create data folders */
         File dir = this.getDataFolder();
         if (!dir.isDirectory()) {
@@ -90,6 +88,23 @@ public class PhatLoots extends JavaPlugin {
         pm.registerEvents(new PhatLootsListener(), this);
         if (pm.isPluginEnabled("EpicBossRecoded")) {
             pm.registerEvents(new EBRListener(), this);
+        }
+        if (getConfig().getBoolean("DispenserLoot")) {
+            pm.registerEvents(new DispenserListener(), this);
+        }
+        if (getConfig().getBoolean("MobDropLoot")) {
+            MobDeathListener listener = new MobDeathListener();
+            listener.mobWorlds = getConfig().getBoolean("WorldMobDropLoot");
+            listener.mobRegions = getConfig().getBoolean("RegionMobDropLoot")
+                                  && pm.isPluginEnabled("RegionOwn");
+            pm.registerEvents(listener, this);
+        }
+        if (getConfig().getBoolean("MobSpawnLoot")) {
+            MobSpawnListener listener = new MobSpawnListener();
+            listener.mobWorlds = getConfig().getBoolean("WorldMobSpawnLoot");
+            listener.mobRegions = getConfig().getBoolean("RegionMobSpawnLoot")
+                                  && pm.isPluginEnabled("RegionOwn");
+            pm.registerEvents(listener, this);
         }
 
         /* Register the command found in the plugin.yml */
@@ -232,6 +247,22 @@ public class PhatLoots extends JavaPlugin {
         }
 
         return phatLootList;
+    }
+
+    /**
+     * Returns true if the given Block is linked to a PhatLoot
+     *
+     * @param block the given Block
+     * @return True if the given Block is linked to a PhatLoot
+     */
+    public static boolean isPhatLootChest(Block block) {
+        PhatLootChest plChest = new PhatLootChest(block);
+        for (PhatLoot phatLoot : PhatLoots.getPhatLoots()) {
+            if (phatLoot.containsChest(plChest)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
