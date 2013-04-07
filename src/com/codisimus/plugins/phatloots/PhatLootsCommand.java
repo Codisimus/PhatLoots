@@ -1401,6 +1401,7 @@ public class PhatLootsCommand implements CommandExecutor {
         sender.sendMessage("§2/"+command+" global [Name] <true|false>§b Set PhatLoot to global or individual");
         sender.sendMessage("§2/"+command+" autoloot [Name] <true|false>§b Set if Items are automatically looted");
         sender.sendMessage("§2/"+command+" round [Name] <true|false>§b Set if cooldown times should round down (ex. Daily/Hourly loots)");
+        sender.sendMessage("§2/"+command+" cost [Name] <Amount>§b Set cost of looting");
         sender.sendMessage("§2/"+command+" money [Name] <Amount>§b Set money range to be looted");
         sender.sendMessage("§2/"+command+" exp [Name] <Amount>§b Set experience to be gained");
         sender.sendMessage("§2/"+command+" <add|remove> cmd [Name] [Percent] /<Command>§b Set a Command that will be executed upon looting");
