@@ -122,7 +122,9 @@ public class PhatLoot implements ConfigurationSerializable {
             }
 
             if (!timeRemaining.equals("0")) {
-                player.sendMessage(PhatLootsConfig.timeRemaining.replace("<time>", timeRemaining));
+                if (PhatLootsConfig.timeRemaining != null) {
+                    player.sendMessage(PhatLootsConfig.timeRemaining.replace("<time>", timeRemaining));
+                }
                 return;
             }
 
@@ -137,7 +139,7 @@ public class PhatLoot implements ConfigurationSerializable {
             if (amount > 0) {
                 if (PhatLoots.econ != null) {
                     EconomyResponse r = PhatLoots.econ.depositPlayer(player.getName(), amount);
-                    if (r.transactionSuccess()) {
+                    if (r.transactionSuccess() && PhatLootsConfig.moneyLooted != null) {
                         String money = PhatLoots.econ.format(amount).replace(".00", "");
                         player.sendMessage(PhatLootsConfig.moneyLooted.replace("<amount>", money));
                     }
@@ -149,9 +151,13 @@ public class PhatLoot implements ConfigurationSerializable {
                     EconomyResponse r = PhatLoots.econ.withdrawPlayer(player.getName(), amount);
                     String money = PhatLoots.econ.format(amount).replace(".00", "");
                     if (r.transactionSuccess()) {
-                        player.sendMessage(PhatLootsConfig.moneyCharged.replace("<amount>", money));
+                        if (PhatLootsConfig.moneyCharged != null) {
+                            player.sendMessage(PhatLootsConfig.moneyCharged.replace("<amount>", money));
+                        }
                     } else {
-                        player.sendMessage(PhatLootsConfig.insufficientFunds.replace("<amount>", money));
+                        if (PhatLootsConfig.insufficientFunds != null) {
+                            player.sendMessage(PhatLootsConfig.insufficientFunds.replace("<amount>", money));
+                        }
                         if (autoClose) {
                             player.closeInventory();
                             PhatLoots.closeInventory(player, inventory, chest.getBlock().getLocation(), global);
@@ -171,12 +177,18 @@ public class PhatLoot implements ConfigurationSerializable {
 
             if (amount > 0) {
                 player.giveExp(amount);
-                player.sendMessage(PhatLootsConfig.experienceLooted.replace("<amount>", String.valueOf(amount)));
+                if (PhatLootsConfig.experienceLooted != null) {
+                    player.sendMessage(PhatLootsConfig.experienceLooted.replace("<amount>", String.valueOf(amount)));
+                }
             }
         }
 
-        player.sendMessage(PhatLootsConfig.lootMessage.replace("<phatloot>", name));
-        PhatLoots.server.broadcastMessage(PhatLootsConfig.lootBroadcast.replace("<name>", player.getName()).replace("<phatloot>", name));
+        if (PhatLootsConfig.lootMessage != null) {
+            player.sendMessage(PhatLootsConfig.lootMessage.replace("<phatloot>", name));
+        }
+        if (PhatLootsConfig.lootBroadcast != null) {
+            PhatLoots.server.broadcastMessage(PhatLootsConfig.lootBroadcast.replace("<name>", player.getName()).replace("<phatloot>", name));
+        }
 
         lootCommands(player);
 
@@ -236,7 +248,9 @@ public class PhatLoot implements ConfigurationSerializable {
                 }
 
                 if (!timeRemaining.equals("0")) {
-                    player.sendMessage(PhatLootsConfig.mobTimeRemaining.replace("<time>", timeRemaining));
+                    if (PhatLootsConfig.mobTimeRemaining != null) {
+                        player.sendMessage(PhatLootsConfig.mobTimeRemaining.replace("<time>", timeRemaining));
+                    }
                     return 0;
                 }
             }
@@ -244,7 +258,7 @@ public class PhatLoot implements ConfigurationSerializable {
 
         List<ItemStack> loot = lootIndividual(lootingBonus);
         loot.addAll(lootCollective(lootingBonus));
-        if (player != null) {
+        if (player != null && PhatLootsConfig.mobDroppedItem != null) {
             for (ItemStack item : loot) {
                 String msg = PhatLootsConfig.mobDroppedItem.replace("<item>", getItemName(item));
                 int amount = item.getAmount();
@@ -263,7 +277,7 @@ public class PhatLoot implements ConfigurationSerializable {
             if (amount > 0 && !player.getGameMode().equals(GameMode.CREATIVE) && player.hasPermission("phatloots.moneyfrommobs")) {
                 if (PhatLoots.econ != null) {
                     EconomyResponse r = PhatLoots.econ.depositPlayer(player.getName(), amount);
-                    if (r.transactionSuccess()) {
+                    if (r.transactionSuccess() && PhatLootsConfig.mobDroppedMoney != null) {
                         String money = PhatLoots.econ.format(amount).replace(".00", "");
                         player.sendMessage(PhatLootsConfig.mobDroppedMoney.replace("<amount>", money));
                     }
@@ -278,7 +292,7 @@ public class PhatLoot implements ConfigurationSerializable {
         if (expUpper > 0) {
             int amount = PhatLoots.random.nextInt(expUpper + 1 - expLower);
             amount += expLower;
-            if (player != null) {
+            if (player != null && PhatLootsConfig.mobDroppedExperience != null) {
                 player.sendMessage(PhatLootsConfig.mobDroppedExperience.replace("<amount>", String.valueOf(amount)));
             }
             return amount;
