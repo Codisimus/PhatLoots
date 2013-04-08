@@ -628,6 +628,7 @@ public class PhatLootsCommand implements CommandExecutor {
             String name = args.length == 3
                           ? pLoot.name
                           : concatArgs(args, 3);
+            name = ChatColor.translateAlternateColorCodes('&', name);
 
             Inventory inventory = PhatLoots.server.createInventory(player, 54, name);
             player.openInventory(inventory);
