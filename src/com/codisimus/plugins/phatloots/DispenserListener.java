@@ -4,6 +4,7 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.Dispenser;
+import org.bukkit.block.Dropper;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -24,7 +25,7 @@ public class DispenserListener implements Listener {
     @EventHandler (ignoreCancelled = true)
     public void onBlockPowered(BlockPhysicsEvent event) {
         Block block = event.getBlock();
-        if (block.getType() != Material.DISPENSER) {
+        if (block.getType() != Material.DISPENSER || block.getType() != Material.DROPPER) {
             return;
         }
 
@@ -47,9 +48,16 @@ public class DispenserListener implements Listener {
             player.sendMessage(PhatLootsConfig.permission);
             return;
         }
-
-        Dispenser dispenser = (Dispenser) block.getState();
-        Inventory inventory = dispenser.getInventory();
+        
+        Inventory inventory = null;
+        if (block.getType() == Material.DISPENSER) {
+        	Dispenser dispenser = (Dispenser) block.getState();
+        	inventory = dispenser.getInventory();
+        } else if (block.getType() == Material.DROPPER) {
+        	Dropper dropper = (Dropper) block.getState();
+        	inventory = dropper.getInventory();
+        }
+        
 
         PhatLootChest plChest = new PhatLootChest(block);
         for (PhatLoot phatLoot : PhatLoots.getPhatLoots(block, player)) {

@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileReader;
 import java.util.*;
+
 import org.apache.commons.lang.WordUtils;
 import org.bukkit.Color;
 import org.bukkit.Material;
@@ -25,7 +26,7 @@ import org.bukkit.inventory.meta.SkullMeta;
  * @author Codisimus
  */
 @SerializableAs("Loot")
-public class OldLoot implements Comparable, ConfigurationSerializable {
+public class OldLoot implements Comparable<Object>, ConfigurationSerializable {
     private static final String ARMOR = "ARMOR";
     private static final String SWORD = "SWORD";
     private static final String AXE = "AXE";
@@ -272,14 +273,14 @@ public class OldLoot implements Comparable, ConfigurationSerializable {
                         String line = bReader.readLine();
                         if (line != null) {
                             if (line.charAt(0) == '&') {
-                                line = line.replace('&', 'ยง');
+                                line = line.replace('&', 'ง');
                             }
 
                             nameBuilder.append(line);
 
-                            List lore = new LinkedList();
+                            List<String> lore = new LinkedList<String>();
                             while ((line = bReader.readLine()) != null) {
-                                line = line.replace('&', 'ยง');
+                                line = line.replace('&', 'ง');
                                 lore.add(line);
                             }
                             meta.setLore(lore);
@@ -489,7 +490,7 @@ public class OldLoot implements Comparable, ConfigurationSerializable {
 
     private void generateName(ItemStack item, StringBuilder nameBuilder) {
         Material mat = item.getType();
-        Map enchantments = item.getEnchantments();
+        Map<Enchantment, Integer> enchantments = item.getEnchantments();
         String type;
         Enchantment enchantment;
         int level;
@@ -719,42 +720,42 @@ public class OldLoot implements Comparable, ConfigurationSerializable {
                                 if (tier >= 100) {
                                     if (tier >= 150) {
                                         if (tier >= 200) {
-                                            nameBuilder.insert(0, "ยง5");
+                                            nameBuilder.insert(0, "ง5");
                                             nameBuilder.append(" (Legendary)");
                                         } else {
-                                            nameBuilder.insert(0, "ยง4");
+                                            nameBuilder.insert(0, "ง4");
                                             nameBuilder.append(" (Mythic)");
                                         }
                                     } else {
-                                        nameBuilder.insert(0, "ยง2");
+                                        nameBuilder.insert(0, "ง2");
                                         nameBuilder.append(" (Epic)");
                                     }
                                 } else {
-                                    nameBuilder.insert(0, "ยง1");
+                                    nameBuilder.insert(0, "ง1");
                                     nameBuilder.append(" (Ultra Rare)");
                                 }
                             } else {
-                                nameBuilder.insert(0, "ยง9");
+                                nameBuilder.insert(0, "ง9");
                                 nameBuilder.append(" (Super Rare)");
                             }
                         } else {
-                            nameBuilder.insert(0, "ยง3");
+                            nameBuilder.insert(0, "ง3");
                             nameBuilder.append(" (Very Rare)");
                         }
                     } else {
-                        nameBuilder.insert(0, "ยงb");
+                        nameBuilder.insert(0, "งb");
                         nameBuilder.append(" (Rare)");
                     }
                 } else {
-                    nameBuilder.insert(0, "ยงf");
+                    nameBuilder.insert(0, "งf");
                     nameBuilder.append(" (Uncommon)");
                 }
             } else {
-                nameBuilder.insert(0, "ยง7");
+                nameBuilder.insert(0, "ง7");
                 nameBuilder.append(" (Common)");
             }
         } else {
-            nameBuilder.insert(0, "ยง8");
+            nameBuilder.insert(0, "ง8");
             nameBuilder.append(" (Poor)");
         }
 
@@ -928,7 +929,7 @@ public class OldLoot implements Comparable, ConfigurationSerializable {
 
     @Override
     public Map<String, Object> serialize() {
-        Map map = new TreeMap();
+        Map<String, Object> map = new TreeMap<String, Object>();
         map.put("ItemStack", item);
         map.put("BonusAmount", Integer.valueOf(amountBonus));
         map.put("BonusDurability", Integer.valueOf(durabilityBonus));
@@ -1005,14 +1006,14 @@ public class OldLoot implements Comparable, ConfigurationSerializable {
                         String line = bReader.readLine();
                         if (line != null) {
                             if (line.charAt(0) == '&') {
-                                line = line.replace('&', 'ยง');
+                                line = line.replace('&', 'ง');
                             }
 
                             meta.setDisplayName(line);
 
-                            List lore = new LinkedList();
+                            List<String> lore = new LinkedList<String>();
                             while ((line = bReader.readLine()) != null) {
-                                line = line.replace('&', 'ยง');
+                                line = line.replace('&', 'ง');
                                 lore.add(line);
                             }
                             meta.setLore(lore);

@@ -2,6 +2,7 @@ package com.codisimus.plugins.phatloots;
 
 import java.io.*;
 import java.util.*;
+
 import net.milkbowl.vault.economy.EconomyResponse;
 import org.apache.commons.lang.WordUtils;
 import org.apache.commons.lang.time.DateUtils;
@@ -44,7 +45,8 @@ public class PhatLoot implements ConfigurationSerializable {
     public int expLower; //Range of experience gained when looting
     public int expUpper;
     public ArrayList<String> commands = new ArrayList<String>(); //Commands that will be run upon looting the Chest
-    private ArrayList<OldLoot>[] lootTables = (ArrayList[]) new ArrayList[11]; //List of items that may be given
+    @SuppressWarnings("unchecked")
+	private ArrayList<OldLoot>[] lootTables = (ArrayList<OldLoot>[]) new ArrayList[11]; //List of items that may be given
 
     public int days = PhatLootsConfig.defaultDays; //Reset time (will never reset if any are negative)
     public int hours = PhatLootsConfig.defaultHours;
@@ -68,10 +70,11 @@ public class PhatLoot implements ConfigurationSerializable {
         }
     }
 
-    public PhatLoot(Map<String, Object> map) {
+    @SuppressWarnings("unchecked")
+	public PhatLoot(Map<String, Object> map) {
         name = (String) map.get("Name");
 
-        Map nestedMap = (Map) map.get("Reset");
+        Map<String, Object> nestedMap = (Map<String, Object>) map.get("Reset");
         days = (Integer) nestedMap.get("Days");
         hours = (Integer) nestedMap.get("Hours");
         minutes = (Integer) nestedMap.get("Minutes");
@@ -82,31 +85,32 @@ public class PhatLoot implements ConfigurationSerializable {
         numberCollectiveLoots = (Integer) map.get("NumberCollectiveLoots");
         autoLoot = (Boolean) map.get("AutoLoot");
 
-        nestedMap = (Map) map.get("Money");
+        nestedMap = (Map<String, Object>) map.get("Money");
         moneyUpper = (Integer) nestedMap.get("Upper");
         moneyLower = (Integer) nestedMap.get("Lower");
 
-        nestedMap = (Map) map.get("Exp");
+        nestedMap = (Map<String, Object>) map.get("Exp");
         expUpper = (Integer) nestedMap.get("Upper");
         expLower = (Integer) nestedMap.get("Lower");
 
-        nestedMap = (Map) map.get("Loots");
-        lootTables[0] = (ArrayList) nestedMap.get("Individual");
+        nestedMap = (Map<String, Object>) map.get("Loots");
+        lootTables[0] = (ArrayList<OldLoot>) nestedMap.get("Individual");
 
         for (int i = 1; i < 11; i++) {
-            lootTables[i] = (ArrayList) nestedMap.get("Coll" + i);
+            lootTables[i] = (ArrayList<OldLoot>) nestedMap.get("Coll" + i);
             Collections.sort(lootTables[i]);
         }
 
         if (map.containsKey("Commands")) {
-            commands = (ArrayList) map.get("Commands");
+            commands = (ArrayList<String>) map.get("Commands");
         }
 
         loadChests();
         loadLootTimes();
     }
 
-    public void rollForLoot(Player player, PhatLootChest chest, Inventory inventory) {
+    @SuppressWarnings("deprecation")
+	public void rollForLoot(Player player, PhatLootChest chest, Inventory inventory) {
         String user = player.getName();
         if (this.global) {
             user = "global";
@@ -144,7 +148,7 @@ public class PhatLoot implements ConfigurationSerializable {
                         player.sendMessage(PhatLootsConfig.moneyLooted.replace("<amount>", money));
                     }
                 } else {
-                    player.sendMessage("ยง6Vault ยง4is not enabled, so no money can be processed.");
+                    player.sendMessage("ง6Vault ง4is not enabled, so no money can be processed.");
                 }
             } else if (amount < 0) {
                 if (PhatLoots.econ != null) {
@@ -165,7 +169,7 @@ public class PhatLoot implements ConfigurationSerializable {
                         return;
                     }
                 } else {
-                    player.sendMessage("ยง6Vault ยง4is not enabled, so no money can be processed.");
+                    player.sendMessage("ง6Vault ง4is not enabled, so no money can be processed.");
                 }
             }
 
@@ -198,7 +202,7 @@ public class PhatLoot implements ConfigurationSerializable {
             itemsInChest = true;
         }
 
-        if (!chest.isDispenser) {
+        if (!chest.isDispenser && !chest.isDropper) {
             player.updateInventory();
         }
 
@@ -227,9 +231,9 @@ public class PhatLoot implements ConfigurationSerializable {
             return 0;
         }
         if (replaceMobLoot) {
-            Iterator itr = drops.iterator();
+            Iterator<ItemStack> itr = drops.iterator();
             while (itr.hasNext()) {
-                ItemStack item = (ItemStack) itr.next();
+                ItemStack item = itr.next();
                 if (item.hasItemMeta() && item.getItemMeta().hasDisplayName()) {
                     continue;
                 }
@@ -282,7 +286,7 @@ public class PhatLoot implements ConfigurationSerializable {
                         player.sendMessage(PhatLootsConfig.mobDroppedMoney.replace("<amount>", money));
                     }
                 } else {
-                    player.sendMessage("ยง6Vault ยง4is not enabled, so no money can be processed.");
+                    player.sendMessage("ง6Vault ง4is not enabled, so no money can be processed.");
                 }
             }
         }
@@ -639,7 +643,7 @@ public class PhatLoot implements ConfigurationSerializable {
         if (block == null) {
             keys = lootTimes.stringPropertyNames();
         } else {
-            keys = new HashSet();
+            keys = new HashSet<String>();
             String chest = block.getWorld().getName() + "'" + block.getX() + "'" + block.getY() + "'" + block.getZ() + "'";
             for (String key : lootTimes.stringPropertyNames()) {
                 if (key.startsWith(chest)) {
@@ -805,10 +809,10 @@ public class PhatLoot implements ConfigurationSerializable {
 
     @Override
     public Map<String, Object> serialize() {
-        Map map = new TreeMap();
+        Map<String, Object> map = new TreeMap<String, Object>();
         map.put("Name", name);
 
-        Map nestedMap = new HashMap();
+        Map<String, Serializable> nestedMap = new HashMap<String, Serializable>();
         nestedMap.put("Days", days);
         nestedMap.put("Hours", hours);
         nestedMap.put("Minutes", minutes);
@@ -820,17 +824,17 @@ public class PhatLoot implements ConfigurationSerializable {
         map.put("NumberCollectiveLoots", numberCollectiveLoots);
         map.put("AutoLoot", autoLoot);
 
-        nestedMap = new HashMap();
+        nestedMap = new HashMap<String, Serializable>();
         nestedMap.put("Upper", moneyUpper);
         nestedMap.put("Lower", moneyLower);
         map.put("Money", nestedMap);
 
-        nestedMap = new HashMap();
+        nestedMap = new HashMap<String, Serializable>();
         nestedMap.put("Upper", expUpper);
         nestedMap.put("Lower", expLower);
         map.put("Exp", nestedMap);
 
-        nestedMap = new HashMap();
+        nestedMap = new HashMap<String, Serializable>();
         nestedMap.put("Individual", lootTables[INDIVIDUAL]);
         for (int i = 1; i < 11; i++) {
             nestedMap.put("Coll" + i, lootTables[i]);
@@ -880,7 +884,7 @@ public class PhatLoot implements ConfigurationSerializable {
                 }
 
                 String data = lootData[1];
-                Map enchantments = null;
+                Map<Enchantment, Integer> enchantments = null;
                 boolean autoEnchant = false;
 
                 if (lootData[1].endsWith("auto")) {

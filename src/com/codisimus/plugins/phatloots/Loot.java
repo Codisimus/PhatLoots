@@ -5,7 +5,7 @@ package com.codisimus.plugins.phatloots;
  *
  * @author Codisimus
  */
-public abstract class Loot implements Comparable {
+public abstract class Loot implements Comparable<Object> {
     double probability;
 
     /**

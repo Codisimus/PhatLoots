@@ -2,13 +2,11 @@ package com.codisimus.plugins.phatloots;
 
 import java.io.File;
 import java.util.HashSet;
-import java.util.logging.Logger;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.plugin.java.JavaPlugin;
 
 public class PhatLootsConfig {
     static int defaultDays;
@@ -21,7 +19,7 @@ public class PhatLootsConfig {
     static boolean defaultAutoLoot;
     static boolean autoLock;
     static boolean restrictAll;
-    static HashSet<String> restricted = new HashSet();
+    static HashSet<String> restricted = new HashSet<String>();
     static String permission;
     static String moneyLooted;
     static String moneyCharged;
