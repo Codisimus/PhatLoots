@@ -5,6 +5,7 @@ import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
 import org.bukkit.block.Dispenser;
+import org.bukkit.block.Dropper;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.DoubleChestInventory;
 import org.bukkit.inventory.Inventory;
@@ -20,6 +21,7 @@ public class PhatLootChest {
     private String world;
     private int x, y, z;
     public boolean isDispenser;
+    public boolean isDropper;
 
     /**
      * Constructs a new PhatLootChest with the given Block
@@ -32,6 +34,7 @@ public class PhatLootChest {
         y = block.getY();
         z = block.getZ();
         isDispenser = block.getTypeId() == 23;
+        isDropper = block.getTypeId() == 158;
     }
 
     /**
@@ -49,6 +52,7 @@ public class PhatLootChest {
         this.z = z;
         Block block = PhatLoots.server.getWorld(world).getBlockAt(x, y, z);
         isDispenser = block.getTypeId() == 23;
+        isDropper = block.getTypeId() == 158;
     }
 
     public PhatLootChest(String[] data) {
@@ -58,6 +62,7 @@ public class PhatLootChest {
         z = Integer.parseInt(data[3]);
         Block block = PhatLoots.server.getWorld(world).getBlockAt(x, y, z);
         isDispenser = block.getTypeId() == 23;
+        isDropper = block.getTypeId() == 158;
     }
 
     /**
@@ -128,17 +133,30 @@ public class PhatLootChest {
 
         PlayerInventory sack = player.getInventory();
 
-        if (isDispenser) {
-            //Add the item to the Dispenser inventory
-            Dispenser dispenser = (Dispenser) getBlock().getState();
-            inventory.addItem(item);
-
-            //Dispense until the Dispenser is empty
-            while (inventory.firstEmpty() > 0) {
-                dispenser.dispense();
-            }
-
-            return false;
+        if (isDispenser || isDropper) {
+        	if (getBlock().getType() == Material.DISPENSER) {
+        		//Add the item to the Dispenser inventory
+        		Dispenser dispenser = (Dispenser) getBlock().getState();
+        		inventory.addItem(item);
+        		
+        		//Dispense until the Dispenser is empty
+        		while (inventory.firstEmpty() > 0) {
+        			dispenser.dispense();
+        		}
+        		System.out.println("tickDisp");
+        	} else if (getBlock().getType() == Material.DROPPER) {
+        		//Add the item to the Dropper inventory
+        		Dropper dropper = (Dropper) getBlock().getState();
+        		inventory.addItem(item);
+        		
+        		//Dispense until the Dropper is empty
+        		while (inventory.firstEmpty() > 0) {
+        			dropper.drop();
+        		}
+        		System.out.println("tickDrop");
+        	}
+        	
+        	return false;
         } else if (autoLoot && sack.firstEmpty() != -1) {
             //Add the Loot to the Player's Inventory
             if (PhatLootsConfig.autoLoot != null) {

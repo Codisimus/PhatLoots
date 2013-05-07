@@ -290,7 +290,7 @@ public class PhatLoots extends JavaPlugin {
         if (getServer().getPluginManager().getPlugin("Vault") == null) {
             return false;
         }
-        RegisteredServiceProvider rsp = getServer().getServicesManager().getRegistration(Economy.class);
+        RegisteredServiceProvider<Economy> rsp = getServer().getServicesManager().getRegistration(Economy.class);
         if (rsp == null) {
             return false;
         }
@@ -316,7 +316,7 @@ public class PhatLoots extends JavaPlugin {
 
         logger.info("PhatLoots reloaded");
         if (sender instanceof Player) {
-            sender.sendMessage("ยง5PhatLoots reloaded");
+            sender.sendMessage("ง5PhatLoots reloaded");
         }
     }
 

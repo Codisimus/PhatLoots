@@ -74,7 +74,7 @@ public class Command extends Loot implements ConfigurationSerializable {
 
     @Override
     public Map<String, Object> serialize() {
-        Map map = new TreeMap();
+        Map<String, Object> map = new TreeMap<String, Object>();
         map.put("Command", command);
         map.put("FromConsole", fromConsole);
         map.put("TempOP", tempOP);

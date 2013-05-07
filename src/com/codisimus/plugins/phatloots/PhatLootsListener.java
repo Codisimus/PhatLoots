@@ -8,6 +8,7 @@ import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
 import org.bukkit.block.Dispenser;
+import org.bukkit.block.Dropper;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -27,7 +28,7 @@ import org.bukkit.inventory.InventoryHolder;
  */
 public class PhatLootsListener implements Listener {
     static String chestName;
-    static EnumMap<Material, String> types = new EnumMap(Material.class);
+    static EnumMap<Material, String> types = new EnumMap<Material, String>(Material.class);
     private static HashMap<String, ForgettableInventory> inventories = new HashMap<String, ForgettableInventory>();
 
     /**
@@ -45,7 +46,7 @@ public class PhatLootsListener implements Listener {
 
         Player player = event.getPlayer();
         Inventory inventory = null;
-        LinkedList<PhatLoot> phatLoots = null;
+        LinkedList<PhatLoot> phatLoots = new LinkedList<PhatLoot>();
 
         if (types.get(type) != null) {
             if (event.getAction() != Action.RIGHT_CLICK_BLOCK) {
@@ -63,29 +64,42 @@ public class PhatLootsListener implements Listener {
 
         switch (event.getAction()) {
         case LEFT_CLICK_BLOCK:
-            if (type == Material.DISPENSER) {
-                if (phatLoots == null) {
-                    //Return if the Dispenser is not a PhatLootChest
+            if (type == Material.DISPENSER || type == Material.DROPPER) {
+                if (phatLoots.isEmpty()) {
+                    //Return if the Dispenser/Dropper is not a PhatLootChest
                     phatLoots = PhatLoots.getPhatLoots(block, player);
                     if (phatLoots.isEmpty()) {
                         return;
                     }
                 }
-
-                Dispenser dispenser = (Dispenser) block.getState();
-                inventory = dispenser.getInventory();
+                
+                if (type == Material.DISPENSER) {
+                	Dispenser dispenser = (Dispenser) block.getState();
+                	inventory = dispenser.getInventory();
+                } else if (type == Material.DROPPER) {
+                	Dropper dropper = (Dropper) block.getState();
+                	inventory = dropper.getInventory();
+                }
                 break;
             }
             return;
 
         case RIGHT_CLICK_BLOCK:
             switch (type) {
+            case DISPENSER:
+            	Dispenser dispenser = (Dispenser) block.getState();
+            	block = dispenser.getBlock();
+                break;
+            case DROPPER:
+            	Dropper dropper = (Dropper) block.getState();
+            	block = dropper.getBlock();
+                break;
             case TRAPPED_CHEST:
             case CHEST:
                 Chest chest = (Chest) block.getState();
                 inventory = chest.getInventory();
 
-                if (phatLoots == null) {
+                if (phatLoots.isEmpty()) {
                     //We only care about the left side because that is the Block that would be linked
                     if (inventory instanceof DoubleChestInventory) {
                         chest = (Chest) ((DoubleChestInventory) inventory).getLeftSide().getHolder();
@@ -146,7 +160,7 @@ public class PhatLootsListener implements Listener {
                 break;
 
             default:
-                if (phatLoots == null) {
+                if (phatLoots.isEmpty()) {
                     //Return if the Block is not a PhatLootChest
                     phatLoots = PhatLoots.getPhatLoots(block, player);
                     if (phatLoots.isEmpty()) {
@@ -198,13 +212,11 @@ public class PhatLootsListener implements Listener {
                     PhatLoots.openInventory(player, inventory, block.getLocation(), global);
                 }
                 player.openInventory(inventory);
-
                 break;
             }
-
-        default: return;
         }
-
+        
+        
         PhatLootChest plChest = new PhatLootChest(block);
         for (PhatLoot phatLoot : phatLoots) {
             phatLoot.rollForLoot(player, plChest, inventory);
@@ -242,12 +254,14 @@ public class PhatLootsListener implements Listener {
      */
     @EventHandler (ignoreCancelled = true)
     public void onBlockBreak(BlockBreakEvent event) {
-        //Return if the Material of the Block is not a Chest or Furnace
+        //Return if the Material of the Block is not a Chest, Dispenser or Dropper
         Block block = event.getBlock();
         switch (block.getType()) {
-            case ENDER_CHEST: break;
-            case CHEST: break;
-            case FURNACE: break;
+            case TRAPPED_CHEST: break;
+        	case CHEST: break;
+        	case ENDER_CHEST: break;
+            case DISPENSER: break;
+            case DROPPER: break;
             default: return;
         }
 
