@@ -58,7 +58,9 @@ public class LootCollection extends Loot {
             }
         } else {
             for (Loot loot : lootList) {
-                loot.getLoot(player, lootingBonus, items);
+                if (loot.rollForLoot(lootingBonus)) {
+                    loot.getLoot(player, lootingBonus, items);
+                }
             }
         }
     }
