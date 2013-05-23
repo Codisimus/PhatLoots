@@ -106,6 +106,9 @@ public class PhatLoots extends JavaPlugin {
                                   && pm.isPluginEnabled("RegionOwn");
             pm.registerEvents(listener, this);
         }
+        if (getConfig().getBoolean("FishingLoot")) {
+            pm.registerEvents(new FishingListener(), this);
+        }
 
         /* Register the command found in the plugin.yml */
         PhatLootsCommand.command = (String) getDescription().getCommands().keySet().toArray()[0];
@@ -158,7 +161,7 @@ public class PhatLoots extends JavaPlugin {
 
                 YamlConfiguration config = new YamlConfiguration();
                 config.load(file);
-                PhatLoot phatLoot = (PhatLoot)config.get(name);
+                PhatLoot phatLoot = (PhatLoot) config.get(name);
                 phatLoots.put(name, phatLoot);
             } catch (Exception ex) {
                 logger.severe("Failed to load " + file.getName());

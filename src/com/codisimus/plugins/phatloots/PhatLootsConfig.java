@@ -2,13 +2,11 @@ package com.codisimus.plugins.phatloots;
 
 import java.io.File;
 import java.util.HashSet;
-import java.util.logging.Logger;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.plugin.java.JavaPlugin;
 
 public class PhatLootsConfig {
     static int defaultDays;
@@ -40,6 +38,11 @@ public class PhatLootsConfig {
     public static void load() {
         PhatLoots.plugin.saveDefaultConfig();
         FileConfiguration config = PhatLoots.plugin.getConfig();
+
+        //Check for an outdated config.yml file
+        if (config.get("PlaySoundOnAutoLoot", null) == null) {
+            PhatLoots.logger.warning("Your config.yml file is outdated! To get the most out of this plugin please (re)move the old file so a new one can be generated.");
+        }
 
 
         /* LINKABLES */
@@ -126,6 +129,7 @@ public class PhatLootsConfig {
         OldLoot.tierNotify = config.getInt("MinimumTierNotification");
         PhatLootsCommand.setUnlockable = config.getBoolean("SetChestsAsUnlockable");
         PhatLoot.autoClose = config.getBoolean("AutoCloseOnInsufficientFunds");
+        PhatLootChest.soundOnAutoLoot = config.getBoolean("PlaySoundOnAutoLoot");
 
 
         /* LORES.YML */

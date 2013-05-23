@@ -204,7 +204,13 @@ public class PhatLoot implements ConfigurationSerializable {
 
         if (autoLoot && !itemsInChest) {
             player.closeInventory();
-            PhatLoots.closeInventory(player, inventory, chest.getBlock().getLocation(), global);
+            switch (chest.getBlock().getType()) {
+            case CHEST:
+            case TRAPPED_CHEST:
+            case ENDER_CHEST:
+                PhatLoots.closeInventory(player, inventory, chest.getBlock().getLocation(), global);
+            default: break;
+            }
         }
 
         if (global && (days < 0 || hours < 0 || minutes < 0 || seconds < 0)) {

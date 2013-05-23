@@ -2,6 +2,7 @@ package com.codisimus.plugins.phatloots;
 
 import java.util.List;
 import org.bukkit.Material;
+import org.bukkit.Sound;
 import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
 import org.bukkit.block.Dispenser;
@@ -17,6 +18,7 @@ import org.bukkit.inventory.PlayerInventory;
  * @author Codisimus
  */
 public class PhatLootChest {
+    static boolean soundOnAutoLoot;
     private String world;
     private int x, y, z;
     public boolean isDispenser;
@@ -150,6 +152,9 @@ public class PhatLootChest {
                 player.sendMessage(msg);
             }
             sack.addItem(item);
+            if (soundOnAutoLoot) {
+                player.playSound(player.getLocation(), Sound.ITEM_PICKUP, 1, 0.2F);
+            }
             return false;
         } else {
             //Add the Loot to the Chest's Inventory

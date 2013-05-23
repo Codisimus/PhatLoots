@@ -1,12 +1,18 @@
 package com.codisimus.plugins.phatloots;
 
+import java.util.LinkedList;
+import org.bukkit.configuration.serialization.ConfigurationSerializable;
+import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
+
 /**
  * A Loot is a ItemStack and with a probability of looting
  *
  * @author Codisimus
  */
-public abstract class Loot implements Comparable {
+public abstract class Loot implements Comparable, ConfigurationSerializable {
     double probability;
+    public abstract void getLoot(Player player, double lootingBonus, LinkedList<ItemStack> items);
 
     /**
      * Returns the chance of looting
@@ -33,7 +39,6 @@ public abstract class Loot implements Comparable {
     static double roll() {
         return PhatLoots.random.nextInt(100) + PhatLoots.random.nextDouble();
     }
-
 
     @Override
     public int compareTo(Object object) {

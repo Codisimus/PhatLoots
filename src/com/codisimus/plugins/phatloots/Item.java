@@ -11,16 +11,17 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.configuration.serialization.SerializableAs;
 import org.bukkit.enchantments.Enchantment;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
 /**
- * A Loot is a ItemStack and with a probability of looting
+ * An Item is the Loot representation of an ItemStack
  *
  * @author Codisimus
  */
 @SerializableAs("Item")
-public class Item extends Loot implements ConfigurationSerializable {
+public class Item extends Loot {
     private static final String ARMOR = "ARMOR";
     private static final String SWORD = "SWORD";
     private static final String AXE = "AXE";
@@ -71,7 +72,7 @@ public class Item extends Loot implements ConfigurationSerializable {
     static String blastDefenseString;
     static String fallDefenseString;
     private ItemStack item;
-    private int amountBonus = 0;
+    private int amountBonus;
     private int durabilityBonus = 0;
     boolean autoEnchant;
     private boolean generateName;
@@ -102,14 +103,19 @@ public class Item extends Loot implements ConfigurationSerializable {
     }
 
     public Item(Map<String, Object> map) {
-        this.item = (ItemStack) map.get("ItemStack");
-        this.amountBonus = (Integer) map.get("BonusAmount");
-        this.durabilityBonus = (Integer) map.get("BonusDurability");
-        this.probability = (Double) map.get("Probability");
-        this.autoEnchant = (Boolean) map.get("AutoEnchant");
-        this.generateName = (Boolean) map.get("GenerateName");
-        this.randomLore = (Boolean) map.get("RandomLore");
-        this.tieredName = (Boolean) map.get("Tiered");
+        item = (ItemStack) map.get("ItemStack");
+        amountBonus = (Integer) map.get("BonusAmount");
+        durabilityBonus = (Integer) map.get("BonusDurability");
+        probability = (Double) map.get("Probability");
+        autoEnchant = (Boolean) map.get("AutoEnchant");
+        generateName = (Boolean) map.get("GenerateName");
+        randomLore = (Boolean) map.get("RandomLore");
+        tieredName = (Boolean) map.get("Tiered");
+    }
+
+    @Override
+    public void getLoot(Player player, double lootingBonus, LinkedList<ItemStack> items) {
+        items.add(getItem());
     }
 
     /**
@@ -878,10 +884,10 @@ public class Item extends Loot implements ConfigurationSerializable {
     @Override
     public Map<String, Object> serialize() {
         Map map = new TreeMap();
+        map.put("Probability", probability);
         map.put("ItemStack", item);
         map.put("BonusAmount", amountBonus);
         map.put("BonusDurability", durabilityBonus);
-        map.put("Probability", probability);
         map.put("AutoEnchant", autoEnchant);
         map.put("GenerateName", generateName);
         map.put("RandomLore", randomLore);

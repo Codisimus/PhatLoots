@@ -201,6 +201,7 @@ public class PhatLootsListener implements Listener {
 
                 break;
             }
+            break;
 
         default: return;
         }
@@ -251,6 +252,7 @@ public class PhatLootsListener implements Listener {
             default: return;
         }
 
+        //Return if the Block is not a PhatLootChest
         if (!isPhatLootChest(block)) {
             return;
         }

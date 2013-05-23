@@ -179,3 +179,6 @@ SetChestsAsUnlockable: true
 
 ##If set to true then the Chest will automattically close if the Player could not afford to loot it
 AutoCloseOnInsufficientFunds: true
+
+
+PlaySoundOnAutoLoot: true
