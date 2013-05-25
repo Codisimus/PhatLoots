@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
+import org.bukkit.configuration.serialization.SerializableAs;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
@@ -13,27 +14,32 @@ import org.bukkit.inventory.ItemStack;
  *
  * @author Codisimus
  */
+@SerializableAs("LootCollection")
 public class LootCollection extends Loot {
     String name;
-    int numberOfLoots;
+    int lowerNumberOfLoots;
+    int upperNumberOfLoots;
     LinkedList<Loot> lootList;
 
     public LootCollection(String name) {
         this.name = name;
-        numberOfLoots = PhatLootsConfig.defaultNumberOfLoots;
+        lowerNumberOfLoots = PhatLootsConfig.defaultLowerNumberOfLoots;
+        upperNumberOfLoots = PhatLootsConfig.defaultUpperNumberOfLoots;
         lootList = new LinkedList<Loot>();
     }
 
     public LootCollection(Map<String, Object> map) {
         probability = (Double) map.get("Probability");
         name = (String) map.get("Name");
-        numberOfLoots = (Integer) map.get("NumberOfLoots");
+        lowerNumberOfLoots = (Integer) map.get("LowerNumberOfLoots");
+        upperNumberOfLoots = (Integer) map.get("UpperNumberOfLoots");
         lootList = new LinkedList<Loot>((List) map.get("LootList"));
     }
 
     @Override
     public void getLoot(Player player, double lootingBonus, LinkedList<ItemStack> items) {
-        if (numberOfLoots > 0) {
+        if (upperNumberOfLoots > 0) {
+            int numberOfLoots = PhatLoots.random.nextInt(upperNumberOfLoots - lowerNumberOfLoots) + lowerNumberOfLoots;
             //Make sure there are items that will be looted before entering the loop
             if (!lootList.isEmpty()) {
                 //Do not loot if the probability does not add up to 100
@@ -106,7 +112,8 @@ public class LootCollection extends Loot {
         Map map = new TreeMap();
         map.put("Probability", probability);
         map.put("Name", name);
-        map.put("NumberOfLoots", numberOfLoots);
+        map.put("LowerNumberOfLoots", lowerNumberOfLoots);
+        map.put("UpperNumberOfLoots", upperNumberOfLoots);
         map.put("LootList", lootList);
         return map;
     }

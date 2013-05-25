@@ -13,7 +13,8 @@ public class PhatLootsConfig {
     static int defaultHours;
     static int defaultMinutes;
     static int defaultSeconds;
-    static int defaultNumberOfLoots;
+    static int defaultLowerNumberOfLoots;
+    static int defaultUpperNumberOfLoots;
     static boolean defaultGlobal;
     static boolean defaultRound;
     static boolean defaultAutoLoot;
@@ -109,7 +110,16 @@ public class PhatLootsConfig {
         section = config.getConfigurationSection("Defaults");
         defaultGlobal = section.getBoolean("GlobalReset");
         defaultRound = section.getBoolean("RoundDownTime");
-        defaultNumberOfLoots = section.getInt("ItemsPerColl");
+        String itemsPerColl = section.getString("DefaultItemsPerColl");
+        int index = itemsPerColl.indexOf('-');
+        if (index == -1) {
+            int numberOfLoots = Integer.parseInt(itemsPerColl);
+            defaultLowerNumberOfLoots = numberOfLoots;
+            defaultUpperNumberOfLoots = numberOfLoots;
+        } else {
+            defaultLowerNumberOfLoots = Integer.parseInt(itemsPerColl.substring(0, index));
+            defaultUpperNumberOfLoots = Integer.parseInt(itemsPerColl.substring(index + 1));
+        }
         defaultAutoLoot = section.getBoolean("AutoLoot");
 
         section = section.getConfigurationSection("ResetTime");

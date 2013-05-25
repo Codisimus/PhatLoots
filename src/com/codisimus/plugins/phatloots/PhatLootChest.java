@@ -3,6 +3,7 @@ package com.codisimus.plugins.phatloots;
 import java.util.List;
 import org.bukkit.Material;
 import org.bukkit.Sound;
+import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
 import org.bukkit.block.Dispenser;
@@ -49,8 +50,14 @@ public class PhatLootChest {
         this.x = x;
         this.y = y;
         this.z = z;
-        Block block = PhatLoots.server.getWorld(world).getBlockAt(x, y, z);
-        isDispenser = block.getTypeId() == 23;
+        World w = PhatLoots.server.getWorld(world);
+        if (w == null) {
+            PhatLoots.logger.warning("The world '" + world + "' is not currently loaded, all linked chests in this world are being unlinked.");
+            PhatLoots.logger.warning("THIS CHEST UNLINKING IS PERMANANT IF YOU LINK/UNLINK ANY OTHER CHESTS IN THIS PHATLOOT!");
+        } else {
+            Block block = w.getBlockAt(x, y, z);
+            isDispenser = block.getTypeId() == 23;
+        }
     }
 
     public PhatLootChest(String[] data) {
@@ -58,8 +65,14 @@ public class PhatLootChest {
         x = Integer.parseInt(data[1]);
         y = Integer.parseInt(data[2]);
         z = Integer.parseInt(data[3]);
-        Block block = PhatLoots.server.getWorld(world).getBlockAt(x, y, z);
-        isDispenser = block.getTypeId() == 23;
+        World w = PhatLoots.server.getWorld(world);
+        if (w == null) {
+            PhatLoots.logger.warning("The world '" + world + "' is not currently loaded, all linked chests in this world are being unlinked.");
+            PhatLoots.logger.warning("THIS CHEST UNLINKING IS PERMANANT IF YOU LINK/UNLINK ANY OTHER CHESTS IN THIS PHATLOOT!");
+        } else {
+            Block block = w.getBlockAt(x, y, z);
+            isDispenser = block.getTypeId() == 23;
+        }
     }
 
     /**
@@ -123,9 +136,12 @@ public class PhatLootChest {
         if (item.getAmount() > item.getMaxStackSize()) {
             int id = item.getTypeId();
             short durability = item.getDurability();
-
-            addLoot(new ItemStack(id, item.getMaxStackSize(), durability), player, inventory, autoLoot);
-            addLoot(new ItemStack(id, item.getAmount() - item.getMaxStackSize(), durability), player, inventory, autoLoot);
+            int amount = item.getAmount();
+            int maxStackSize = item.getMaxStackSize();
+            while (amount > maxStackSize) {
+                addLoot(new ItemStack(id, maxStackSize, durability), player, inventory, autoLoot);
+                amount -= maxStackSize;
+            }
         }
 
         PlayerInventory sack = player.getInventory();

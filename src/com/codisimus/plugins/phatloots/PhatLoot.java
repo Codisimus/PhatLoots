@@ -38,7 +38,7 @@ public class PhatLoot implements ConfigurationSerializable {
     static boolean autoClose;
     private static PhatLootsCommandSender cs = new PhatLootsCommandSender();
     public String name; //A unique name for the Warp
-    public int numberCollectiveLoots = PhatLootsConfig.defaultNumberOfLoots; //Amount of loots received from each collective loot
+    public int numberCollectiveLoots = PhatLootsConfig.defaultLowerNumberOfLoots; //Amount of loots received from each collective loot
     public int moneyLower; //Range of money that may be given
     public int moneyUpper;
     public int expLower; //Range of experience gained when looting

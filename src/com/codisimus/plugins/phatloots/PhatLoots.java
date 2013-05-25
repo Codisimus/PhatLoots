@@ -48,8 +48,11 @@ public class PhatLoots extends JavaPlugin {
         //Metrics hook
         try { new Metrics(this).start(); } catch (IOException e) {}
 
-        ConfigurationSerialization.registerClass(PhatLoot.class, "PhatLoot");
         ConfigurationSerialization.registerClass(OldLoot.class, "Loot");
+        ConfigurationSerialization.registerClass(PhatLoot.class, "PhatLoot");
+        ConfigurationSerialization.registerClass(LootCollection.class, "LootCollection");
+        ConfigurationSerialization.registerClass(Item.class, "Item");
+        ConfigurationSerialization.registerClass(Command.class, "Command");
 
         server = getServer();
         logger = getLogger();
