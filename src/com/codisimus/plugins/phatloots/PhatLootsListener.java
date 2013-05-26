@@ -27,7 +27,7 @@ import org.bukkit.inventory.InventoryHolder;
  */
 public class PhatLootsListener implements Listener {
     static String chestName;
-    static EnumMap<Material, String> types = new EnumMap(Material.class);
+    static EnumMap<Material, HashMap<String, String>> types = new EnumMap(Material.class);
     private static HashMap<String, ForgettableInventory> inventories = new HashMap<String, ForgettableInventory>();
 
     /**
@@ -52,7 +52,14 @@ public class PhatLootsListener implements Listener {
                 return;
             }
 
-            PhatLoot phatLoot = PhatLoots.getPhatLoot(types.get(type));
+            HashMap<String, String> map = types.get(type);
+            PhatLoot phatLoot;
+            String world = player.getWorld().getName();
+            if (map.containsKey(world)) {
+                phatLoot = PhatLoots.getPhatLoot(map.get(world));
+            } else {
+                phatLoot = PhatLoots.getPhatLoot(map.get("all"));
+            }
             if (phatLoot == null) {
                 PhatLoots.logger.warning("PhatLoot " + types.get(type) + " does not exist");
             }

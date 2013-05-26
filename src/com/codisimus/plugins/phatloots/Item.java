@@ -102,6 +102,17 @@ public class Item extends Loot {
         this.amountBonus = amountBonus;
     }
 
+    public Item(OldLoot loot) {
+        item = loot.item;
+        amountBonus = loot.amountBonus;
+        durabilityBonus = loot.durabilityBonus;
+        probability = loot.probability;
+        autoEnchant = loot.autoEnchant;
+        generateName = loot.generateName;
+        randomLore = loot.randomLore;
+        tieredName = loot.tieredName;
+    }
+
     public Item(Map<String, Object> map) {
         item = (ItemStack) map.get("ItemStack");
         amountBonus = (Integer) map.get("BonusAmount");

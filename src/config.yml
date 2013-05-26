@@ -45,12 +45,15 @@ Blocks:
     - Trapped Chest
     - Ender Chest
     - Dispenser
-    - Melon Block
+    - Bookshelf
 
-##Every block on the server that matches a Material below will be linked to the specified PhatLoot
+##Every block in the specified Worlds that matches a listed Material will be linked to the given PhatLoot
 ##Blocks listed here need not be listed in 'Blocks' above
 AutoLink:
-    Melon Block: melons
+    All:
+        Melon Block: melons
+    world:
+        Bookshelf: books
 
 
 

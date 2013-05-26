@@ -1,6 +1,7 @@
 package com.codisimus.plugins.phatloots;
 
 import java.io.File;
+import java.util.HashMap;
 import java.util.HashSet;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -55,10 +56,16 @@ public class PhatLootsConfig {
             }
         }
         ConfigurationSection section = config.getConfigurationSection("AutoLink");
-        for (String string : section.getKeys(false)) {
-            Material mat = Material.matchMaterial(string);
-            if (mat != null) {
-                PhatLootsListener.types.put(mat, section.getString(string));
+        for (String world : section.getKeys(false)) {
+            ConfigurationSection worldSection = config.getConfigurationSection(world);
+            for (String string : worldSection.getKeys(false)) {
+                Material mat = Material.matchMaterial(string);
+                if (mat != null) {
+                    if (!PhatLootsListener.types.containsKey(mat)) {
+                        PhatLootsListener.types.put(mat, new HashMap());
+                    }
+                    PhatLootsListener.types.get(mat).put(world, worldSection.getString(string));
+                }
             }
         }
 

@@ -233,7 +233,7 @@ public class PhatLoots extends JavaPlugin {
      * @return The PhatLoot with the given name or null if not found
      */
     public static PhatLoot getPhatLoot(String name) {
-        return phatLoots.get(name);
+        return name == null ? null : phatLoots.get(name);
     }
 
     /**

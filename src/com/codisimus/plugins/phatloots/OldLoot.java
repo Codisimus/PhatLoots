@@ -75,14 +75,14 @@ public class OldLoot implements Comparable, ConfigurationSerializable {
     static String rangeDefenseString;
     static String blastDefenseString;
     static String fallDefenseString;
-    private ItemStack item;
-    private int amountBonus = 0;
-    private int durabilityBonus = 0;
-    private double probability;
+    ItemStack item;
+    int amountBonus = 0;
+    int durabilityBonus = 0;
+    double probability;
     boolean autoEnchant;
-    private boolean generateName;
-    private boolean randomLore;
-    private boolean tieredName;
+    boolean generateName;
+    boolean randomLore;
+    boolean tieredName;
     String name;
 
     /**

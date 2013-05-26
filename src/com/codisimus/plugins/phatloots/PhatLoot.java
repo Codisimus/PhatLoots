@@ -25,10 +25,6 @@ import org.bukkit.inventory.ItemStack;
  */
 @SerializableAs("PhatLoot")
 public class PhatLoot implements ConfigurationSerializable {
-    public static final int INDIVIDUAL = 0, COLLECTIVE1 = 1,
-            COLLECTIVE2 = 2, COLLECTIVE3 = 3, COLLECTIVE4 = 4,
-            COLLECTIVE5 = 5, COLLECTIVE6 = 6, COLLECTIVE7 = 7,
-            COLLECTIVE8 = 8, COLLECTIVE9 = 9, COLLECTIVE10 = 10;
     static boolean onlyDropOnPlayerKill;
     static boolean replaceMobLoot;
     static boolean displayTimeRemaining;
@@ -37,14 +33,13 @@ public class PhatLoot implements ConfigurationSerializable {
     static double lootingBonusPerLvl;
     static boolean autoClose;
     private static PhatLootsCommandSender cs = new PhatLootsCommandSender();
+
     public String name; //A unique name for the Warp
-    public int numberCollectiveLoots = PhatLootsConfig.defaultLowerNumberOfLoots; //Amount of loots received from each collective loot
     public int moneyLower; //Range of money that may be given
     public int moneyUpper;
     public int expLower; //Range of experience gained when looting
     public int expUpper;
-    public ArrayList<String> commands = new ArrayList<String>(); //Commands that will be run upon looting the Chest
-    private ArrayList<OldLoot>[] lootTables = (ArrayList[]) new ArrayList[11]; //List of items that may be given
+    public ArrayList<Loot> lootList = new ArrayList<Loot>(); //List of Loot
 
     public int days = PhatLootsConfig.defaultDays; //Reset time (will never reset if any are negative)
     public int hours = PhatLootsConfig.defaultHours;
@@ -55,6 +50,15 @@ public class PhatLoot implements ConfigurationSerializable {
     public boolean autoLoot = PhatLootsConfig.defaultAutoLoot;
     private HashSet<PhatLootChest> chests = new HashSet<PhatLootChest>(); //List of Chests linked to this PhatLoot
     Properties lootTimes = new Properties(); //PhatLootChest'PlayerName=Year'Day'Hour'Minute'Second
+
+    /* OLD */
+    public static final int INDIVIDUAL = 0, COLLECTIVE1 = 1,
+            COLLECTIVE2 = 2, COLLECTIVE3 = 3, COLLECTIVE4 = 4,
+            COLLECTIVE5 = 5, COLLECTIVE6 = 6, COLLECTIVE7 = 7,
+            COLLECTIVE8 = 8, COLLECTIVE9 = 9, COLLECTIVE10 = 10;
+    public int numberCollectiveLoots = PhatLootsConfig.defaultLowerNumberOfLoots; //Amount of loots received from each collective loot
+    private ArrayList<OldLoot>[] lootTables = (ArrayList[]) new ArrayList[11]; //List of items that may be given
+    public ArrayList<String> commands = new ArrayList<String>(); //Commands that will be run upon looting the Chest
 
     /**
      * Constructs a new PhatLoot
@@ -79,7 +83,6 @@ public class PhatLoot implements ConfigurationSerializable {
 
         global = (Boolean) map.get("Global");
         round = (Boolean) map.get("RoundDownTime");
-        numberCollectiveLoots = (Integer) map.get("NumberCollectiveLoots");
         autoLoot = (Boolean) map.get("AutoLoot");
 
         nestedMap = (Map) map.get("Money");
@@ -90,16 +93,25 @@ public class PhatLoot implements ConfigurationSerializable {
         expUpper = (Integer) nestedMap.get("Upper");
         expLower = (Integer) nestedMap.get("Lower");
 
-        nestedMap = (Map) map.get("Loots");
-        lootTables[0] = (ArrayList) nestedMap.get("Individual");
+        //Check which version the file is
+        if (map.containsKey("LootList")) { //3.1+
+            lootList = (ArrayList) map.get("LootList");
+        } else { //pre-3.1
+            numberCollectiveLoots = (Integer) map.get("NumberCollectiveLoots");
 
-        for (int i = 1; i < 11; i++) {
-            lootTables[i] = (ArrayList) nestedMap.get("Coll" + i);
-            Collections.sort(lootTables[i]);
-        }
+            nestedMap = (Map) map.get("Loots");
+            lootTables[0] = (ArrayList) nestedMap.get("Individual");
+            for (int i = 1; i < 11; i++) {
+                lootTables[i] = (ArrayList) nestedMap.get("Coll" + i);
+                Collections.sort(lootTables[i]);
+            }
 
-        if (map.containsKey("Commands")) {
-            commands = (ArrayList) map.get("Commands");
+            if (map.containsKey("Commands")) {
+                commands = (ArrayList) map.get("Commands");
+            }
+
+            convert();
+            save();
         }
 
         loadChests();
@@ -836,18 +848,41 @@ public class PhatLoot implements ConfigurationSerializable {
         nestedMap.put("Lower", expLower);
         map.put("Exp", nestedMap);
 
-        nestedMap = new HashMap();
-        nestedMap.put("Individual", lootTables[INDIVIDUAL]);
-        for (int i = 1; i < 11; i++) {
-            nestedMap.put("Coll" + i, lootTables[i]);
-        }
-        map.put("Loots", nestedMap);
-
-        map.put("Commands", commands);
+        map.put("LootList", lootList);
         return map;
     }
 
     /* OLD */
+    private void convert() {
+        //Convert each command
+        for (String cmd : commands) {
+            double percent = 100;
+            if (cmd.matches(".*%[0-9]*[.]?[0-9]+")) {
+                int index = cmd.lastIndexOf('%');
+                percent = Double.parseDouble(cmd.substring(index + 1));
+                cmd = cmd.substring(0, index);
+            }
+            Command command = new Command(cmd);
+            command.setProbability(percent);
+            lootList.add(command);
+        }
+
+        //Convert each Loot
+        for (OldLoot loot : lootTables[INDIVIDUAL]) {
+            lootList.add(new Item(loot));
+        }
+
+        //Convert each Collection
+        for (int i = 1; i <= 10; i++) {
+            if (!lootTables[1].isEmpty()) {
+                LootCollection coll = new LootCollection(String.valueOf(i));
+                for (OldLoot loot : lootTables[1]) {
+                    coll.lootList.add(new Item(loot));
+                }
+            }
+        }
+    }
+
     public void setLoots(int id, String lootsString) {
         if (lootsString.isEmpty()) {
             return;
