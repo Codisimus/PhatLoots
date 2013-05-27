@@ -32,7 +32,7 @@ public class PhatLoot implements ConfigurationSerializable {
     static float chanceOfDrop;
     static double lootingBonusPerLvl;
     static boolean autoClose;
-    private static PhatLootsCommandSender cs = new PhatLootsCommandSender();
+    static boolean decimals;
 
     public String name; //A unique name for the Warp
     public int moneyLower; //Range of money that may be given
@@ -145,8 +145,11 @@ public class PhatLoot implements ConfigurationSerializable {
         inventory.clear();
 
         if (moneyUpper > 0) {
-            int amount = PhatLoots.random.nextInt(moneyUpper + 1 - moneyLower);
+            double amount = PhatLoots.random.nextInt(moneyUpper + 1 - moneyLower);
             amount += moneyLower;
+            if (decimals) {
+                amount = amount / 100;
+            }
 
             if (amount > 0) {
                 if (PhatLoots.econ != null) {
@@ -282,8 +285,11 @@ public class PhatLoot implements ConfigurationSerializable {
         drops.addAll(loot);
 
         if (moneyUpper > 0 && player != null) {
-            int amount = PhatLoots.random.nextInt(moneyUpper + 1 - moneyLower);
+            double amount = PhatLoots.random.nextInt(moneyUpper + 1 - moneyLower);
             amount += moneyLower;
+            if (decimals) {
+                amount = amount / 100;
+            }
 
             if (amount > 0 && !player.getGameMode().equals(GameMode.CREATIVE) && player.hasPermission("phatloots.moneyfrommobs")) {
                 if (PhatLoots.econ != null) {

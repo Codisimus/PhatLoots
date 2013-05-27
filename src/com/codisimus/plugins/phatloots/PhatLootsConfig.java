@@ -146,6 +146,7 @@ public class PhatLootsConfig {
         OldLoot.tierNotify = config.getInt("MinimumTierNotification");
         PhatLootsCommand.setUnlockable = config.getBoolean("SetChestsAsUnlockable");
         PhatLoot.autoClose = config.getBoolean("AutoCloseOnInsufficientFunds");
+        PhatLoot.decimals = config.getBoolean("DivideMoneyAmountBy100");
         PhatLootChest.soundOnAutoLoot = config.getBoolean("PlaySoundOnAutoLoot");
 
 
