@@ -20,7 +20,10 @@ public class MobSpawnListener extends MobListener {
                     LivingEntity entity = event.getEntity();
                     PhatLoot phatLoot = getPhatLoot(entity);
                     if (phatLoot != null) {
-                        phatLoot.rollForLoot(entity);
+                        double level = entity.hasMetadata("level")
+                                       ? entity.getMetadata("level").get(0).asDouble()
+                                       : 0;
+                        phatLoot.rollForLoot(null, level);
                     }
                 }
             });

@@ -20,7 +20,7 @@ public class FishingListener implements Listener {
         double lootingBonus = PhatLoot.lootingBonusPerLvl * pole.getEnchantmentLevel(Enchantment.LOOT_BONUS_MOBS);
         if (event.getCaught() instanceof Item && phatLoot != null) {
             Item fish = (Item) event.getCaught();
-            fish.setItemStack(phatLoot.lootCollective(lootingBonus).getFirst());
+            fish.setItemStack(phatLoot.lootAll(event.getPlayer(), lootingBonus).getFirst());
             int exp = 0;
             if (phatLoot.expUpper > 0) {
                 exp = PhatLoots.random.nextInt(phatLoot.expUpper + 1 - phatLoot.expLower);

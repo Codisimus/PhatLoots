@@ -202,13 +202,7 @@ public class PhatLoot implements ConfigurationSerializable {
             PhatLoots.server.broadcastMessage(PhatLootsConfig.lootBroadcast.replace("<name>", player.getName()).replace("<phatloot>", name));
         }
 
-        lootCommands(player);
-
-        boolean itemsInChest = chest.addLoots(lootIndividual(0), player, inventory, autoLoot);
-
-        if (chest.addLoots(lootCollective(0), player, inventory, autoLoot)) {
-            itemsInChest = true;
-        }
+        boolean itemsInChest = chest.addLoots(lootAll(player, 0), player, inventory, autoLoot);
 
         if (!chest.isDispenser) {
             player.updateInventory();
@@ -274,8 +268,7 @@ public class PhatLoot implements ConfigurationSerializable {
             }
         }
 
-        List<ItemStack> loot = lootIndividual(lootingBonus);
-        loot.addAll(lootCollective(lootingBonus));
+        List<ItemStack> loot = lootAll(player, lootingBonus);
         if (player != null && PhatLootsConfig.mobDroppedItem != null) {
             for (ItemStack item : loot) {
                 String msg = PhatLootsConfig.mobDroppedItem.replace("<item>", getItemName(item));
@@ -305,8 +298,6 @@ public class PhatLoot implements ConfigurationSerializable {
             }
         }
 
-        lootCommands(player);
-
         if (expUpper > 0) {
             int amount = PhatLoots.random.nextInt(expUpper + 1 - expLower);
             amount += expLower;
@@ -319,8 +310,8 @@ public class PhatLoot implements ConfigurationSerializable {
         return 0;
     }
 
-    public void rollForLoot(LivingEntity entity) {
-        LinkedList<ItemStack> loot = lootCollective(0);
+    public void rollForLoot(LivingEntity entity, double level) {
+        LinkedList<ItemStack> loot = lootAll(null, level);
         if (loot.size() != 5) {
             PhatLoots.logger.warning("Cannot add loot to " + entity.getType().getName() + " because the amount of loot was not equal to 5");
         }
@@ -337,6 +328,39 @@ public class PhatLoot implements ConfigurationSerializable {
         eqp.setChestplateDropChance(chanceOfDrop);
         eqp.setLeggingsDropChance(chanceOfDrop);
         eqp.setBootsDropChance(chanceOfDrop);
+
+//        EntityEquipment eqp = entity.getEquipment();
+//        LinkedList<ItemStack> loot = new LinkedList();
+//        LootCollection coll = getCollection("hand");
+//        if (coll != null) {
+//            coll.getLoot(null, level, loot);
+//            eqp.setItemInHand(loot.removeLast());
+//            eqp.setItemInHandDropChance(chanceOfDrop);
+//        }
+//        coll = getCollection("helmet");
+//        if (coll != null) {
+//            coll.getLoot(null, level, loot);
+//            eqp.setHelmet(loot.removeLast());
+//            eqp.setHelmetDropChance(chanceOfDrop);
+//        }
+//        coll = getCollection("chestplate");
+//        if (coll != null) {
+//            coll.getLoot(null, level, loot);
+//            eqp.setChestplate(loot.removeLast());
+//            eqp.setChestplateDropChance(chanceOfDrop);
+//        }
+//        coll = getCollection("leggings");
+//        if (coll != null) {
+//            coll.getLoot(null, level, loot);
+//            eqp.setLeggings(loot.removeLast());
+//            eqp.setLeggingsDropChance(chanceOfDrop);
+//        }
+//        coll = getCollection("boots");
+//        if (coll != null) {
+//            coll.getLoot(null, level, loot);
+//            eqp.setBoots(loot.removeLast());
+//            eqp.setBootsDropChance(chanceOfDrop);
+//        }
     }
 
     /**
@@ -380,86 +404,15 @@ public class PhatLoot implements ConfigurationSerializable {
     }
 
     /**
-     * Executes commands of the PhatLoot
-     * Each command is rolled for
-     *
-     * @param player The Player looting
-     */
-    public void lootCommands(Player player) {
-        //Execute each command
-        for (String cmd : commands) {
-            if (cmd.matches(".*%[0-9]*[.]?[0-9]+")) {
-                int index = cmd.lastIndexOf('%');
-                double percent = Double.parseDouble(cmd.substring(index + 1));
-                if (PhatLoots.random.nextInt(100) + PhatLoots.random.nextDouble() < percent) {
-                    dispatchCommand(player, cmd.substring(0, index));
-                }
-            } else {
-                dispatchCommand(player, cmd);
-            }
-        }
-    }
-
-    public void dispatchCommand(Player player, String cmd) {
-        cmd = cmd.replace("<player>", player.getName());
-        if (cmd.startsWith("sudo ")) {
-            player.setOp(true);
-            PhatLoots.server.dispatchCommand(player, cmd.substring(5));
-            player.setOp(false);
-        } else {
-            PhatLoots.server.dispatchCommand(cs, cmd);
-        }
-    }
-
-    /**
      * Fills the Chest (Block) with loot
      * Each item is rolled for to determine if it will by added to the Chest
      * Money is rolled for to determine how much will be given within the range
      */
-    public List<ItemStack> lootIndividual(double lootingBonus) {
-        List<ItemStack> itemList = new LinkedList<ItemStack>();
-        for (OldLoot loot : lootTables[INDIVIDUAL]) {
-            //Roll for item
-            if (loot.rollForLoot(lootingBonus)) {
-                itemList.add(loot.getItem());
-            }
-        }
-        return itemList;
-    }
-
-    /**
-     * Fills the Chest (Block) with loot
-     * Items are rolled for in order until the maximum number is added to the Chest
-     */
-    public LinkedList<ItemStack> lootCollective(double lootingBonus) {
+    public LinkedList<ItemStack> lootAll(Player player, double lootingBonus) {
         LinkedList<ItemStack> itemList = new LinkedList<ItemStack>();
-
-        //Loot from each of the first 5 collective loots
-        for (int i = 1; i <= 5; i++) {
-            //Make sure there are items that will be looted before entering the loop
-            if (!lootTables[i].isEmpty()) {
-                //Do not loot if the probability does not add up to 100
-                if (getPercentRemaining(i) != 0) {
-                    PhatLoots.logger.warning("Cannot loot Coll" + i + " of "
-                            + name + " because the probability does not equal 100%");
-                } else {
-                    //Roll for weighted loot
-                    int numberLooted = 0;
-                    while (numberLooted < numberCollectiveLoots) {
-                        int j = Math.min(100, PhatLoots.random.nextInt(100) + (int) lootingBonus);
-                        for (OldLoot loot : lootTables[i]) {
-                            j -= loot.getProbability();
-                            if (j <= 0) {
-                                itemList.add(loot.getItem());
-                                break;
-                            }
-                        }
-                        numberLooted++;
-                    }
-                }
-            }
+        for (Loot loot : lootList) {
+            loot.getLoot(player, lootingBonus, itemList);
         }
-
         return itemList;
     }
 
@@ -625,6 +578,18 @@ public class PhatLoot implements ConfigurationSerializable {
      */
     public Collection<PhatLootChest> getChests() {
         return chests;
+    }
+
+    public LootCollection findCollection(String target) {
+        for (Loot loot : lootList) {
+            if (loot instanceof LootCollection) {
+                LootCollection coll = ((LootCollection) loot).findCollection(target);
+                if (coll != null) {
+                    return coll;
+                }
+            }
+        }
+        return null;
     }
 
     /**

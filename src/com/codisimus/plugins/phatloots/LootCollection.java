@@ -85,6 +85,21 @@ public class LootCollection extends Loot {
         return total;
     }
 
+    public LootCollection findCollection(String target) {
+        if (name.equals(target)) {
+            return this;
+        }
+        for (Loot loot : lootList) {
+            if (loot instanceof LootCollection) {
+                LootCollection coll = ((LootCollection) loot).findCollection(target);
+                if (coll != null) {
+                    return coll;
+                }
+            }
+        }
+        return null;
+    }
+
     @Override
     public String toString() {
         return null;
