@@ -52,7 +52,7 @@ public class PhatLoots extends JavaPlugin {
         ConfigurationSerialization.registerClass(PhatLoot.class, "PhatLoot");
         ConfigurationSerialization.registerClass(LootCollection.class, "LootCollection");
         ConfigurationSerialization.registerClass(Item.class, "Item");
-        ConfigurationSerialization.registerClass(Command.class, "Command");
+        ConfigurationSerialization.registerClass(CommandLoot.class, "Command");
 
         server = getServer();
         logger = getLogger();

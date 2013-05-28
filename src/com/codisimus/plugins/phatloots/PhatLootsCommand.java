@@ -78,7 +78,6 @@ public class PhatLootsCommand implements CommandExecutor {
             //Cancel if the sender does not have the needed permission
             if (sender instanceof Player) {
                 Player player = (Player) sender;
-                player.sendMessage(String.valueOf(player.hasPermission("phatloots.commandloot")));
             	if (!player.hasPermission("phatloots.commandloot")
                         || !(PhatLoots.canLoot(player, phatLoot))) {
                     player.sendMessage(PhatLootsConfig.permission);
@@ -317,73 +316,55 @@ public class PhatLootsCommand implements CommandExecutor {
             }
 
             boolean add = action.equals(Action.ADD);
-            if (args.length < 2 ) {
+            if (args.length < 2) {
                 sendSetupHelp(sender);
                 return true;
             }
 
-            if (args[1].equals("cmd")) {
-                String name = null;
-                double percent = 100;
-                String cmd = "";
-                int i = 2;
+            ItemStack item = null; //The ItemStack to be added/removed
+            String collName = null; //The name of the Loot Collection to be added/removed
+            String cmd = null; //The command to be added/removed
 
-                if (args.length > i) {
-                    if (PhatLoots.hasPhatLoot(args[i])) {
-                        name = args[i];
-                        i++;
-                    }
-                    if (args.length > i) {
-                        if (args[i].matches("%[0-9]*[.]?[0-9]+")) {
-                            percent = Double.parseDouble(args[i]);
-                            i++;
-                        }
-                    }
-                }
-
-                while (i < args.length) {
-                    cmd += args[i]+ " ";
-                    i++;
-                }
-
-                if (!cmd.isEmpty()) {
-                    cmd = cmd.substring(0, cmd.length() - 1);
-                }
-
-                setCommand(sender, name, percent, add, cmd);
-                return true;
-            }
-
-            String phatLoot = null; //Name of the PhatLoot (may be set to 'hand')
-            int id = 0; //The ID of the Loot collection (defaulted to 0 == IndividualLoots)
+            String phatLoot = null; //The name of the PhatLoot
+            double percent = 100; //The chance of receiving the Loot (defaulted to 100)
+            String coll = null; //The Collection to add the Loot to
             int baseAmount = 1; //Stack size of the Loot item (defaulted to 1)
             int bonusAmount = 1; //Amount to possibly increase the Stack size of the Loot item (defaulted to 1)
-            double percent = 100; //The chance of receiving the Loot item (defaulted to 100)
             boolean autoEnchant = false; //Whether or not the Loot Item should be automatically enchanted at time of Looting
 
-            ItemStack item = getItemStack(sender, args[1]); //The Loot item
-            if (item == null) {
-                return true;
+            int i = 2;
+            if (args[1].equals("coll")) { //LootCollection
+                if (args.length < 3) {
+                    sendSetupHelp(sender);
+                    return true;
+                }
+                collName = args[i];
+                i++;
+            } else if (!args[1].equals("cmd")) { //Item
+                item = getItemStack(sender, args[1]);
+                if (item == null) {
+                    return true;
+                }
             }
 
-            for (int i = 2; i < args.length; i++) {
+            while (i < args.length) {
                 char c = args[i].charAt(0);
                 String s = args[i].substring(1);
                 switch (c) {
                 case 'p':
                     phatLoot = s;
-                    if (phatLoot == null) {
-                        sender.sendMessage("§4PhatLoot §6" + s + "§4 does not exist");
+                    break;
+
+                case '%':
+                    percent = getPercent(sender, s);
+                    if (percent == -1) {
+                        sender.sendMessage("§6" + s + "§4 is not a percent");
                         return true;
                     }
                     break;
 
                 case 'c':
-                    id = getCollID(s);
-                    if (id == -1) {
-                        sender.sendMessage("§4Must be written as c1, c2, c3, c4, or c5.");
-                        return true;
-                    }
+                    coll = s;
                     break;
 
                 case '#':
@@ -394,14 +375,6 @@ public class PhatLootsCommand implements CommandExecutor {
                         return true;
                     }
                     item.setAmount(baseAmount);
-                    break;
-
-                case '%':
-                    percent = getPercent(sender, s);
-                    if (percent == -1) {
-                        sender.sendMessage("§6" + s + "§4 is not a percent");
-                        return true;
-                    }
                     break;
 
                 case 'e':
@@ -426,20 +399,38 @@ public class PhatLootsCommand implements CommandExecutor {
                     item.setDurability(data);
                     break;
 
+                case '/':
+                    cmd = args[i];
+                    i++;
+                    while (i < args.length) {
+                        cmd += " " + args[i];
+                        i++;
+                    }
+                    break;
+
                 default:
-                    sender.sendMessage("§6" + s + "§4 is not a valid parameter");
+                    sender.sendMessage("§6" + c + "§4 is not a valid parameter ID");
                     return true;
                 }
+
+                i++;
             }
 
             //Construct the Loot
-            OldLoot loot = new OldLoot(item, bonusAmount - baseAmount);
-            loot.setProbability(percent);
-            if (autoEnchant) {
-                loot.autoEnchant = true;
+            Loot loot;
+            if (item != null) {
+                loot = new Item(item, bonusAmount - baseAmount);
+                if (autoEnchant) {
+                    ((Item) loot).autoEnchant = true;
+                }
+            } else if (collName != null) {
+                loot = new LootCollection(collName);
+            } else {
+                loot = new CommandLoot(cmd);
             }
+            loot.setProbability(percent);
 
-            setLoot(sender, phatLoot, add, id, loot);
+            setLoot(sender, phatLoot, add, coll, loot);
             return true;
 
         case COST:
@@ -939,67 +930,70 @@ public class PhatLootsCommand implements CommandExecutor {
      * @param lootID The id of the Loot, 0 for individual loots
      * @param loot The Loot that will be added/removed
      */
-    public static void setLoot(CommandSender sender, String name, boolean add, int lootID, OldLoot loot) {
+    public static void setLoot(CommandSender sender, String phatLootName, boolean add, String collName, Loot loot) {
         String lootDescription = loot.toString();
 
-        for (PhatLoot phatLoot : getPhatLoots(sender, name)) {
-            ArrayList<OldLoot> lootTable = null;//phatLoot.getLootTable(lootID);
-            ListIterator itr = lootTable.listIterator();
-            boolean found = false;
-            while (itr.hasNext()) {
-                if (itr.next().equals(loot)) {
-                    found = true;
-
-                    //Cancel if the Player is trying to duplicate the Loot
-                    if (add) {
-                        sender.sendMessage("§6" + lootDescription
-                                + "§4 is already Loot for PhatLoot §6"
-                                + phatLoot.name);
-                    } else {
-                        itr.remove();
-
-                        //Display the appropriate message
-                        if (lootID == 0)  { //Individual Loot
-                            sender.sendMessage("§6" + lootDescription
-                                    + "§5 removed as Loot for PhatLoot §6"
-                                    + phatLoot.name);
-                        } else { //Collective Loot
-                            sender.sendMessage("§6" + lootDescription
-                                    + "§5 removed as Loot from §6coll"
-                                    + lootID + "§5, §6"
-                                    + phatLoot.getPercentRemaining(lootID)
-                                    + "%§5 remaining");
-                        }
-
-                        phatLoot.save();
-                    }
-                    break;
-                }
+        for (PhatLoot phatLoot : getPhatLoots(sender, phatLootName)) {
+            LootCollection coll = null;
+            if (collName != null) {
+                coll = phatLoot.findCollection(collName);
             }
 
-            if (!found) {
-                //Cancel if the Loot is not present
+            if (coll == null) {
                 if (add) {
-                    lootTable.add(loot);
-
-                    //Display the appropriate message
-                    if (lootID == 0) { //Individual Loot
+                    if (phatLoot.addLoot(loot)) {
                         sender.sendMessage("§6" + lootDescription
                                 + "§5 added as Loot for PhatLoot §6"
                                 + phatLoot.name);
-                    } else { //Collective Loot
+                        phatLoot.save();
+                    } else {
                         sender.sendMessage("§6" + lootDescription
-                                + "§5 added as Loot to §6coll"
-                                + lootID + "§5, §6"
-                                + phatLoot.getPercentRemaining(lootID)
-                                + "%§5 remaining");
+                                + "§4 is already Loot for PhatLoot §6"
+                                + phatLoot.name);
                     }
-
-                    phatLoot.save();
                 } else {
-                    sender.sendMessage("§6" + lootDescription
-                            + "§4 was not found as a Loot for PhatLoot §6"
-                            + phatLoot.name);
+                    if (phatLoot.removeLoot(loot)) {
+                        sender.sendMessage("§6" + lootDescription
+                                + "§5 removed as Loot for PhatLoot §6"
+                                + phatLoot.name);
+                        phatLoot.save();
+                    } else {
+                        sender.sendMessage("§6" + lootDescription
+                                + "§4 is not Loot for PhatLoot §6"
+                                + phatLoot.name);
+                    }
+                }
+            } else {
+                if (add) {
+                    if (coll.addLoot(loot)) {
+                        sender.sendMessage("§6" + lootDescription
+                                + "§5 added as Loot for Collection §6"
+                                + coll.name);
+                        if (!coll.isRollForEach()) {
+                            sender.sendMessage("§6" + coll.getPercentRemaining()
+                                    + "%§5 remaining");
+                        }
+                        phatLoot.save();
+                    } else {
+                        sender.sendMessage("§6" + lootDescription
+                                + "§4 is already Loot for Collection §6"
+                                + coll.name);
+                    }
+                } else {
+                    if (coll.removeLoot(loot)) {
+                        sender.sendMessage("§6" + lootDescription
+                                + "§5 removed as Loot for Collection §6"
+                                + coll.name);
+                        if (!coll.isRollForEach()) {
+                            sender.sendMessage("§6" + coll.getPercentRemaining()
+                                    + "%§5 remaining");
+                        }
+                        phatLoot.save();
+                    } else {
+                        sender.sendMessage("§6" + lootDescription
+                                + "§4 is not Loot for Collection §6"
+                                + coll.name);
+                    }
                 }
             }
         }
@@ -1431,7 +1425,7 @@ public class PhatLootsCommand implements CommandExecutor {
         sender.sendMessage("§2/"+command+" <add|remove> <Item|ID|hand> [Parameter1] [Parameter2]...");
         sender.sendMessage("§bex. §6/"+command+" add hand #1-16 %32");
         sender.sendMessage("§bex. §6/"+command+" add diamond_sword efire_aspect(2) edamage_all %75 cWeapon");
-        sender.sendMessage("§2/"+command+" <add|remove> coll [Parameter1] [Parameter2]... <Name>");
+        sender.sendMessage("§2/"+command+" <add|remove> coll <Name> [Parameter1] [Parameter2]...");
         sender.sendMessage("§bex. §6/"+command+" add coll %25 cWeapon Bow");
         sender.sendMessage("§2/"+command+" <add|remove> cmd [Parameter1] [Parameter2]... /<Command>");
         sender.sendMessage("§bTutorial Video:");

@@ -38,7 +38,15 @@ public class LootCollection extends Loot {
 
     @Override
     public void getLoot(Player player, double lootingBonus, LinkedList<ItemStack> items) {
-        if (upperNumberOfLoots > 0) {
+        if (isRollForEach()) {
+            for (Loot loot : lootList) {
+                if (loot.rollForLoot(lootingBonus)) {
+                    if (loot.rollForLoot(lootingBonus)) {
+                        loot.getLoot(player, lootingBonus, items);
+                    }
+                }
+            }
+        } else {
             int numberOfLoots = lowerNumberOfLoots == upperNumberOfLoots
                                 ? lowerNumberOfLoots
                                 : PhatLoots.random.nextInt(upperNumberOfLoots - lowerNumberOfLoots) + lowerNumberOfLoots;
@@ -64,14 +72,6 @@ public class LootCollection extends Loot {
                     }
                 }
             }
-        } else {
-            for (Loot loot : lootList) {
-                if (loot.rollForLoot(lootingBonus)) {
-                    if (loot.rollForLoot(lootingBonus)) {
-                        loot.getLoot(player, lootingBonus, items);
-                    }
-                }
-            }
         }
     }
 
@@ -88,6 +88,10 @@ public class LootCollection extends Loot {
         return infoStack;
     }
 
+    public boolean isRollForEach() {
+        return upperNumberOfLoots <= 0;
+    }
+
     /**
      * Returns the remaining percent of the collection
      *
@@ -100,6 +104,27 @@ public class LootCollection extends Loot {
             total -= loot.getProbability();
         }
         return total;
+    }
+
+    public boolean addLoot(Loot target) {
+        for (Loot loot : lootList) {
+            if (loot.equals(target)) {
+                return false;
+            }
+        }
+        lootList.add(target);
+        return true;
+    }
+
+    public boolean removeLoot(Loot target) {
+        Iterator<Loot> itr = lootList.iterator();
+        while (itr.hasNext()) {
+            if (itr.next().equals(target)) {
+                itr.remove();
+                return true;
+            }
+        }
+        return false;
     }
 
     public LootCollection findCollection(String target) {

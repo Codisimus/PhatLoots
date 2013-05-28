@@ -12,13 +12,12 @@ commands:
     usage: /<command> help
 permissions:
   phatloots.loot.*:
-    description: Needed to receive loots from any PhatLoot
+    description: Needed to receive loots from any restricted PhatLoot
   phatloots.moneyfrommobs:
     description: Needed to receive money from mobs
     default: true
   phatloots.commandloot:
     description: Needed to receive loots through command
-    default: true
   phatloots.make:
     description: Needed to make a PhatLoot (/loot make, /loot delete, /loot link, /loot unlink, /loot description, /loot add, /loot remove, /loot money, /loot time, /loot type)
   phatloots.rl:

@@ -15,13 +15,13 @@ import org.bukkit.inventory.meta.ItemMeta;
  * @author Codisimus
  */
 @SerializableAs("Command")
-public class Command extends Loot {
+public class CommandLoot extends Loot {
     private static PhatLootsCommandSender cs = new PhatLootsCommandSender();
     private String command;
     private boolean fromConsole;
     private boolean tempOP;
 
-    public Command(String command) {
+    public CommandLoot(String command) {
         if (command.startsWith("/")) {
             command = command.substring(1);
         }
@@ -35,7 +35,7 @@ public class Command extends Loot {
         }
     }
 
-    public Command(Map<String, Object> map) {
+    public CommandLoot(Map<String, Object> map) {
         probability = (Double) map.get("Probability");
         command = (String) map.get("Command");
         fromConsole = (Boolean) map.get("FromConsole");
@@ -89,11 +89,11 @@ public class Command extends Loot {
 
     @Override
     public boolean equals(Object object) {
-        if (!(object instanceof Command)) {
+        if (!(object instanceof CommandLoot)) {
             return false;
         }
 
-        Command loot = (Command) object;
+        CommandLoot loot = (CommandLoot) object;
         return loot.fromConsole == fromConsole
                 && loot.tempOP == tempOP
                 && loot.command.equals(command);

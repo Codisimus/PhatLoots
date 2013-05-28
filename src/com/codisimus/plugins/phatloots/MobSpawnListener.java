@@ -23,7 +23,7 @@ public class MobSpawnListener extends MobListener {
                         double level = entity.hasMetadata("level")
                                        ? entity.getMetadata("level").get(0).asDouble()
                                        : 0;
-                        phatLoot.rollForLoot(null, level);
+                        phatLoot.rollForLoot(entity, level);
                     }
                 }
             });

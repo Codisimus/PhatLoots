@@ -578,6 +578,27 @@ public class PhatLoot implements ConfigurationSerializable {
         return chests;
     }
 
+    public boolean addLoot(Loot target) {
+        for (Loot loot : lootList) {
+            if (loot.equals(target)) {
+                return false;
+            }
+        }
+        lootList.add(target);
+        return true;
+    }
+
+    public boolean removeLoot(Loot target) {
+        Iterator<Loot> itr = lootList.iterator();
+        while (itr.hasNext()) {
+            if (itr.next().equals(target)) {
+                itr.remove();
+                return true;
+            }
+        }
+        return false;
+    }
+
     public LootCollection findCollection(String target) {
         for (Loot loot : lootList) {
             if (loot instanceof LootCollection) {
@@ -824,7 +845,7 @@ public class PhatLoot implements ConfigurationSerializable {
                 percent = Double.parseDouble(cmd.substring(index + 1));
                 cmd = cmd.substring(0, index);
             }
-            Command command = new Command(cmd);
+            CommandLoot command = new CommandLoot(cmd);
             command.setProbability(percent);
             lootList.add(command);
         }
