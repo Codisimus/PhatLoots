@@ -6,6 +6,7 @@ import com.codisimus.plugins.regionown.Region;
 import com.codisimus.plugins.regionown.RegionSelector;
 import com.google.common.collect.Sets;
 import java.util.*;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -66,7 +67,7 @@ public class PhatLootsCommand implements CommandExecutor {
 
         try {
             action = Action.valueOf(args[0].toUpperCase());
-        } catch (IllegalArgumentException notEnum) {
+        } catch (IllegalArgumentException notEnum) { //Command Loot
             //Cancel if the first argument is not a valid PhatLoot
             PhatLoot phatLoot = PhatLoots.getPhatLoot(args[0]);
             if (phatLoot == null) {
@@ -76,17 +77,19 @@ public class PhatLootsCommand implements CommandExecutor {
 
             //Cancel if the sender does not have the needed permission
             if (sender instanceof Player) {
-            	if (!sender.hasPermission("phatloots.commandloot")
-            			|| !(PhatLoots.canLoot((Player) sender, phatLoot))) {
-                    sender.sendMessage(PhatLootsConfig.permission);
+                Player player = (Player) sender;
+                player.sendMessage(String.valueOf(player.hasPermission("phatloots.commandloot")));
+            	if (!player.hasPermission("phatloots.commandloot")
+                        || !(PhatLoots.canLoot(player, phatLoot))) {
+                    player.sendMessage(PhatLootsConfig.permission);
             	    return true;
             	}
-            	Inventory inventory = PhatLoots.server.createInventory((Player) sender, 54, phatLoot.name);
+            	Inventory inventory = PhatLoots.server.createInventory(player, 54, phatLoot.name);
 
             	//Open the Inventory
-            	((Player) sender).openInventory(inventory);
+            	player.openInventory(inventory);
 
-            	phatLoot.rollForLoot((Player) sender, new PhatLootChest(((Player) sender).getLocation().getBlock()), inventory);
+            	phatLoot.rollForLoot(player, new PhatLootChest(player.getLocation().getBlock()), inventory);
             }
             return true;
         }
@@ -940,7 +943,7 @@ public class PhatLootsCommand implements CommandExecutor {
         String lootDescription = loot.toString();
 
         for (PhatLoot phatLoot : getPhatLoots(sender, name)) {
-            ArrayList<OldLoot> lootTable = phatLoot.getLootTable(lootID);
+            ArrayList<OldLoot> lootTable = null;//phatLoot.getLootTable(lootID);
             ListIterator itr = lootTable.listIterator();
             boolean found = false;
             while (itr.hasNext()) {
@@ -1172,34 +1175,36 @@ public class PhatLootsCommand implements CommandExecutor {
 
         case 1: //Display information for the one PhatLoot
             PhatLoot phatLoot = phatLoots.getFirst();
+            if (sender instanceof Player) {
+                PhatLootsListener.viewPhatLoot((Player) sender, phatLoot);
+            } else {
+                sender.sendMessage("§2Name:§b " + phatLoot.name
+                        + " §2Global Reset:§b " + phatLoot.global
+                        + " §2Round Down:§b " + phatLoot.round);
+                sender.sendMessage("§2Reset Time:§b " + phatLoot.days
+                        + " days, " + phatLoot.hours + " hours, "
+                        + phatLoot.minutes + " minutes, and "
+                        + phatLoot.seconds + " seconds.");
+                sender.sendMessage("§2Money§b: " + phatLoot.moneyLower + "-"
+                        + phatLoot.moneyUpper + " §2Experience§b: "
+                        + phatLoot.expLower + "-" + phatLoot.expUpper);
+                sender.sendMessage("§2# of collective loots:§b "
+                        + phatLoot.numberCollectiveLoots);
 
-            sender.sendMessage("§2Name:§b " + phatLoot.name
-                    + " §2Global Reset:§b " + phatLoot.global
-                    + " §2Round Down:§b " + phatLoot.round);
-            sender.sendMessage("§2Reset Time:§b " + phatLoot.days
-                    + " days, " + phatLoot.hours + " hours, "
-                    + phatLoot.minutes + " minutes, and "
-                    + phatLoot.seconds + " seconds.");
-            sender.sendMessage("§2Money§b: " + phatLoot.moneyLower + "-"
-                    + phatLoot.moneyUpper + " §2Experience§b: "
-                    + phatLoot.expLower + "-" + phatLoot.expUpper);
-            sender.sendMessage("§2# of collective loots:§b "
-                    + phatLoot.numberCollectiveLoots);
-
-            //Display Individual Loots if not empty
-            String loots = phatLoot.lootTableToString(PhatLoot.INDIVIDUAL);
-            if (!loots.isEmpty()) {
-                sender.sendMessage("§2IndividualLoots§b: " + loots);
-            }
-
-            //Display each Collective Loots that is not empty
-            for (int i = 1; i <= 10; i++) {
-                loots = phatLoot.lootTableToString(i);
+                //Display Individual Loots if not empty
+                String loots = phatLoot.lootTableToString(PhatLoot.INDIVIDUAL);
                 if (!loots.isEmpty()) {
-                    sender.sendMessage("§2Coll" + i + "§b: " + loots);
+                    sender.sendMessage("§2IndividualLoots§b: " + loots);
+                }
+
+                //Display each Collective Loots that is not empty
+                for (int i = 1; i <= 10; i++) {
+                    loots = phatLoot.lootTableToString(i);
+                    if (!loots.isEmpty()) {
+                        sender.sendMessage("§2Coll" + i + "§b: " + loots);
+                    }
                 }
             }
-
             break;
 
         default: //List all PhatLoots
@@ -1405,9 +1410,6 @@ public class PhatLootsCommand implements CommandExecutor {
         sender.sendMessage("§2/"+command+" cost [Name] <Amount>§b Set cost of looting");
         sender.sendMessage("§2/"+command+" money [Name] <Amount>§b Set money range to be looted");
         sender.sendMessage("§2/"+command+" exp [Name] <Amount>§b Set experience to be gained");
-        sender.sendMessage("§2/"+command+" <add|remove> cmd [Name] [Percent] /<Command>§b Set a Command that will be executed upon looting");
-        sender.sendMessage("§5To add a percent chance to a cmd use % similar to item loot");
-        sender.sendMessage("§bex. §1/"+command+" add cmd Test %50 /lightning <player>");
     }
 
     /**
@@ -1420,15 +1422,18 @@ public class PhatLootsCommand implements CommandExecutor {
         sender.sendMessage("§5A Parameter starts with the 1 character §2id");
         sender.sendMessage("§2p§f: §5The Name of the PhatLoot ex. §6pEpic");
         sender.sendMessage("§bIf PhatLoot is not specified then all PhatLoots linked to the target Block will be affected");
-        sender.sendMessage("§2d§f: §5The data/durability value of the item ex. §6d5");
-        sender.sendMessage("§2c§f: §5The id of the collective loot to specify ex. §6c1");
+        sender.sendMessage("§2%§f: §5The chance of looting ex. §6%50 §5or §6%0.1 §5(default: §6100§5)");
+        sender.sendMessage("§2c§f: §5The name of the collection to add the loot to ex. §6cFood");
         sender.sendMessage("§2#§f: §5The amount of the item ex. §6#10 §5or §6#1-64 §5(default: §61§5)");
-        sender.sendMessage("§2%§f: §5The chance of looting the item ex. §6%50 §5or §6%0.1 §5(default: §6100§5)");
+        sender.sendMessage("§2d§f: §5The data/durability value of the item ex. §6d5");
         sender.sendMessage("§2e§f: §5The item enchantment ex. §6earrow_fire §5or §6eauto");
         sender.sendMessage("§bEnchantment levels can be added. ex. §6arrow_fire(2)");
         sender.sendMessage("§2/"+command+" <add|remove> <Item|ID|hand> [Parameter1] [Parameter2]...");
-        sender.sendMessage("§bex. §6/"+command+" add hand #1-16 nEnderNade %32");
-        sender.sendMessage("§bex. §6/"+command+" add bow earrow_fire(2) earrow_unlimited %5");
+        sender.sendMessage("§bex. §6/"+command+" add hand #1-16 %32");
+        sender.sendMessage("§bex. §6/"+command+" add diamond_sword efire_aspect(2) edamage_all %75 cWeapon");
+        sender.sendMessage("§2/"+command+" <add|remove> coll [Parameter1] [Parameter2]... <Name>");
+        sender.sendMessage("§bex. §6/"+command+" add coll %25 cWeapon Bow");
+        sender.sendMessage("§2/"+command+" <add|remove> cmd [Parameter1] [Parameter2]... /<Command>");
         sender.sendMessage("§bTutorial Video:");
         sender.sendMessage("§1§nwww.youtu.be/tRQuKbRTaA4");
     }

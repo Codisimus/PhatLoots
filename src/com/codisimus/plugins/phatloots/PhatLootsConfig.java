@@ -42,7 +42,7 @@ public class PhatLootsConfig {
         FileConfiguration config = PhatLoots.plugin.getConfig();
 
         //Check for an outdated config.yml file
-        if (config.get("PlaySoundOnAutoLoot", null) == null) {
+        if (config.get("DivideMoneyAmountBy100", null) == null) {
             PhatLoots.logger.warning("Your config.yml file is outdated! To get the most out of this plugin please (re)move the old file so a new one can be generated.");
         }
 
@@ -57,11 +57,11 @@ public class PhatLootsConfig {
         }
         ConfigurationSection section = config.getConfigurationSection("AutoLink");
         for (String world : section.getKeys(false)) {
-            ConfigurationSection worldSection = config.getConfigurationSection(world);
+            ConfigurationSection worldSection = section.getConfigurationSection(world);
             for (String string : worldSection.getKeys(false)) {
                 Material mat = Material.matchMaterial(string);
                 if (mat != null) {
-                    if (!PhatLootsListener.types.containsKey(mat)) {
+                    if (PhatLootsListener.types.get(mat) == null) {
                         PhatLootsListener.types.put(mat, new HashMap());
                     }
                     PhatLootsListener.types.get(mat).put(world, worldSection.getString(string));
@@ -117,15 +117,17 @@ public class PhatLootsConfig {
         section = config.getConfigurationSection("Defaults");
         defaultGlobal = section.getBoolean("GlobalReset");
         defaultRound = section.getBoolean("RoundDownTime");
-        String itemsPerColl = section.getString("DefaultItemsPerColl");
-        int index = itemsPerColl.indexOf('-');
-        if (index == -1) {
-            int numberOfLoots = Integer.parseInt(itemsPerColl);
-            defaultLowerNumberOfLoots = numberOfLoots;
-            defaultUpperNumberOfLoots = numberOfLoots;
-        } else {
-            defaultLowerNumberOfLoots = Integer.parseInt(itemsPerColl.substring(0, index));
-            defaultUpperNumberOfLoots = Integer.parseInt(itemsPerColl.substring(index + 1));
+        String itemsPerColl = section.getString("ItemsPerColl");
+        if (itemsPerColl != null) {
+            int index = itemsPerColl.indexOf('-');
+            if (index == -1) {
+                int numberOfLoots = Integer.parseInt(itemsPerColl);
+                defaultLowerNumberOfLoots = numberOfLoots;
+                defaultUpperNumberOfLoots = numberOfLoots;
+            } else {
+                defaultLowerNumberOfLoots = Integer.parseInt(itemsPerColl.substring(0, index));
+                defaultUpperNumberOfLoots = Integer.parseInt(itemsPerColl.substring(index + 1));
+            }
         }
         defaultAutoLoot = section.getBoolean("AutoLoot");
 

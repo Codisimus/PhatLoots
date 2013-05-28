@@ -13,6 +13,7 @@ import org.bukkit.inventory.ItemStack;
 public abstract class Loot implements Comparable, ConfigurationSerializable {
     double probability = 100;
     public abstract void getLoot(Player player, double lootingBonus, LinkedList<ItemStack> items);
+    public abstract ItemStack getInfoStack();
 
     /**
      * Returns the chance of looting

@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.util.*;
 import org.apache.commons.lang.WordUtils;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -127,6 +128,37 @@ public class Item extends Loot {
     @Override
     public void getLoot(Player player, double lootingBonus, LinkedList<ItemStack> items) {
         items.add(getItem());
+    }
+
+    @Override
+    public ItemStack getInfoStack() {
+        ItemStack infoStack = item.clone();
+        ItemMeta info = infoStack.hasItemMeta() ? infoStack.getItemMeta() : Bukkit.getItemFactory().getItemMeta(infoStack.getType());
+        List<String> details;
+        if (info.hasLore()) {
+            details = info.getLore();
+            details.add("§1-----------------------------");
+        } else {
+            details = new ArrayList();
+        }
+        details.add("§1Probability: §6" + probability);
+        details.add("§1Amount: §6" + item.getAmount() + '-' + (item.getAmount() + amountBonus));
+        if (autoEnchant) {
+            details.add("§6Auto Enchanted");
+        }
+        if (generateName) {
+            details.add("§6Generated Name");
+        }
+        if (randomLore) {
+            details.add("§6Random Lore");
+        }
+        if (tieredName) {
+            details.add("§6Tiered Name");
+        }
+
+        info.setLore(details);
+        infoStack.setItemMeta(info);
+        return infoStack;
     }
 
     /**

@@ -1,13 +1,13 @@
 package com.codisimus.plugins.phatloots;
 
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
+import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.configuration.serialization.SerializableAs;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 
 /**
  * A Collection is a list of Loots which has a unique name
@@ -39,7 +39,9 @@ public class LootCollection extends Loot {
     @Override
     public void getLoot(Player player, double lootingBonus, LinkedList<ItemStack> items) {
         if (upperNumberOfLoots > 0) {
-            int numberOfLoots = PhatLoots.random.nextInt(upperNumberOfLoots - lowerNumberOfLoots) + lowerNumberOfLoots;
+            int numberOfLoots = lowerNumberOfLoots == upperNumberOfLoots
+                                ? lowerNumberOfLoots
+                                : PhatLoots.random.nextInt(upperNumberOfLoots - lowerNumberOfLoots) + lowerNumberOfLoots;
             //Make sure there are items that will be looted before entering the loop
             if (!lootList.isEmpty()) {
                 //Do not loot if the probability does not add up to 100
@@ -65,10 +67,25 @@ public class LootCollection extends Loot {
         } else {
             for (Loot loot : lootList) {
                 if (loot.rollForLoot(lootingBonus)) {
-                    loot.getLoot(player, lootingBonus, items);
+                    if (loot.rollForLoot(lootingBonus)) {
+                        loot.getLoot(player, lootingBonus, items);
+                    }
                 }
             }
         }
+    }
+
+    @Override
+    public ItemStack getInfoStack() {
+        ItemStack infoStack = new ItemStack(Material.ENDER_CHEST);
+        ItemMeta info = Bukkit.getItemFactory().getItemMeta(infoStack.getType());
+        info.setDisplayName("§2" + name + " (Collection)");
+        List<String> details = new ArrayList();
+        details.add("§1Probability: §6" + probability);
+        details.add("§1Number of Loots: §6" + lowerNumberOfLoots + '-' + upperNumberOfLoots);
+        info.setLore(details);
+        infoStack.setItemMeta(info);
+        return infoStack;
     }
 
     /**

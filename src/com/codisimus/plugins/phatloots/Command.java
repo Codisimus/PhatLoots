@@ -1,12 +1,13 @@
 package com.codisimus.plugins.phatloots;
 
-import java.util.LinkedList;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
+import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.configuration.serialization.SerializableAs;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 
 /**
  * A Loot is a ItemStack and with a probability of looting
@@ -53,6 +54,23 @@ public class Command extends Loot {
         } else {
             PhatLoots.server.dispatchCommand(player, cmd);
         }
+    }
+
+    @Override
+    public ItemStack getInfoStack() {
+        ItemStack infoStack = new ItemStack(Material.COMMAND);
+        ItemMeta info = Bukkit.getItemFactory().getItemMeta(infoStack.getType());
+        info.setDisplayName("§2Command");
+        List<String> details = new ArrayList();
+        details.add("§4Probability: §6" + probability);
+        details.add("§4Command: §6" + command);
+        details.add(fromConsole ? "§6From Console" : "§6From Player");
+        if (tempOP) {
+            details.add("§6Player is temporarily OPed");
+        }
+        info.setLore(details);
+        infoStack.setItemMeta(info);
+        return infoStack;
     }
 
     @Override

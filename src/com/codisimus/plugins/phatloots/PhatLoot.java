@@ -417,7 +417,9 @@ public class PhatLoot implements ConfigurationSerializable {
     public LinkedList<ItemStack> lootAll(Player player, double lootingBonus) {
         LinkedList<ItemStack> itemList = new LinkedList<ItemStack>();
         for (Loot loot : lootList) {
-            loot.getLoot(player, lootingBonus, itemList);
+            if (loot.rollForLoot(lootingBonus)) {
+                loot.getLoot(player, lootingBonus, itemList);
+            }
         }
         return itemList;
     }
@@ -502,16 +504,6 @@ public class PhatLoot implements ConfigurationSerializable {
             total -= loot.getProbability();
         }
         return total;
-    }
-
-    /**
-     * Returns the ArrayList of Loots
-     *
-     * @param id The id of the LootTable
-     * @return The ArrayList of Loots
-     */
-    public ArrayList<OldLoot> getLootTable(int id) {
-        return lootTables[id];
     }
 
     /**
@@ -806,7 +798,6 @@ public class PhatLoot implements ConfigurationSerializable {
 
         map.put("Global", global);
         map.put("RoundDownTime", round);
-        map.put("NumberCollectiveLoots", numberCollectiveLoots);
         map.put("AutoLoot", autoLoot);
 
         nestedMap = new HashMap();
@@ -845,11 +836,14 @@ public class PhatLoot implements ConfigurationSerializable {
 
         //Convert each Collection
         for (int i = 1; i <= 10; i++) {
-            if (!lootTables[1].isEmpty()) {
+            if (!lootTables[i].isEmpty()) {
                 LootCollection coll = new LootCollection(String.valueOf(i));
-                for (OldLoot loot : lootTables[1]) {
+                for (OldLoot loot : lootTables[i]) {
                     coll.lootList.add(new Item(loot));
                 }
+                coll.lowerNumberOfLoots = numberCollectiveLoots;
+                coll.upperNumberOfLoots = numberCollectiveLoots;
+                lootList.add(coll);
             }
         }
     }
