@@ -1170,7 +1170,7 @@ public class PhatLootsCommand implements CommandExecutor {
         case 1: //Display information for the one PhatLoot
             PhatLoot phatLoot = phatLoots.getFirst();
             if (sender instanceof Player) {
-                PhatLootsListener.viewPhatLoot((Player) sender, phatLoot);
+                PhatLootInfoListener.viewPhatLoot((Player) sender, phatLoot);
             } else {
                 sender.sendMessage("§2Name:§b " + phatLoot.name
                         + " §2Global Reset:§b " + phatLoot.global

@@ -89,6 +89,7 @@ public class PhatLoots extends JavaPlugin {
 
         /* Register Events */
         pm.registerEvents(new PhatLootsListener(), this);
+        pm.registerEvents(new PhatLootInfoListener(), this);
         if (pm.isPluginEnabled("EpicBossRecoded")) {
             pm.registerEvents(new EBRListener(), this);
         }

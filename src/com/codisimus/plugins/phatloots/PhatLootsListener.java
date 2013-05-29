@@ -1,7 +1,8 @@
 package com.codisimus.plugins.phatloots;
 
-import java.util.*;
-import org.bukkit.Bukkit;
+import java.util.EnumMap;
+import java.util.HashMap;
+import java.util.LinkedList;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -9,18 +10,15 @@ import org.bukkit.block.Chest;
 import org.bukkit.block.Dispenser;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
-import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
-import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
-import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.inventory.*;
-import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.inventory.DoubleChestInventory;
+import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.InventoryHolder;
 
 /**
  * Listens for interactions with PhatLootChests
@@ -30,7 +28,6 @@ import org.bukkit.scheduler.BukkitRunnable;
 public class PhatLootsListener implements Listener {
     static String chestName;
     static EnumMap<Material, HashMap<String, String>> types = new EnumMap(Material.class);
-    static HashMap<String, PhatLoot> infoViewers = new HashMap<String, PhatLoot>();
     private static HashMap<String, ForgettableInventory> inventories = new HashMap<String, ForgettableInventory>();
 
     /**
@@ -222,53 +219,6 @@ public class PhatLootsListener implements Listener {
         }
     }
 
-    @EventHandler (ignoreCancelled = true)
-    public void onPlayerInvClick(InventoryClickEvent event) {
-        HumanEntity human = event.getWhoClicked();
-        if (human instanceof Player) {
-            Player player = (Player) human;
-            if (infoViewers.containsKey(player.getName())) {
-                event.setResult(Event.Result.DENY);
-                player.updateInventory();
-                ItemStack stack = event.getCurrentItem();
-                if (stack == null) {
-                    return;
-                }
-                switch (stack.getType()) {
-                case ENDER_CHEST:
-                    ItemMeta meta = stack.getItemMeta();
-                    if (meta.hasDisplayName()) {
-                        String name = stack.getItemMeta().getDisplayName();
-                        if (name.endsWith(" (Collection)")) {
-                            name = name.substring(2, name.length() - 13);
-                            viewCollection(player, name);
-                        }
-                    }
-                    break;
-                case LADDER:
-                    ItemMeta details = stack.getItemMeta();
-                    if (details.hasDisplayName()) {
-                        String name = stack.getItemMeta().getDisplayName();
-                        if (name.equals("§2Back to top...")) {
-                            viewPhatLoot(player, infoViewers.get(player.getName()));
-                        }
-//                        if (name.equals("§2Up to...")) {
-//                            List<String> lore = details.getLore();
-//                            if (lore.get(0).substring(2).equals("Collection")) {
-//                                viewCollection(player, lore.get(1).substring(2));
-//                            } else {
-//                                viewPhatLoot(player, infoViewers.get(player.getName()));
-//                            }
-//                        }
-                    }
-                    break;
-                default:
-                    break;
-                }
-            }
-        }
-    }
-
     /**
      * Checks if a Player loots a PhatLootChest
      *
@@ -276,22 +226,18 @@ public class PhatLootsListener implements Listener {
      */
     @EventHandler (ignoreCancelled = true)
     public void onPlayerCloseChest(InventoryCloseEvent event) {
-        HumanEntity human = event.getPlayer();
-        if (human instanceof Player) {
-            Player player = (Player) human;
-            if (infoViewers.containsKey(player.getName())) {
-                infoViewers.remove(player.getName());
-            } else {
-                Inventory inv = event.getInventory();
-                InventoryHolder holder = inv.getHolder();
-                if (holder instanceof Chest) {
-                    Location location = ((Chest) holder).getLocation();
-                    String key = "global@" + location.toString();
-                    if (inventories.containsKey(key)) {
-                        PhatLoots.closeInventory(player, inv, location, true);
-                    } else if (inventories.containsKey(player.getName() + key.substring(6))) {
-                        PhatLoots.closeInventory(player, inv, location, false);
-                    }
+        Inventory inv = event.getInventory();
+        InventoryHolder holder = inv.getHolder();
+        if (holder instanceof Chest) {
+            HumanEntity human = event.getPlayer();
+            if (human instanceof Player) {
+                Player player = (Player) human;
+                Location location = ((Chest) holder).getLocation();
+                String key = "global@" + location.toString();
+                if (inventories.containsKey(key)) {
+                    PhatLoots.closeInventory(player, inv, location, true);
+                } else if (inventories.containsKey(player.getName() + key.substring(6))) {
+                    PhatLoots.closeInventory(player, inv, location, false);
                 }
             }
         }
@@ -346,117 +292,5 @@ public class PhatLootsListener implements Listener {
             }
         }
         return false;
-    }
-
-    public static void viewPhatLoot(final Player player, final PhatLoot phatLoot) {
-        String invName = phatLoot.name + " Loot Tables";
-        if (invName.length() > 32) {
-            invName = phatLoot.name;
-            if (invName.length() > 32) {
-                invName = phatLoot.name.substring(0, 32);
-            }
-        }
-
-        final Inventory inv = Bukkit.createInventory(player, 54, invName);
-        int index = 0;
-        for (Loot loot : phatLoot.lootList) {
-            inv.setItem(index, loot.getInfoStack());
-            index++;
-            if (index >= 54) {
-                player.sendMessage("§4Not all items could fit within the inventory view.");
-                break;
-            }
-        }
-
-        final InventoryView view = new InventoryView() {
-            @Override
-            public Inventory getTopInventory() {
-                return inv;
-            }
-
-            @Override
-            public Inventory getBottomInventory() {
-                return Bukkit.createInventory(null, 0);
-            }
-
-            @Override
-            public HumanEntity getPlayer() {
-                return player;
-            }
-
-            @Override
-            public InventoryType getType() {
-                return InventoryType.CHEST;
-            }
-        };
-
-        player.closeInventory();
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-                infoViewers.put(player.getName(), phatLoot);
-                player.openInventory(inv);
-            }
-        }.runTaskLater(PhatLoots.plugin, 2);
-    }
-
-    public static void viewCollection(final Player player, String name) {
-        final PhatLoot phatLoot = infoViewers.get(player.getName());
-        LootCollection coll = phatLoot.findCollection(name);
-        String invName = name + " (Collection)";
-        if (invName.length() > 32) {
-            invName = name;
-            if (invName.length() > 32) {
-                invName = name.substring(0, 32);
-            }
-        }
-
-        final Inventory inv = Bukkit.createInventory(player, 54, invName);
-        int index = 0;
-        for (Loot loot : coll.lootList) {
-            inv.setItem(index, loot.getInfoStack());
-            index++;
-            if (index >= 53) {
-                player.sendMessage("§4Not all items could fit within the inventory view.");
-                break;
-            }
-        }
-
-        ItemStack infoStack = new ItemStack(Material.LADDER);
-        ItemMeta info = Bukkit.getItemFactory().getItemMeta(infoStack.getType());
-        info.setDisplayName("§2Back to top...");
-        infoStack.setItemMeta(info);
-        inv.setItem(53, infoStack);
-
-        final InventoryView view = new InventoryView() {
-            @Override
-            public Inventory getTopInventory() {
-                return inv;
-            }
-
-            @Override
-            public Inventory getBottomInventory() {
-                return Bukkit.createInventory(null, 0);
-            }
-
-            @Override
-            public HumanEntity getPlayer() {
-                return player;
-            }
-
-            @Override
-            public InventoryType getType() {
-                return InventoryType.CHEST;
-            }
-        };
-
-        player.closeInventory();
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-                infoViewers.put(player.getName(), phatLoot);
-                player.openInventory(inv);
-            }
-        }.runTaskLater(PhatLoots.plugin, 2);
     }
 }
