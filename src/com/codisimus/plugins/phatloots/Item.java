@@ -142,7 +142,11 @@ public class Item extends Loot {
             details = new ArrayList();
         }
         details.add("§1Probability: §6" + probability);
-        details.add("§1Amount: §6" + item.getAmount() + '-' + (item.getAmount() + amountBonus));
+        if (amountBonus == 0) {
+            details.add("§1Amount: §6" + item.getAmount());
+        } else {
+            details.add("§1Amount: §6" + item.getAmount() + '-' + (item.getAmount() + amountBonus));
+        }
         if (autoEnchant) {
             details.add("§6Auto Enchanted");
         }

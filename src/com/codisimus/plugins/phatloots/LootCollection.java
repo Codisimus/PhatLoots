@@ -82,7 +82,13 @@ public class LootCollection extends Loot {
         info.setDisplayName("§2" + name + " (Collection)");
         List<String> details = new ArrayList();
         details.add("§1Probability: §6" + probability);
-        details.add("§1Number of Loots: §6" + lowerNumberOfLoots + '-' + upperNumberOfLoots);
+        if (isRollForEach()) {
+            details.add("§6Each loot is rolled for");
+        } else if (lowerNumberOfLoots == upperNumberOfLoots) {
+            details.add("§1Number of Loots: §6" + lowerNumberOfLoots);
+        } else {
+            details.add("§1Number of Loots: §6" + lowerNumberOfLoots + '-' + upperNumberOfLoots);
+        }
         info.setLore(details);
         infoStack.setItemMeta(info);
         return infoStack;
@@ -144,7 +150,7 @@ public class LootCollection extends Loot {
 
     @Override
     public String toString() {
-        return null;
+        return name + " (Collection)";
     }
 
     @Override
