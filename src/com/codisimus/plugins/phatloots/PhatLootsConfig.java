@@ -1,6 +1,7 @@
 package com.codisimus.plugins.phatloots;
 
 import java.io.File;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.HashSet;
 import org.bukkit.ChatColor;
@@ -100,16 +101,16 @@ public class PhatLootsConfig {
 
         PhatLootsListener.chestName = getString(config, "ChestName");
 
-        OldLoot.damageString = getString(config, "<dam>");
-        OldLoot.holyString = getString(config, "<holy>");
-        OldLoot.fireString = getString(config, "<fire>");
-        OldLoot.bugString = getString(config, "<bug>");
-        OldLoot.thornsString = getString(config, "<thorns>");
-        OldLoot.defenseString = getString(config, "<def>");
-        OldLoot.fireDefenseString = getString(config, "<firedef>");
-        OldLoot.rangeDefenseString = getString(config, "<rangedef>");
-        OldLoot.blastDefenseString = getString(config, "<blastdef>");
-        OldLoot.fallDefenseString = getString(config, "<falldef>");
+        Item.damageString = getString(config, "<dam>");
+        Item.holyString = getString(config, "<holy>");
+        Item.fireString = getString(config, "<fire>");
+        Item.bugString = getString(config, "<bug>");
+        Item.thornsString = getString(config, "<thorns>");
+        Item.defenseString = getString(config, "<def>");
+        Item.fireDefenseString = getString(config, "<firedef>");
+        Item.rangeDefenseString = getString(config, "<rangedef>");
+        Item.blastDefenseString = getString(config, "<blastdef>");
+        Item.fallDefenseString = getString(config, "<falldef>");
 
 
         /* DEFAULTS */
@@ -145,7 +146,7 @@ public class PhatLootsConfig {
         for (String string : restricted) {
             string = ChatColor.translateAlternateColorCodes('&', string);
         }
-        OldLoot.tierNotify = config.getInt("MinimumTierNotification");
+        Item.tierNotify = config.getInt("MinimumTierNotification");
         PhatLootsCommand.setUnlockable = config.getBoolean("SetChestsAsUnlockable");
         PhatLoot.autoClose = config.getBoolean("AutoCloseOnInsufficientFunds");
         PhatLoot.decimals = config.getBoolean("DivideMoneyAmountBy100");
@@ -160,9 +161,24 @@ public class PhatLootsConfig {
                 PhatLoots.plugin.saveResource("lores.yml", true);
             }
 
-            OldLoot.loreConfig = YamlConfiguration.loadConfiguration(file);
+            Item.loreConfig = YamlConfiguration.loadConfiguration(file);
         } catch (Exception ex) {
             PhatLoots.logger.severe("Failed to load lores.yml");
+            ex.printStackTrace();
+        }
+
+
+        /* TIERS.YML */
+
+        try {
+            File file = new File(PhatLoots.dataFolder + File.separator + "tiers.yml");
+            if (!file.exists()) {
+                PhatLoots.plugin.saveResource("tiers.yml", true);
+            }
+
+            Item.tiersConfig = YamlConfiguration.loadConfiguration(file);
+        } catch (Exception ex) {
+            PhatLoots.logger.severe("Failed to load tiers.yml");
             ex.printStackTrace();
         }
 
@@ -175,7 +191,7 @@ public class PhatLootsConfig {
                 PhatLoots.plugin.saveResource("enchantments.yml", true);
             }
 
-            OldLoot.enchantmentConfig = YamlConfiguration.loadConfiguration(file);
+            Item.enchantmentConfig = YamlConfiguration.loadConfiguration(file);
         } catch (Exception ex) {
             PhatLoots.logger.severe("Failed to load enchantments.yml");
             ex.printStackTrace();

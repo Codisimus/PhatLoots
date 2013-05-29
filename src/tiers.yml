@@ -1,0 +1,31 @@
+TIERS:
+    200:
+        Prefix: '§5'
+        Suffix: ' (Legendary)'
+    150:
+        Prefix: '§4'
+        Suffix: ' (Mythic)'
+    100:
+        Prefix: '§2'
+        Suffix: ' (Epic)'
+    80:
+        Prefix: '§1'
+        Suffix: ' (Ultra Rare)'
+    65:
+        Prefix: '§9'
+        Suffix: ' (Super Rare)'
+    50:
+        Prefix: '§3'
+        Suffix: ' (Very Rare)'
+    30:
+        Prefix: '§b'
+        Suffix: ' (Rare)'
+    20:
+        Prefix: '§f'
+        Suffix: ' (Uncommon)'
+    5:
+        Prefix: '§7'
+        Suffix: ' (Common)'
+    0:
+        Prefix: '§8'
+        Suffix: ' (Poor)'

@@ -61,6 +61,7 @@ public class Item extends Loot {
     };
     static int tierNotify;
     static FileConfiguration loreConfig;
+    static FileConfiguration tiersConfig;
     static FileConfiguration enchantmentConfig;
     static String damageString;
     static String holyString;
@@ -730,52 +731,13 @@ public class Item extends Loot {
 
         default: break;
         }
-        if (tier >= 5) {
-            if (tier >= 20) {
-                if (tier >= 30) {
-                    if (tier >= 50) {
-                        if (tier >= 65) {
-                            if (tier >= 80) {
-                                if (tier >= 100) {
-                                    if (tier >= 150) {
-                                        if (tier >= 200) {
-                                            nameBuilder.insert(0, "§5");
-                                            nameBuilder.append(" (Legendary)");
-                                        } else {
-                                            nameBuilder.insert(0, "§4");
-                                            nameBuilder.append(" (Mythic)");
-                                        }
-                                    } else {
-                                        nameBuilder.insert(0, "§2");
-                                        nameBuilder.append(" (Epic)");
-                                    }
-                                } else {
-                                    nameBuilder.insert(0, "§1");
-                                    nameBuilder.append(" (Ultra Rare)");
-                                }
-                            } else {
-                                nameBuilder.insert(0, "§9");
-                                nameBuilder.append(" (Super Rare)");
-                            }
-                        } else {
-                            nameBuilder.insert(0, "§3");
-                            nameBuilder.append(" (Very Rare)");
-                        }
-                    } else {
-                        nameBuilder.insert(0, "§b");
-                        nameBuilder.append(" (Rare)");
-                    }
-                } else {
-                    nameBuilder.insert(0, "§f");
-                    nameBuilder.append(" (Uncommon)");
-                }
-            } else {
-                nameBuilder.insert(0, "§7");
-                nameBuilder.append(" (Common)");
+
+        for (String string : tiersConfig.getKeys(false)) {
+            if (tier > Integer.parseInt(string)) {
+                nameBuilder.insert(0, tiersConfig.getString(string + ".Prefix"));
+                nameBuilder.append(tiersConfig.getString(string + ".Suffix"));
+                break;
             }
-        } else {
-            nameBuilder.insert(0, "§8");
-            nameBuilder.append(" (Poor)");
         }
 
         if (tier > tierNotify) {

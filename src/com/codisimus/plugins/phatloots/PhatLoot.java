@@ -39,7 +39,7 @@ public class PhatLoot implements ConfigurationSerializable {
     public int moneyUpper;
     public int expLower; //Range of experience gained when looting
     public int expUpper;
-    public ArrayList<Loot> lootList = new ArrayList<Loot>(); //List of Loot
+    public ArrayList<Loot> lootList; //List of Loot
 
     public int days = PhatLootsConfig.defaultDays; //Reset time (will never reset if any are negative)
     public int hours = PhatLootsConfig.defaultHours;
@@ -67,9 +67,7 @@ public class PhatLoot implements ConfigurationSerializable {
      */
     public PhatLoot(String name) {
         this.name = name;
-        for (int i = 0; i < 11; i++) {
-            lootTables[i] = new ArrayList<OldLoot>();
-        }
+        lootList = new ArrayList<Loot>();
     }
 
     public PhatLoot(Map<String, Object> map) {
@@ -231,11 +229,10 @@ public class PhatLoot implements ConfigurationSerializable {
     }
 
     public int rollForLoot(Player player, List<ItemStack> drops) {
-        double lootingBonus = 0;
         ItemStack weapon = player == null ? null : player.getItemInHand();
-        if (weapon != null) {
-            lootingBonus = lootingBonusPerLvl * weapon.getEnchantmentLevel(Enchantment.LOOT_BONUS_MOBS);
-        }
+        double lootingBonus = weapon == null
+                              ? 0
+                              :lootingBonusPerLvl * weapon.getEnchantmentLevel(Enchantment.LOOT_BONUS_MOBS);
 
         if (onlyDropOnPlayerKill && player == null) {
             drops.clear();
@@ -489,52 +486,6 @@ public class PhatLoot implements ConfigurationSerializable {
         }
 
         return time;
-    }
-
-    /**
-     * Returns the Remaining Percent of the given collective Loots
-     *
-     * @param id The id of the collective Loots
-     * @return Total probability of all Loots in the collective Loots subtracted from 100
-     */
-    public double getPercentRemaining(int id) {
-        //Subtract the probabilty of each loot from 100
-        double total = 100;
-        for (OldLoot loot : lootTables[id]) {
-            total -= loot.getProbability();
-        }
-        return total;
-    }
-
-    /**
-     * Returns true if the given Loot is inside the specified LootTable
-     *
-     * @param id The id of the LootTable
-     * @return true if the LootTable contains the Loot
-     */
-    public boolean containsLoot(int id, OldLoot loot) {
-        return lootTables[id].contains(loot);
-    }
-
-    /**
-     * Returns the List of Loots as a String
-     *
-     * @param id The id of the LootTable
-     * @return The List of Loots as a String
-     */
-    public String lootTableToString(int id) {
-        String list = "";
-
-        //Concat each Loot onto the list
-        for (OldLoot loot : lootTables[id]) {
-            list += loot.toString();
-        }
-
-        if (!list.isEmpty()) {
-            list = list.substring(2);
-        }
-
-        return list;
     }
 
     public void addChest(String string) {

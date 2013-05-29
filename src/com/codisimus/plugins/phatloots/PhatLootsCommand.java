@@ -1182,22 +1182,6 @@ public class PhatLootsCommand implements CommandExecutor {
                 sender.sendMessage("§2Money§b: " + phatLoot.moneyLower + "-"
                         + phatLoot.moneyUpper + " §2Experience§b: "
                         + phatLoot.expLower + "-" + phatLoot.expUpper);
-                sender.sendMessage("§2# of collective loots:§b "
-                        + phatLoot.numberCollectiveLoots);
-
-                //Display Individual Loots if not empty
-                String loots = phatLoot.lootTableToString(PhatLoot.INDIVIDUAL);
-                if (!loots.isEmpty()) {
-                    sender.sendMessage("§2IndividualLoots§b: " + loots);
-                }
-
-                //Display each Collective Loots that is not empty
-                for (int i = 1; i <= 10; i++) {
-                    loots = phatLoot.lootTableToString(i);
-                    if (!loots.isEmpty()) {
-                        sender.sendMessage("§2Coll" + i + "§b: " + loots);
-                    }
-                }
             }
             break;
 
