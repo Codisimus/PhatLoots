@@ -155,7 +155,7 @@ Defaults:
     RoundDownTime: false
 
 
-    ##The number of items that will be received from the collective loots
+    ##The number of items that will be received from the loot collections
     ItemsPerColl: 1
 
 

@@ -328,8 +328,8 @@ public class PhatLootsCommand implements CommandExecutor {
             String phatLoot = null; //The name of the PhatLoot
             double percent = 100; //The chance of receiving the Loot (defaulted to 100)
             String coll = null; //The Collection to add the Loot to
-            int baseAmount = 1; //Stack size of the Loot item (defaulted to 1)
-            int bonusAmount = 1; //Amount to possibly increase the Stack size of the Loot item (defaulted to 1)
+            int lowerBound = 1; //Stack size of the Loot item (defaulted to 1)
+            int upperBound = 1; //Amount to possibly increase the Stack size of the Loot item (defaulted to 1)
             boolean autoEnchant = false; //Whether or not the Loot Item should be automatically enchanted at time of Looting
 
             int i = 2;
@@ -339,6 +339,8 @@ public class PhatLootsCommand implements CommandExecutor {
                     return true;
                 }
                 collName = args[i];
+                lowerBound = PhatLootsConfig.defaultLowerNumberOfLoots;
+                upperBound = PhatLootsConfig.defaultUpperNumberOfLoots;
                 i++;
             } else if (!args[1].equals("cmd")) { //Item
                 item = getItemStack(sender, args[1]);
@@ -368,13 +370,13 @@ public class PhatLootsCommand implements CommandExecutor {
                     break;
 
                 case '#':
-                    baseAmount = getLowerBound(s);
-                    bonusAmount = getUpperBound(s);
-                    if (baseAmount == -1 || bonusAmount == -1) {
+                    lowerBound = getLowerBound(s);
+                    upperBound = getUpperBound(s);
+                    if (lowerBound == -1 || upperBound == -1) {
                         sender.sendMessage("§6" + s + "§4 is not a valid number or range");
                         return true;
                     }
-                    item.setAmount(baseAmount);
+                    item.setAmount(lowerBound);
                     break;
 
                 case 'e':
@@ -419,12 +421,12 @@ public class PhatLootsCommand implements CommandExecutor {
             //Construct the Loot
             Loot loot;
             if (item != null) {
-                loot = new Item(item, bonusAmount - baseAmount);
+                loot = new Item(item, upperBound - lowerBound);
                 if (autoEnchant) {
                     ((Item) loot).autoEnchant = true;
                 }
             } else if (collName != null) {
-                loot = new LootCollection(collName);
+                loot = new LootCollection(collName, lowerBound, upperBound);
             } else {
                 loot = new CommandLoot(cmd);
             }
@@ -1402,7 +1404,8 @@ public class PhatLootsCommand implements CommandExecutor {
         sender.sendMessage("§bIf PhatLoot is not specified then all PhatLoots linked to the target Block will be affected");
         sender.sendMessage("§2%§f: §5The chance of looting ex. §6%50 §5or §6%0.1 §5(default: §6100§5)");
         sender.sendMessage("§2c§f: §5The name of the collection to add the loot to ex. §6cFood");
-        sender.sendMessage("§2#§f: §5The amount of the item ex. §6#10 §5or §6#1-64 §5(default: §61§5)");
+        sender.sendMessage("§2#§f: §5The amount to be looted ex. §6#10 §5or §6#1-64");
+        sender.sendMessage("§bUse §6#0 §bif you want each Loot in a collection to be rolled for individually");
         sender.sendMessage("§2d§f: §5The data/durability value of the item ex. §6d5");
         sender.sendMessage("§2e§f: §5The item enchantment ex. §6earrow_fire §5or §6eauto");
         sender.sendMessage("§bEnchantment levels can be added. ex. §6arrow_fire(2)");

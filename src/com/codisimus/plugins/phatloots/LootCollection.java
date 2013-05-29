@@ -28,6 +28,13 @@ public class LootCollection extends Loot {
         lootList = new LinkedList<Loot>();
     }
 
+    public LootCollection(String name, int lowerNumberOfLoots, int upperNumberOfLoots) {
+        this.name = name;
+        this.lowerNumberOfLoots = lowerNumberOfLoots;
+        this.upperNumberOfLoots = upperNumberOfLoots;
+        lootList = new LinkedList<Loot>();
+    }
+
     public LootCollection(Map<String, Object> map) {
         probability = (Double) map.get("Probability");
         name = (String) map.get("Name");
