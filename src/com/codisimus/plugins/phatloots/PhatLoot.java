@@ -683,6 +683,10 @@ public class PhatLoot implements ConfigurationSerializable {
     }
 
     public void saveLootTimes() {
+        if (lootTimes.isEmpty()) {
+            return;
+        }
+
         FileOutputStream fos = null;
         try {
             File file = new File(PhatLoots.dataFolder + File.separator + "LootTimes" + File.separator + name + ".properties");
@@ -722,6 +726,10 @@ public class PhatLoot implements ConfigurationSerializable {
     }
 
     public void saveChests() {
+        if (chests.isEmpty()) {
+            return;
+        }
+
         FileWriter fWriter = null;
         PrintWriter pWriter = null;
         try {
