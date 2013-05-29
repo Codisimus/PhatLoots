@@ -276,15 +276,15 @@ public class PhatLootsListener implements Listener {
      */
     @EventHandler (ignoreCancelled = true)
     public void onPlayerCloseChest(InventoryCloseEvent event) {
-        Inventory inv = event.getInventory();
-        InventoryHolder holder = inv.getHolder();
-        if (holder instanceof Chest) {
-            HumanEntity human = event.getPlayer();
-            if (human instanceof Player) {
-                Player player = (Player) human;
-                if (infoViewers.containsKey(player.getName())) {
-                    infoViewers.remove(player.getName());
-                } else {
+        HumanEntity human = event.getPlayer();
+        if (human instanceof Player) {
+            Player player = (Player) human;
+            if (infoViewers.containsKey(player.getName())) {
+                infoViewers.remove(player.getName());
+            } else {
+                Inventory inv = event.getInventory();
+                InventoryHolder holder = inv.getHolder();
+                if (holder instanceof Chest) {
                     Location location = ((Chest) holder).getLocation();
                     String key = "global@" + location.toString();
                     if (inventories.containsKey(key)) {
