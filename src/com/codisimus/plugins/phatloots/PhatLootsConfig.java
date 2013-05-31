@@ -176,7 +176,7 @@ public class PhatLootsConfig {
                 PhatLoots.plugin.saveResource("tiers.yml", true);
             }
 
-            Item.tiersConfig = YamlConfiguration.loadConfiguration(file);
+            Item.tiersConfig = YamlConfiguration.loadConfiguration(file).getConfigurationSection("TIERS");
         } catch (Exception ex) {
             PhatLoots.logger.severe("Failed to load tiers.yml");
             ex.printStackTrace();

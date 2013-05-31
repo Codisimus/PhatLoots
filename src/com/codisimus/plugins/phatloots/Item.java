@@ -61,7 +61,7 @@ public class Item extends Loot {
     };
     static int tierNotify;
     static FileConfiguration loreConfig;
-    static FileConfiguration tiersConfig;
+    static ConfigurationSection tiersConfig;
     static FileConfiguration enchantmentConfig;
     static String damageString;
     static String holyString;
