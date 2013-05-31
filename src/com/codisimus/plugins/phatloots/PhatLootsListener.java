@@ -250,13 +250,10 @@ public class PhatLootsListener implements Listener {
      */
     @EventHandler (ignoreCancelled = true)
     public void onBlockBreak(BlockBreakEvent event) {
-        //Return if the Material of the Block is not a Chest or Furnace
+        //Return if the Material of the Block is not a linkable type
         Block block = event.getBlock();
-        switch (block.getType()) {
-            case ENDER_CHEST: break;
-            case CHEST: break;
-            case FURNACE: break;
-            default: return;
+        if (!types.containsKey(block.getType())) {
+            return;
         }
 
         //Return if the Block is not a PhatLootChest

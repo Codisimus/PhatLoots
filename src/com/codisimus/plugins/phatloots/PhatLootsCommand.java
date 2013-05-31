@@ -738,12 +738,17 @@ public class PhatLootsCommand implements CommandExecutor {
             break;
 
         case DISPENSER:
-        	blockName = "Dispenser";
+            blockName = "Dispenser";
             break;
 
         default:
-            sender.sendMessage("§4You must target a Chest/Dispenser.");
-            return;
+            blockName = block.getType().toString();
+            if (PhatLootsListener.types.containsKey(block.getType())) {
+                break;
+            } else {
+                sender.sendMessage("§6" + blockName + "§4 is not a linkable type.");
+                return;
+            }
         }
 
         //Cancel if the PhatLoot with the given name does not exist
@@ -824,7 +829,7 @@ public class PhatLootsCommand implements CommandExecutor {
     	}
 
         Block block = ((Player) sender).getTargetBlock(TRANSPARENT, 10);
-        String blockName = "Block";
+        String blockName;
         for (PhatLoot phatLoot : getPhatLoots(sender, name)) {
             phatLoot.removeChest(block);
             switch (block.getType()) {
@@ -834,6 +839,9 @@ public class PhatLootsCommand implements CommandExecutor {
                 break;
             case DISPENSER:
             	blockName = "Dispenser";
+                break;
+            default:
+            	blockName = block.getType().toString();
                 break;
             }
             sender.sendMessage("§5Target " + blockName + " has been unlinked from PhatLoot §6" + phatLoot.name);
