@@ -376,7 +376,9 @@ public class PhatLootsCommand implements CommandExecutor {
                         sender.sendMessage("§6" + s + "§4 is not a valid number or range");
                         return true;
                     }
-                    item.setAmount(lowerBound);
+                    if (item != null) {
+                        item.setAmount(lowerBound);
+                    }
                     break;
 
                 case 'e':
