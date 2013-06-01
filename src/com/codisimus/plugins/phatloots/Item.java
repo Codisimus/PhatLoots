@@ -77,9 +77,9 @@ public class Item extends Loot {
     private int amountBonus;
     private int durabilityBonus = 0;
     boolean autoEnchant;
-    private boolean generateName;
+    boolean generateName;
     private boolean randomLore;
-    private boolean tieredName;
+    boolean tieredName;
 
     /**
      * Constructs a new Loot with the given Item data

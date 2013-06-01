@@ -331,6 +331,8 @@ public class PhatLootsCommand implements CommandExecutor {
             int lowerBound = 1; //Stack size of the Loot item (defaulted to 1)
             int upperBound = 1; //Amount to possibly increase the Stack size of the Loot item (defaulted to 1)
             boolean autoEnchant = false; //Whether or not the Loot Item should be automatically enchanted at time of Looting
+            boolean tiered = false; //Whether or not the Loot Item should be Tiered
+            boolean generateName = false; //Whether or not the Loot Item should have a generated name
 
             int i = 2;
             if (args[1].equals("coll")) { //LootCollection
@@ -403,6 +405,14 @@ public class PhatLootsCommand implements CommandExecutor {
                     item.setDurability(data);
                     break;
 
+                case 't':
+                    tiered = true;
+                    break;
+
+                case 'l':
+                    generateName = true;
+                    break;
+
                 case '/':
                     cmd = args[i];
                     i++;
@@ -426,6 +436,12 @@ public class PhatLootsCommand implements CommandExecutor {
                 loot = new Item(item, upperBound - lowerBound);
                 if (autoEnchant) {
                     ((Item) loot).autoEnchant = true;
+                }
+                if (tiered) {
+                    ((Item) loot).tieredName = true;
+                }
+                if (generateName) {
+                    ((Item) loot).generateName = true;
                 }
             } else if (collName != null) {
                 loot = new LootCollection(collName, lowerBound, upperBound);
@@ -1417,6 +1433,8 @@ public class PhatLootsCommand implements CommandExecutor {
         sender.sendMessage("§2#§f: §5The amount to be looted ex. §6#10 §5or §6#1-64");
         sender.sendMessage("§bUse §6#0 §bif you want each Loot in a collection to be rolled for individually");
         sender.sendMessage("§2d§f: §5The data/durability value of the item ex. §6d5");
+        sender.sendMessage("§2t§f: §5Tier the Item (tiers.yml) ex. §6t");
+        sender.sendMessage("§2l§f: §5Generate Lore for the Item (lores.yml) ex. §l");
         sender.sendMessage("§2e§f: §5The item enchantment ex. §6earrow_fire §5or §6eauto");
         sender.sendMessage("§bEnchantment levels can be added. ex. §6arrow_fire(2)");
         sender.sendMessage("§2/"+command+" <add|remove> <Item|ID|hand> [Parameter1] [Parameter2]...");
