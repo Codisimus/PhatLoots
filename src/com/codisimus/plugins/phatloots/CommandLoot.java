@@ -36,10 +36,19 @@ public class CommandLoot extends Loot {
     }
 
     public CommandLoot(Map<String, Object> map) {
-        probability = (Double) map.get("Probability");
-        command = (String) map.get("Command");
-        fromConsole = (Boolean) map.get("FromConsole");
-        tempOP = (Boolean) map.get("TempOP");
+        String currentLine = null;
+        try {
+            probability = (Double) map.get(currentLine = "Probability");
+            command = (String) map.get(currentLine = "Command");
+            fromConsole = (Boolean) map.get(currentLine = "FromConsole");
+            tempOP = (Boolean) map.get(currentLine = "TempOP");
+        } catch (Exception ex) {
+            PhatLoots.logger.severe("Failed to load CommandLoot line: " + currentLine);
+            PhatLoots.logger.severe("of PhatLoot: " + (PhatLoot.current == null ? "unknown" : PhatLoot.current));
+            PhatLoots.logger.severe("Last successfull load was...");
+            PhatLoots.logger.severe("PhatLoot: " + (PhatLoot.last == null ? "unknown" : PhatLoot.last));
+            PhatLoots.logger.severe("Loot: " + (Loot.last == null ? "unknown" : Loot.last.toString()));
+        }
     }
 
     @Override

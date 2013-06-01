@@ -116,14 +116,23 @@ public class Item extends Loot {
     }
 
     public Item(Map<String, Object> map) {
-        item = (ItemStack) map.get("ItemStack");
-        amountBonus = (Integer) map.get("BonusAmount");
-        durabilityBonus = (Integer) map.get("BonusDurability");
-        probability = (Double) map.get("Probability");
-        autoEnchant = (Boolean) map.get("AutoEnchant");
-        generateName = (Boolean) map.get("GenerateName");
-        randomLore = (Boolean) map.get("RandomLore");
-        tieredName = (Boolean) map.get("Tiered");
+        String currentLine = null;
+        try {
+            item = (ItemStack) map.get(currentLine = "ItemStack");
+            amountBonus = (Integer) map.get(currentLine = "BonusAmount");
+            durabilityBonus = (Integer) map.get(currentLine = "BonusDurability");
+            probability = (Double) map.get(currentLine = "Probability");
+            autoEnchant = (Boolean) map.get(currentLine = "AutoEnchant");
+            generateName = (Boolean) map.get(currentLine = "GenerateName");
+            randomLore = (Boolean) map.get(currentLine = "RandomLore");
+            tieredName = (Boolean) map.get(currentLine = "Tiered");
+        } catch (Exception ex) {
+            PhatLoots.logger.severe("Failed to load Item line: " + currentLine);
+            PhatLoots.logger.severe("of PhatLoot: " + (PhatLoot.current == null ? "unknown" : PhatLoot.current));
+            PhatLoots.logger.severe("Last successfull load was...");
+            PhatLoots.logger.severe("PhatLoot: " + (PhatLoot.last == null ? "unknown" : PhatLoot.last));
+            PhatLoots.logger.severe("Loot: " + (Loot.last == null ? "unknown" : Loot.last.toString()));
+        }
     }
 
     @Override

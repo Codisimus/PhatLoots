@@ -166,6 +166,9 @@ public class PhatLoots extends JavaPlugin {
                 YamlConfiguration config = new YamlConfiguration();
                 config.load(file);
                 PhatLoot phatLoot = (PhatLoot) config.get(name);
+                if (!phatLoot.name.equals(name)) {
+                    phatLoot.name = name;
+                }
                 phatLoots.put(name, phatLoot);
             } catch (Exception ex) {
                 logger.severe("Failed to load " + file.getName());

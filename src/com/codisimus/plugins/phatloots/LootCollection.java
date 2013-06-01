@@ -36,11 +36,20 @@ public class LootCollection extends Loot {
     }
 
     public LootCollection(Map<String, Object> map) {
-        probability = (Double) map.get("Probability");
-        name = (String) map.get("Name");
-        lowerNumberOfLoots = (Integer) map.get("LowerNumberOfLoots");
-        upperNumberOfLoots = (Integer) map.get("UpperNumberOfLoots");
-        lootList = new LinkedList<Loot>((List) map.get("LootList"));
+        String currentLine = null;
+        try {
+            probability = (Double) map.get(currentLine = "Probability");
+            name = (String) map.get(currentLine = "Name");
+            lowerNumberOfLoots = (Integer) map.get(currentLine = "LowerNumberOfLoots");
+            upperNumberOfLoots = (Integer) map.get(currentLine = "UpperNumberOfLoots");
+            lootList = new LinkedList<Loot>((List) map.get(currentLine = "LootList"));
+        } catch (Exception ex) {
+            PhatLoots.logger.severe("Failed to load LootCollection line: " + currentLine);
+            PhatLoots.logger.severe("of PhatLoot: " + (PhatLoot.current == null ? "unknown" : PhatLoot.current));
+            PhatLoots.logger.severe("Last successfull load was...");
+            PhatLoots.logger.severe("PhatLoot: " + (PhatLoot.last == null ? "unknown" : PhatLoot.last));
+            PhatLoots.logger.severe("Loot: " + (Loot.last == null ? "unknown" : Loot.last.toString()));
+        }
     }
 
     @Override

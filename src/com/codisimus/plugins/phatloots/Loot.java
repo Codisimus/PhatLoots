@@ -11,6 +11,7 @@ import org.bukkit.inventory.ItemStack;
  * @author Codisimus
  */
 public abstract class Loot implements Comparable, ConfigurationSerializable {
+    static Loot last;
     double probability = 100;
     public abstract void getLoot(Player player, double lootingBonus, LinkedList<ItemStack> items);
     public abstract ItemStack getInfoStack();

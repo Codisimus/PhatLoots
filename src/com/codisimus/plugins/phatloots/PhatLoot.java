@@ -25,6 +25,8 @@ import org.bukkit.inventory.ItemStack;
  */
 @SerializableAs("PhatLoot")
 public class PhatLoot implements ConfigurationSerializable {
+    static String current;
+    static String last;
     static boolean onlyDropOnPlayerKill;
     static boolean replaceMobLoot;
     static boolean displayTimeRemaining;
@@ -71,49 +73,61 @@ public class PhatLoot implements ConfigurationSerializable {
     }
 
     public PhatLoot(Map<String, Object> map) {
-        name = (String) map.get("Name");
+        String currentLine = null;
+        try {
+            current = name = (String) map.get(currentLine = "Name");
 
-        Map nestedMap = (Map) map.get("Reset");
-        days = (Integer) nestedMap.get("Days");
-        hours = (Integer) nestedMap.get("Hours");
-        minutes = (Integer) nestedMap.get("Minutes");
-        seconds = (Integer) nestedMap.get("Seconds");
+            Map nestedMap = (Map) map.get(currentLine = "Reset");
+            days = (Integer) nestedMap.get(currentLine = "Days");
+            hours = (Integer) nestedMap.get(currentLine = "Hours");
+            minutes = (Integer) nestedMap.get(currentLine = "Minutes");
+            seconds = (Integer) nestedMap.get(currentLine = "Seconds");
 
-        global = (Boolean) map.get("Global");
-        round = (Boolean) map.get("RoundDownTime");
-        autoLoot = (Boolean) map.get("AutoLoot");
+            global = (Boolean) map.get(currentLine = "Global");
+            round = (Boolean) map.get(currentLine = "RoundDownTime");
+            autoLoot = (Boolean) map.get(currentLine = "AutoLoot");
 
-        nestedMap = (Map) map.get("Money");
-        moneyUpper = (Integer) nestedMap.get("Upper");
-        moneyLower = (Integer) nestedMap.get("Lower");
+            nestedMap = (Map) map.get(currentLine = "Money");
+            moneyUpper = (Integer) nestedMap.get(currentLine = "Upper");
+            moneyLower = (Integer) nestedMap.get(currentLine = "Lower");
 
-        nestedMap = (Map) map.get("Exp");
-        expUpper = (Integer) nestedMap.get("Upper");
-        expLower = (Integer) nestedMap.get("Lower");
+            nestedMap = (Map) map.get(currentLine = "Exp");
+            expUpper = (Integer) nestedMap.get(currentLine = "Upper");
+            expLower = (Integer) nestedMap.get(currentLine = "Lower");
 
-        //Check which version the file is
-        if (map.containsKey("LootList")) { //3.1+
-            lootList = (ArrayList) map.get("LootList");
-        } else { //pre-3.1
-            numberCollectiveLoots = (Integer) map.get("NumberCollectiveLoots");
+            //Check which version the file is
+            if (map.containsKey(currentLine = "LootList")) { //3.1+
+                lootList = (ArrayList) map.get(currentLine = "LootList");
+            } else { //pre-3.1
+                numberCollectiveLoots = (Integer) map.get(currentLine = "NumberCollectiveLoots");
 
-            nestedMap = (Map) map.get("Loots");
-            lootTables[0] = (ArrayList) nestedMap.get("Individual");
-            for (int i = 1; i < 11; i++) {
-                lootTables[i] = (ArrayList) nestedMap.get("Coll" + i);
-                Collections.sort(lootTables[i]);
+                nestedMap = (Map) map.get(currentLine = "Loots");
+                lootTables[0] = (ArrayList) nestedMap.get(currentLine = "Individual");
+                for (int i = 1; i < 11; i++) {
+                    lootTables[i] = (ArrayList) nestedMap.get(currentLine = "Coll" + i);
+                    Collections.sort(lootTables[i]);
+                }
+
+                if (map.containsKey(currentLine = "Commands")) {
+                    commands = (ArrayList) map.get(currentLine = "Commands");
+                }
+
+                convert();
+                save();
             }
 
-            if (map.containsKey("Commands")) {
-                commands = (ArrayList) map.get("Commands");
+            loadChests();
+            loadLootTimes();
+        } catch (Exception ex) {
+            PhatLoots.logger.severe("Failed to load line: " + currentLine);
+            PhatLoots.logger.severe("of PhatLoot: " + (current == null ? "unknown" : current));
+            if (current == null) {
+                PhatLoots.logger.severe("Last successfull load was...");
+                PhatLoots.logger.severe("PhatLoot: " + (last == null ? "unknown" : last));
             }
-
-            convert();
-            save();
         }
-
-        loadChests();
-        loadLootTimes();
+        last = current;
+        current = null;
     }
 
     public void rollForLoot(Player player, PhatLootChest chest, Inventory inventory) {
