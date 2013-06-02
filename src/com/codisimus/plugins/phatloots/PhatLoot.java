@@ -721,10 +721,15 @@ public class PhatLoot implements ConfigurationSerializable {
         Scanner scanner = null;
         try {
             File file = new File(PhatLoots.dataFolder + File.separator + "Chests" + File.separator + name + ".txt");
-
             if (!file.exists()) {
                 return;
             }
+
+            //Delete empty files
+            if (file.length() == 0) {
+                file.delete();
+            }
+
             scanner = new Scanner(file);
             while (scanner.hasNext()) {
                 addChest(scanner.next());
