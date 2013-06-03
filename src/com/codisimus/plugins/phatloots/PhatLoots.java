@@ -276,6 +276,16 @@ public class PhatLoots extends JavaPlugin {
     }
 
     /**
+     * Returns true if the given Block is type that is able to be linked
+     *
+     * @param block the given Block
+     * @return True if the given Block is able to be linked
+     */
+    public static boolean isLinkableType(Block block) {
+        return PhatLootsListener.types.containsKey(block.getType());
+    }
+
+    /**
      * Iterates through every PhatLoot to find PhatLoots linked with the given Block
      * PhatLoots are only added to the List if the Player has permission to loot them
      *

@@ -252,7 +252,7 @@ public class PhatLootsListener implements Listener {
     public void onBlockBreak(BlockBreakEvent event) {
         //Return if the Material of the Block is not a linkable type
         Block block = event.getBlock();
-        if (!types.containsKey(block.getType())) {
+        if (!PhatLoots.isLinkableType(block)) {
             return;
         }
 

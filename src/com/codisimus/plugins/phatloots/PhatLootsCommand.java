@@ -729,7 +729,12 @@ public class PhatLootsCommand implements CommandExecutor {
 
         //Cancel if the sender is not targeting a correct Block
         Block block  = ((Player) sender).getTargetBlock(TRANSPARENT, 10);
-        String blockName = "Block";
+        String blockName = block.getType().toString();
+        if (!PhatLoots.isLinkableType(block)) {
+            sender.sendMessage("§6" + blockName + "§4 is not a linkable type.");
+            return;
+        }
+
         switch (block.getType()) {
         case CHEST:
             Chest chest = (Chest) block.getState();
@@ -752,21 +757,10 @@ public class PhatLootsCommand implements CommandExecutor {
                     ChestLock.addSafe(safe);
                 }
             }
-            blockName = "Chest";
-            break;
-
-        case DISPENSER:
-            blockName = "Dispenser";
             break;
 
         default:
-            blockName = block.getType().toString();
-            if (PhatLootsListener.types.containsKey(block.getType())) {
-                break;
-            } else {
-                sender.sendMessage("§6" + blockName + "§4 is not a linkable type.");
-                return;
-            }
+            break;
         }
 
         //Cancel if the PhatLoot with the given name does not exist
@@ -847,22 +841,9 @@ public class PhatLootsCommand implements CommandExecutor {
     	}
 
         Block block = ((Player) sender).getTargetBlock(TRANSPARENT, 10);
-        String blockName;
         for (PhatLoot phatLoot : getPhatLoots(sender, name)) {
             phatLoot.removeChest(block);
-            switch (block.getType()) {
-            case CHEST:
-            case ENDER_CHEST:
-            	blockName = "Chest";
-                break;
-            case DISPENSER:
-            	blockName = "Dispenser";
-                break;
-            default:
-            	blockName = block.getType().toString();
-                break;
-            }
-            sender.sendMessage("§5Target " + blockName + " has been unlinked from PhatLoot §6" + phatLoot.name);
+            sender.sendMessage("§5Target " + block.getType().toString() + " has been unlinked from PhatLoot §6" + phatLoot.name);
             phatLoot.saveChests();
         }
     }
@@ -1269,24 +1250,14 @@ public class PhatLootsCommand implements CommandExecutor {
         } else if (sender != null) {
             //Cancel is the sender is console
             if (!(sender instanceof Player)) {
-                    sender.sendMessage("§4You cannot do this from the console!");
-                    return;
+                sender.sendMessage("§4You cannot do this from the console!");
+                return;
             }
 
             Block block = ((Player) sender).getTargetBlock(TRANSPARENT, 10);
-            String blockName = "Block";
             for (PhatLoot phatLoot : getPhatLoots(sender, name)) {
                 phatLoot.reset(block);
-                switch (block.getType()) {
-                case CHEST:
-                case ENDER_CHEST:
-                    blockName = "Chest";
-                    break;
-                case DISPENSER:
-                    blockName = "Dispenser";
-                    break;
-                }
-                sender.sendMessage("§5Target "+ blockName + " has been reset.");
+                sender.sendMessage("§5Target "+ block.getType().toString() + " has been reset.");
             }
         }
     }
@@ -1339,19 +1310,9 @@ public class PhatLootsCommand implements CommandExecutor {
         	}
 
             Block block = ((Player) sender).getTargetBlock(TRANSPARENT, 10);
-            String blockName = "Block";
             for (PhatLoot phatLoot : getPhatLoots(sender, name)) {
                 phatLoot.clean(block);
-                switch (block.getType()) {
-                case CHEST:
-                case ENDER_CHEST:
-                    blockName = "Chest";
-                    break;
-                case DISPENSER:
-                    blockName = "Dispenser";
-                    break;
-                }
-                sender.sendMessage("§5Target "+ blockName + " has been reset.");
+                sender.sendMessage("§5Target "+ block.getType().toString() + " has been reset.");
             }
         }
     }
@@ -1470,25 +1431,17 @@ public class PhatLootsCommand implements CommandExecutor {
                 sender.sendMessage("§4PhatLoot §6" + name + "§4 does not exist.");
             }
         } else {
-        	//Cancel is the sender is console
-        	if (!(sender instanceof Player)) {
-                    sender.sendMessage("§4You cannot do this from the console!");
-                    return phatLoots;
-        	}
+            //Cancel is the sender is console
+            if (!(sender instanceof Player)) {
+                sender.sendMessage("§4You cannot do this from the console!");
+                return phatLoots;
+            }
 
             //Cancel if the sender is not targeting a correct Block
-        	Block block = ((Player)sender).getTargetBlock(TRANSPARENT, 10);
-        	String blockName = "Block";
-            switch (block.getType()) {
-            case CHEST:
-            case ENDER_CHEST:
-            	blockName = "Chest";
-                break;
-            case DISPENSER:
-            	blockName = "Dispenser";
-                break;
-            default:
-                sender.sendMessage("§4You must target a Chest/Dispenser.");
+            Block block = ((Player)sender).getTargetBlock(TRANSPARENT, 10);
+            String blockName = block.getType().toString();
+            if (!PhatLoots.isLinkableType(block)) {
+                sender.sendMessage("§6" + blockName + "§4 is not a linkable type.");
                 return phatLoots;
             }
 
