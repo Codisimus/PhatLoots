@@ -4,6 +4,7 @@ import com.codisimus.plugins.regionown.Region;
 import com.codisimus.plugins.regionown.RegionOwn;
 import org.bukkit.Location;
 import org.bukkit.entity.*;
+import org.bukkit.entity.Villager.Profession;
 import org.bukkit.event.Listener;
 
 /**
@@ -49,7 +50,10 @@ public abstract class MobListener implements Listener {
                 specificType = ((Skeleton) entity).getSkeletonType().toString();
                 break;
             case VILLAGER:
-                specificType = ((Villager) entity).getProfession().toString();
+                Profession prof = ((Villager) entity).getProfession();
+                if (prof != null) {
+                    specificType = prof.toString();
+                }
                 break;
             default:
                 specificType = null;
