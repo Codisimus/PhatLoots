@@ -82,18 +82,6 @@ public class Item extends Loot {
     boolean tieredName;
 
     /**
-     * Constructs a new Loot with the given Item data
-     *
-     * @param id The Material id of the item
-     * @param amountLower The lower bound of the stack size of the item
-     * @param amountUpper The upper bound of the stack size of the item
-     */
-    public Item(int id, int amountLower, int amountUpper) {
-        item = new ItemStack(id, amountLower);
-        amountBonus = (amountUpper - amountLower);
-    }
-
-    /**
      * Constructs a new Loot with the given ItemStack and bonus amount
      *
      * @param item The given ItemStack
