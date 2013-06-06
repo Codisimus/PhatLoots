@@ -5,7 +5,6 @@ import com.codisimus.plugins.chestlock.Safe;
 import com.codisimus.plugins.regionown.Region;
 import com.codisimus.plugins.regionown.RegionSelector;
 import com.google.common.collect.Sets;
-import heroes.galderon.api.BowsAPI.Type;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
