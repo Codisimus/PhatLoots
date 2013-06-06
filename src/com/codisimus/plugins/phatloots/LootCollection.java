@@ -3,7 +3,6 @@ package com.codisimus.plugins.phatloots;
 import java.util.*;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
-import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.configuration.serialization.SerializableAs;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -68,24 +67,22 @@ public class LootCollection extends Loot {
                                 : PhatLoots.random.nextInt(upperNumberOfLoots - lowerNumberOfLoots) + lowerNumberOfLoots;
             //Make sure there are items that will be looted before entering the loop
             if (!lootList.isEmpty()) {
-                //Do not loot if the probability does not add up to 100
-                if (getPercentRemaining() != 0) {
-                    PhatLoots.logger.warning("Cannot loot Collection " + name +
-                            " because the probability does not equal 100%");
-                } else {
-                    //Roll for weighted loot
-                    int numberLooted = 0;
-                    while (numberLooted < numberOfLoots) {
-                        int j = Math.min(100, PhatLoots.random.nextInt(100) + (int) lootingBonus);
-                        for (Loot loot : lootList) {
-                            j -= loot.getProbability();
-                            if (j <= 0) {
-                                loot.getLoot(player, lootingBonus, items);
-                                break;
-                            }
-                        }
-                        numberLooted++;
+                Collections.sort(lootList);
+                int numberLooted = 0;
+                while (numberLooted < numberOfLoots) {
+                    double total = 0;
+                    for (Loot loot : lootList) {
+                        total += loot.probability;
                     }
+                    double roll = Math.min(total, total * PhatLoots.random.nextDouble() + total + lootingBonus);
+                    for (Loot loot : lootList) {
+                        roll -= loot.getProbability();
+                        if (roll <= 0) {
+                            loot.getLoot(player, lootingBonus, items);
+                            break;
+                        }
+                    }
+                    numberLooted++;
                 }
             }
         }

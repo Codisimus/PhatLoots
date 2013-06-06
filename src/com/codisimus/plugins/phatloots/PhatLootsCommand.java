@@ -5,8 +5,11 @@ import com.codisimus.plugins.chestlock.Safe;
 import com.codisimus.plugins.regionown.Region;
 import com.codisimus.plugins.regionown.RegionSelector;
 import com.google.common.collect.Sets;
-import java.util.*;
-import org.bukkit.Bukkit;
+import heroes.galderon.api.BowsAPI.Type;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.Map;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -946,6 +949,10 @@ public class PhatLootsCommand implements CommandExecutor {
             LootCollection coll = null;
             if (collName != null) {
                 coll = phatLoot.findCollection(collName);
+                if (coll == null) {
+                    sender.sendMessage("§4Collection §6" + collName + "§4 does not exist");
+                    return;
+                }
             }
 
             if (coll == null) {
