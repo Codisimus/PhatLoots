@@ -156,7 +156,7 @@ public class PhatLoot implements ConfigurationSerializable {
 
         inventory.clear();
 
-        if (moneyUpper > 0) {
+        if (moneyLower != 0 && moneyUpper != 0) {
             double amount = PhatLoots.random.nextInt(moneyUpper + 1 - moneyLower);
             amount += moneyLower;
             if (decimals) {
