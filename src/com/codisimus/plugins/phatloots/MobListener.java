@@ -27,7 +27,10 @@ public abstract class MobListener implements Listener {
      */
     public PhatLoot getPhatLoot(LivingEntity entity) {
         if (namedMobs && entity.getCustomName() != null) {
-            return PhatLoots.getPhatLoot(entity.getCustomName());
+            PhatLoot phatLoot = PhatLoots.getPhatLoot(entity.getCustomName());
+            if (phatLoot != null) {
+                return phatLoot;
+            }
         }
 
         Location location = entity.getLocation();
