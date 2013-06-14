@@ -28,6 +28,7 @@ public class DispenserListener implements Listener {
             return;
         }
 
+        //We don't care if a block loses power
         if (block.getBlockPower() == 0) {
             return;
         }
@@ -37,6 +38,7 @@ public class DispenserListener implements Listener {
             return;
         }
 
+        //Return if there is not any player that is close enough
         Player player = getNearestPlayer(block.getLocation());
         if (player == null) {
             return;
@@ -48,9 +50,11 @@ public class DispenserListener implements Listener {
             return;
         }
 
+        //Get the inventory of the Dispenser
         Dispenser dispenser = (Dispenser) block.getState();
         Inventory inventory = dispenser.getInventory();
 
+        //Roll for linked loot
         PhatLootChest plChest = new PhatLootChest(block);
         for (PhatLoot phatLoot : PhatLoots.getPhatLoots(block, player)) {
             phatLoot.rollForLoot(player, plChest, inventory);
@@ -69,6 +73,7 @@ public class DispenserListener implements Listener {
         double shortestDistance = 2500;
         for (Player player: location.getWorld().getPlayers()) {
             Location playerLocation = player.getLocation();
+            //Use the squared distance because is it much less resource intensive
             double distanceToPlayer = location.distanceSquared(playerLocation);
             if (distanceToPlayer < shortestDistance) {
                 nearestPlayer = player;

@@ -1,7 +1,6 @@
 package com.codisimus.plugins.phatloots;
 
 import java.io.File;
-import java.io.InputStream;
 import java.util.HashMap;
 import java.util.HashSet;
 import org.bukkit.ChatColor;
@@ -11,17 +10,16 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 
 public class PhatLootsConfig {
-    static int defaultDays;
+    static int defaultDays; //Default cooldown time
     static int defaultHours;
     static int defaultMinutes;
     static int defaultSeconds;
-    static int defaultLowerNumberOfLoots;
+    static int defaultLowerNumberOfLoots; //Default collection range
     static int defaultUpperNumberOfLoots;
     static boolean defaultGlobal;
     static boolean defaultRound;
     static boolean defaultAutoLoot;
-    static boolean autoLock;
-    static boolean restrictAll;
+    static boolean restrictAll; //True if all PhatLoots should require permission
     static HashSet<String> restricted = new HashSet();
     static String permission;
     static String moneyLooted;
@@ -39,11 +37,10 @@ public class PhatLootsConfig {
     static String lootBroadcast;
 
     public static void load() {
-        PhatLoots.plugin.saveDefaultConfig();
         FileConfiguration config = PhatLoots.plugin.getConfig();
 
         //Check for an outdated config.yml file
-        if (config.get("DivideMoneyAmountBy100", null) == null) {
+        if (config.get("UseDamageTags", null) == null) {
             PhatLoots.logger.warning("Your config.yml file is outdated! To get the most out of this plugin please (re)move the old file so a new one can be generated.");
         }
 
@@ -101,16 +98,22 @@ public class PhatLootsConfig {
 
         PhatLootsListener.chestName = getString(config, "ChestName");
 
-        Item.damageString = getString(config, "<dam>");
-        Item.holyString = getString(config, "<holy>");
-        Item.fireString = getString(config, "<fire>");
-        Item.bugString = getString(config, "<bug>");
-        Item.thornsString = getString(config, "<thorns>");
-        Item.defenseString = getString(config, "<def>");
-        Item.fireDefenseString = getString(config, "<firedef>");
-        Item.rangeDefenseString = getString(config, "<rangedef>");
-        Item.blastDefenseString = getString(config, "<blastdef>");
-        Item.fallDefenseString = getString(config, "<falldef>");
+
+        /* TAGS */
+
+        Item.damageTags = section.getBoolean("UseDamageTags");
+        if (Item.damageTags) {
+            Item.damageString = getString(config, "<dam>");
+            Item.holyString = getString(config, "<holy>");
+            Item.fireString = getString(config, "<fire>");
+            Item.bugString = getString(config, "<bug>");
+            Item.thornsString = getString(config, "<thorns>");
+            Item.defenseString = getString(config, "<def>");
+            Item.fireDefenseString = getString(config, "<firedef>");
+            Item.rangeDefenseString = getString(config, "<rangedef>");
+            Item.blastDefenseString = getString(config, "<blastdef>");
+            Item.fallDefenseString = getString(config, "<falldef>");
+        }
 
 
         /* DEFAULTS */
@@ -120,12 +123,13 @@ public class PhatLootsConfig {
         defaultRound = section.getBoolean("RoundDownTime");
         String itemsPerColl = section.getString("ItemsPerColl");
         if (itemsPerColl != null) {
+            //This amount may be set as a range
             int index = itemsPerColl.indexOf('-');
-            if (index == -1) {
+            if (index == -1) { //Single number
                 int numberOfLoots = Integer.parseInt(itemsPerColl);
                 defaultLowerNumberOfLoots = numberOfLoots;
                 defaultUpperNumberOfLoots = numberOfLoots;
-            } else {
+            } else { //Range
                 defaultLowerNumberOfLoots = Integer.parseInt(itemsPerColl.substring(0, index));
                 defaultUpperNumberOfLoots = Integer.parseInt(itemsPerColl.substring(index + 1));
             }
@@ -151,6 +155,8 @@ public class PhatLootsConfig {
         PhatLoot.autoClose = config.getBoolean("AutoCloseOnInsufficientFunds");
         PhatLoot.decimals = config.getBoolean("DivideMoneyAmountBy100");
         PhatLootChest.soundOnAutoLoot = config.getBoolean("PlaySoundOnAutoLoot");
+        ForgettableInventory.delay = config.getInt("ForgetInventoryTime") * 20L;
+        PhatLoot.unlink = config.getBoolean("UnlinkGlobalChestsThatNeverReset");
 
 
         /* LORES.YML */
@@ -198,6 +204,14 @@ public class PhatLootsConfig {
         }
     }
 
+    /**
+     * Returns the converted string that is loaded from the given configuration
+     * & will be converted to § where color codes are used
+     *
+     * @param config The given ConfigurationSection
+     * @param key The key that leads to the requested string
+     * @return The String or null if the string was not found or empty
+     */
     private static String getString(ConfigurationSection config, String key) {
         String string = ChatColor.translateAlternateColorCodes('&', config.getString(key));
         return string.isEmpty() ? null : string;

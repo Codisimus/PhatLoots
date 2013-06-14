@@ -5,7 +5,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 
 /**
- * Listens for EpicBoss Deaths
+ * Listens for EpicBoss Deaths and checks if there is a PhatLoot named after them
  *
  * @author Codisimus
  */

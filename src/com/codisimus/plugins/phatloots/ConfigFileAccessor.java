@@ -18,7 +18,6 @@ import org.bukkit.plugin.java.JavaPlugin;
  * Basic implementation for multiple config files.
  *
  * @author Inflamedsebi
- *
  */
 public class ConfigFileAccessor {
     private final JavaPlugin plugin;

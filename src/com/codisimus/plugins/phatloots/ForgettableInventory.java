@@ -1,51 +1,76 @@
 package com.codisimus.plugins.phatloots;
 
+import java.util.HashMap;
 import org.bukkit.inventory.Inventory;
-import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitRunnable;
 
 /**
- * A Forgettable Inventory is a virtual Inventory that will be removed from memory after the given delay
+ * A Forgettable Inventory is a virtual Inventory that will be removed from memory after the set delay
  *
  * @author Mtihc
  */
-public abstract class ForgettableInventory implements Runnable {
-    private JavaPlugin plugin;
-    private long delay = 6000L;
-    private int taskId;
-
+public class ForgettableInventory extends BukkitRunnable {
+    static HashMap<String, ForgettableInventory> inventories = new HashMap<String, ForgettableInventory>(); //User+Chest Location -> Inventory
+    static long delay;
     private Inventory inventory;
+    private String key;
+    private boolean scheduled;
 
-    public ForgettableInventory(JavaPlugin plugin, Inventory inventory) {
-        this.plugin = plugin;
-        this.taskId = 0;
+    /**
+     * Constructs a new ForgettableInventory with the given key and Inventory
+     *
+     * @param key The given key
+     * @param inventory The given Inventory
+     */
+    public ForgettableInventory(String key, Inventory inventory) {
+        this.key = key;
         this.inventory = inventory;
+        inventories.put(key, this);
     }
 
     /**
-     * @return the inventory
+     * Schedules this ForgettableInventory to be forgotten
+     */
+    public void schedule() {
+        if (scheduled) {
+            cancel();
+        }
+        this.runTaskLater(PhatLoots.plugin, delay);
+        scheduled = true;
+    }
+
+    /**
+     * Gets the Inventory of this ForgettableInventory
+     *
+     * @return The Inventory
      */
     public Inventory getInventory() {
         return inventory;
     }
 
-    public void schedule() {
-        cancel();
-        taskId  = plugin.getServer().getScheduler()
-                .scheduleSyncDelayedTask(plugin, this, delay);
-    }
-
-    public void cancel() {
-        if (taskId != 0) {
-            plugin.getServer().getScheduler().cancelTask(taskId);
-            taskId = 0;
-        }
-    }
-
     @Override
     public void run() {
-        cancel();
-        execute();
+        inventories.remove(key);
+        scheduled = false;
     }
 
-    protected abstract void execute();
+    /**
+     * Returns the ForgettableInventory of the given key
+     *
+     * @param key The given key
+     * @return The ForgettableInventory of the given key
+     */
+    public static ForgettableInventory get(String key) {
+        return inventories.get(key);
+    }
+
+    /**
+     * Returns true if there is a Inventory for the given key
+     *
+     * @param key The given key
+     * @return true if there is a Inventory for the given key
+     */
+    public static boolean has(String key) {
+        return inventories.containsKey(key);
+    }
 }

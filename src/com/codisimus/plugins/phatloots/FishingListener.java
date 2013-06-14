@@ -15,18 +15,26 @@ import org.bukkit.inventory.ItemStack;
 public class FishingListener implements Listener {
     @EventHandler (ignoreCancelled = true)
     public void onPlayerFish(PlayerFishEvent event) {
+        //Check if there is a PhatLoot for Fishing
         PhatLoot phatLoot = PhatLoots.getPhatLoot("Fishing");
-        ItemStack pole = event.getPlayer().getItemInHand();
-        double lootingBonus = PhatLoot.lootingBonusPerLvl * pole.getEnchantmentLevel(Enchantment.LOOT_BONUS_MOBS);
-        if (event.getCaught() instanceof Item && phatLoot != null) {
+        if (phatLoot == null) {
+            return;
+        }
+
+        //Check if something has been caught
+        if (event.getCaught() instanceof Item) {
+            //Get the looting bonus of the fishing pole
+            ItemStack pole = event.getPlayer().getItemInHand();
+            double lootingBonus = PhatLoot.lootingBonusPerLvl * pole.getEnchantmentLevel(Enchantment.LOOT_BONUS_MOBS);
+
+            //Change the 'fish' to which ever Item has been looted
             Item fish = (Item) event.getCaught();
             fish.setItemStack(phatLoot.lootAll(event.getPlayer(), lootingBonus).getFirst());
-            int exp = 0;
-            if (phatLoot.expUpper > 0) {
-                exp = PhatLoots.random.nextInt(phatLoot.expUpper + 1 - phatLoot.expLower);
-                exp += phatLoot.expLower;
-            }
-            event.setExpToDrop(exp);
+
+            //Roll for experience to be gained by the fisher
+            event.setExpToDrop(phatLoot.expUpper > 0
+                               ? PhatLoots.rollForInt(phatLoot.expLower, phatLoot.expUpper)
+                               : 0);
         }
     }
 }

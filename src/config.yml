@@ -49,6 +49,8 @@ Blocks:
 
 ##Every block in the specified Worlds that matches a listed Material will be linked to the given PhatLoot
 ##Blocks listed here need not be listed in 'Blocks' above
+##These default settings will print warnings if you do not have the proper PhatLoots
+##they are only meant to show how this would be set up
 AutoLink:
     all:
         Melon Block: melons
@@ -108,6 +110,7 @@ ChestName: '&6<name>'
 
 #Damage estimates (as ranges) may be added to the lore of loot
 #Do so by making a line of lore one of the following tags
+UseDamageTags: true
 <dam>: '&5<amount> damage'
 <holy>: '&6+<amount> holy damage'
 <fire>: '&4+<amount> fire'
@@ -190,3 +193,12 @@ DivideMoneyAmountBy100: false
 
 
 PlaySoundOnAutoLoot: true
+
+
+##This is how long (in seconds each inventory will be kept in memory
+##Items that have not been looted before the inventory is forgotten will be lost
+ForgetInventoryTime: 60
+
+
+##Set to true if global chests that never reset should be unlinked after looting
+UnlinkGlobalChestsThatNeverReset: true

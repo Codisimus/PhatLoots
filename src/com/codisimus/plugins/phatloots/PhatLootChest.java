@@ -1,6 +1,7 @@
 package com.codisimus.plugins.phatloots;
 
 import java.util.List;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.World;
@@ -50,8 +51,8 @@ public class PhatLootChest {
         this.x = x;
         this.y = y;
         this.z = z;
-        World w = PhatLoots.server.getWorld(world);
-        if (w == null) {
+        World w = Bukkit.getWorld(world);
+        if (w == null) { //The world is not currently loaded
             PhatLoots.logger.warning("The world '" + world + "' is not currently loaded, all linked chests in this world are being unlinked.");
             PhatLoots.logger.warning("THIS CHEST UNLINKING IS PERMANANT IF YOU LINK/UNLINK ANY OTHER CHESTS IN THIS PHATLOOT!");
         } else {
@@ -60,13 +61,18 @@ public class PhatLootChest {
         }
     }
 
+    /**
+     * Constructs a new PhatLootChest with the given Block Location data
+     *
+     * @param data The data in the form [world, x, y, z]
+     */
     public PhatLootChest(String[] data) {
         world = data[0];
         x = Integer.parseInt(data[1]);
         y = Integer.parseInt(data[2]);
         z = Integer.parseInt(data[3]);
-        World w = PhatLoots.server.getWorld(world);
-        if (w == null) {
+        World w = Bukkit.getWorld(world);
+        if (w == null) { //The world is not currently loaded
             PhatLoots.logger.warning("The world '" + world + "' is not currently loaded, all linked chests in this world are being unlinked.");
             PhatLoots.logger.warning("THIS CHEST UNLINKING IS PERMANANT IF YOU LINK/UNLINK ANY OTHER CHESTS IN THIS PHATLOOT!");
         } else {
@@ -81,7 +87,7 @@ public class PhatLootChest {
      * @return The Block that this Chest Represents
      */
     public Block getBlock() {
-        return PhatLoots.server.getWorld(world).getBlockAt(x, y, z);
+        return Bukkit.getWorld(world).getBlockAt(x, y, z);
     }
 
     /**
@@ -90,7 +96,7 @@ public class PhatLootChest {
      * @param block The given Block
      * @return True if the given Block is the same Dispenser or part of the double Chest
      */
-    public boolean isBlock(Block block) {
+    public boolean matchesBlock(Block block) {
         if (block.getType() == Material.CHEST) {
             Chest chest = (Chest) block.getState();
             Inventory inventory = chest.getInventory();
@@ -102,18 +108,8 @@ public class PhatLootChest {
             }
         }
 
-        //Return false if Blocks are not in the same x-axis
-        if (x != block.getX()) {
-            return false;
-        }
-
-        //Return false if Blocks are not in the same y-axis
-        if (y != block.getY()) {
-            return false;
-        }
-
-        //Return false if Blocks are not in the same z-axis
-        if (z != block.getZ()) {
+        //Return false if any of the coordinates don't match
+        if (x != block.getX() || y != block.getY() || z != block.getZ()) {
             return false;
         }
 
@@ -121,6 +117,15 @@ public class PhatLootChest {
         return world.equals(block.getWorld().getName());
     }
 
+    /**
+     * Adds the list of ItemStacks to the given Inventory
+     *
+     * @param itemList The list of ItemStacks to add
+     * @param player The Player looting the Chest
+     * @param inventory The Inventory to add the items to
+     * @param autoLoot True if the items should go straight to the Player's inventory
+     * @return true if autoLoot is true and there are items in the inventory at the end
+     */
     public boolean addLoots(List<ItemStack> itemList, Player player, Inventory inventory, boolean autoLoot) {
         boolean itemsInChest = false;
         for (ItemStack item: itemList) {
@@ -131,6 +136,15 @@ public class PhatLootChest {
         return itemsInChest;
     }
 
+    /**
+     * Adds the ItemStack to the given Inventory
+     *
+     * @param item The ItemStack to add
+     * @param player The Player looting the Chest
+     * @param inventory The Inventory to add the item to
+     * @param autoLoot True if the item should go straight to the Player's inventory
+     * @return true if autoLoot is true and the item was added to the inventory
+     */
     public boolean addLoot(ItemStack item, Player player, Inventory inventory, boolean autoLoot) {
         //Make sure loots do not exceed the stack size
         if (item.getAmount() > item.getMaxStackSize()) {
@@ -144,6 +158,7 @@ public class PhatLootChest {
             }
         }
 
+        //Get the Player's inventory in case of auto looting
         PlayerInventory sack = player.getInventory();
 
         if (isDispenser) {
@@ -155,7 +170,6 @@ public class PhatLootChest {
             while (inventory.firstEmpty() > 0) {
                 dispenser.dispense();
             }
-
             return false;
         } else if (autoLoot && sack.firstEmpty() != -1) {
             //Add the Loot to the Player's Inventory
@@ -164,7 +178,7 @@ public class PhatLootChest {
                 int amount = item.getAmount();
                 msg = amount > 1
                       ? msg.replace("<amount>", String.valueOf(item.getAmount()))
-                      : msg.replace("x<amount>", "").replace("<amount>", "");
+                      : msg.replace("x<amount>", "").replace("<amount>", String.valueOf(item.getAmount()));
                 player.sendMessage(msg);
             }
             sack.addItem(item);
@@ -173,10 +187,10 @@ public class PhatLootChest {
             }
             return false;
         } else {
-            //Add the Loot to the Chest's Inventory
+            //Add the Loot to the Inventory
             if (inventory.firstEmpty() != -1) {
                 inventory.addItem(item);
-            } else {
+            } else { //The item will not fit in the inventory
                 overFlow(item, player);
             }
             return true;
@@ -197,7 +211,7 @@ public class PhatLootChest {
             int amount = item.getAmount();
             msg = amount > 1
                   ? msg.replace("<amount>", String.valueOf(item.getAmount()))
-                  : msg.replace("x<amount>", "").replace("<amount>", "");
+                  : msg.replace("x<amount>", "").replace("<amount>", String.valueOf(item.getAmount()));
             player.sendMessage(msg);
         }
     }

@@ -20,6 +20,11 @@ public class LootCollection extends Loot {
     int upperNumberOfLoots;
     LinkedList<Loot> lootList;
 
+    /**
+     * Contructs a new LootCollection with the given name
+     *
+     * @param name The given name
+     */
     public LootCollection(String name) {
         this.name = name;
         lowerNumberOfLoots = PhatLootsConfig.defaultLowerNumberOfLoots;
@@ -27,6 +32,13 @@ public class LootCollection extends Loot {
         lootList = new LinkedList<Loot>();
     }
 
+    /**
+     * Contructs a new LootCollection with the given name and range
+     *
+     * @param name The given name
+     * @param lowerNumberOfLoots The lower bound of the range
+     * @param upperNumberOfLoots The upper bound of the range
+     */
     public LootCollection(String name, int lowerNumberOfLoots, int upperNumberOfLoots) {
         this.name = name;
         this.lowerNumberOfLoots = lowerNumberOfLoots;
@@ -34,8 +46,13 @@ public class LootCollection extends Loot {
         lootList = new LinkedList<Loot>();
     }
 
+    /**
+     * Constructs a new LootCollection from a Configuration Serialized phase
+     *
+     * @param map The map of data values
+     */
     public LootCollection(Map<String, Object> map) {
-        String currentLine = null;
+        String currentLine = null; //The value that is about to be loaded (used for debugging)
         try {
             probability = (Double) map.get(currentLine = "Probability");
             name = (String) map.get(currentLine = "Name");
@@ -43,6 +60,7 @@ public class LootCollection extends Loot {
             upperNumberOfLoots = (Integer) map.get(currentLine = "UpperNumberOfLoots");
             lootList = new LinkedList<Loot>((List) map.get(currentLine = "LootList"));
         } catch (Exception ex) {
+            //Print debug messages
             PhatLoots.logger.severe("Failed to load LootCollection line: " + currentLine);
             PhatLoots.logger.severe("of PhatLoot: " + (PhatLoot.current == null ? "unknown" : PhatLoot.current));
             PhatLoots.logger.severe("Last successfull load was...");
@@ -51,9 +69,16 @@ public class LootCollection extends Loot {
         }
     }
 
+    /**
+     * Rolls for each Loot within the collection
+     *
+     * @param player The Player looting
+     * @param lootingBonus The increased chance of getting rarer loots
+     * @param items The list of items that are looted
+     */
     @Override
     public void getLoot(Player player, double lootingBonus, LinkedList<ItemStack> items) {
-        if (isRollForEach()) {
+        if (isRollForEach()) { //Roll for each Loot individually
             for (Loot loot : lootList) {
                 if (loot.rollForLoot(lootingBonus)) {
                     if (loot.rollForLoot(lootingBonus)) {
@@ -61,23 +86,30 @@ public class LootCollection extends Loot {
                     }
                 }
             }
-        } else {
+        } else { //Roll for all Loot collectively
+            //Roll for the amount of loots
             int numberOfLoots = lowerNumberOfLoots == upperNumberOfLoots
                                 ? lowerNumberOfLoots
-                                : PhatLoots.random.nextInt(upperNumberOfLoots - lowerNumberOfLoots) + lowerNumberOfLoots;
+                                : PhatLoots.rollForInt(lowerNumberOfLoots, upperNumberOfLoots);
             //Make sure there are items that will be looted before entering the loop
             if (!lootList.isEmpty()) {
+                //Sort the loot from lowest probability to highest
                 Collections.sort(lootList);
                 int numberLooted = 0;
                 while (numberLooted < numberOfLoots) {
+                    //Calculate the total probability to determine the maximum amount that can be rolled
                     double total = 0;
                     for (Loot loot : lootList) {
                         total += loot.probability;
                     }
-                    double roll = Math.min(total, total * PhatLoots.random.nextDouble() + total + lootingBonus);
+                    //Roll a number between 0 and total and then subtract the looting bonus
+                    //We subtract because a lower roll is better in this case
+                    double roll = PhatLoots.rollForDouble(total) - lootingBonus;
                     for (Loot loot : lootList) {
+                        //Subtract the probability of each Loot from the roll until we drop below 0
                         roll -= loot.getProbability();
                         if (roll <= 0) {
+                            //Give this loot
                             loot.getLoot(player, lootingBonus, items);
                             break;
                         }
@@ -88,11 +120,21 @@ public class LootCollection extends Loot {
         }
     }
 
+    /**
+     * Returns the information of the LootCollection in the form of an ItemStack
+     *
+     * @return An ItemStack representation of the collection
+     */
     @Override
     public ItemStack getInfoStack() {
+        //A LootCollection is represented by an Ender Chest
         ItemStack infoStack = new ItemStack(Material.ENDER_CHEST);
+
+        //Set the display name to the name of the collection
         ItemMeta info = Bukkit.getItemFactory().getItemMeta(infoStack.getType());
         info.setDisplayName("§2" + name + " (Collection)");
+
+        //Add more specific details of the collection
         List<String> details = new ArrayList();
         details.add("§1Probability: §6" + probability);
         if (isRollForEach()) {
@@ -102,29 +144,28 @@ public class LootCollection extends Loot {
         } else {
             details.add("§1Number of Loots: §6" + lowerNumberOfLoots + '-' + upperNumberOfLoots);
         }
+
+        //Construct the ItemStack and return it
         info.setLore(details);
         infoStack.setItemMeta(info);
         return infoStack;
     }
 
+    /**
+     * Returns true if the number of loots for this collection is not positive
+     *
+     * @return true if each loot should be rolled for separately
+     */
     public boolean isRollForEach() {
         return upperNumberOfLoots <= 0;
     }
 
     /**
-     * Returns the remaining percent of the collection
+     * Adds the given loot to this collection
      *
-     * @return Total probability of all Loots in the collection subtracted from 100
+     * @param target the given Loot
+     * @return true if it was successfully added
      */
-    public double getPercentRemaining() {
-        //Subtract the probabilty of each loot from 100
-        double total = 100;
-        for (Loot loot : lootList) {
-            total -= loot.getProbability();
-        }
-        return total;
-    }
-
     public boolean addLoot(Loot target) {
         for (Loot loot : lootList) {
             if (loot.equals(target)) {
@@ -135,6 +176,12 @@ public class LootCollection extends Loot {
         return true;
     }
 
+    /**
+     * Removes the given loot from this collection
+     *
+     * @param target the given Loot
+     * @return false if it was not found
+     */
     public boolean removeLoot(Loot target) {
         Iterator<Loot> itr = lootList.iterator();
         while (itr.hasNext()) {
@@ -146,12 +193,21 @@ public class LootCollection extends Loot {
         return false;
     }
 
+    /**
+     * Returns the collection of the given name
+     *
+     * @param target The name of the collection to search for
+     * @return The LootCollection or null if it was not found
+     */
     public LootCollection findCollection(String target) {
+        //First check if this is the collection in question
         if (name.equals(target)) {
             return this;
         }
+        //Scan each loot object
         for (Loot loot : lootList) {
             if (loot instanceof LootCollection) {
+                //Recursively look for the collection
                 LootCollection coll = ((LootCollection) loot).findCollection(target);
                 if (coll != null) {
                     return coll;

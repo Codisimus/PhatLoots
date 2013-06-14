@@ -1,11 +1,5 @@
 package com.codisimus.plugins.phatloots;
 
-import org.bukkit.Bukkit;
-import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.configuration.InvalidConfigurationException;
-import org.bukkit.plugin.Plugin;
-import org.bukkit.plugin.PluginDescriptionFile;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -23,6 +17,11 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.UUID;
 import java.util.logging.Level;
+import org.bukkit.Bukkit;
+import org.bukkit.configuration.InvalidConfigurationException;
+import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.plugin.Plugin;
+import org.bukkit.plugin.PluginDescriptionFile;
 
 /**
  * <p>
@@ -38,7 +37,6 @@ import java.util.logging.Level;
  * </code>
  */
 public class Metrics {
-
     /**
      * The current revision number
      */
@@ -182,7 +180,7 @@ public class Metrics {
      * @return True if statistics measuring is running, otherwise false.
      */
     @SuppressWarnings("deprecation")
-	public boolean start() {
+    public boolean start() {
         synchronized (optOutLock) {
             // Did we opt out?
             if (isOptOut()) {
@@ -199,6 +197,7 @@ public class Metrics {
 
                 private boolean firstPost = true;
 
+                @Override
                 public void run() {
                     try {
                         // This has to be synchronized or it can collide with the disable method.
@@ -257,16 +256,16 @@ public class Metrics {
     public void enable() throws IOException {
         // This has to be synchronized or it can collide with the check in the task.
         synchronized (optOutLock) {
-        	// Check if the server owner has already set opt-out, if not, set it.
-        	if (isOptOut()) {
-        		configuration.set("opt-out", false);
-        		configuration.save(configurationFile);
-        	}
+            // Check if the server owner has already set opt-out, if not, set it.
+            if (isOptOut()) {
+                configuration.set("opt-out", false);
+                configuration.save(configurationFile);
+            }
 
-        	// Enable Task, if it is not running
-        	if (taskId < 0) {
-        		start();
-        	}
+            // Enable Task, if it is not running
+            if (taskId < 0) {
+                start();
+            }
         }
     }
 
@@ -431,7 +430,6 @@ public class Metrics {
      * Represents a custom graph on the website
      */
     public static class Graph {
-
         /**
          * The graph's name, alphanumeric and spaces only :)
          * If it does not comply to the above when submitted, it is rejected
@@ -497,14 +495,12 @@ public class Metrics {
             final Graph graph = (Graph) object;
             return graph.name.equals(name);
         }
-
     }
 
     /**
      * Interface used to collect custom data for a plugin
      */
     public static abstract class Plotter {
-
         /**
          * The plot's name
          */
@@ -562,7 +558,5 @@ public class Metrics {
             final Plotter plotter = (Plotter) object;
             return plotter.name.equals(name) && plotter.getValue() == getValue();
         }
-
     }
-
 }

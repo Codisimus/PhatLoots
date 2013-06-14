@@ -1,9 +1,11 @@
 package com.codisimus.plugins.phatloots;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Stack;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
-import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
@@ -19,78 +21,98 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.scheduler.BukkitRunnable;
 
 /**
- * Listens for interactions with PhatLootChests
+ * Listens for interactions with PhatLoot info GUIs
  *
  * @author Codisimus
  */
 public class PhatLootInfoListener implements Listener {
-    static HashMap<String, Boolean> switchingPages = new HashMap<String, Boolean>();
-    static HashMap<String, PhatLoot> infoViewers = new HashMap<String, PhatLoot>();
-    static HashMap<String, Stack<Inventory>> infoStacks = new HashMap<String, Stack<Inventory>>();
+    static HashMap<String, Boolean> switchingPages = new HashMap<String, Boolean>(); //Player name -> Going deeper (true) or back (false)
+    static HashMap<String, PhatLoot> infoViewers = new HashMap<String, PhatLoot>(); //Player name -> PhatLoot they are viewing
+    static HashMap<String, Stack<Inventory>> pageStacks = new HashMap<String, Stack<Inventory>>(); //Player name -> Page history
 
     @EventHandler (ignoreCancelled = true)
     public void onPlayerInvClick(InventoryClickEvent event) {
         HumanEntity human = event.getWhoClicked();
-        if (human instanceof Player) {
-            Player player = (Player) human;
-            if (infoViewers.containsKey(player.getName())) {
-                event.setResult(Event.Result.DENY);
-                player.updateInventory();
-                ItemStack stack = event.getCurrentItem();
-                if (stack == null) {
-                    return;
-                }
-                switch (stack.getType()) {
-                case ENDER_CHEST:
-                    ItemMeta meta = stack.getItemMeta();
-                    if (meta.hasDisplayName()) {
-                        String name = stack.getItemMeta().getDisplayName();
-                        if (name.endsWith(" (Collection)")) {
-                            name = name.substring(2, name.length() - 13);
-                            viewCollection(player, name);
-                        }
-                    }
-                    break;
-                case LADDER:
-                    ItemMeta details = stack.getItemMeta();
-                    if (details.hasDisplayName()) {
-                        String name = stack.getItemMeta().getDisplayName();
-                        if (name.equals("§2Up to...")) {
-                            up(player);
-                        } else if (name.equals("§2Back to top...")) {
-                            viewPhatLoot(player, infoViewers.get(player.getName()));
-                        }
-                    }
-                    break;
-                default:
-                    break;
+        if (!(human instanceof Player)) {
+            return;
+        }
+        //Return if the Player is not viewing a PhatLoot's info
+        Player player = (Player) human;
+        if (!infoViewers.containsKey(player.getName())) {
+            return;
+        }
+
+        //Don't allow any inventory clicking
+        event.setResult(Event.Result.DENY);
+        player.updateInventory();
+
+        //Check if they clicked something to change pages
+        ItemStack stack = event.getCurrentItem();
+        if (stack == null) {
+            return;
+        }
+        switch (stack.getType()) {
+        case ENDER_CHEST: //Enter LootCollection
+            ItemMeta meta = stack.getItemMeta();
+            if (meta.hasDisplayName()) {
+                //Get the collection name from the item's display name
+                String name = stack.getItemMeta().getDisplayName();
+                if (name.endsWith(" (Collection)")) {
+                    name = name.substring(2, name.length() - 13);
+                    viewCollection(player, name);
                 }
             }
+            break;
+        case LADDER: //Go back in page history
+            ItemMeta details = stack.getItemMeta();
+            if (details.hasDisplayName()) {
+                String name = stack.getItemMeta().getDisplayName();
+                if (name.equals("§2Up to...")) {
+                    up(player);
+                } else if (name.equals("§2Back to top...")) {
+                    viewPhatLoot(player, infoViewers.get(player.getName()));
+                }
+            }
+            break;
+        default:
+            break;
         }
     }
 
     @EventHandler (ignoreCancelled = true)
     public void onPlayerCloseChest(InventoryCloseEvent event) {
         HumanEntity human = event.getPlayer();
-        if (human instanceof Player) {
-            Player player = (Player) human;
-            String playerName = player.getName();
-            if (infoViewers.containsKey(playerName)) {
-                if (switchingPages.containsKey(playerName)) {
-                    if (switchingPages.get(playerName)) {
-                        infoStacks.get(playerName).add(event.getInventory());
-                    }
-                    switchingPages.remove(playerName);
-                } else {
-                    infoViewers.remove(playerName);
-                    infoStacks.get(playerName).empty();
-                    infoStacks.remove(playerName);
-                }
+        if (!(human instanceof Player)) {
+            return;
+        }
+        //Return if the Player is not viewing a PhatLoot's info
+        Player player = (Player) human;
+        String playerName = player.getName();
+        if (!infoViewers.containsKey(playerName)) {
+            return;
+        }
+
+        if (switchingPages.containsKey(playerName)) { //Switching pages
+            if (switchingPages.get(playerName)) { //Going deeper
+                pageStacks.get(playerName).add(event.getInventory());
             }
+            //The Player has finished switching pages
+            switchingPages.remove(playerName);
+        } else { //Closing info view
+            infoViewers.remove(playerName);
+            pageStacks.get(playerName).empty();
+            pageStacks.remove(playerName);
         }
     }
 
+    /**
+     * Opens an Inventory GUI for the given PhatLoot to the given Player
+     *
+     * @param player The given Player
+     * @param phatLoot The given PhatLoot
+     */
     public static void viewPhatLoot(final Player player, final PhatLoot phatLoot) {
+        //Create the Inventory
         String invName = phatLoot.name + " Loot Tables";
         if (invName.length() > 32) {
             invName = phatLoot.name;
@@ -98,8 +120,9 @@ public class PhatLootInfoListener implements Listener {
                 invName = phatLoot.name.substring(0, 32);
             }
         }
-
         final Inventory inv = Bukkit.createInventory(player, 54, invName);
+
+        //Populate the inventory
         int index = 0;
         for (Loot loot : phatLoot.lootList) {
             inv.setItem(index, loot.getInfoStack());
@@ -110,6 +133,7 @@ public class PhatLootInfoListener implements Listener {
             }
         }
 
+        //Create an InventoryView which excludes the viewer's personal inventory
         final InventoryView view = new InventoryView() {
             @Override
             public Inventory getTopInventory() {
@@ -132,8 +156,9 @@ public class PhatLootInfoListener implements Listener {
             }
         };
 
+        //Open the Inventory in 2 ticks to avoid Bukkit glitches
         final String playerName = player.getName();
-        infoStacks.put(playerName, new Stack<Inventory>());
+        pageStacks.put(playerName, new Stack<Inventory>());
         switchingPages.put(playerName, true);
         player.closeInventory();
         new BukkitRunnable() {
@@ -145,7 +170,14 @@ public class PhatLootInfoListener implements Listener {
         }.runTaskLater(PhatLoots.plugin, 2);
     }
 
+    /**
+     * Opens an Inventory GUI for the specified LootCollection to the given Player
+     *
+     * @param player The given Player
+     * @param name The name of the LootCollection to open
+     */
     public static void viewCollection(final Player player, String name) {
+        //Create the Inventory
         final PhatLoot phatLoot = infoViewers.get(player.getName());
         LootCollection coll = phatLoot.findCollection(name);
         String invName = name + " (Collection)";
@@ -155,8 +187,9 @@ public class PhatLootInfoListener implements Listener {
                 invName = name.substring(0, 32);
             }
         }
-
         final Inventory inv = Bukkit.createInventory(player, 54, invName);
+
+        //Populate the inventory
         int index = 0;
         for (Loot loot : coll.lootList) {
             inv.setItem(index, loot.getInfoStack());
@@ -167,6 +200,7 @@ public class PhatLootInfoListener implements Listener {
             }
         }
 
+        //Create back buttons
         ItemStack item = new ItemStack(Material.LADDER);
         ItemMeta info = Bukkit.getItemFactory().getItemMeta(item.getType());
         info.setDisplayName("§2Back to top...");
@@ -181,11 +215,12 @@ public class PhatLootInfoListener implements Listener {
         final String playerName = player.getName();
         switchingPages.put(playerName, true);
         player.closeInventory();
-        details.add("§6" + infoStacks.get(playerName).peek().getTitle());
+        details.add("§6" + pageStacks.get(playerName).peek().getTitle());
         info.setLore(details);
         item.setItemMeta(info);
         inv.setItem(53, item);
 
+        //Create an InventoryView which excludes the viewer's personal inventory
         final InventoryView view = new InventoryView() {
             @Override
             public Inventory getTopInventory() {
@@ -208,6 +243,7 @@ public class PhatLootInfoListener implements Listener {
             }
         };
 
+        //Open the Inventory in 2 ticks to avoid Bukkit glitches
         new BukkitRunnable() {
             @Override
             public void run() {
@@ -216,9 +252,17 @@ public class PhatLootInfoListener implements Listener {
         }.runTaskLater(PhatLoots.plugin, 2);
     }
 
+    /**
+     * Opens the top Inventory in the given Players Stack
+     *
+     * @param player The given Player
+     */
     public static void up(final Player player) {
+        //Pop the inventory off of the Stack
         final String playerName = player.getName();
-        final Stack<Inventory> stack = infoStacks.get(playerName);
+        final Stack<Inventory> stack = pageStacks.get(playerName);
+
+        //Open the Inventory in 2 ticks to avoid Bukkit glitches
         switchingPages.put(playerName, false);
         player.closeInventory();
         new BukkitRunnable() {

@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Map;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -28,11 +29,11 @@ import org.bukkit.inventory.ItemStack;
  * @author Codisimus
  */
 public class PhatLootsCommand implements CommandExecutor {
-    private static enum Action {
+    private static enum Action { //Loot Commands
         HELP, MAKE, DELETE, LINK, UNLINK, TIME, GLOBAL, AUTOLOOT, ROUND,
         ADD, REMOVE, COST, MONEY, EXP, LIST, INFO, GIVE, RESET, CLEAN, RL
     }
-    private static enum Help { CREATE, SETUP, LOOT }
+    private static enum Help { CREATE, SETUP, LOOT } //Help Pages
     private static final HashSet<Byte> TRANSPARENT = Sets.newHashSet(
             (byte)0,   (byte)6,   (byte)8,   (byte)9,   (byte)10,  (byte)11,
             (byte)26,  (byte)27,  (byte)28,  (byte)30,  (byte)31,  (byte)32,
@@ -45,8 +46,8 @@ public class PhatLootsCommand implements CommandExecutor {
             (byte)111, (byte)113, (byte)114, (byte)115, (byte)117, (byte)126,
             (byte)127, (byte)131, (byte)132, (byte)139, (byte)140, (byte)141,
             (byte)142, (byte)144, (byte)145);
-    static String command;
-    static boolean setUnlockable;
+    static String command; //Main Command
+    static boolean setUnlockable; //True if linked Chests should be set as unlockable by ChestLock
 
     /**
      * Listens for PhatLoots commands to execute them
@@ -66,7 +67,6 @@ public class PhatLootsCommand implements CommandExecutor {
         }
 
         Action action;
-
         try {
             action = Action.valueOf(args[0].toUpperCase());
         } catch (IllegalArgumentException notEnum) { //Command Loot
@@ -85,11 +85,10 @@ public class PhatLootsCommand implements CommandExecutor {
                     player.sendMessage(PhatLootsConfig.permission);
             	    return true;
             	}
-            	Inventory inventory = PhatLoots.server.createInventory(player, 54, phatLoot.name);
+            	Inventory inventory = Bukkit.createInventory(player, 54, phatLoot.name);
 
             	//Open the Inventory
             	player.openInventory(inventory);
-
             	phatLoot.rollForLoot(player, new PhatLootChest(player.getLocation().getBlock()), inventory);
             }
             return true;
@@ -97,7 +96,7 @@ public class PhatLootsCommand implements CommandExecutor {
 
         //Execute the correct command
         switch (action) {
-        case MAKE:
+        case MAKE: //Make a new PhatLoot
             //Cancel if the sender does not have permission to use the command
             if (!sender.hasPermission("phatloots.make")) {
                 sender.sendMessage(PhatLootsConfig.permission);
@@ -112,7 +111,7 @@ public class PhatLootsCommand implements CommandExecutor {
 
             return true;
 
-        case DELETE:
+        case DELETE: //Delete an existing PhatLoot
             //Cancel if the sender does not have permission to use the command
             if (!sender.hasPermission("phatloots.make")) {
                 sender.sendMessage(PhatLootsConfig.permission);
@@ -134,7 +133,7 @@ public class PhatLootsCommand implements CommandExecutor {
 
             return true;
 
-        case LINK:
+        case LINK: //Link the target Block to a PhatLoot
             //Cancel if the sender does not have permission to use the command
             if (!sender.hasPermission("phatloots.make")) {
                 sender.sendMessage(PhatLootsConfig.permission);
@@ -149,7 +148,7 @@ public class PhatLootsCommand implements CommandExecutor {
 
             return true;
 
-        case UNLINK:
+        case UNLINK: //Unlink the target Block from a PhatLoot
             //Cancel if the sender does not have permission to use the command
             if (!sender.hasPermission("phatloots.make")) {
                 sender.sendMessage(PhatLootsConfig.permission);
@@ -157,10 +156,10 @@ public class PhatLootsCommand implements CommandExecutor {
             }
 
             switch (args.length) {
-            case 1:
+            case 1: //All PhatLoots
                 unlink(sender, null);
                 break;
-            case 2:
+            case 2: //Specific PhatLoot
                 unlink(sender, args[1]);
                 break;
             default:
@@ -170,7 +169,7 @@ public class PhatLootsCommand implements CommandExecutor {
 
             return true;
 
-        case TIME:
+        case TIME: //Set the reset (cooldown) time of a PhatLoot
             //Cancel if the sender does not have permission to use the command
             if (!sender.hasPermission("phatloots.make")) {
                 sender.sendMessage(PhatLootsConfig.permission);
@@ -219,7 +218,7 @@ public class PhatLootsCommand implements CommandExecutor {
             sendSetupHelp(sender);
             return true;
 
-        case GLOBAL:
+        case GLOBAL: //Set a PhatLoot to global or individual looting
             //Cancel if the sender does not have permission to use the command
             if (!sender.hasPermission("phatloots.make")) {
                 sender.sendMessage(PhatLootsConfig.permission);
@@ -249,7 +248,7 @@ public class PhatLootsCommand implements CommandExecutor {
             sendSetupHelp(sender);
             return true;
 
-        case AUTOLOOT:
+        case AUTOLOOT: //Set a PhatLoot to automatically add loot to the player's inventory
             //Cancel if the sender does not have permission to use the command
             if (!sender.hasPermission("phatloots.make")) {
                 sender.sendMessage(PhatLootsConfig.permission);
@@ -279,7 +278,7 @@ public class PhatLootsCommand implements CommandExecutor {
             sendSetupHelp(sender);
             return true;
 
-        case ROUND:
+        case ROUND: //Set a PhatLoot to round down reset times
             //Cancel if the sender does not have permission to use the command
             if (!sender.hasPermission("phatloots.make")) {
                 sender.sendMessage(PhatLootsConfig.permission);
@@ -310,19 +309,19 @@ public class PhatLootsCommand implements CommandExecutor {
             return true;
 
         case REMOVE: //Fall through
-        case ADD:
+        case ADD: //Manage Loot of a PhatLoot
             //Cancel if the sender does not have permission to use the command
             if (!sender.hasPermission("phatloots.make")) {
                 sender.sendMessage(PhatLootsConfig.permission);
                 return true;
             }
 
-            boolean add = action.equals(Action.ADD);
             if (args.length < 2) {
                 sendSetupHelp(sender);
                 return true;
             }
 
+            boolean add = action.equals(Action.ADD);
             ItemStack item = null; //The ItemStack to be added/removed
             String collName = null; //The name of the Loot Collection to be added/removed
             String cmd = null; //The command to be added/removed
@@ -353,15 +352,16 @@ public class PhatLootsCommand implements CommandExecutor {
                 }
             }
 
+            //Check each parameter
             while (i < args.length) {
                 char c = args[i].charAt(0);
                 String s = args[i].substring(1);
                 switch (c) {
-                case 'p':
+                case 'p': //PhatLoot Name
                     phatLoot = s;
                     break;
 
-                case '%':
+                case '%': //Probability
                     percent = getPercent(sender, s);
                     if (percent == -1) {
                         sender.sendMessage("§6" + s + "§4 is not a percent");
@@ -369,11 +369,11 @@ public class PhatLootsCommand implements CommandExecutor {
                     }
                     break;
 
-                case 'c':
+                case 'c': //Collection Name
                     coll = s;
                     break;
 
-                case '#':
+                case '#': //Amount
                     lowerBound = getLowerBound(s);
                     upperBound = getUpperBound(s);
                     if (lowerBound == -1 || upperBound == -1) {
@@ -385,7 +385,7 @@ public class PhatLootsCommand implements CommandExecutor {
                     }
                     break;
 
-                case 'e':
+                case 'e': //Enchantment
                     if (s.equalsIgnoreCase("auto")) {
                         autoEnchant = true;
                     } else {
@@ -398,7 +398,7 @@ public class PhatLootsCommand implements CommandExecutor {
                     }
                     break;
 
-                case 'd':
+                case 'd': //Durability
                     short data = getData(s);
                     if (data == -1) {
                         sender.sendMessage("§6" + s + "§4 is not a valid data/durability value");
@@ -407,15 +407,15 @@ public class PhatLootsCommand implements CommandExecutor {
                     item.setDurability(data);
                     break;
 
-                case 't':
+                case 't': //Tiered
                     tiered = true;
                     break;
 
-                case 'l':
+                case 'l': //Automatic Lore
                     generateName = true;
                     break;
 
-                case '/':
+                case '/': //Command
                     cmd = args[i];
                     i++;
                     while (i < args.length) {
@@ -424,7 +424,7 @@ public class PhatLootsCommand implements CommandExecutor {
                     }
                     break;
 
-                default:
+                default: //Invalid Parameter
                     sender.sendMessage("§6" + c + "§4 is not a valid parameter ID");
                     return true;
                 }
@@ -434,7 +434,7 @@ public class PhatLootsCommand implements CommandExecutor {
 
             //Construct the Loot
             Loot loot;
-            if (item != null) {
+            if (item != null) { //Item
                 loot = new Item(item, upperBound - lowerBound);
                 if (autoEnchant) {
                     ((Item) loot).autoEnchant = true;
@@ -445,9 +445,9 @@ public class PhatLootsCommand implements CommandExecutor {
                 if (generateName) {
                     ((Item) loot).generateName = true;
                 }
-            } else if (collName != null) {
+            } else if (collName != null) { //LootCollection
                 loot = new LootCollection(collName, lowerBound, upperBound);
-            } else {
+            } else { //CommandLoot
                 loot = new CommandLoot(cmd);
             }
             loot.setProbability(percent);
@@ -455,7 +455,7 @@ public class PhatLootsCommand implements CommandExecutor {
             setLoot(sender, phatLoot, add, coll, loot);
             return true;
 
-        case COST:
+        case COST: //Set the cost to loot a PhatLoot
             //Cancel if the sender does not have permission to use the command
             if (!sender.hasPermission("phatloots.make")) {
                 sender.sendMessage(PhatLootsConfig.permission);
@@ -487,7 +487,7 @@ public class PhatLootsCommand implements CommandExecutor {
             sendSetupHelp(sender);
             return true;
 
-        case MONEY:
+        case MONEY: //Set the amount of money to be looted from a PhatLoot
             //Cancel if the sender does not have permission to use the command
             if (!sender.hasPermission("phatloots.make")) {
                 sender.sendMessage(PhatLootsConfig.permission);
@@ -519,7 +519,7 @@ public class PhatLootsCommand implements CommandExecutor {
             sendSetupHelp(sender);
             return true;
 
-        case EXP:
+        case EXP: //Set the amount of experience to be looted from a PhatLoot
             //Cancel if the sender does not have permission to use the command
             if (!sender.hasPermission("phatloots.make")) {
                 sender.sendMessage(PhatLootsConfig.permission);
@@ -540,7 +540,7 @@ public class PhatLootsCommand implements CommandExecutor {
                 return true;
             }
 
-        case LIST:
+        case LIST: //List all PhatLoots
             //Cancel if the sender does not have permission to use the command
             if (!sender.hasPermission("phatloots.list")) {
                 sender.sendMessage(PhatLootsConfig.permission);
@@ -554,7 +554,7 @@ public class PhatLootsCommand implements CommandExecutor {
             }
             return true;
 
-        case INFO:
+        case INFO: //View information of a PhatLoot
             //Cancel if the sender does not have permission to use the command
             if (!sender.hasPermission("phatloots.info")) {
                 sender.sendMessage(PhatLootsConfig.permission);
@@ -573,7 +573,7 @@ public class PhatLootsCommand implements CommandExecutor {
                 return true;
             }
 
-        case RESET:
+        case RESET: //Reset the loot times of a PhatLoot
             //Cancel if the sender does not have permission to use the command
             if (!sender.hasPermission("phatloots.reset")) {
                 sender.sendMessage(PhatLootsConfig.permission);
@@ -592,7 +592,7 @@ public class PhatLootsCommand implements CommandExecutor {
                 return true;
             }
 
-        case CLEAN:
+        case CLEAN: //Clean up loot times of a PhatLoot
             //Cancel if the sender does not have permission to use the command
             if (!sender.hasPermission("phatloots.clean")) {
                 sender.sendMessage(PhatLootsConfig.permission);
@@ -611,7 +611,7 @@ public class PhatLootsCommand implements CommandExecutor {
                 return true;
             }
 
-        case GIVE:
+        case GIVE: //Force a Player to open a PhatLoot
             if (args.length < 3) {
                 if (sender instanceof Player) {
                     sendHelp(sender);
@@ -629,7 +629,7 @@ public class PhatLootsCommand implements CommandExecutor {
                 }
             }
 
-            Player player = PhatLoots.server.getPlayer(args[1]);
+            Player player = Bukkit.getPlayer(args[1]);
             if (player == null) {
                 sender.sendMessage("§6" + args[1] + " §4is not online");
                 return true;
@@ -641,17 +641,18 @@ public class PhatLootsCommand implements CommandExecutor {
                 return true;
             }
 
+            //Set the custom name of the PhatLoot Inventory
             String name = args.length == 3
                           ? pLoot.name
                           : concatArgs(args, 3);
             name = ChatColor.translateAlternateColorCodes('&', name);
 
-            Inventory inventory = PhatLoots.server.createInventory(player, 54, name);
+            Inventory inventory = Bukkit.createInventory(player, 54, name);
             player.openInventory(inventory);
             pLoot.rollForLoot(player, new PhatLootChest(player.getLocation().getBlock()), inventory);
             return true;
 
-        case RL:
+        case RL: //Reload plugin data and settings
             //Cancel if the sender does not have permission to use the command
             if (!sender.hasPermission("phatloots.rl")) {
                 sender.sendMessage(PhatLootsConfig.permission);
@@ -665,7 +666,7 @@ public class PhatLootsCommand implements CommandExecutor {
             }
             return true;
 
-        case HELP:
+        case HELP: //Display the PhatLoots help page
             if (args.length == 2) {
                 Help help;
 
@@ -747,9 +748,10 @@ public class PhatLootsCommand implements CommandExecutor {
                 chest = (Chest) ((DoubleChestInventory) inventory).getLeftSide().getHolder();
                 block = chest.getBlock();
             }
+            //Fall through
         case ENDER_CHEST:
             //Make the Chest unlockable if ChestLock is enabled
-            if (setUnlockable && PhatLoots.pm.isPluginEnabled("ChestLock")) {
+            if (setUnlockable && Bukkit.getPluginManager().isPluginEnabled("ChestLock")) {
                 Safe safe = ChestLock.findSafe(block);
                 if (safe == null) {
                     safe = new Safe(sender.getName(), block);
@@ -785,7 +787,7 @@ public class PhatLootsCommand implements CommandExecutor {
      * @param name The name of the PhatLoot the Chests will be linked to
      */
     public static void regionLink(Player player, String name) {
-        if (!PhatLoots.pm.isPluginEnabled("RegionOwn")) {
+        if (!Bukkit.getPluginManager().isPluginEnabled("RegionOwn")) {
             player.sendMessage("You must install RegionOwn to use that command");
             return;
         }
@@ -832,8 +834,10 @@ public class PhatLootsCommand implements CommandExecutor {
 
     /**
      * Unlinks the target Block from the specified PhatLoots
+     * If a name is not provided, a list of PhatLoots linked to the target Block is displayed
      *
      * @param sender The CommandSender unlinking the Block they are targeting
+     * @param name The name of the PhatLoot to unlink
      */
     public static void unlink(CommandSender sender, String name) {
     	//Cancel if the sender is console
@@ -927,7 +931,7 @@ public class PhatLootsCommand implements CommandExecutor {
             phatLoot.round = round;
 
             sender.sendMessage("§5PhatLoot §6" + phatLoot.name + "§5 has been set to §6"
-                    + (round ? "" : "not") + "round down time");
+                    + (round ? "" : "not ") + "round down time");
             phatLoot.save();
         }
     }
@@ -936,15 +940,16 @@ public class PhatLootsCommand implements CommandExecutor {
      * Adds/Removes a Loot to the specified PhatLoot
      *
      * @param sender The CommandSender modifying the PhatLoot
-     * @param name The name of the PhatLoot to be modified or null to indicate all linked PhatLoots
+     * @param phatLootName The name of the PhatLoot to be modified or null to indicate all linked PhatLoots
      * @param add True the Loot will be added, false if it will be removed
-     * @param lootID The id of the Loot, 0 for individual loots
+     * @param collName The id of the Loot, 0 for individual loots
      * @param loot The Loot that will be added/removed
      */
     public static void setLoot(CommandSender sender, String phatLootName, boolean add, String collName, Loot loot) {
         String lootDescription = loot.toString();
 
         for (PhatLoot phatLoot : getPhatLoots(sender, phatLootName)) {
+            //Check if a LootCollection was specified
             LootCollection coll = null;
             if (collName != null) {
                 coll = phatLoot.findCollection(collName);
@@ -955,56 +960,48 @@ public class PhatLootsCommand implements CommandExecutor {
             }
 
             if (coll == null) {
-                if (add) {
-                    if (phatLoot.addLoot(loot)) {
+                if (add) { //Add to PhatLoot
+                    if (phatLoot.addLoot(loot)) { //Successful
                         sender.sendMessage("§6" + lootDescription
                                 + "§5 added as Loot for PhatLoot §6"
                                 + phatLoot.name);
                         phatLoot.save();
-                    } else {
+                    } else { //Unsuccessful
                         sender.sendMessage("§6" + lootDescription
                                 + "§4 is already Loot for PhatLoot §6"
                                 + phatLoot.name);
                     }
-                } else {
-                    if (phatLoot.removeLoot(loot)) {
+                } else { //Remove from PhatLoot
+                    if (phatLoot.removeLoot(loot)) { //Successful
                         sender.sendMessage("§6" + lootDescription
                                 + "§5 removed as Loot for PhatLoot §6"
                                 + phatLoot.name);
                         phatLoot.save();
-                    } else {
+                    } else { //Unsuccessful
                         sender.sendMessage("§6" + lootDescription
                                 + "§4 is not Loot for PhatLoot §6"
                                 + phatLoot.name);
                     }
                 }
             } else {
-                if (add) {
-                    if (coll.addLoot(loot)) {
+                if (add) { //Add to LootCollection
+                    if (coll.addLoot(loot)) { //Successful
                         sender.sendMessage("§6" + lootDescription
                                 + "§5 added as Loot for Collection §6"
                                 + coll.name);
-                        if (!coll.isRollForEach()) {
-                            sender.sendMessage("§6" + coll.getPercentRemaining()
-                                    + "%§5 remaining");
-                        }
                         phatLoot.save();
-                    } else {
+                    } else { //Unsuccessful
                         sender.sendMessage("§6" + lootDescription
                                 + "§4 is already Loot for Collection §6"
                                 + coll.name);
                     }
-                } else {
-                    if (coll.removeLoot(loot)) {
+                } else { //Remove from LootCollection
+                    if (coll.removeLoot(loot)) { //Successful
                         sender.sendMessage("§6" + lootDescription
                                 + "§5 removed as Loot for Collection §6"
                                 + coll.name);
-                        if (!coll.isRollForEach()) {
-                            sender.sendMessage("§6" + coll.getPercentRemaining()
-                                    + "%§5 remaining");
-                        }
                         phatLoot.save();
-                    } else {
+                    } else { //Unsuccessful
                         sender.sendMessage("§6" + lootDescription
                                 + "§4 is not Loot for Collection §6"
                                 + coll.name);
@@ -1091,65 +1088,6 @@ public class PhatLootsCommand implements CommandExecutor {
                        : "a range from §6" + lower + "§5 to §6")
                     + upper);
             phatLoot.save();
-        }
-    }
-
-    /**
-     * Manages commands of the specified PhatLoot
-     *
-     * @param sender The CommandSender modifying the PhatLoot
-     * @param name The name of the PhatLoot to be modified or null to indicate all linked PhatLoots
-     * @param double The percent chance of looting the command
-     * @param add True if the command is to be added
-     * @param cmd The command to be added/removed
-     */
-    public static void setCommand(CommandSender sender, String name, double percent, boolean add, String cmd) {
-        if (cmd.startsWith("/")) {
-            cmd = cmd.substring(1);
-        }
-        if (percent < 100) {
-            cmd += '%' + percent;
-        }
-
-        for (PhatLoot phatLoot : getPhatLoots(sender, name)) {
-            boolean done = false;
-            //Try to find the cmd
-            for (String string: phatLoot.commands) {
-                if (cmd.equals(string)) {
-                    /*The Loot was found*/
-                    //Cancel if the sender is trying to duplicate the cmd
-                    if (!add) {
-                        phatLoot.commands.remove(cmd);
-                        sender.sendMessage("§6" + cmd
-                                + "§5 removed as a command for PhatLoot §6"
-                                + phatLoot.name);
-                        phatLoot.save();
-                    } else {
-                        sender.sendMessage("§6" + cmd
-                                + "§4 is already a command for PhatLoot §6"
-                                + phatLoot.name);
-                    }
-
-                    done = true;
-                    break;
-                }
-            }
-
-            if (!done) {
-                /*The Loot was not found*/
-                //Cancel if the cmd is not present
-                if (add) {
-                    phatLoot.commands.add(cmd);
-                    sender.sendMessage("§6" + cmd
-                            + "§5 added as a command for PhatLoot §6"
-                            + phatLoot.name);
-                    phatLoot.save();
-                } else {
-                    sender.sendMessage("§6" + cmd
-                            + "§4 was not found as a command for PhatLoot §6"
-                            + phatLoot.name);
-                }
-            }
         }
     }
 
@@ -1329,11 +1267,12 @@ public class PhatLootsCommand implements CommandExecutor {
      * @param sender The CommandSender needing help
      */
     private static void sendHelp(CommandSender sender) {
+        //If the Player has none of the below permissions then they need not see the help page
         if (!sender.hasPermission("phatloots.make") && !sender.hasPermission("phatloots.rl")
                  && !sender.hasPermission("phatloots.reset") && !sender.hasPermission("phatloots.list")
                  && !sender.hasPermission("phatloots.info") && !sender.hasPermission("phatloots.name")
                  && !sender.hasPermission("phatloots.give")) {
-
+            return;
         }
         sender.sendMessage("§e     PhatLoots Help Page:");
         sender.sendMessage("§2/"+command+" <Name>§b Loot a virtual Chest for the given PhatLoot");
@@ -1444,7 +1383,7 @@ public class PhatLootsCommand implements CommandExecutor {
             }
 
             //Cancel if the sender is not targeting a correct Block
-            Block block = ((Player)sender).getTargetBlock(TRANSPARENT, 10);
+            Block block = ((Player) sender).getTargetBlock(TRANSPARENT, 10);
             String blockName = block.getType().toString();
             if (!PhatLoots.isLinkableType(block)) {
                 sender.sendMessage("§6" + blockName + "§4 is not a linkable type.");
@@ -1460,26 +1399,6 @@ public class PhatLootsCommand implements CommandExecutor {
         }
 
         return phatLoots;
-    }
-
-    /**
-     * Retrieves an int value from the given string
-     *
-     * @param sender The CommandSender that will receive error messages
-     * @param string The String that contains the id
-     */
-    public static int getCollID(String string) {
-        int id = 0;
-        try {
-            id = Integer.parseInt(string);
-        } catch (Exception ex) {
-        }
-
-        if (id < 1 || id > 10) {
-            return -1;
-        }
-
-        return id;
     }
 
     /**

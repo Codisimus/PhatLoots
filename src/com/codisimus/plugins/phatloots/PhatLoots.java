@@ -2,8 +2,10 @@ package com.codisimus.plugins.phatloots;
 
 import java.io.*;
 import java.util.*;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import net.milkbowl.vault.economy.Economy;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Server;
 import org.bukkit.Sound;
@@ -18,45 +20,41 @@ import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
 /**
- * Loads Plugin and manages Data/Permissions
+ * Loads Plugin and manages Data/Listeners/etc.
  *
  * @author Codisimus
  */
 public class PhatLoots extends JavaPlugin {
-    static Server server;
-    static Logger logger;
-    static PluginManager pm;
-    static Random random = new Random();
-    static Economy econ = null;
     static JavaPlugin plugin;
+    static Logger logger;
+    static Economy econ = null;
     static String dataFolder;
+    private static Random random = new Random();
     private static HashMap<String, PhatLoot> phatLoots = new HashMap<String, PhatLoot>();
 
     @Override
     public void onDisable() {
+        //Save the Loot times for each PhatLoot
         for (PhatLoot phatLoot : getPhatLoots()) {
+            //Clean up the loot times before writing to file
             phatLoot.clean(null);
             phatLoot.saveLootTimes();
         }
     }
 
-    /**
-     * Calls methods to load this Plugin when it is enabled
-     */
     @Override
     public void onEnable () {
         //Metrics hook
         try { new Metrics(this).start(); } catch (IOException e) {}
 
+        //Register ConfigurationSerializable classes
         ConfigurationSerialization.registerClass(OldLoot.class, "Loot");
         ConfigurationSerialization.registerClass(PhatLoot.class, "PhatLoot");
         ConfigurationSerialization.registerClass(LootCollection.class, "LootCollection");
         ConfigurationSerialization.registerClass(Item.class, "Item");
         ConfigurationSerialization.registerClass(CommandLoot.class, "Command");
 
-        server = getServer();
         logger = getLogger();
-        pm = server.getPluginManager();
         plugin = this;
 
         /* Create data folders */
@@ -83,11 +81,9 @@ public class PhatLoots extends JavaPlugin {
         }
 
         load();
-        PhatLootsConfig.load();
-
-        setupEconomy();
 
         /* Register Events */
+        PluginManager pm = Bukkit.getPluginManager();
         pm.registerEvents(new PhatLootsListener(), this);
         pm.registerEvents(new PhatLootInfoListener(), this);
         if (pm.isPluginEnabled("EpicBossRecoded")) {
@@ -129,25 +125,47 @@ public class PhatLoots extends JavaPlugin {
     }
 
     /**
+     * Reloads the config from the config.yml file
+     * Loads values from the newly loaded config
+     * This method is automatically called when the plugin is enabled
+     */
+    @Override
+    public void reloadConfig() {
+        //Reload the config as this method would normally do if not overriden
+        super.reloadConfig();
+
+        //Save the config file if it does not already exist
+        PhatLoots.plugin.saveDefaultConfig();
+
+        //Load values from the config now that it has been reloaded
+        PhatLootsConfig.load();
+
+        setupEconomy();
+    }
+
+    /**
      * Returns true if the given player is allowed to loot the specified PhatLoot
      *
      * @param player The Player who is being checked for permission
      * @param phatLoot The PhatLoot in question
-     * @return true if the given player is allowed to loot the PhatLoot
+     * @return true if the player is allowed to loot the PhatLoot
      */
     public static boolean canLoot(Player player, PhatLoot phatLoot) {
+        //Check if the PhatLoot is restricted
         if (PhatLootsConfig.restrictAll || PhatLootsConfig.restricted.contains(phatLoot.name)) {
-            if (player.hasPermission("phatloots.loot.*")) { //Check for loot all permission
-                return true;
-            } else {
-                return player.hasPermission("phatloots.loot." + phatLoot.name); //Check if the Player has the specific loot permission
-            }
+            return player.hasPermission("phatloots.loot.*") //Check for the loot all permission
+                   ? true
+                   : player.hasPermission("phatloots.loot." + phatLoot.name); //Check if the Player has the specific loot permission
         } else {
             return true;
         }
     }
 
+    /**
+     * Loads each PhatLoot that has a LootTable file
+     */
     public static void load() {
+        //Load each YAML file in the LootTables folder
         File dir = new File(dataFolder + File.separator + "LootTables");
         File[] files = dir.listFiles(new FilenameFilter() {
             @Override
@@ -165,18 +183,23 @@ public class PhatLoots extends JavaPlugin {
 
                 YamlConfiguration config = new YamlConfiguration();
                 config.load(file);
-                PhatLoot phatLoot = (PhatLoot) config.get(name);
+                //Ensure the PhatLoot name matches the file name
+                PhatLoot phatLoot = (PhatLoot) config.get(config.contains(name)
+                                                          ? name
+                                                          : config.getKeys(false).iterator().next());
                 if (!phatLoot.name.equals(name)) {
                     phatLoot.name = name;
                 }
                 phatLoots.put(name, phatLoot);
             } catch (Exception ex) {
-                logger.severe("Failed to load " + file.getName());
-                ex.printStackTrace();
+                logger.log(Level.SEVERE, "Failed to load " + file.getName(), ex);
             }
         }
     }
 
+    /**
+     * Saves all data for each PhatLoot
+     */
     public static void saveAll() {
         for (PhatLoot phatLoot : phatLoots.values()) {
             phatLoot.saveAll();
@@ -186,23 +209,23 @@ public class PhatLoots extends JavaPlugin {
     /**
      * Returns true if a PhatLoot by the given name exists
      *
-     * @return True if a PhatLoot by the given name exists
+     * @return true if a PhatLoot by the given name exists
      */
-    public static Boolean hasPhatLoot(String name) {
+    public static boolean hasPhatLoot(String name) {
         return phatLoots.containsKey(name);
     }
 
     /**
-     * Returns the Collection of all PhatLoot
+     * Returns the Collection of all PhatLoots
      *
-     * @return The Collection of all PhatLoot
+     * @return The Collection of all PhatLoots
      */
     public static Collection<PhatLoot> getPhatLoots() {
         return phatLoots.values();
     }
 
     /**
-     * Adds the given PhatLoot to the collection of PhatLoot
+     * Adds the given PhatLoot to the collection of PhatLoots
      *
      * @param phatLoots The given PhatLoot
      */
@@ -219,19 +242,13 @@ public class PhatLoots extends JavaPlugin {
      */
     public static void removePhatLoot(PhatLoot phatLoot) {
         phatLoots.remove(phatLoot.name);
-        File trash = new File(dataFolder + File.separator + "LootTables" + File.separator + phatLoot.name + ".yml");
-
-        trash.delete();
-        trash = new File(dataFolder + File.separator + "Chests" + File.separator + phatLoot.name + ".txt");
-
-        trash.delete();
-        trash = new File(dataFolder + File.separator + "LootTimes" + File.separator + phatLoot.name + ".properties");
-
-        trash.delete();
+        new File(dataFolder + File.separator + "LootTables" + File.separator + phatLoot.name + ".yml").delete();
+        new File(dataFolder + File.separator + "Chests" + File.separator + phatLoot.name + ".txt").delete();
+        new File(dataFolder + File.separator + "LootTimes" + File.separator + phatLoot.name + ".properties").delete();
     }
 
     /**
-     * Returns the PhatLoot that contains the given name
+     * Returns the PhatLoot of the given name
      *
      * @param name The name of the PhatLoot
      * @return The PhatLoot with the given name or null if not found
@@ -248,14 +265,12 @@ public class PhatLoots extends JavaPlugin {
      */
     public static LinkedList<PhatLoot> getPhatLoots(Block block) {
         LinkedList<PhatLoot> phatLootList = new LinkedList<PhatLoot>();
-
         PhatLootChest chest = new PhatLootChest(block);
         for (PhatLoot phatLoot : phatLoots.values()) {
             if (phatLoot.containsChest(chest)) {
                 phatLootList.add(phatLoot);
             }
         }
-
         return phatLootList;
     }
 
@@ -263,7 +278,7 @@ public class PhatLoots extends JavaPlugin {
      * Returns true if the given Block is linked to a PhatLoot
      *
      * @param block the given Block
-     * @return True if the given Block is linked to a PhatLoot
+     * @return true if the given Block is linked to a PhatLoot
      */
     public static boolean isPhatLootChest(Block block) {
         PhatLootChest plChest = new PhatLootChest(block);
@@ -276,10 +291,10 @@ public class PhatLoots extends JavaPlugin {
     }
 
     /**
-     * Returns true if the given Block is type that is able to be linked
+     * Returns true if the given Block is a type that is able to be linked
      *
      * @param block the given Block
-     * @return True if the given Block is able to be linked
+     * @return true if the given Block is able to be linked
      */
     public static boolean isLinkableType(Block block) {
         return PhatLootsListener.types.containsKey(block.getType());
@@ -295,22 +310,26 @@ public class PhatLoots extends JavaPlugin {
      */
     public static LinkedList<PhatLoot> getPhatLoots(Block block, Player player) {
         LinkedList<PhatLoot> phatLootList = new LinkedList<PhatLoot>();
-
         PhatLootChest chest = new PhatLootChest(block);
         for (PhatLoot phatLoot : phatLoots.values()) {
             if (phatLoot.containsChest(chest) && canLoot(player, phatLoot)) {
                 phatLootList.add(phatLoot);
             }
         }
-
         return phatLootList;
     }
 
+    /**
+     * Retrieves the registered Economy plugin
+     *
+     * @return true if an Economy plugin has been found
+     */
     private boolean setupEconomy() {
-        if (getServer().getPluginManager().getPlugin("Vault") == null) {
+        //Return if Vault is not enabled
+        if (Bukkit.getPluginManager().getPlugin("Vault") == null) {
             return false;
         }
-        RegisteredServiceProvider rsp = getServer().getServicesManager().getRegistration(Economy.class);
+        RegisteredServiceProvider rsp = Bukkit.getServicesManager().getRegistration(Economy.class);
         if (rsp == null) {
             return false;
         }
@@ -326,12 +345,13 @@ public class PhatLoots extends JavaPlugin {
     }
 
     /**
-     * Reloads PhatLoot data
+     * Reloads PhatLoot data and settings
      *
-     * @param player The Player reloading the data
+     * @param sender The CommandSender reloading the plugin
      */
     public static void rl(CommandSender sender) {
         phatLoots.clear();
+        plugin.reloadConfig();
         load();
 
         logger.info("PhatLoots reloaded");
@@ -369,27 +389,112 @@ public class PhatLoots extends JavaPlugin {
      *
      * @param player The Player closing the Inventory
      * @param inv The virtual Inventory being closed
+     * @param chest The Chest which we want to be animation
+     * @param global Whether the animation should be sent to everyone (true) or just the Player (false)
+     */
+    public static void closeInventory(Player player, Inventory inv, PhatLootChest chest, Boolean global) {
+        player.closeInventory();
+        Block block = chest.getBlock();
+        switch (block.getType()) {
+        case CHEST:
+        case TRAPPED_CHEST:
+        case ENDER_CHEST:
+            Location loc = block.getLocation();
+            if (global) {
+                if (inv.getViewers().size() <= 1) { //Last viewer
+                    //Play for each Player in the World
+                    for (Player p: player.getWorld().getPlayers()) {
+                        p.playSound(loc, Sound.CHEST_CLOSE, 0.75F, 0.95F);
+                        p.playNote(loc, (byte) 1, (byte) 0); //Close animation
+                    }
+                }
+            } else {
+                //Play for only the individual Player
+                player.playSound(loc, Sound.CHEST_CLOSE, 0.75F, 0.95F);
+                player.playNote(loc, (byte) 1, (byte) 0); //Close animation
+            }
+            break;
+        default: break;
+        }
+    }
+
+    /**
+     * Plays animation/sound for closing a virtual Inventory
+     *
+     * @param player The Player closing the Inventory
+     * @param inv The virtual Inventory being closed
      * @param loc The Location of the Chest which we want to be animation
      * @param global Whether the animation should be sent to everyone (true) or just the Player (false)
      */
     public static void closeInventory(Player player, Inventory inv, Location loc, Boolean global) {
-        if (global) {
-            if (inv.getViewers().size() <= 1) { //Last viewer
-                //Play for each Player in the World
-                for (Player p: player.getWorld().getPlayers()) {
-                    p.playSound(loc, Sound.CHEST_CLOSE, 0.75F, 0.95F);
-                    p.playNote(loc, (byte) 1, (byte) 0); //Close animation
+        player.closeInventory();
+        Block block = loc.getBlock();
+        switch (block.getType()) {
+        case CHEST:
+        case TRAPPED_CHEST:
+        case ENDER_CHEST:
+            if (global) {
+                if (inv.getViewers().size() <= 1) { //Last viewer
+                    //Play for each Player in the World
+                    for (Player p: player.getWorld().getPlayers()) {
+                        p.playSound(loc, Sound.CHEST_CLOSE, 0.75F, 0.95F);
+                        p.playNote(loc, (byte) 1, (byte) 0); //Close animation
+                    }
                 }
+            } else {
+                //Play for only the individual Player
+                player.playSound(loc, Sound.CHEST_CLOSE, 0.75F, 0.95F);
+                player.playNote(loc, (byte) 1, (byte) 0); //Close animation
             }
-        } else {
-            //Play for only the individual Player
-            player.playSound(loc, Sound.CHEST_CLOSE, 0.75F, 0.95F);
-            player.playNote(loc, (byte) 1, (byte) 0); //Close animation
+            break;
+        default: break;
         }
     }
 
-    /* OLD */
+    /**
+     * Returns a random int between 0 (inclusive) and y (inclusive)
+     *
+     * @param upper y
+     * @return a random int between 0 and y
+     */
+    public static int rollForInt(int upper) {
+        return random.nextInt(upper + 1); //+1 is needed to make it inclusive
+    }
 
+    /**
+     * Returns a random int between x (inclusive) and y (inclusive)
+     *
+     * @param lower x
+     * @param upper y
+     * @return a random int between x and y
+     */
+    public static int rollForInt(int lower, int upper) {
+        return random.nextInt(upper + 1 - lower) + lower;
+    }
+
+    /**
+     * Returns a random double between 0 (inclusive) and y (exclusive)
+     *
+     * @param upper y
+     * @return a random double between 0 and y
+     */
+    public static double rollForDouble(double upper) {
+        return random.nextDouble() * upper;
+    }
+
+    /**
+     * Returns a random double between x (inclusive) and y (exclusive)
+     *
+     * @param lower x
+     * @param upper y
+     * @return a random double between x and y
+     */
+    public static double rollForDouble(int lower, int upper) {
+        return random.nextInt(upper + 1 - lower) + lower;
+    }
+
+    /* OLD */
+@Deprecated
 public static void loadOld()
   {
     FileInputStream fis = null;

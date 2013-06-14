@@ -3,6 +3,7 @@ package com.codisimus.plugins.phatloots;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.LinkedList;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -27,8 +28,7 @@ import org.bukkit.inventory.InventoryHolder;
  */
 public class PhatLootsListener implements Listener {
     static String chestName;
-    static EnumMap<Material, HashMap<String, String>> types = new EnumMap(Material.class);
-    private static HashMap<String, ForgettableInventory> inventories = new HashMap<String, ForgettableInventory>();
+    static EnumMap<Material, HashMap<String, String>> types = new EnumMap(Material.class); //Material -> World Name -> PhatLoot Name
 
     /**
      * Checks if a Player loots a PhatLootChest
@@ -37,6 +37,7 @@ public class PhatLootsListener implements Listener {
      */
     @EventHandler (ignoreCancelled = true)
     public void onPlayerInteract(PlayerInteractEvent event) {
+        //Return if the Block is not a linkable type
         Block block = event.getClickedBlock();
         Material type = block.getType();
         if (!types.containsKey(type)) {
@@ -47,21 +48,21 @@ public class PhatLootsListener implements Listener {
         Inventory inventory = null;
         LinkedList<PhatLoot> phatLoots = null;
 
+        //Check if this Block has been automatically linked
         if (types.get(type) != null) {
             if (event.getAction() != Action.RIGHT_CLICK_BLOCK) {
                 return;
             }
 
             HashMap<String, String> map = types.get(type);
-            PhatLoot phatLoot;
             String world = player.getWorld().getName();
-            if (map.containsKey(world)) {
-                phatLoot = PhatLoots.getPhatLoot(map.get(world));
-            } else {
-                phatLoot = PhatLoots.getPhatLoot(map.get("all"));
-            }
+            String pName = map.containsKey(world)
+                           ? map.get(world)
+                           : map.get("all");
+            PhatLoot phatLoot = PhatLoots.getPhatLoot(pName);
             if (phatLoot == null) {
-                PhatLoots.logger.warning("PhatLoot " + types.get(type) + " does not exist");
+                PhatLoots.logger.warning("PhatLoot " + pName + " does not exist.");
+                PhatLoots.logger.warning("Please adjust your config or create the PhatLoot");
             }
 
             phatLoots = new LinkedList<PhatLoot>();
@@ -70,6 +71,7 @@ public class PhatLootsListener implements Listener {
 
         switch (event.getAction()) {
         case LEFT_CLICK_BLOCK:
+            //PhatLoot Dispensers may be activated by punching them
             if (type == Material.DISPENSER) {
                 if (phatLoots == null) {
                     //Return if the Dispenser is not a PhatLootChest
@@ -116,29 +118,18 @@ public class PhatLootsListener implements Listener {
 
                 if (individual) {
                     //Create the custom key using the Player Name and Block location
-                    final String KEY = player.getName() + "@" + block.getLocation().toString();
+                    final String key = player.getName() + "@" + block.getLocation().toString();
 
                     //Grab the custom Inventory belonging to the Player
-                    ForgettableInventory fInventory = inventories.get(KEY);
+                    ForgettableInventory fInventory = ForgettableInventory.get(key);
                     if (fInventory != null) {
                         inventory = fInventory.getInventory();
                     } else {
                         String name = chestName.replace("<name>", phatLoots.getFirst().name.replace('_', ' '));
 
                         //Create a new Inventory for the Player
-                        inventory = PhatLoots.server.createInventory(chest,
-                                                                     inventory == null
-                                                                     ? 27
-                                                                     : inventory.getSize()
-                                                                     , name);
-
-                        fInventory = new ForgettableInventory(PhatLoots.plugin, inventory) {
-                            @Override
-                            protected void execute() {
-                                inventories.remove(KEY);
-                            }
-                        };
-                        inventories.put(KEY, fInventory);
+                        inventory = Bukkit.createInventory(chest, inventory == null ? 27 : inventory.getSize(), name);
+                        fInventory = new ForgettableInventory(key, inventory);
                     }
 
                     //Forget the Inventory in the scheduled time
@@ -170,30 +161,19 @@ public class PhatLootsListener implements Listener {
                 }
 
                 //Create the custom key using the Player Name and Block location
-                final String KEY = (global ? "global" : player.getName())
+                final String key = (global ? "global" : player.getName())
                                     + "@" + block.getLocation().toString();
 
                 //Grab the custom Inventory belonging to the Player
-                ForgettableInventory fInventory = inventories.get(KEY);
+                ForgettableInventory fInventory = ForgettableInventory.get(key);
                 if (fInventory != null) {
                     inventory = fInventory.getInventory();
                 } else {
                     String name = chestName.replace("<name>", phatLoots.getFirst().name.replace('_', ' '));
 
                     //Create a new Inventory for the Player
-                    inventory = PhatLoots.server.createInventory(null,
-                                                                 inventory == null
-                                                                 ? 27
-                                                                 : inventory.getSize()
-                                                                 , name);
-
-                    fInventory = new ForgettableInventory(PhatLoots.plugin, inventory) {
-                        @Override
-                        protected void execute() {
-                            inventories.remove(KEY);
-                        }
-                    };
-                    inventories.put(KEY, fInventory);
+                    inventory = Bukkit.createInventory(null, inventory == null ? 27 : inventory.getSize(), name);
+                    fInventory = new ForgettableInventory(key, inventory);
                 }
 
                 //Forget the Inventory in the scheduled time
@@ -213,6 +193,7 @@ public class PhatLootsListener implements Listener {
         default: return;
         }
 
+        //Roll for Loot of each linked PhatLoot
         PhatLootChest plChest = new PhatLootChest(block);
         for (PhatLoot phatLoot : phatLoots) {
             phatLoot.rollForLoot(player, plChest, inventory);
@@ -220,7 +201,7 @@ public class PhatLootsListener implements Listener {
     }
 
     /**
-     * Checks if a Player loots a PhatLootChest
+     * Listens for a Player closing a PhatLootChest
      *
      * @param event The PlayerInteractEvent that occurred
      */
@@ -234,9 +215,9 @@ public class PhatLootsListener implements Listener {
                 Player player = (Player) human;
                 Location location = ((Chest) holder).getLocation();
                 String key = "global@" + location.toString();
-                if (inventories.containsKey(key)) {
+                if (ForgettableInventory.has(key)) {
                     PhatLoots.closeInventory(player, inv, location, true);
-                } else if (inventories.containsKey(player.getName() + key.substring(6))) {
+                } else if (ForgettableInventory.has(player.getName() + key.substring(6))) {
                     PhatLoots.closeInventory(player, inv, location, false);
                 }
             }
@@ -279,7 +260,7 @@ public class PhatLootsListener implements Listener {
      * Returns true if the given Block is linked to a PhatLoot
      *
      * @param block the given Block
-     * @return True if the given Block is linked to a PhatLoot
+     * @return true if the given Block is linked to a PhatLoot
      */
     public boolean isPhatLootChest(Block block) {
         PhatLootChest plChest = new PhatLootChest(block);

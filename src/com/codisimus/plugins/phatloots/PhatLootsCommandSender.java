@@ -1,6 +1,7 @@
 package com.codisimus.plugins.phatloots;
 
 import java.util.Set;
+import org.bukkit.Bukkit;
 import org.bukkit.Server;
 import org.bukkit.command.CommandSender;
 import org.bukkit.permissions.Permission;
@@ -14,12 +15,12 @@ import org.bukkit.plugin.Plugin;
  * @author Codisimus
  */
 public class PhatLootsCommandSender implements CommandSender {
-    private final String name = "PhatLoots";
-    private final String tag = "[PhatLoots Command Sender] ";
+    private final String NAME = "PhatLoots";
+    private final String TAG = "[PhatLoots Command Sender] ";
 
     @Override
     public void sendMessage(String string) {
-        PhatLoots.logger.info(tag.concat(string));
+        PhatLoots.logger.info(TAG.concat(string));
     }
 
     @Override
@@ -31,12 +32,12 @@ public class PhatLootsCommandSender implements CommandSender {
 
     @Override
     public Server getServer() {
-        return PhatLoots.server;
+        return Bukkit.getServer();
     }
 
     @Override
     public String getName() {
-        return name;
+        return NAME;
     }
 
     @Override
@@ -60,47 +61,47 @@ public class PhatLootsCommandSender implements CommandSender {
     }
 
     @Override
-    public PermissionAttachment addAttachment(Plugin plugin, String string, boolean bln) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public PermissionAttachment addAttachment(Plugin plugin) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public PermissionAttachment addAttachment(Plugin plugin, String string, boolean bln, int i) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public PermissionAttachment addAttachment(Plugin plugin, int i) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public void removeAttachment(PermissionAttachment pa) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public void recalculatePermissions() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public Set<PermissionAttachmentInfo> getEffectivePermissions() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
     public boolean isOp() {
         return true;
     }
 
     @Override
+    public PermissionAttachment addAttachment(Plugin plugin, String string, boolean bln) {
+        throw new UnsupportedOperationException("Not supported.");
+    }
+
+    @Override
+    public PermissionAttachment addAttachment(Plugin plugin) {
+        throw new UnsupportedOperationException("Not supported.");
+    }
+
+    @Override
+    public PermissionAttachment addAttachment(Plugin plugin, String string, boolean bln, int i) {
+        throw new UnsupportedOperationException("Not supported.");
+    }
+
+    @Override
+    public PermissionAttachment addAttachment(Plugin plugin, int i) {
+        throw new UnsupportedOperationException("Not supported.");
+    }
+
+    @Override
+    public void removeAttachment(PermissionAttachment pa) {
+        throw new UnsupportedOperationException("Not supported.");
+    }
+
+    @Override
+    public void recalculatePermissions() {
+        throw new UnsupportedOperationException("Not supported.");
+    }
+
+    @Override
+    public Set<PermissionAttachmentInfo> getEffectivePermissions() {
+        throw new UnsupportedOperationException("Not supported.");
+    }
+
+    @Override
     public void setOp(boolean bln) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        throw new UnsupportedOperationException("Not supported.");
     }
 }

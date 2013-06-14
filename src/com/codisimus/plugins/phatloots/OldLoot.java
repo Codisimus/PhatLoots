@@ -6,6 +6,7 @@ import java.io.FileInputStream;
 import java.io.FileReader;
 import java.util.*;
 import org.apache.commons.lang.WordUtils;
+import org.bukkit.Bukkit;
 import org.bukkit.Color;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
@@ -24,6 +25,7 @@ import org.bukkit.inventory.meta.SkullMeta;
  *
  * @author Codisimus
  */
+@Deprecated
 @SerializableAs("Loot")
 public class OldLoot implements Comparable, ConfigurationSerializable {
     private static final String ARMOR = "ARMOR";
@@ -150,7 +152,7 @@ public class OldLoot implements Comparable, ConfigurationSerializable {
     }
 
     private double roll() {
-        return PhatLoots.random.nextInt(100) + PhatLoots.random.nextDouble();
+        return PhatLoots.rollForDouble(100);
     }
 
     /**
@@ -241,16 +243,16 @@ public class OldLoot implements Comparable, ConfigurationSerializable {
         }
 
         if (amountBonus > 0) {
-            clone.setAmount(clone.getAmount() + PhatLoots.random.nextInt(amountBonus));
+            clone.setAmount(clone.getAmount() + PhatLoots.rollForInt(amountBonus));
         }
 
         if (durabilityBonus > 0) {
-            clone.setDurability((short) (clone.getDurability() + PhatLoots.random.nextInt(durabilityBonus)));
+            clone.setDurability((short) (clone.getDurability() + PhatLoots.rollForInt(durabilityBonus)));
         }
 
         ItemMeta meta = clone.hasItemMeta()
                         ? clone.getItemMeta().clone()
-                        : PhatLoots.server.getItemFactory().getItemMeta(clone.getType());
+                        : Bukkit.getItemFactory().getItemMeta(clone.getType());
 
         if (generateName || tieredName || randomLore) {
             StringBuilder nameBuilder = new StringBuilder();
@@ -956,7 +958,7 @@ public class OldLoot implements Comparable, ConfigurationSerializable {
 
     public void updateItemStack() {
         if (!this.name.isEmpty()) {
-            ItemMeta meta = item.hasItemMeta() ? item.getItemMeta() : PhatLoots.server.getItemFactory().getItemMeta(item.getType());
+            ItemMeta meta = item.hasItemMeta() ? item.getItemMeta() : Bukkit.getItemFactory().getItemMeta(item.getType());
 
             if (this.item.getType() == Material.WRITTEN_BOOK) {
                 Properties book = new Properties();

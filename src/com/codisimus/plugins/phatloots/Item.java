@@ -4,12 +4,10 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.util.*;
-import org.apache.commons.lang.WordUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.configuration.serialization.SerializableAs;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
@@ -23,6 +21,7 @@ import org.bukkit.inventory.meta.ItemMeta;
  */
 @SerializableAs("Item")
 public class Item extends Loot {
+    /* TAGS */
     private static final String ARMOR = "ARMOR";
     private static final String SWORD = "SWORD";
     private static final String AXE = "AXE";
@@ -37,6 +36,7 @@ public class Item extends Loot {
     private static final String RANGE_DEFENSE = "<rangedef>";
     private static final String BLAST_DEFENSE = "<blastdef>";
     private static final String FALL_DEFENSE = "<falldef>";
+    /* ENCHANTMENTS */
     private static final Enchantment[] ARMOR_ENCHANTMENTS = {
         Enchantment.PROTECTION_ENVIRONMENTAL, Enchantment.PROTECTION_FIRE,
         Enchantment.PROTECTION_EXPLOSIONS, Enchantment.PROTECTION_PROJECTILE,
@@ -59,10 +59,32 @@ public class Item extends Loot {
         Enchantment.ARROW_FIRE, Enchantment.ARROW_INFINITE,
         Enchantment.DURABILITY
     };
+    /* MATERIALS */
+    private static final EnumSet<Material> ARMOR_MATERIAL_SET = EnumSet.of(
+        Material.DIAMOND_HELMET, Material.DIAMOND_CHESTPLATE,
+        Material.DIAMOND_LEGGINGS, Material.DIAMOND_BOOTS,
+        Material.IRON_HELMET, Material.IRON_CHESTPLATE,
+        Material.IRON_LEGGINGS, Material.IRON_BOOTS,
+        Material.GOLD_HELMET, Material.GOLD_CHESTPLATE,
+        Material.GOLD_LEGGINGS, Material.GOLD_BOOTS,
+        Material.CHAINMAIL_HELMET, Material.CHAINMAIL_CHESTPLATE,
+        Material.CHAINMAIL_LEGGINGS, Material.CHAINMAIL_BOOTS,
+        Material.LEATHER_HELMET, Material.LEATHER_CHESTPLATE,
+        Material.LEATHER_LEGGINGS, Material.LEATHER_BOOTS
+    );
+    private static final EnumSet<Material> SWORD_MATERIAL_SET = EnumSet.of(
+        Material.DIAMOND_SWORD, Material.IRON_SWORD, Material.GOLD_SWORD,
+        Material.STONE_SWORD, Material.WOOD_SWORD
+    );
+    private static final EnumSet<Material> AXE_MATERIAL_SET = EnumSet.of(
+        Material.DIAMOND_AXE, Material.IRON_AXE, Material.GOLD_AXE,
+        Material.STONE_AXE, Material.WOOD_AXE
+    );
     static int tierNotify;
     static FileConfiguration loreConfig;
     static ConfigurationSection tiersConfig;
     static FileConfiguration enchantmentConfig;
+    static boolean damageTags;
     static String damageString;
     static String holyString;
     static String bugString;
@@ -73,6 +95,7 @@ public class Item extends Loot {
     static String rangeDefenseString;
     static String blastDefenseString;
     static String fallDefenseString;
+
     private ItemStack item;
     private int amountBonus;
     private int durabilityBonus = 0;
@@ -92,6 +115,7 @@ public class Item extends Loot {
         this.amountBonus = amountBonus;
     }
 
+    @Deprecated
     public Item(OldLoot loot) {
         item = loot.item;
         amountBonus = loot.amountBonus;
@@ -103,8 +127,13 @@ public class Item extends Loot {
         tieredName = loot.tieredName;
     }
 
+    /**
+     * Constructs a new Item from a Configuration Serialized phase
+     *
+     * @param map The map of data values
+     */
     public Item(Map<String, Object> map) {
-        String currentLine = null;
+        String currentLine = null; //The value that is about to be loaded (used for debugging)
         try {
             item = (ItemStack) map.get(currentLine = "ItemStack");
             amountBonus = (Integer) map.get(currentLine = "BonusAmount");
@@ -115,6 +144,7 @@ public class Item extends Loot {
             randomLore = (Boolean) map.get(currentLine = "RandomLore");
             tieredName = (Boolean) map.get(currentLine = "Tiered");
         } catch (Exception ex) {
+            //Print debug messages
             PhatLoots.logger.severe("Failed to load Item line: " + currentLine);
             PhatLoots.logger.severe("of PhatLoot: " + (PhatLoot.current == null ? "unknown" : PhatLoot.current));
             PhatLoots.logger.severe("Last successfull load was...");
@@ -123,15 +153,29 @@ public class Item extends Loot {
         }
     }
 
+    /**
+     * Adds the item to the item list
+     *
+     * @param player The Player looting
+     * @param lootingBonus The increased chance of getting rarer loots
+     * @param items The list of items that are looted
+     */
     @Override
     public void getLoot(Player player, double lootingBonus, LinkedList<ItemStack> items) {
         items.add(getItem());
     }
 
+    /**
+     * Returns the information of the Item in the form of an ItemStack
+     *
+     * @return An ItemStack representation of the Loot
+     */
     @Override
     public ItemStack getInfoStack() {
         ItemStack infoStack = item.clone();
         ItemMeta info = infoStack.hasItemMeta() ? infoStack.getItemMeta() : Bukkit.getItemFactory().getItemMeta(infoStack.getType());
+
+        //Add more specific details of the command
         List<String> details;
         if (info.hasLore()) {
             details = info.getLore();
@@ -158,6 +202,7 @@ public class Item extends Loot {
             details.add("§6Tiered Name");
         }
 
+        //Construct the ItemStack and return it
         info.setLore(details);
         infoStack.setItemMeta(info);
         return infoStack;
@@ -174,80 +219,41 @@ public class Item extends Loot {
         }
     }
 
-    public void setEnchantments(Map<Enchantment, Integer> enchantments) {
-        if (enchantments != null) {
-            item.addUnsafeEnchantments(enchantments);
-        }
-    }
-
     /**
      * Returns the item with the bonus amount, enchantments, etc.
      *
      * @return A clone of the Loot item
      */
     public ItemStack getItem() {
+        //Clone the item before modifying it
         ItemStack clone = item.clone();
+        Material mat = clone.getType();
 
         if (autoEnchant) {
+            //Select Enchantments based on the Material
             String type;
             Enchantment[] enchantments;
-            switch (clone.getType()) {
-            case DIAMOND_HELMET:
-            case DIAMOND_CHESTPLATE:
-            case DIAMOND_LEGGINGS:
-            case DIAMOND_BOOTS:
-            case IRON_HELMET:
-            case IRON_CHESTPLATE:
-            case IRON_LEGGINGS:
-            case IRON_BOOTS:
-            case GOLD_HELMET:
-            case GOLD_CHESTPLATE:
-            case GOLD_LEGGINGS:
-            case GOLD_BOOTS:
-            case CHAINMAIL_HELMET:
-            case CHAINMAIL_CHESTPLATE:
-            case CHAINMAIL_LEGGINGS:
-            case CHAINMAIL_BOOTS:
-            case LEATHER_HELMET:
-            case LEATHER_CHESTPLATE:
-            case LEATHER_LEGGINGS:
-            case LEATHER_BOOTS:
+            if (ARMOR_MATERIAL_SET.contains(mat)) {
                 type = ARMOR;
                 enchantments = ARMOR_ENCHANTMENTS;
-                break;
-
-            case DIAMOND_SWORD:
-            case IRON_SWORD:
-            case GOLD_SWORD:
-            case STONE_SWORD:
-            case WOOD_SWORD:
+            } else if (SWORD_MATERIAL_SET.contains(mat)) {
                 type = SWORD;
                 enchantments = SWORD_ENCHANTMENTS;
-                break;
-
-            case DIAMOND_AXE:
-            case IRON_AXE:
-            case GOLD_AXE:
-            case STONE_AXE:
-            case WOOD_AXE:
+            } else if (AXE_MATERIAL_SET.contains(mat)) {
                 type = AXE;
                 enchantments = AXE_ENCHANTMENTS;
-                break;
-
-            case BOW:
+            } else if (mat == Material.BOW) {
                 type = BOW;
                 enchantments = BOW_ENCHANTMENTS;
-                break;
-
-            default:
+            } else {
                 type = "";
                 enchantments = new Enchantment[0];
-                break;
             }
 
             for (Enchantment enchantment : enchantments) {
                 String key = type + '.' + enchantment.getName();
                 if (enchantmentConfig.contains(key)) {
+                    //Roll to discover which level the enchantment should be
                     ConfigurationSection config = enchantmentConfig.getConfigurationSection(key);
                     double totalPercent = 0.0D;
                     int level = 0;
@@ -268,102 +274,90 @@ public class Item extends Loot {
         }
 
         if (amountBonus > 0) {
-            clone.setAmount(clone.getAmount() + PhatLoots.random.nextInt(amountBonus));
+            //Roll the stack size of the item
+            clone.setAmount(clone.getAmount() + PhatLoots.rollForInt(amountBonus));
         }
 
         if (durabilityBonus > 0) {
-            clone.setDurability((short) (clone.getDurability() + PhatLoots.random.nextInt(durabilityBonus)));
+            //Roll for the durability of the item
+            clone.setDurability((short) (clone.getDurability() + PhatLoots.rollForInt(durabilityBonus)));
         }
 
         ItemMeta meta = clone.hasItemMeta()
                         ? clone.getItemMeta().clone()
-                        : PhatLoots.server.getItemFactory().getItemMeta(clone.getType());
+                        : Bukkit.getItemFactory().getItemMeta(clone.getType());
 
         if (generateName || tieredName || randomLore) {
             StringBuilder nameBuilder = new StringBuilder();
             if (randomLore) {
                 String folder = clone.getType() + clone.getEnchantments().toString();
                 File dir = new File(PhatLoots.dataFolder + File.separator + "Item Descriptions" + File.separator + folder);
+                if (dir.exists()) {
+                    //Choose a random file
+                    File[] files = dir.listFiles();
+                    File file = files[PhatLoots.rollForInt(files.length)];
 
-                File[] files = dir.listFiles();
-                Random random = new Random();
-                File file = files[random.nextInt(files.length)];
-
-                if (file.exists()) {
-                    FileReader fReader = null;
-                    BufferedReader bReader = null;
-                    try {
-                        fReader = new FileReader(file);
-                        bReader = new BufferedReader(fReader);
-
-                        String line = bReader.readLine();
-                        if (line != null) {
-                            if (line.charAt(0) == '&') {
-                                line = line.replace('&', '§');
-                            }
-
-                            nameBuilder.append(line);
-
-                            List lore = new LinkedList();
-                            while ((line = bReader.readLine()) != null) {
-                                line = line.replace('&', '§');
-                                lore.add(line);
-                            }
-                            meta.setLore(lore);
-                        }
-                    } catch (Exception ex) {
-                    } finally {
+                    if (file.exists()) {
+                        FileReader fReader = null;
+                        BufferedReader bReader = null;
                         try {
-                            fReader.close();
-                            bReader.close();
+                            fReader = new FileReader(file);
+                            bReader = new BufferedReader(fReader);
+
+                            String line = bReader.readLine();
+                            if (line != null) {
+                                if (line.charAt(0) == '&') {
+                                    line = line.replace('&', '§');
+                                }
+
+                                nameBuilder.append(line);
+
+                                List lore = new LinkedList();
+                                while ((line = bReader.readLine()) != null) {
+                                    line = line.replace('&', '§');
+                                    lore.add(line);
+                                }
+                                meta.setLore(lore);
+                            }
                         } catch (Exception ex) {
+                        } finally {
+                            try {
+                                fReader.close();
+                                bReader.close();
+                            } catch (Exception ex) {
+                            }
                         }
+                    } else {
+                        PhatLoots.logger.severe("The Item Description " + file.getName() + " cannot be read");
                     }
                 } else {
-                    PhatLoots.logger.severe("The Item Description " + file.getName() + " cannot be read");
+                    PhatLoots.logger.severe("You are attempting to use an undocumented feature (Random Lore), please contact Codisimus if you actually want to know how to use this.");
                 }
             } else {
-                nameBuilder.append(WordUtils.capitalizeFully(clone.getType().toString().replace('_', ' ')));
+                nameBuilder.append(PhatLoot.getItemName(clone));
             }
 
-            if (this.generateName) {
+            if (generateName) {
                 generateName(clone, nameBuilder);
             }
 
-            if (this.tieredName) {
+            if (tieredName) {
                 getTieredName(clone, nameBuilder);
             }
 
+            //Set the new display name of the item
             meta.setDisplayName(nameBuilder.toString());
             clone.setItemMeta(meta);
         }
 
-        if (meta != null && meta.hasLore()) {
+        if (damageTags && meta != null && meta.hasLore()) {
+            //Check for damage tags based on the Material
             List<String> lore = meta.getLore();
             ListIterator<String> itr = lore.listIterator();
-            switch (clone.getType()) {
-            case DIAMOND_HELMET:
-            case DIAMOND_CHESTPLATE:
-            case DIAMOND_LEGGINGS:
-            case DIAMOND_BOOTS:
-            case IRON_HELMET:
-            case IRON_CHESTPLATE:
-            case IRON_LEGGINGS:
-            case IRON_BOOTS:
-            case GOLD_HELMET:
-            case GOLD_CHESTPLATE:
-            case GOLD_LEGGINGS:
-            case GOLD_BOOTS:
-            case CHAINMAIL_HELMET:
-            case CHAINMAIL_CHESTPLATE:
-            case CHAINMAIL_LEGGINGS:
-            case CHAINMAIL_BOOTS:
-            case LEATHER_HELMET:
-            case LEATHER_CHESTPLATE:
-            case LEATHER_LEGGINGS:
-            case LEATHER_BOOTS:
+            if (ARMOR_MATERIAL_SET.contains(mat)) {
                 while (itr.hasNext()) {
                     String string = itr.next();
+                    //Calculate protection based on the enchantments
                     if (string.equals(THORNS)) {
                         if (clone.containsEnchantment(Enchantment.THORNS)) {
                             int lvl = clone.getEnchantments().get(Enchantment.THORNS);
@@ -424,11 +418,10 @@ public class Item extends Loot {
                         }
                     }
                 }
-                break;
-
-            case BOW:
+            } else if (mat == Material.BOW) {
                 while (itr.hasNext()) {
                     String string = itr.next();
+                    //Calculate damages based on the enchantments
                     if (string.equals(DAMAGE)) {
                         int baseLow = 1;
                         int baseHigh = 10;
@@ -452,11 +445,10 @@ public class Item extends Loot {
                         }
                     }
                 }
-                break;
-
-            default:
+            } else {
                 while (itr.hasNext()) {
                     String string = itr.next();
+                    //Calculate damages based on the enchantments
                     if (string.equals(DAMAGE)) {
                         int baseLow = getBaseDamage(clone.getType());
                         int baseHigh = (int) (baseLow * 1.5D) + 2;
@@ -496,8 +488,9 @@ public class Item extends Loot {
                         }
                     }
                 }
-                break;
             }
+
+            //Apply the new lore to the item
             meta.setLore(lore);
             clone.setItemMeta(meta);
         }
@@ -505,6 +498,12 @@ public class Item extends Loot {
         return clone;
     }
 
+    /**
+     * Generates a custom name for the given item based on it's enchantments
+     *
+     * @param item The given ItemStack
+     * @param nameBuilder The StringBuilder that will be changed to the new name
+     */
     private void generateName(ItemStack item, StringBuilder nameBuilder) {
         Material mat = item.getType();
         Map enchantments = item.getEnchantments();
@@ -512,27 +511,8 @@ public class Item extends Loot {
         Enchantment enchantment;
         int level;
         String lore;
-        switch (mat) {
-        case DIAMOND_HELMET:
-        case DIAMOND_CHESTPLATE:
-        case DIAMOND_LEGGINGS:
-        case DIAMOND_BOOTS:
-        case IRON_HELMET:
-        case IRON_CHESTPLATE:
-        case IRON_LEGGINGS:
-        case IRON_BOOTS:
-        case GOLD_HELMET:
-        case GOLD_CHESTPLATE:
-        case GOLD_LEGGINGS:
-        case GOLD_BOOTS:
-        case CHAINMAIL_HELMET:
-        case CHAINMAIL_CHESTPLATE:
-        case CHAINMAIL_LEGGINGS:
-        case CHAINMAIL_BOOTS:
-        case LEATHER_HELMET:
-        case LEATHER_CHESTPLATE:
-        case LEATHER_LEGGINGS:
-        case LEATHER_BOOTS:
+        //Check enchantments based on the Material
+        if (ARMOR_MATERIAL_SET.contains(mat)) {
             type = ARMOR;
             enchantment = Enchantment.PROTECTION_FIRE;
             level = getLevel(enchantments, enchantment);
@@ -557,13 +537,7 @@ public class Item extends Loot {
                 nameBuilder.append(' ');
                 nameBuilder.append(lore);
             }
-            break;
-
-        case DIAMOND_SWORD:
-        case IRON_SWORD:
-        case GOLD_SWORD:
-        case STONE_SWORD:
-        case WOOD_SWORD:
+        } else if (SWORD_MATERIAL_SET.contains(mat)) {
             type = SWORD;
             enchantment = getTrump(enchantments, Enchantment.DAMAGE_ARTHROPODS, Enchantment.DAMAGE_ALL);
             level = getLevel(enchantments, enchantment);
@@ -594,19 +568,13 @@ public class Item extends Loot {
                 nameBuilder.append(' ');
                 nameBuilder.append(lore);
             }
-            break;
-
-        case DIAMOND_AXE:
-        case IRON_AXE:
-        case GOLD_AXE:
-        case STONE_AXE:
-        case WOOD_AXE:
+        } else if (AXE_MATERIAL_SET.contains(mat)) {
             type = AXE;
             enchantment = getTrump(enchantments, Enchantment.DAMAGE_ARTHROPODS, Enchantment.DAMAGE_ALL);
             level = getLevel(enchantments, enchantment);
             lore = loreConfig.getString(type + '.' + enchantment.getName() + '.' + level);
             if (lore != null) {
-                nameBuilder.replace(nameBuilder.length() - 5, nameBuilder.length(), lore);
+                nameBuilder.replace(nameBuilder.length() - 3, nameBuilder.length(), lore);
             }
             enchantment = enchantments.containsKey(Enchantment.FIRE_ASPECT)
                           ? Enchantment.FIRE_ASPECT
@@ -631,9 +599,7 @@ public class Item extends Loot {
                 nameBuilder.append(' ');
                 nameBuilder.append(lore);
             }
-            break;
-
-        case BOW:
+        } else if (mat == Material.BOW) {
             type = BOW;
             enchantment = Enchantment.ARROW_DAMAGE;
             level = getLevel(enchantments, enchantment);
@@ -669,22 +635,27 @@ public class Item extends Loot {
                 nameBuilder.append(' ');
                 nameBuilder.append(lore);
             }
-            break;
-
-        default: break;
         }
     }
 
+    /**
+     * Modifys the name of the given item to add a tier based on it's enchantments and material
+     *
+     * @param item The given ItemStack
+     * @param nameBuilder The StringBuilder that will be changed to the new name
+     */
     private void getTieredName(ItemStack item, StringBuilder nameBuilder) {
         Material mat = item.getType();
         Map<Enchantment, Integer> enchantments = item.getEnchantments();
 
+        //Tier starts at 0 and is incremented by 5 for each enchantment level
         int tier = 0;
         for (Integer i : enchantments.values()) {
             tier += i.intValue();
         }
         tier *= 5;
 
+        //Increase the tier based on the metal type of the item
         switch (mat) {
         case DIAMOND_SWORD:
         case DIAMOND_AXE:
@@ -729,6 +700,7 @@ public class Item extends Loot {
         default: break;
         }
 
+        //Add the suffix and prefix for the given tier
         for (String string : tiersConfig.getKeys(false)) {
             if (tier > Integer.parseInt(string)) {
                 nameBuilder.insert(0, tiersConfig.getString(string + ".Prefix"));
@@ -742,6 +714,12 @@ public class Item extends Loot {
         }
     }
 
+    /**
+     * Returns the amount of damage that an uncritical hit from the given Material would deal
+     *
+     * @param type The given Material
+     * @return The base damage of the Material
+     */
     private int getBaseDamage(Material type) {
         switch (type) {
         case WOOD_SPADE: return 1;
@@ -768,6 +746,12 @@ public class Item extends Loot {
         }
     }
 
+    /**
+     * Returns the amount of damage that is prevented by the given Material
+     *
+     * @param type The given Material
+     * @return The base armor of the Material
+     */
     private int getBaseArmor(Material type) {
         switch (type) {
         case LEATHER_BOOTS: return 1;
@@ -800,6 +784,7 @@ public class Item extends Loot {
      *
      * @return The String representation of this Loot's Enchantments
      */
+    @Deprecated
     public String enchantmentsToString() {
         Map<Enchantment, Integer> enchantments = item.getEnchantments();
         String string = "";
@@ -832,6 +817,7 @@ public class Item extends Loot {
         sb.append(PhatLoot.getItemName(item));
 
         sb.append(" @ ");
+        //Only display the decimal values if the probability is not a whole number
         sb.append(Math.floor(probability) == probability ? String.valueOf((int) probability) : String.valueOf(probability));
 
         sb.append("%");
@@ -869,6 +855,13 @@ public class Item extends Loot {
         return hash;
     }
 
+    /**
+     * Returns the Enchantment which has the highest level
+     *
+     * @param enchantments The map of Enchantments and their levels
+     * @param enchants The list of Enchantments that we care about
+     * @return the Enchantment which has the highest level
+     */
     private Enchantment getTrump(Map<Enchantment, Integer> enchantments, Enchantment... enchants) {
         int highestLevel = -1;
         Enchantment trump = null;
@@ -882,6 +875,13 @@ public class Item extends Loot {
         return trump;
     }
 
+    /**
+     * Returns the level of the given Enchantment
+     *
+     * @param enchantments The map of Enchantments and their levels
+     * @param enchantment The given Enchantment
+     * @return the level of the Enchantment or 0 if the Enchantment is not present
+     */
     private int getLevel(Map<Enchantment, Integer> enchantments, Enchantment enchantment) {
         Integer level = enchantments.get(enchantment);
         return level == null ? 0 : level;
