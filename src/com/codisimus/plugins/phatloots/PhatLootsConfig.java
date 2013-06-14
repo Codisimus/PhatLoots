@@ -101,7 +101,7 @@ public class PhatLootsConfig {
 
         /* TAGS */
 
-        Item.damageTags = section.getBoolean("UseDamageTags");
+        Item.damageTags = config.getBoolean("UseDamageTags");
         if (Item.damageTags) {
             Item.damageString = getString(config, "<dam>");
             Item.holyString = getString(config, "<holy>");
