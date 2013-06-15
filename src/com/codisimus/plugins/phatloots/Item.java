@@ -97,12 +97,12 @@ public class Item extends Loot {
     static String fallDefenseString;
 
     private ItemStack item;
-    private int amountBonus;
+    private int amountBonus = 0;
     private int durabilityBonus = 0;
-    boolean autoEnchant;
-    boolean generateName;
-    private boolean randomLore;
-    boolean tieredName;
+    boolean autoEnchant = false;
+    boolean generateName = false;
+    private boolean randomLore = false;
+    boolean tieredName = false;
 
     /**
      * Constructs a new Loot with the given ItemStack and bonus amount
@@ -135,14 +135,27 @@ public class Item extends Loot {
     public Item(Map<String, Object> map) {
         String currentLine = null; //The value that is about to be loaded (used for debugging)
         try {
+            Object number = map.get(currentLine = "Probability");
+            probability = (number instanceof Double) ? (Double) number : (Integer) number;
             item = (ItemStack) map.get(currentLine = "ItemStack");
-            amountBonus = (Integer) map.get(currentLine = "BonusAmount");
-            durabilityBonus = (Integer) map.get(currentLine = "BonusDurability");
-            probability = (Double) map.get(currentLine = "Probability");
-            autoEnchant = (Boolean) map.get(currentLine = "AutoEnchant");
-            generateName = (Boolean) map.get(currentLine = "GenerateName");
-            randomLore = (Boolean) map.get(currentLine = "RandomLore");
-            tieredName = (Boolean) map.get(currentLine = "Tiered");
+            if (map.containsKey(currentLine = "BonusAmount")) {
+                amountBonus = (Integer) map.get(currentLine);
+            }
+            if (map.containsKey(currentLine = "BonusDurability")) {
+                durabilityBonus = (Integer) map.get(currentLine);
+            }
+            if (map.containsKey(currentLine = "AutoEnchant")) {
+                autoEnchant = (Boolean) map.get(currentLine);
+            }
+            if (map.containsKey(currentLine = "GenerateName")) {
+                generateName = (Boolean) map.get(currentLine);
+            }
+            if (map.containsKey(currentLine = "RandomLore")) {
+                randomLore = (Boolean) map.get(currentLine);
+            }
+            if (map.containsKey(currentLine = "Tiered")) {
+                tieredName = (Boolean) map.get(currentLine);
+            }
         } catch (Exception ex) {
             //Print debug messages
             PhatLoots.logger.severe("Failed to load Item line: " + currentLine);

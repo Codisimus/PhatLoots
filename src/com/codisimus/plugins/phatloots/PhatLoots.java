@@ -427,7 +427,6 @@ public class PhatLoots extends JavaPlugin {
      * @param global Whether the animation should be sent to everyone (true) or just the Player (false)
      */
     public static void closeInventory(Player player, Inventory inv, Location loc, Boolean global) {
-        player.closeInventory();
         Block block = loc.getBlock();
         switch (block.getType()) {
         case CHEST:
