@@ -905,12 +905,24 @@ public class Item extends Loot {
         Map map = new TreeMap();
         map.put("Probability", probability);
         map.put("ItemStack", item);
-        map.put("BonusAmount", amountBonus);
-        map.put("BonusDurability", durabilityBonus);
-        map.put("AutoEnchant", autoEnchant);
-        map.put("GenerateName", generateName);
-        map.put("RandomLore", randomLore);
-        map.put("Tiered", tieredName);
+        if (amountBonus > 0) {
+            map.put("BonusAmount", amountBonus);
+        }
+        if (durabilityBonus > 0) {
+            map.put("BonusDurability", durabilityBonus);
+        }
+        if (autoEnchant) {
+            map.put("AutoEnchant", autoEnchant);
+        }
+        if (generateName) {
+            map.put("GenerateName", generateName);
+        }
+        if (randomLore) {
+            map.put("RandomLore", randomLore);
+        }
+        if (tieredName) {
+            map.put("Tiered", tieredName);
+        }
         return map;
     }
 }
