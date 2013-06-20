@@ -51,11 +51,12 @@ Blocks:
 ##Blocks listed here need not be listed in 'Blocks' above
 ##These default settings will print warnings if you do not have the proper PhatLoots
 ##they are only meant to show how this would be set up
+##I have commented out these default settings because noone bothers to read and replace them
 AutoLink:
-    all:
-        Melon Block: melons
-    world:
-        Bookshelf: books
+#    all:
+#        Melon Block: melons
+#    world:
+#        Bookshelf: books
 
 
 

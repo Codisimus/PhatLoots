@@ -122,8 +122,54 @@ public class PhatLootInfoListener implements Listener {
         }
         final Inventory inv = Bukkit.createInventory(player, 54, invName);
 
+        //Show the money Range
+        ItemStack infoStack = new ItemStack(Material.GOLD_NUGGET);
+        ItemMeta info = Bukkit.getItemFactory().getItemMeta(infoStack.getType());
+        String amount = String.valueOf(phatLoot.moneyLower);
+        if (phatLoot.moneyUpper != phatLoot.moneyLower) {
+            amount += '-' + String.valueOf(phatLoot.moneyUpper);
+        }
+        info.setDisplayName("§6" + amount + ' ' + PhatLoots.econ.currencyNamePlural());
+        infoStack.setItemMeta(info);
+        inv.setItem(0, infoStack);
+
+        //Show the experience Range
+        infoStack = new ItemStack(Material.EXP_BOTTLE);
+        info = Bukkit.getItemFactory().getItemMeta(infoStack.getType());
+        amount = String.valueOf(phatLoot.expLower);
+        if (phatLoot.expUpper != phatLoot.expLower) {
+            amount += '-' + String.valueOf(phatLoot.expUpper);
+        }
+        info.setDisplayName("§6" + amount + " exp");
+        infoStack.setItemMeta(info);
+        inv.setItem(1, infoStack);
+
+        //Show the Reset Time
+        infoStack = new ItemStack(Material.WATCH);
+        info = Bukkit.getItemFactory().getItemMeta(infoStack.getType());
+        info.setDisplayName("§2Reset Time");
+        List<String> details = new ArrayList();
+        details.add("§4Days: §6" + phatLoot.days);
+        details.add("§4Hours: §6" + phatLoot.hours);
+        details.add("§4Minutes: §6" + phatLoot.minutes);
+        details.add("§4Seconds: §6" + phatLoot.seconds);
+        details.add("§4Reset Type: §6" + (phatLoot.global ? "Global" : "Individual"));
+        if (phatLoot.round) {
+            details.add("§6Time is rounded down");
+        }
+        info.setLore(details);
+        infoStack.setItemMeta(info);
+        inv.setItem(2, infoStack);
+
+        //Show the autoloot status
+        infoStack = new ItemStack(phatLoot.autoLoot ? Material.REDSTONE_TORCH_ON : Material.REDSTONE_TORCH_OFF);
+        info = Bukkit.getItemFactory().getItemMeta(infoStack.getType());
+        details.add("§4AutoLoot: §6" + phatLoot.autoLoot);
+        infoStack.setItemMeta(info);
+        inv.setItem(3, infoStack);
+
         //Populate the inventory
-        int index = 0;
+        int index = 4;
         for (Loot loot : phatLoot.lootList) {
             inv.setItem(index, loot.getInfoStack());
             index++;
@@ -165,7 +211,7 @@ public class PhatLootInfoListener implements Listener {
             @Override
             public void run() {
                 infoViewers.put(playerName, phatLoot);
-                player.openInventory(inv);
+                player.openInventory(view);
             }
         }.runTaskLater(PhatLoots.plugin, 2);
     }
@@ -247,7 +293,7 @@ public class PhatLootInfoListener implements Listener {
         new BukkitRunnable() {
             @Override
             public void run() {
-                player.openInventory(inv);
+                player.openInventory(view);
             }
         }.runTaskLater(PhatLoots.plugin, 2);
     }
