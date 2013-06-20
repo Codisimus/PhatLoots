@@ -190,8 +190,8 @@ public class PhatLoot implements ConfigurationSerializable {
                 }
             } else if (amount < 0) { //Cost
                 if (PhatLoots.econ != null) {
-                    EconomyResponse r = PhatLoots.econ.withdrawPlayer(player.getName(), amount);
-                    String money = PhatLoots.econ.format(amount).replace(".00", "");
+                    EconomyResponse r = PhatLoots.econ.withdrawPlayer(player.getName(), -amount);
+                    String money = PhatLoots.econ.format(-amount).replace(".00", "");
                     if (r.transactionSuccess()) {
                         if (PhatLootsConfig.moneyCharged != null) {
                             player.sendMessage(PhatLootsConfig.moneyCharged.replace("<amount>", money));
