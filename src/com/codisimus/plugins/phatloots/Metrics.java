@@ -22,6 +22,7 @@ import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginDescriptionFile;
+import org.bukkit.scheduler.BukkitTask;
 
 /**
  * <p>
@@ -106,7 +107,7 @@ public class Metrics {
     /**
      * Id of the scheduled task
      */
-    private volatile int taskId = -1;
+    private volatile BukkitTask task;
 
     public Metrics(final Plugin plugin) throws IOException {
         if (plugin == null) {
@@ -188,12 +189,12 @@ public class Metrics {
             }
 
             // Is metrics already running?
-            if (taskId >= 0) {
+            if (task != null) {
                 return true;
             }
 
             // Begin hitting the server with glorious data
-            taskId = plugin.getServer().getScheduler().scheduleAsyncRepeatingTask(plugin, new Runnable() {
+            task = plugin.getServer().getScheduler().runTaskTimerAsynchronously(plugin, new Runnable() {
 
                 private boolean firstPost = true;
 
@@ -203,9 +204,9 @@ public class Metrics {
                         // This has to be synchronized or it can collide with the disable method.
                         synchronized (optOutLock) {
                             // Disable Task, if it is running and the server owner decided to opt-out
-                            if (isOptOut() && taskId > 0) {
-                                plugin.getServer().getScheduler().cancelTask(taskId);
-                                taskId = -1;
+                            if (isOptOut() && task != null) {
+                                task.cancel();
+                                task = null;
                             }
                         }
 
@@ -263,7 +264,7 @@ public class Metrics {
             }
 
             // Enable Task, if it is not running
-            if (taskId < 0) {
+            if (task != null) {
                 start();
             }
         }
@@ -284,9 +285,9 @@ public class Metrics {
             }
 
             // Disable Task, if it is running
-            if (taskId > 0) {
-                this.plugin.getServer().getScheduler().cancelTask(taskId);
-                taskId = -1;
+            if (task != null) {
+                task.cancel();
+                task = null;
             }
         }
     }

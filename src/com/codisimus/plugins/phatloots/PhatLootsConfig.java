@@ -3,6 +3,7 @@ package com.codisimus.plugins.phatloots;
 import java.io.File;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.logging.Level;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
@@ -161,46 +162,46 @@ public class PhatLootsConfig {
 
         /* LORES.YML */
 
+        String fileName = "lores.yml";
         try {
-            File file = new File(PhatLoots.dataFolder + File.separator + "lores.yml");
+            File file = new File(PhatLoots.dataFolder + File.separator + fileName);
             if (!file.exists()) {
-                PhatLoots.plugin.saveResource("lores.yml", true);
+                PhatLoots.plugin.saveResource(fileName, true);
             }
 
             Item.loreConfig = YamlConfiguration.loadConfiguration(file);
         } catch (Exception ex) {
-            PhatLoots.logger.severe("Failed to load lores.yml");
-            ex.printStackTrace();
+            PhatLoots.logger.log(Level.SEVERE, "Failed to load " + fileName, ex);
         }
 
 
         /* TIERS.YML */
 
+        fileName = "tiers.yml";
         try {
-            File file = new File(PhatLoots.dataFolder + File.separator + "tiers.yml");
+            File file = new File(PhatLoots.dataFolder + File.separator + fileName);
             if (!file.exists()) {
-                PhatLoots.plugin.saveResource("tiers.yml", true);
+                PhatLoots.plugin.saveResource(fileName, true);
             }
 
             Item.tiersConfig = YamlConfiguration.loadConfiguration(file).getConfigurationSection("TIERS");
         } catch (Exception ex) {
-            PhatLoots.logger.severe("Failed to load tiers.yml");
-            ex.printStackTrace();
+            PhatLoots.logger.log(Level.SEVERE, "Failed to load " + fileName, ex);
         }
 
 
         /* ENCHANTMENTS.YML */
 
+        fileName = "enchantments.yml";
         try {
-            File file = new File(PhatLoots.dataFolder + File.separator + "enchantments.yml");
+            File file = new File(PhatLoots.dataFolder + File.separator + fileName);
             if (!file.exists()) {
-                PhatLoots.plugin.saveResource("enchantments.yml", true);
+                PhatLoots.plugin.saveResource(fileName, true);
             }
 
             Item.enchantmentConfig = YamlConfiguration.loadConfiguration(file);
         } catch (Exception ex) {
-            PhatLoots.logger.severe("Failed to load enchantments.yml");
-            ex.printStackTrace();
+            PhatLoots.logger.log(Level.SEVERE, "Failed to load " + fileName, ex);
         }
     }
 

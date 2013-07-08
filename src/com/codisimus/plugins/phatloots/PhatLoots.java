@@ -109,6 +109,9 @@ public class PhatLoots extends JavaPlugin {
         if (getConfig().getBoolean("FishingLoot")) {
             pm.registerEvents(new FishingListener(), this);
         }
+        if (getConfig().getBoolean("VotifierLoot")) {
+            pm.registerEvents(new VoteListener(), this);
+        }
 
         /* Register the command found in the plugin.yml */
         PhatLootsCommand.command = (String) getDescription().getCommands().keySet().toArray()[0];

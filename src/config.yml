@@ -39,6 +39,10 @@ NamedMobs: true
 ##ex. Fishing
 FishingLoot: true
 
+##Votifier Loot should be enabled to modify give Players loot whenever they Vote (Powered by Votifier)
+##ex. Vote
+VotifierLoot: true
+
 ##Only Block Materials that are listed below will be able to be linked
 Blocks:
     - Chest

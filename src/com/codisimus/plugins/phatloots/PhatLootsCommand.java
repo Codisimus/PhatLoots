@@ -1245,7 +1245,7 @@ public class PhatLootsCommand implements CommandExecutor {
         sender.sendMessage("§2/"+command+" <add|remove> coll <Name> [Parameter1] [Parameter2]...");
         sender.sendMessage("§bex. §6/"+command+" add coll %25 cWeapon Bow");
         sender.sendMessage("§2/"+command+" <add|remove> cmd [Parameter1] [Parameter2]... /<Command>");
-        sender.sendMessage("§bTutorial Video:");
+        sender.sendMessage("§bTutorial Video (OUTDATED):");
         sender.sendMessage("§1§nwww.youtu.be/tRQuKbRTaA4");
     }
 
