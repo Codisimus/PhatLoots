@@ -51,7 +51,7 @@ public class PhatLoot implements ConfigurationSerializable {
     public boolean global = PhatLootsConfig.defaultGlobal; //Reset Type
     public boolean round = PhatLootsConfig.defaultRound;
     public boolean autoLoot = PhatLootsConfig.defaultAutoLoot;
-    private HashSet<PhatLootChest> chests = new HashSet<PhatLootChest>(); //List of Chests linked to this PhatLoot
+    private HashSet<PhatLootChest> chests = new HashSet<PhatLootChest>(); //Set of Chests linked to this PhatLoot
     Properties lootTimes = new Properties(); //PhatLootChest'PlayerName=Year'Day'Hour'Minute'Second
 
     /* OLD */

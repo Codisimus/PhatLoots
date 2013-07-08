@@ -38,8 +38,7 @@ public class PhatLootsListener implements Listener {
     @EventHandler (ignoreCancelled = true)
     public void onPlayerInteract(PlayerInteractEvent event) {
         //Return if the Block is not a linkable type
-        Block block = event.getClickedBlock();
-        Material type = block.getType();
+        Material type = event.getMaterial();
         if (!types.containsKey(type)) {
             return;
         }
@@ -68,6 +67,8 @@ public class PhatLootsListener implements Listener {
             phatLoots = new LinkedList<PhatLoot>();
             phatLoots.add(phatLoot);
         }
+
+        Block block = event.getClickedBlock();
 
         switch (event.getAction()) {
         case LEFT_CLICK_BLOCK:
@@ -253,6 +254,13 @@ public class PhatLootsListener implements Listener {
         if (!player.hasPermission("phatloots.admin")) {
             player.sendMessage(PhatLootsConfig.permission);
             event.setCancelled(true);
+        }
+
+        //Unlink the broken Block
+        for (PhatLoot phatLoot : PhatLootsCommand.getPhatLoots(player, null)) {
+            phatLoot.removeChest(block);
+            player.sendMessage("§5Broken " + block.getType().toString() + " has been unlinked from PhatLoot §6" + phatLoot.name);
+            phatLoot.saveChests();
         }
     }
 

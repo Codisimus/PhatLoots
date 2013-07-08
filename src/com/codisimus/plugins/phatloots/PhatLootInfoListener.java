@@ -26,6 +26,7 @@ import org.bukkit.scheduler.BukkitRunnable;
  * @author Codisimus
  */
 public class PhatLootInfoListener implements Listener {
+    private final static int SIZE = 54;
     static HashMap<String, Boolean> switchingPages = new HashMap<String, Boolean>(); //Player name -> Going deeper (true) or back (false)
     static HashMap<String, PhatLoot> infoViewers = new HashMap<String, PhatLoot>(); //Player name -> PhatLoot they are viewing
     static HashMap<String, Stack<Inventory>> pageStacks = new HashMap<String, Stack<Inventory>>(); //Player name -> Page history
@@ -120,18 +121,26 @@ public class PhatLootInfoListener implements Listener {
                 invName = phatLoot.name.substring(0, 32);
             }
         }
-        final Inventory inv = Bukkit.createInventory(player, 54, invName);
+        final Inventory inv = Bukkit.createInventory(player, SIZE, invName);
+
+        int index = SIZE;
+        ItemStack infoStack;
+        ItemMeta info;
+        String amount;
 
         //Show the money Range
-        ItemStack infoStack = new ItemStack(Material.GOLD_NUGGET);
-        ItemMeta info = Bukkit.getItemFactory().getItemMeta(infoStack.getType());
-        String amount = String.valueOf(phatLoot.moneyLower);
-        if (phatLoot.moneyUpper != phatLoot.moneyLower) {
-            amount += '-' + String.valueOf(phatLoot.moneyUpper);
+        if (PhatLoots.econ != null) {
+            infoStack = new ItemStack(Material.GOLD_NUGGET);
+            info = Bukkit.getItemFactory().getItemMeta(infoStack.getType());
+            amount = String.valueOf(phatLoot.moneyLower);
+            if (phatLoot.moneyUpper != phatLoot.moneyLower) {
+                amount += '-' + String.valueOf(phatLoot.moneyUpper);
+            }
+            info.setDisplayName("§6" + amount + ' ' + PhatLoots.econ.currencyNamePlural());
+            infoStack.setItemMeta(info);
+            index--;
+            inv.setItem(index, infoStack);
         }
-        info.setDisplayName("§6" + amount + ' ' + PhatLoots.econ.currencyNamePlural());
-        infoStack.setItemMeta(info);
-        inv.setItem(0, infoStack);
 
         //Show the experience Range
         infoStack = new ItemStack(Material.EXP_BOTTLE);
@@ -142,7 +151,8 @@ public class PhatLootInfoListener implements Listener {
         }
         info.setDisplayName("§6" + amount + " exp");
         infoStack.setItemMeta(info);
-        inv.setItem(1, infoStack);
+        index--;
+        inv.setItem(index, infoStack);
 
         //Show the Reset Time
         infoStack = new ItemStack(Material.WATCH);
@@ -159,48 +169,50 @@ public class PhatLootInfoListener implements Listener {
         }
         info.setLore(details);
         infoStack.setItemMeta(info);
-        inv.setItem(2, infoStack);
+        index--;
+        inv.setItem(index, infoStack);
 
         //Show the autoloot status
         infoStack = new ItemStack(phatLoot.autoLoot ? Material.REDSTONE_TORCH_ON : Material.REDSTONE_TORCH_OFF);
         info = Bukkit.getItemFactory().getItemMeta(infoStack.getType());
         details.add("§4AutoLoot: §6" + phatLoot.autoLoot);
         infoStack.setItemMeta(info);
-        inv.setItem(3, infoStack);
+        index--;
+        inv.setItem(index, infoStack);
 
         //Populate the inventory
-        int index = 4;
+        index = 0;
         for (Loot loot : phatLoot.lootList) {
             inv.setItem(index, loot.getInfoStack());
             index++;
-            if (index >= 54) {
+            if (index >= SIZE - 9) {
                 player.sendMessage("§4Not all items could fit within the inventory view.");
                 break;
             }
         }
 
         //Create an InventoryView which excludes the viewer's personal inventory
-        final InventoryView view = new InventoryView() {
-            @Override
-            public Inventory getTopInventory() {
-                return inv;
-            }
-
-            @Override
-            public Inventory getBottomInventory() {
-                return Bukkit.createInventory(null, 0);
-            }
-
-            @Override
-            public HumanEntity getPlayer() {
-                return player;
-            }
-
-            @Override
-            public InventoryType getType() {
-                return InventoryType.CHEST;
-            }
-        };
+//        final InventoryView view = new InventoryView() {
+//            @Override
+//            public Inventory getTopInventory() {
+//                return Bukkit.createInventory(null, 0, invName);
+//            }
+//
+//            @Override
+//            public Inventory getBottomInventory() {
+//                return inv;
+//            }
+//
+//            @Override
+//            public HumanEntity getPlayer() {
+//                return player;
+//            }
+//
+//            @Override
+//            public InventoryType getType() {
+//                return InventoryType.CHEST;
+//            }
+//        };
 
         //Open the Inventory in 2 ticks to avoid Bukkit glitches
         final String playerName = player.getName();
@@ -211,7 +223,7 @@ public class PhatLootInfoListener implements Listener {
             @Override
             public void run() {
                 infoViewers.put(playerName, phatLoot);
-                player.openInventory(view);
+                player.openInventory(inv);
             }
         }.runTaskLater(PhatLoots.plugin, 2);
     }
@@ -233,14 +245,14 @@ public class PhatLootInfoListener implements Listener {
                 invName = name.substring(0, 32);
             }
         }
-        final Inventory inv = Bukkit.createInventory(player, 54, invName);
+        final Inventory inv = Bukkit.createInventory(player, SIZE, invName);
 
         //Populate the inventory
         int index = 0;
         for (Loot loot : coll.lootList) {
             inv.setItem(index, loot.getInfoStack());
             index++;
-            if (index >= 52) {
+            if (index >= SIZE - 9) {
                 player.sendMessage("§4Not all items could fit within the inventory view.");
                 break;
             }
@@ -251,7 +263,7 @@ public class PhatLootInfoListener implements Listener {
         ItemMeta info = Bukkit.getItemFactory().getItemMeta(item.getType());
         info.setDisplayName("§2Back to top...");
         item.setItemMeta(info);
-        inv.setItem(52, item);
+        inv.setItem(SIZE - 2, item);
 
         item = new ItemStack(Material.LADDER);
         info = Bukkit.getItemFactory().getItemMeta(item.getType());
@@ -264,36 +276,36 @@ public class PhatLootInfoListener implements Listener {
         details.add("§6" + pageStacks.get(playerName).peek().getTitle());
         info.setLore(details);
         item.setItemMeta(info);
-        inv.setItem(53, item);
+        inv.setItem(SIZE - 1, item);
 
         //Create an InventoryView which excludes the viewer's personal inventory
-        final InventoryView view = new InventoryView() {
-            @Override
-            public Inventory getTopInventory() {
-                return inv;
-            }
-
-            @Override
-            public Inventory getBottomInventory() {
-                return Bukkit.createInventory(null, 0);
-            }
-
-            @Override
-            public HumanEntity getPlayer() {
-                return player;
-            }
-
-            @Override
-            public InventoryType getType() {
-                return InventoryType.CHEST;
-            }
-        };
+//        final InventoryView view = new InventoryView() {
+//            @Override
+//            public Inventory getTopInventory() {
+//                return Bukkit.createInventory(null, 0);
+//            }
+//
+//            @Override
+//            public Inventory getBottomInventory() {
+//                return inv;
+//            }
+//
+//            @Override
+//            public HumanEntity getPlayer() {
+//                return player;
+//            }
+//
+//            @Override
+//            public InventoryType getType() {
+//                return InventoryType.CHEST;
+//            }
+//        };
 
         //Open the Inventory in 2 ticks to avoid Bukkit glitches
         new BukkitRunnable() {
             @Override
             public void run() {
-                player.openInventory(view);
+                player.openInventory(inv);
             }
         }.runTaskLater(PhatLoots.plugin, 2);
     }

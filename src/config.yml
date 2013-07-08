@@ -52,7 +52,8 @@ Blocks:
 ##These default settings will print warnings if you do not have the proper PhatLoots
 ##they are only meant to show how this would be set up
 ##I have commented out these default settings because noone bothers to read and replace them
-AutoLink:
+##In order to set this feature you must remove the empty square brackets []
+AutoLink: []
 #    all:
 #        Melon Block: melons
 #    world:
@@ -168,11 +169,12 @@ Defaults:
 
 ##Players need permission to use restricted PhatLoots
 ##'phatloots.loot.Epic' or 'phatloots.loot.*' would be needed to loot Epic if it is restricted
+##In order to set this feature you must remove the empty square brackets []
 RestrictAll: false
-RestrictedPhatLoots:
-    - 'Rare'
-    - 'Epic'
-    - 'Donator'
+RestrictedPhatLoots: []
+#    - 'Rare'
+#    - 'Epic'
+#    - 'Donator'
 
 
 ##Whenever an Item is generated that has a Tier above this number it will be logged

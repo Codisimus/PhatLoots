@@ -94,15 +94,16 @@ public class PhatLootsCommand implements CommandExecutor {
             return true;
         }
 
+        //Cancel if the sender does not have permission to use the command
+        if (!sender.hasPermission("phatloots." + action.toString().toLowerCase())
+                && action != Action.HELP) {
+            sender.sendMessage(PhatLootsConfig.permission);
+            return true;
+        }
+
         //Execute the correct command
         switch (action) {
         case MAKE: //Make a new PhatLoot
-            //Cancel if the sender does not have permission to use the command
-            if (!sender.hasPermission("phatloots.make")) {
-                sender.sendMessage(PhatLootsConfig.permission);
-                return true;
-            }
-
             if (args.length == 2) {
                 make(sender, args[1]);
             } else {
@@ -112,12 +113,6 @@ public class PhatLootsCommand implements CommandExecutor {
             return true;
 
         case DELETE: //Delete an existing PhatLoot
-            //Cancel if the sender does not have permission to use the command
-            if (!sender.hasPermission("phatloots.make")) {
-                sender.sendMessage(PhatLootsConfig.permission);
-                return true;
-            }
-
             if (args.length == 2) {
                 PhatLoot delete = PhatLoots.getPhatLoot(args[1]);
 
@@ -134,12 +129,6 @@ public class PhatLootsCommand implements CommandExecutor {
             return true;
 
         case LINK: //Link the target Block to a PhatLoot
-            //Cancel if the sender does not have permission to use the command
-            if (!sender.hasPermission("phatloots.make")) {
-                sender.sendMessage(PhatLootsConfig.permission);
-                return true;
-            }
-
             if (args.length == 2) {
                 link(sender, args[1]);
             } else {
@@ -149,12 +138,6 @@ public class PhatLootsCommand implements CommandExecutor {
             return true;
 
         case UNLINK: //Unlink the target Block from a PhatLoot
-            //Cancel if the sender does not have permission to use the command
-            if (!sender.hasPermission("phatloots.make")) {
-                sender.sendMessage(PhatLootsConfig.permission);
-                return true;
-            }
-
             switch (args.length) {
             case 1: //All PhatLoots
                 unlink(sender, null);
@@ -170,13 +153,6 @@ public class PhatLootsCommand implements CommandExecutor {
             return true;
 
         case TIME: //Set the reset (cooldown) time of a PhatLoot
-            //Cancel if the sender does not have permission to use the command
-            if (!sender.hasPermission("phatloots.make")) {
-                sender.sendMessage(PhatLootsConfig.permission);
-                return true;
-            }
-
-
             switch (args.length) {
             case 2:  //Name is not provided
                 if (!args[1].equals("never")) {
@@ -219,12 +195,6 @@ public class PhatLootsCommand implements CommandExecutor {
             return true;
 
         case GLOBAL: //Set a PhatLoot to global or individual looting
-            //Cancel if the sender does not have permission to use the command
-            if (!sender.hasPermission("phatloots.make")) {
-                sender.sendMessage(PhatLootsConfig.permission);
-                return true;
-            }
-
             switch (args.length) {
             case 2: //Name is not provided
                 try {
@@ -249,12 +219,6 @@ public class PhatLootsCommand implements CommandExecutor {
             return true;
 
         case AUTOLOOT: //Set a PhatLoot to automatically add loot to the player's inventory
-            //Cancel if the sender does not have permission to use the command
-            if (!sender.hasPermission("phatloots.make")) {
-                sender.sendMessage(PhatLootsConfig.permission);
-                return true;
-            }
-
             switch (args.length) {
             case 2: //Name is not provided
                 try {
@@ -279,12 +243,6 @@ public class PhatLootsCommand implements CommandExecutor {
             return true;
 
         case ROUND: //Set a PhatLoot to round down reset times
-            //Cancel if the sender does not have permission to use the command
-            if (!sender.hasPermission("phatloots.make")) {
-                sender.sendMessage(PhatLootsConfig.permission);
-                return true;
-            }
-
             switch (args.length) {
             case 2: //Name is not provided
                 try {
@@ -310,12 +268,6 @@ public class PhatLootsCommand implements CommandExecutor {
 
         case REMOVE: //Fall through
         case ADD: //Manage Loot of a PhatLoot
-            //Cancel if the sender does not have permission to use the command
-            if (!sender.hasPermission("phatloots.make")) {
-                sender.sendMessage(PhatLootsConfig.permission);
-                return true;
-            }
-
             if (args.length < 2) {
                 sendSetupHelp(sender);
                 return true;
@@ -456,12 +408,6 @@ public class PhatLootsCommand implements CommandExecutor {
             return true;
 
         case COST: //Set the cost to loot a PhatLoot
-            //Cancel if the sender does not have permission to use the command
-            if (!sender.hasPermission("phatloots.make")) {
-                sender.sendMessage(PhatLootsConfig.permission);
-                return true;
-            }
-
             switch (args.length) {
             case 2: //Name is not provided
                 try {
@@ -488,12 +434,6 @@ public class PhatLootsCommand implements CommandExecutor {
             return true;
 
         case MONEY: //Set the amount of money to be looted from a PhatLoot
-            //Cancel if the sender does not have permission to use the command
-            if (!sender.hasPermission("phatloots.make")) {
-                sender.sendMessage(PhatLootsConfig.permission);
-                return true;
-            }
-
             switch (args.length) {
             case 2: //Name is not provided
                 try {
@@ -520,12 +460,6 @@ public class PhatLootsCommand implements CommandExecutor {
             return true;
 
         case EXP: //Set the amount of experience to be looted from a PhatLoot
-            //Cancel if the sender does not have permission to use the command
-            if (!sender.hasPermission("phatloots.make")) {
-                sender.sendMessage(PhatLootsConfig.permission);
-                return true;
-            }
-
             switch (args.length) {
             case 2: //Name is not provided
                 setExp(sender, null, args[1]);
@@ -541,12 +475,6 @@ public class PhatLootsCommand implements CommandExecutor {
             }
 
         case LIST: //List all PhatLoots
-            //Cancel if the sender does not have permission to use the command
-            if (!sender.hasPermission("phatloots.list")) {
-                sender.sendMessage(PhatLootsConfig.permission);
-                return true;
-            }
-
             if (args.length == 1) {
                 list(sender);
             } else {
@@ -555,12 +483,6 @@ public class PhatLootsCommand implements CommandExecutor {
             return true;
 
         case INFO: //View information of a PhatLoot
-            //Cancel if the sender does not have permission to use the command
-            if (!sender.hasPermission("phatloots.info")) {
-                sender.sendMessage(PhatLootsConfig.permission);
-                return true;
-            }
-
             switch (args.length) {
             case 1: //Name is not provided
                 info(sender, null);
@@ -574,12 +496,6 @@ public class PhatLootsCommand implements CommandExecutor {
             }
 
         case RESET: //Reset the loot times of a PhatLoot
-            //Cancel if the sender does not have permission to use the command
-            if (!sender.hasPermission("phatloots.reset")) {
-                sender.sendMessage(PhatLootsConfig.permission);
-                return true;
-            }
-
             switch (args.length) {
             case 1: //Name is not provided
                 reset(sender, null);
@@ -593,12 +509,6 @@ public class PhatLootsCommand implements CommandExecutor {
             }
 
         case CLEAN: //Clean up loot times of a PhatLoot
-            //Cancel if the sender does not have permission to use the command
-            if (!sender.hasPermission("phatloots.clean")) {
-                sender.sendMessage(PhatLootsConfig.permission);
-                return true;
-            }
-
             switch (args.length) {
             case 1: //Name is not provided
                 clean(sender, null);
@@ -618,14 +528,6 @@ public class PhatLootsCommand implements CommandExecutor {
                     return true;
                 } else {
                     return false;
-                }
-            }
-
-            //Cancel if the sender does not have the needed permission
-            if (sender instanceof Player) {
-                if (!sender.hasPermission("phatloots.give")) {
-                    sender.sendMessage(PhatLootsConfig.permission);
-                    return true;
                 }
             }
 
@@ -653,12 +555,6 @@ public class PhatLootsCommand implements CommandExecutor {
             return true;
 
         case RL: //Reload plugin data and settings
-            //Cancel if the sender does not have permission to use the command
-            if (!sender.hasPermission("phatloots.rl")) {
-                sender.sendMessage(PhatLootsConfig.permission);
-                return true;
-            }
-
             if (args.length == 1) {
                 PhatLoots.rl(sender);
             } else {

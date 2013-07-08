@@ -44,12 +44,6 @@ public class DispenserListener implements Listener {
             return;
         }
 
-        //Return if the Player does not have permission to receive loots
-        if (!player.hasPermission("phatloots.use")) {
-            player.sendMessage(PhatLootsConfig.permission);
-            return;
-        }
-
         //Get the inventory of the Dispenser
         Dispenser dispenser = (Dispenser) block.getState();
         Inventory inventory = dispenser.getInventory();
@@ -57,7 +51,9 @@ public class DispenserListener implements Listener {
         //Roll for linked loot
         PhatLootChest plChest = new PhatLootChest(block);
         for (PhatLoot phatLoot : PhatLoots.getPhatLoots(block, player)) {
-            phatLoot.rollForLoot(player, plChest, inventory);
+            if (PhatLoots.canLoot(player, phatLoot)) {
+                phatLoot.rollForLoot(player, plChest, inventory);
+            }
         }
     }
 

@@ -1,11 +1,11 @@
 name: PhatLoots
 main: com.codisimus.plugins.phatloots.PhatLoots
-version: 3.1.6
+version: 3.1.7
 author: Codisimus
 website: www.codisimus.com
 description: Chests with randomly generated money/items
 load: postworld
-softdepend: [Vault, EpicBossRecoded, RegionOwn]
+softdepend: [Vault, EpicBossRecoded, RegionOwn, Econ]
 commands:
   loot:
     description: Used to setup PhatLoot Chests and rewards
@@ -18,19 +18,59 @@ permissions:
     default: true
   phatloots.commandloot:
     description: Needed to receive loots through command
-  phatloots.make:
-    description: Needed to make a PhatLoot (/loot make, /loot delete, /loot link, /loot unlink, /loot description, /loot add, /loot remove, /loot money, /loot time, /loot type)
   phatloots.rl:
-    description: Needed to reload PhatLoots (/loot rl)
+    description: Needed to reload the PhatLoots plugin (/loot rl)
   phatloots.reset:
     description: Needed to reset the list of users who looted PhatLoots (/loot reset)
+  phatloots.clean:
+    description: Needed to remove loot times that are no longer relevant. This is automatically done when the server shuts down (/loot clean)
   phatloots.list:
     description: Needed to list all current PhatLoots (/loot list)
   phatloots.info:
     description: Needed to see loot information of a given PhatLoot (/loot info)
-  phatloots.name:
-    description: Needed to see the name of the PhatLoot that a chest belongs to (/loot name)
   phatloots.give:
-    description: Needed to force a Player to open a PhatLoot chest (/loot give)
+    description: Needed to force a Player to loot a PhatLoot (/loot give)
   phatloots.admin:
-    description: Needed to break linked Blocks
+    description: Needed to break linked Blocks (Will unlink the chest)
+  phatloots.make:
+    description: Needed to create a new PhatLoot (/loot make)
+  phatloots.delete:
+    description: Needed to delete a PhatLoot (/loot delete)
+  phatloots.link:
+    description: Needed to link a PhatLoot to a chest (/loot link)
+  phatloots.unlink:
+    description: Needed to unlink a PhatLoot from a chest (/loot unlink)
+  phatloots.add:
+    description: Needed to add loot to a PhatLoot (/loot add)
+  phatloots.remove:
+    description: Needed to remove loot from a PhatLoot (/loot remove)
+  phatloots.time:
+    description: Needed to set the reset time of a PhatLoot (/loot time)
+  phatloots.global:
+    description: Needed to set whether a PhatLoot has a global cooldown (/loot global)
+  phatloots.autoloot:
+    description: Needed to set whether a PhatLoot is autolooted (/loot autoloot)
+  phatloots.round:
+    description: Needed to set whether a PhatLoot's reset time is rounded down (/loot round)
+  phatloots.cost:
+    description: Needed to set the cost to loot a PhatLoot (/loot cost)
+  phatloots.money:
+    description: Needed to set how much money is looted from a PhatLoot (/loot money)
+  phatloots.exp:
+    description: Needed to set how much experience is looted from a PhatLoot (/loot exp)
+  phatloots.create:
+    description: Groups all PhatLoot creation/setup nodes
+    children:
+      phatloots.make: true
+      phatloots.delete: true
+      phatloots.link: true
+      phatloots.unlink: true
+      phatloots.add: true
+      phatloots.remove: true
+      phatloots.time: true
+      phatloots.global: true
+      phatloots.autoloot: true
+      phatloots.round: true
+      phatloots.cost: true
+      phatloots.money: true
+      phatloots.exp: true
