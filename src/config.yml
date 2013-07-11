@@ -42,7 +42,7 @@ FishingLoot: true
 ##Votifier Loot should be enabled to modify give Players loot whenever they Vote (Powered by Votifier)
 ##This should be set to autoloot and give little loot to not cause issues with numerous votes at once
 ##ex. Vote
-VotifierLoot: true
+VotifierLoot: false
 
 ##Only Block Materials that are listed below will be able to be linked
 Blocks:

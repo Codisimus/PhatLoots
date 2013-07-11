@@ -189,9 +189,10 @@ public class PhatLoot implements ConfigurationSerializable {
                     player.sendMessage("§6Vault §4is not enabled, so no money can be processed.");
                 }
             } else if (amount < 0) { //Cost
+                amount *= -1;
                 if (PhatLoots.econ != null) {
-                    EconomyResponse r = PhatLoots.econ.withdrawPlayer(player.getName(), -amount);
-                    String money = PhatLoots.econ.format(-amount).replace(".00", "");
+                    EconomyResponse r = PhatLoots.econ.withdrawPlayer(player.getName(), amount);
+                    String money = PhatLoots.econ.format(amount).replace(".00", "");
                     if (r.transactionSuccess()) {
                         if (PhatLootsConfig.moneyCharged != null) {
                             player.sendMessage(PhatLootsConfig.moneyCharged.replace("<amount>", money));
@@ -704,12 +705,23 @@ public class PhatLoot implements ConfigurationSerializable {
      * if there is an old file it is over written
      */
     public void save() {
+        OutputStreamWriter out = null;
         try {
             YamlConfiguration config = new YamlConfiguration();
             config.set(name, this);
-            config.save(PhatLoots.dataFolder + File.separator + "LootTables" + File.separator + name + ".yml");
+
+            File file = new File(PhatLoots.dataFolder + File.separator + "LootTables" + File.separator + name + ".yml");
+            String data = config.saveToString();
+            out = new OutputStreamWriter(new FileOutputStream(file), "UTF-8");
+            out.write(data, 0, data.length());
         } catch (IOException ex) {
-            PhatLoots.logger.log(Level.SEVERE, "Save Failed!", ex);
+            PhatLoots.logger.log(Level.SEVERE, "Could not save PhatLoot " + name, ex);
+        } finally {
+            try {
+                out.flush();
+                out.close();
+            } catch (Exception e) {
+            }
         }
     }
 

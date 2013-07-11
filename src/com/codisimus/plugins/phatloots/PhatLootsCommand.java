@@ -1173,8 +1173,8 @@ public class PhatLootsCommand implements CommandExecutor {
         sender.sendMessage("§e     PhatLoots Help Page:");
         sender.sendMessage("§2/"+command+" <Name>§b Loot a virtual Chest for the given PhatLoot");
         sender.sendMessage("§2/"+command+" list§b List all PhatLoots");
-        sender.sendMessage("§2/"+command+" info [Name]§b List info of PhatLoot");
-        sender.sendMessage("§2/"+command+" give <Player> <PhatLoot> [Title]§b Force Player to open a PhatLoot");
+        sender.sendMessage("§2/"+command+" info [Name]§b Open info GUI of PhatLoot");
+        sender.sendMessage("§2/"+command+" give <Player> <PhatLoot> [Title]§b Force Player to loot a PhatLoot");
         sender.sendMessage("§2/"+command+" reset§b Reset looted times for target Block");
         sender.sendMessage("§2/"+command+" reset <Name>§b Reset looted times for PhatLoot");
         sender.sendMessage("§2/"+command+" reset all§b Reset looted times for all PhatLoots");
@@ -1184,7 +1184,7 @@ public class PhatLootsCommand implements CommandExecutor {
         sender.sendMessage("§2/"+command+" help create§b Display PhatLoots Create Help Page");
         sender.sendMessage("§2/"+command+" help setup§b Display PhatLoots Setup Help Page");
         sender.sendMessage("§2/"+command+" help loot§b Display PhatLoots Manage Loot Help Page");
-        sender.sendMessage("§2/"+command+" rl§b Reload PhatLoots Plugin");
+        sender.sendMessage("§2/"+command+" rl§b Reload the PhatLoots Plugin");
     }
 
     /**
@@ -1194,7 +1194,6 @@ public class PhatLootsCommand implements CommandExecutor {
      */
     private static void sendCreateHelp(CommandSender sender) {
         sender.sendMessage("§e     PhatLoots Create Help Page:");
-        sender.sendMessage("§7If Name is not specified then all PhatLoots linked to the target Block will be affected");
         sender.sendMessage("§2/"+command+" make <Name>§b Create PhatLoot with given name");
         sender.sendMessage("§2/"+command+" delete <Name>§b Delete PhatLoot");
         sender.sendMessage("§2/"+command+" link <Name>§b Link target Chest/Dispenser with PhatLoot");

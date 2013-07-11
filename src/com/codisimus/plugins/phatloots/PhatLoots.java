@@ -1,6 +1,10 @@
 package com.codisimus.plugins.phatloots;
 
+import com.google.common.io.Files;
 import java.io.*;
+import java.nio.ByteBuffer;
+import java.nio.charset.CharacterCodingException;
+import java.nio.charset.Charset;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -183,9 +187,8 @@ public class PhatLoots extends JavaPlugin {
             try {
                 String name = file.getName();
                 name = name.substring(0, name.length() - 4);
+                YamlConfiguration config = loadConfig(file);
 
-                YamlConfiguration config = new YamlConfiguration();
-                config.load(file);
                 //Ensure the PhatLoot name matches the file name
                 PhatLoot phatLoot = (PhatLoot) config.get(config.contains(name)
                                                           ? name
@@ -493,6 +496,41 @@ public class PhatLoots extends JavaPlugin {
      */
     public static double rollForDouble(int lower, int upper) {
         return random.nextInt(upper + 1 - lower) + lower;
+    }
+
+    /**
+     * Does the same as getConfig() but for the given config file.
+     *
+     * @param file The file to load
+     * @return The YamlConfiguration loaded
+     */
+    public static YamlConfiguration loadConfig(File file) {
+        YamlConfiguration fileConfiguration = new YamlConfiguration();
+        try {
+            if (isValidUTF8(Files.toByteArray(file))) {
+                fileConfiguration.loadFromString(Files.toString(file, Charset.forName("UTF-8")));
+            } else {
+                fileConfiguration.load(file);
+            }
+        } catch (Exception ex) {
+            PhatLoots.logger.log(Level.SEVERE, "§4Could not load data from " + file, ex);
+        }
+        return fileConfiguration;
+    }
+
+    /**
+     * Checks if given byte array is valid UTF-8 encoded.
+     *
+     * @param bytes
+     * @return true when valid UTF8 encoded
+     */
+    public static boolean isValidUTF8(final byte[] bytes) {
+        try {
+            Charset.availableCharsets().get("UTF-8").newDecoder().decode(ByteBuffer.wrap(bytes));
+        } catch (CharacterCodingException e) {
+            return false;
+        }
+        return true;
     }
 
     /* OLD */
