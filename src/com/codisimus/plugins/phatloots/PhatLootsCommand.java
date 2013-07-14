@@ -30,7 +30,7 @@ import org.bukkit.inventory.ItemStack;
  */
 public class PhatLootsCommand implements CommandExecutor {
     private static enum Action { //Loot Commands
-        HELP, MAKE, DELETE, LINK, UNLINK, TIME, GLOBAL, AUTOLOOT, ROUND,
+        HELP, MAKE, DELETE, LINK, UNLINK, TIME, GLOBAL, AUTOLOOT, BREAK, ROUND,
         ADD, REMOVE, COST, MONEY, EXP, LIST, INFO, GIVE, RESET, CLEAN, RL
     }
     private static enum Help { CREATE, SETUP, LOOT } //Help Pages
@@ -89,7 +89,7 @@ public class PhatLootsCommand implements CommandExecutor {
 
             	//Open the Inventory
             	player.openInventory(inventory);
-            	phatLoot.rollForLoot(player, new PhatLootChest(player.getLocation().getBlock()), inventory);
+            	phatLoot.rollForLoot(player, PhatLootChest.getTempChest(player.getLocation().getBlock()), inventory);
             }
             return true;
         }
@@ -231,6 +231,30 @@ public class PhatLootsCommand implements CommandExecutor {
             case 3: //Name is provided
                 try {
                     autoLoot(sender, args[1], Boolean.parseBoolean(args[2]));
+                    return true;
+                } catch (Exception notBool) {
+                    break;
+                }
+
+            default: break;
+            }
+
+            sendSetupHelp(sender);
+            return true;
+
+        case BREAK: //Set a PhatLootChest to automatically break and respawn after being looted
+            switch (args.length) {
+            case 2: //Name is not provided
+                try {
+                    breakAndRespawn(sender, null, Boolean.parseBoolean(args[1]));
+                    return true;
+                } catch (Exception notBool) {
+                    break;
+                }
+
+            case 3: //Name is provided
+                try {
+                    breakAndRespawn(sender, args[1], Boolean.parseBoolean(args[2]));
                     return true;
                 } catch (Exception notBool) {
                     break;
@@ -551,7 +575,7 @@ public class PhatLootsCommand implements CommandExecutor {
 
             Inventory inventory = Bukkit.createInventory(player, 54, name);
             player.openInventory(inventory);
-            pLoot.rollForLoot(player, new PhatLootChest(player.getLocation().getBlock()), inventory);
+            pLoot.rollForLoot(player, PhatLootChest.getTempChest(player.getLocation().getBlock()), inventory);
             return true;
 
         case RL: //Reload plugin data and settings
@@ -800,16 +824,36 @@ public class PhatLootsCommand implements CommandExecutor {
      *
      * @param sender The CommandSender modifying the PhatLoot
      * @param name The name of the PhatLoot to be modified or null to indicate all linked PhatLoots
-     * @param autoLoot The new value of global
+     * @param autoLoot The new value of autoLoot
      */
     public static void autoLoot(CommandSender sender, String name, boolean autoLoot) {
         for (PhatLoot phatLoot : getPhatLoots(sender, name)) {
             if (phatLoot.autoLoot != autoLoot) {
                 phatLoot.autoLoot = autoLoot;
-                phatLoot.reset(null);
 
                 sender.sendMessage("§5PhatLoot §6" + phatLoot.name + "§5 has been set to"
                         + (autoLoot ? "automatically add Loot to the looters inventory." : "open the chest inventory for the looter."));
+            }
+            phatLoot.save();
+        }
+    }
+
+    /**
+     * Modifies breakAndRespawn of the specified PhatLoot
+     *
+     * @param sender The CommandSender modifying the PhatLoot
+     * @param name The name of the PhatLoot to be modified or null to indicate all linked PhatLoots
+     * @param breakAndRespawn The new value of breakAndRespawn
+     */
+    public static void breakAndRespawn(CommandSender sender, String name, boolean breakAndRespawn) {
+        for (PhatLoot phatLoot : getPhatLoots(sender, name)) {
+            if (phatLoot.breakAndRespawn != breakAndRespawn) {
+                phatLoot.breakAndRespawn = breakAndRespawn;
+
+                sender.sendMessage("§5PhatLoot §6" + phatLoot.name + "§5 has been set to"
+                        + (breakAndRespawn
+                           ? "automatically break global chests when they are looted and have them respawn."
+                           : "keep chests present after looting."));
             }
             phatLoot.save();
         }
@@ -1213,6 +1257,7 @@ public class PhatLootsCommand implements CommandExecutor {
         sender.sendMessage("§2/"+command+" time [Name] never§b Set PhatLoot to only be lootable once per chest");
         sender.sendMessage("§2/"+command+" global [Name] <true|false>§b Set PhatLoot to global or individual");
         sender.sendMessage("§2/"+command+" autoloot [Name] <true|false>§b Set if Items are automatically looted");
+        sender.sendMessage("§2/"+command+" autoloot [Name] <true|false>§b Set if global Chests are broken after looting");
         sender.sendMessage("§2/"+command+" round [Name] <true|false>§b Set if cooldown times should round down (ex. Daily/Hourly loots)");
         sender.sendMessage("§2/"+command+" cost [Name] <Amount>§b Set cost of looting");
         sender.sendMessage("§2/"+command+" money [Name] <Amount>§b Set money range to be looted");

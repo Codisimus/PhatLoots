@@ -1,6 +1,6 @@
 name: PhatLoots
 main: com.codisimus.plugins.phatloots.PhatLoots
-version: 3.1.7
+version: 3.2.0
 author: Codisimus
 website: www.codisimus.com
 description: Chests with randomly generated money/items
@@ -50,6 +50,8 @@ permissions:
     description: Needed to set whether a PhatLoot has a global cooldown (/loot global)
   phatloots.autoloot:
     description: Needed to set whether a PhatLoot is autolooted (/loot autoloot)
+  phatloots.break:
+    description: Needed to set whether a PhatLootChest is automatically broken after looting (/loot break)
   phatloots.round:
     description: Needed to set whether a PhatLoot's reset time is rounded down (/loot round)
   phatloots.cost:
@@ -70,6 +72,7 @@ permissions:
       phatloots.time: true
       phatloots.global: true
       phatloots.autoloot: true
+      phatloots.break: true
       phatloots.round: true
       phatloots.cost: true
       phatloots.money: true

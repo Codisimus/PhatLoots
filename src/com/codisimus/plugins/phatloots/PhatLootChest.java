@@ -1,11 +1,14 @@
 package com.codisimus.plugins.phatloots;
 
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.World;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockState;
 import org.bukkit.block.Chest;
 import org.bukkit.block.Dispenser;
 import org.bukkit.entity.Player;
@@ -13,6 +16,7 @@ import org.bukkit.inventory.DoubleChestInventory;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
+import org.bukkit.scheduler.BukkitRunnable;
 
 /**
  * A PhatLootChest is a Block location and a Map of Users with times attached to them
@@ -20,17 +24,20 @@ import org.bukkit.inventory.PlayerInventory;
  * @author Codisimus
  */
 public class PhatLootChest {
+    private static HashMap<String, PhatLootChest> chests = new HashMap<String, PhatLootChest>();
     static boolean soundOnAutoLoot;
+    static boolean soundOnBreak;
     private String world;
     private int x, y, z;
     public boolean isDispenser;
+    private BlockState state;
 
     /**
      * Constructs a new PhatLootChest with the given Block
      *
      * @param block The given Block
      */
-    public PhatLootChest(Block block) {
+    private PhatLootChest(Block block) {
         world = block.getWorld().getName();
         x = block.getX();
         y = block.getY();
@@ -46,7 +53,7 @@ public class PhatLootChest {
      * @param y The y-coordinate of the Block
      * @param z The z-coordinate of the Block
      */
-    public PhatLootChest(String world, int x, int y, int z) {
+    private PhatLootChest(String world, int x, int y, int z) {
         this.world = world;
         this.x = x;
         this.y = y;
@@ -58,6 +65,59 @@ public class PhatLootChest {
         } else {
             Block block = w.getBlockAt(x, y, z);
             isDispenser = block.getTypeId() == 23;
+            chests.put(world + "'" + x + "'" + y + "'" + z, this);
+        }
+    }
+
+//    /**
+//     * Constructs a new PhatLootChest with the given Block Location data
+//     *
+//     * @param data The data in the form [world, x, y, z]
+//     */
+//    private PhatLootChest(String[] data) {
+//        world = data[0];
+//        x = Integer.parseInt(data[1]);
+//        y = Integer.parseInt(data[2]);
+//        z = Integer.parseInt(data[3]);
+//        World w = Bukkit.getWorld(world);
+//        if (w == null) { //The world is not currently loaded
+//            PhatLoots.logger.warning("The world '" + world + "' is not currently loaded, all linked chests in this world are being unlinked.");
+//            PhatLoots.logger.warning("THIS CHEST UNLINKING IS PERMANANT IF YOU LINK/UNLINK ANY OTHER CHESTS IN THIS PHATLOOT!");
+//        } else {
+//            Block block = w.getBlockAt(x, y, z);
+//            isDispenser = block.getTypeId() == 23;
+//            chests.put(world + "'" + x + "'" + y + "'" + z, this);
+//        }
+//    }
+
+    /**
+     * Constructs a new PhatLootChest with the given Block
+     *
+     * @param block The given Block
+     */
+    public static PhatLootChest getChest(Block block) {
+        String key = block.getWorld().getName() + "'" + block.getX() + "'" + block.getY() + "'" + block.getZ();
+        if (chests.containsKey(key)) {
+            return chests.get(key);
+        } else {
+            return new PhatLootChest(block);
+        }
+    }
+
+    /**
+     * Constructs a new PhatLootChest with the given Block Location data
+     *
+     * @param world The name of the World
+     * @param x The x-coordinate of the Block
+     * @param y The y-coordinate of the Block
+     * @param z The z-coordinate of the Block
+     */
+    public static PhatLootChest getChest(String world, int x, int y, int z) {
+        String key = world + "'" + x + "'" + y + "'" + z;
+        if (chests.containsKey(key)) {
+            return chests.get(key);
+        } else {
+            return new PhatLootChest(world, x, y, z);
         }
     }
 
@@ -66,19 +126,37 @@ public class PhatLootChest {
      *
      * @param data The data in the form [world, x, y, z]
      */
-    public PhatLootChest(String[] data) {
-        world = data[0];
-        x = Integer.parseInt(data[1]);
-        y = Integer.parseInt(data[2]);
-        z = Integer.parseInt(data[3]);
-        World w = Bukkit.getWorld(world);
-        if (w == null) { //The world is not currently loaded
-            PhatLoots.logger.warning("The world '" + world + "' is not currently loaded, all linked chests in this world are being unlinked.");
-            PhatLoots.logger.warning("THIS CHEST UNLINKING IS PERMANANT IF YOU LINK/UNLINK ANY OTHER CHESTS IN THIS PHATLOOT!");
+    public static PhatLootChest getChest(String[] data) {
+        String key = data[0] + "'" + data[1] + "'" + data[2] + "'" + data[3];
+        if (chests.containsKey(key)) {
+            return chests.get(key);
         } else {
-            Block block = w.getBlockAt(x, y, z);
-            isDispenser = block.getTypeId() == 23;
+            return new PhatLootChest(data[0], Integer.parseInt(data[1]), Integer.parseInt(data[2]), Integer.parseInt(data[3]));
         }
+    }
+
+    /**
+     * Constructs a new PhatLootChest with the given Block
+     *
+     * @param block The given Block
+     */
+    public static PhatLootChest getTempChest(Block block) {
+        String key = block.getWorld().getName() + "'" + block.getX() + "'" + block.getY() + "'" + block.getZ();
+        if (chests.containsKey(key)) {
+            return chests.get(key);
+        } else {
+            return new PhatLootChest(block);
+        }
+    }
+
+    /**
+     * Returns true if the given Block is linked to a PhatLoot
+     *
+     * @param block the given Block
+     * @return true if the given Block is linked to a PhatLoot
+     */
+    public static boolean isPhatLootChest(Block block) {
+        return chests.containsKey(block.getWorld().getName() + "'" + block.getX() + "'" + block.getY() + "'" + block.getZ());
     }
 
     /**
@@ -88,6 +166,42 @@ public class PhatLootChest {
      */
     public Block getBlock() {
         return Bukkit.getWorld(world).getBlockAt(x, y, z);
+    }
+
+    /**
+     * Breaks the PhatLootChest and schedules it to respawn in the given amount of time
+     *
+     * @param time How long (in milliseconds) until the chest should respawn
+     */
+    public void breakChest(long time) {
+        //Save the BlockState
+        Block block = getBlock();
+        state = block.getState();
+
+        //Set the Block to AIR
+        block.setTypeId(0);
+
+        //Schedule the chest to respawn
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                respawn();
+            }
+        }.runTaskLater(PhatLoots.plugin, time / 50);
+
+        if (soundOnBreak) {
+            block.getWorld().playSound(block.getLocation(), Sound.ZOMBIE_WOODBREAK, 1, 1);
+        }
+    }
+
+    /**
+     * Respawns the chest as it was before is was broken
+     */
+    public void respawn() {
+        if (state != null) {
+            state.update(true);
+            state = null;
+        }
     }
 
     /**
@@ -225,27 +339,5 @@ public class PhatLootChest {
     @Override
     public String toString() {
         return world + "'" + x + "'" + y + "'" + z;
-    }
-
-    @Override
-    public boolean equals(Object object) {
-        if (object instanceof PhatLootChest) {
-            PhatLootChest chest = (PhatLootChest) object;
-            return chest.x == x
-                   && chest.y == y
-                   && chest.z == z
-                   && chest.world.equals(world);
-        }
-        return false;
-    }
-
-    @Override
-    public int hashCode() {
-        int hash = 7;
-        hash = 47 * hash + (world != null ? world.hashCode() : 0);
-        hash = 47 * hash + x;
-        hash = 47 * hash + y;
-        hash = 47 * hash + z;
-        return hash;
     }
 }

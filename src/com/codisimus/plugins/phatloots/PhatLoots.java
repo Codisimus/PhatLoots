@@ -19,6 +19,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -271,29 +272,13 @@ public class PhatLoots extends JavaPlugin {
      */
     public static LinkedList<PhatLoot> getPhatLoots(Block block) {
         LinkedList<PhatLoot> phatLootList = new LinkedList<PhatLoot>();
-        PhatLootChest chest = new PhatLootChest(block);
+        PhatLootChest chest = PhatLootChest.getChest(block);
         for (PhatLoot phatLoot : phatLoots.values()) {
             if (phatLoot.containsChest(chest)) {
                 phatLootList.add(phatLoot);
             }
         }
         return phatLootList;
-    }
-
-    /**
-     * Returns true if the given Block is linked to a PhatLoot
-     *
-     * @param block the given Block
-     * @return true if the given Block is linked to a PhatLoot
-     */
-    public static boolean isPhatLootChest(Block block) {
-        PhatLootChest plChest = new PhatLootChest(block);
-        for (PhatLoot phatLoot : PhatLoots.getPhatLoots()) {
-            if (phatLoot.containsChest(plChest)) {
-                return true;
-            }
-        }
-        return false;
     }
 
     /**
@@ -316,7 +301,7 @@ public class PhatLoots extends JavaPlugin {
      */
     public static LinkedList<PhatLoot> getPhatLoots(Block block, Player player) {
         LinkedList<PhatLoot> phatLootList = new LinkedList<PhatLoot>();
-        PhatLootChest chest = new PhatLootChest(block);
+        PhatLootChest chest = PhatLootChest.getChest(block);
         for (PhatLoot phatLoot : phatLoots.values()) {
             if (phatLoot.containsChest(chest) && canLoot(player, phatLoot)) {
                 phatLootList.add(phatLoot);
@@ -413,6 +398,33 @@ public class PhatLoots extends JavaPlugin {
                         p.playSound(loc, Sound.CHEST_CLOSE, 0.75F, 0.95F);
                         p.playNote(loc, (byte) 1, (byte) 0); //Close animation
                     }
+
+                    for (ItemStack item : inv.getContents()) {
+                        if (item != null && item.getTypeId() != 0) {
+                            break;
+                        }
+                    }
+
+                    long time = -1;
+                    for (PhatLoot phatLoot : phatLoots.values()) {
+                        if (phatLoot.containsChest(chest) && phatLoot.breakAndRespawn) {
+                            if (phatLoot.global) {
+                                long temp = phatLoot.getTimeRemaining(chest);
+                                if (temp < 1) {
+                                    continue;
+                                }
+                                if (time < 0 || temp < time) {
+                                    time = temp;
+                                }
+                            } else {
+                                break;
+                            }
+                        }
+                    }
+
+                    if (time > 1) {
+                        chest.breakChest(time);
+                    }
                 }
             } else {
                 //Play for only the individual Player
@@ -444,6 +456,34 @@ public class PhatLoots extends JavaPlugin {
                     for (Player p: player.getWorld().getPlayers()) {
                         p.playSound(loc, Sound.CHEST_CLOSE, 0.75F, 0.95F);
                         p.playNote(loc, (byte) 1, (byte) 0); //Close animation
+                    }
+
+                    for (ItemStack item : inv.getContents()) {
+                        if (item != null && item.getTypeId() != 0) {
+                            break;
+                        }
+                    }
+
+                    PhatLootChest chest = PhatLootChest.getChest(loc.getBlock());
+                    long time = -1;
+                    for (PhatLoot phatLoot : phatLoots.values()) {
+                        if (phatLoot.containsChest(chest) && phatLoot.breakAndRespawn) {
+                            if (phatLoot.global) {
+                                long temp = phatLoot.getTimeRemaining(chest);
+                                if (temp < 1) {
+                                    continue;
+                                }
+                                if (time < 0 || temp < time) {
+                                    time = temp;
+                                }
+                            } else {
+                                break;
+                            }
+                        }
+                    }
+
+                    if (time > 1) {
+                        chest.breakChest(time);
                     }
                 }
             } else {
@@ -519,18 +559,18 @@ public class PhatLoots extends JavaPlugin {
     }
 
     /**
-     * Checks if given byte array is valid UTF-8 encoded.
+     * Checks if the given byte array is UTF-8 encoded.
      *
-     * @param bytes
-     * @return true when valid UTF8 encoded
+     * @param bytes The array of bytes to check for validity
+     * @return true when validly UTF8 encoded
      */
-    public static boolean isValidUTF8(final byte[] bytes) {
+    public static boolean isValidUTF8(byte[] bytes) {
         try {
             Charset.availableCharsets().get("UTF-8").newDecoder().decode(ByteBuffer.wrap(bytes));
+            return true;
         } catch (CharacterCodingException e) {
             return false;
         }
-        return true;
     }
 
     /* OLD */

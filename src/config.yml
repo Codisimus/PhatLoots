@@ -7,44 +7,45 @@
 ##You may disable any of these features by setting them to false
 ##You should disable all of these that you will not be using
 
-##Using Dispensers may cause significant lag if you have a decent amount of redstone on the server
+##Using Dispensers may cause significant lag if you have a decent amount of redstone circuts on the server
 DispenserLoot: true
 
 ##Using MobLoot may cause significant lag if there are numerous mobs on the server
-##ex. Zombie, Creeper, Skeleton, Spider, Player
+##e.g. Zombie, Creeper, Skeleton, Spider, Player
 MobDropLoot: true
-##ex. ZombieSpawn, SkeletonSpawn, VillagerSpawn
+##e.g. ZombieSpawn, SkeletonSpawn, VillagerSpawn
 MobSpawnLoot: true
 
 ##World Mob Loots should be disabled if you only have one World
-##ex. Zombie@MainWorld, Zombie@DungeonWorld
+##e.g. Zombie@MainWorld, Zombie@DungeonWorld
 WorldMobDropLoot: true
-##ex. ZombieSpawn@MainWorld, ZombieSpawn@DungeonWorld
+##e.g. ZombieSpawn@MainWorld, ZombieSpawn@DungeonWorld
 WorldMobSpawnLoot: true
 
 ##Region Mob Loots are automatically disabled if RegionOwn is not installed
-##ex. Zombie@Graveyard, Spider@Nest
+##e.g. Zombie@Graveyard, Spider@Nest
 RegionMobDropLoot: true
 RegionMobSpawnLoot: true
 
 ##Mob Types should be enabled if you want to distinguish between different types of Zombies, Skeletons, Villagers, etc.
-##ex. BabyZombie, WitherSkeleton, PriestVillager
+##e.g. BabyZombie, WitherSkeleton, PriestVillager
 MobTypes: true
 
-##Named Mobs should be enabled if you want to have specific Mob Loots for named Mobs
-##ex. ZombieBoss, Skeletor, Paul the Priest
+##Named Mobs should be enabled if you want to have mobs drop loot based on their name
+##e.g. ZombieBoss, Skeletor, Paul the Priest
 NamedMobs: true
 
 ##Fishing Loot should be enabled to modify what Players can fish out of the water
-##ex. Fishing
+##e.g. Fishing
 FishingLoot: true
 
 ##Votifier Loot should be enabled to modify give Players loot whenever they Vote (Powered by Votifier)
-##This should be set to autoloot and give little loot to not cause issues with numerous votes at once
-##ex. Vote
+##The Vote PhatLoot should be set to autoloot and give little loot to not cause issues with numerous votes at once
+##e.g. Vote
 VotifierLoot: false
 
 ##Only Block Materials that are listed below will be able to be linked
+##Removing unused materials from this list will help reduce the use of uneeded resources
 Blocks:
     - Chest
     - Trapped Chest
@@ -54,8 +55,6 @@ Blocks:
 
 ##Every block in the specified Worlds that matches a listed Material will be linked to the given PhatLoot
 ##Blocks listed here need not be listed in 'Blocks' above
-##These default settings will print warnings if you do not have the proper PhatLoots
-##they are only meant to show how this would be set up
 ##I have commented out these default settings because noone bothers to read and replace them
 ##In order to set this feature you must remove the empty square brackets []
 AutoLink: []
@@ -78,11 +77,17 @@ ReplaceMobLoot: true
 OnlyDropLootWhenKilledByPlayer: false
 
 
-##If Mobs spawn with items through this plugin, this the chance that the item will be dropped (0 - 100)
+##If Mobs spawn with items through this plugin, this is the chance that the item will be dropped (0 - 100)
 MobLootDropPercentage: 20
 
 
-##This value is used when a Mob is killed with an item that has the Looting enchantment
+##This setting is used when a weapon has the Looting enchantment
+##Each level will give an extra percentage chance when rolling for loots
+##e.g. LootingBonusPerLevel = 5
+##     Zombies drop 1 rotten flesh 50% of the time
+##     A zombie is killed with a sword that has Looting IV
+##     1 rotten flesh would then be dropped at a 70% chance
+##     50% + (5% x 4 levels)
 LootingBonusPerLevel: 5
 
 
@@ -132,6 +137,8 @@ UseDamageTags: true
 
 ################## DEFAULTS ##################
 
+##Each new PhatLoot will have the following settings by default
+##Each of these settings can be changed per PhatLoot after they are made
 Defaults:
     ##Amount of time before the PhatLoot is lootable again
     ##Change Days to -1 in order for it to never reset
@@ -142,19 +149,24 @@ Defaults:
         Seconds: 0
 
 
-    ##If set to true, items will go straight to player's inventory
+    ##If set to true, items will go straight to the looter's inventory
     ##Once their inventory is full, items will show up in the chest
     AutoLoot: false
 
 
     ##If set to true, when looted by one person, everyone must wait to loot it again (first person there gets the loot)
-    ##If set to false, when a player loots a Chest they must wait the specified time to loot again
+    ##If set to false, when a player loots a Chest only they must wait the specified time to loot again (everyone can have their share of loot)
     GlobalReset: false
+
+
+    ##If set to true, when a global chest is looted, it will disappear and respawn when it may be looted again (or when the server is shutdown)
+    BreakAndRespawn: false
 
 
     ##If set to true, loot times will be rounded down to 0
     ##This is good if doing Daily or Hourly loots
-    ##ex.ResetTime = 1 Day, 0 Hours, 0 Minutes, and 0 Seconds
+    ##e.g.
+    ##If ResetTime = 1 Day, 0 Hours, 0 Minutes, and 0 Seconds
     ##   RoundDownTime = true
     ##   Player loots at Day 100, Hour 20, Minute 37, and Second 49
     ##   Values that are 0 in the ResetTime are rounded down
@@ -165,7 +177,8 @@ Defaults:
     RoundDownTime: false
 
 
-    ##The number of items that will be received from the loot collections
+    ##The number of items that will be received from the loot collections (if not specified)
+    ##An amount of 0 will mean that each loot within the collection is rolled for individually
     ItemsPerColl: 1
 
 
@@ -203,7 +216,10 @@ DivideMoneyAmountBy100: false
 PlaySoundOnAutoLoot: true
 
 
-##This is how long (in seconds each inventory will be kept in memory
+PlaySoundOnChestBreak: true
+
+
+##This is how long (in seconds) each inventory will be kept in memory
 ##Items that have not been looted before the inventory is forgotten will be lost
 ForgetInventoryTime: 60
 

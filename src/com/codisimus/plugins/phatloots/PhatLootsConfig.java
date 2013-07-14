@@ -20,6 +20,7 @@ public class PhatLootsConfig {
     static boolean defaultGlobal;
     static boolean defaultRound;
     static boolean defaultAutoLoot;
+    static boolean defaultBreakAndRespawn;
     static boolean restrictAll; //True if all PhatLoots should require permission
     static HashSet<String> restricted = new HashSet();
     static String permission;
@@ -41,7 +42,7 @@ public class PhatLootsConfig {
         FileConfiguration config = PhatLoots.plugin.getConfig();
 
         //Check for an outdated config.yml file
-        if (config.get("UseDamageTags", null) == null) {
+        if (config.get("BreakAndRespawn", null) == null) {
             PhatLoots.logger.warning("Your config.yml file is outdated! To get the most out of this plugin please (re)move the old file so a new one can be generated.");
         }
 
@@ -136,6 +137,7 @@ public class PhatLootsConfig {
             }
         }
         defaultAutoLoot = section.getBoolean("AutoLoot");
+        defaultBreakAndRespawn = section.getBoolean("BreakAndRespawn");
 
         section = section.getConfigurationSection("ResetTime");
         defaultDays = section.getInt("Days");
@@ -156,6 +158,7 @@ public class PhatLootsConfig {
         PhatLoot.autoClose = config.getBoolean("AutoCloseOnInsufficientFunds");
         PhatLoot.decimals = config.getBoolean("DivideMoneyAmountBy100");
         PhatLootChest.soundOnAutoLoot = config.getBoolean("PlaySoundOnAutoLoot");
+        PhatLootChest.soundOnBreak = config.getBoolean("PlaySoundOnChestBreak");
         ForgettableInventory.delay = config.getInt("ForgetInventoryTime") * 20L;
         PhatLoot.unlink = config.getBoolean("UnlinkGlobalChestsThatNeverReset");
 

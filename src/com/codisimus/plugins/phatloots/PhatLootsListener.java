@@ -101,49 +101,8 @@ public class PhatLootsListener implements Listener {
                         chest = (Chest) ((DoubleChestInventory) inventory).getLeftSide().getHolder();
                         block = chest.getBlock();
                     }
-
-                    //Return if the Chest is not a PhatLootChest
-                    phatLoots = PhatLoots.getPhatLoots(block, player);
-                    if (phatLoots.isEmpty()) {
-                        return;
-                    }
                 }
-
-                boolean individual = false;
-                for (PhatLoot phatLoot : phatLoots) {
-                    if (!phatLoot.global) {
-                        individual = true;
-                        break;
-                    }
-                }
-
-                if (individual) {
-                    //Create the custom key using the Player Name and Block location
-                    final String key = player.getName() + "@" + block.getLocation().toString();
-
-                    //Grab the custom Inventory belonging to the Player
-                    ForgettableInventory fInventory = ForgettableInventory.get(key);
-                    if (fInventory != null) {
-                        inventory = fInventory.getInventory();
-                    } else {
-                        String name = chestName.replace("<name>", phatLoots.getFirst().name.replace('_', ' '));
-
-                        //Create a new Inventory for the Player
-                        inventory = Bukkit.createInventory(chest, inventory == null ? 27 : inventory.getSize(), name);
-                        fInventory = new ForgettableInventory(key, inventory);
-                    }
-
-                    //Forget the Inventory in the scheduled time
-                    fInventory.schedule();
-
-                    //Swap the Inventories
-                    event.setCancelled(true);
-                    player.openInventory(inventory);
-                    PhatLoots.openInventory(player, inventory, block.getLocation(), false);
-                }
-
-                break;
-
+                //Fall Through
             default:
                 if (phatLoots == null) {
                     //Return if the Block is not a PhatLootChest
@@ -180,7 +139,10 @@ public class PhatLootsListener implements Listener {
                 //Forget the Inventory in the scheduled time
                 fInventory.schedule();
 
-                if (type == Material.ENDER_CHEST) {
+                switch (type) {
+                case TRAPPED_CHEST:
+                case ENDER_CHEST:
+                case CHEST:
                     //Swap the Inventories
                     event.setCancelled(true);
                     PhatLoots.openInventory(player, inventory, block.getLocation(), global);
@@ -195,7 +157,7 @@ public class PhatLootsListener implements Listener {
         }
 
         //Roll for Loot of each linked PhatLoot
-        PhatLootChest plChest = new PhatLootChest(block);
+        PhatLootChest plChest = PhatLootChest.getChest(block);
         for (PhatLoot phatLoot : phatLoots) {
             phatLoot.rollForLoot(player, plChest, inventory);
         }
@@ -239,7 +201,7 @@ public class PhatLootsListener implements Listener {
         }
 
         //Return if the Block is not a PhatLootChest
-        if (!isPhatLootChest(block)) {
+        if (!PhatLootChest.isPhatLootChest(block)) {
             return;
         }
 
@@ -262,21 +224,5 @@ public class PhatLootsListener implements Listener {
             player.sendMessage("§5Broken " + block.getType().toString() + " has been unlinked from PhatLoot §6" + phatLoot.name);
             phatLoot.saveChests();
         }
-    }
-
-    /**
-     * Returns true if the given Block is linked to a PhatLoot
-     *
-     * @param block the given Block
-     * @return true if the given Block is linked to a PhatLoot
-     */
-    public boolean isPhatLootChest(Block block) {
-        PhatLootChest plChest = new PhatLootChest(block);
-        for (PhatLoot phatLoot : PhatLoots.getPhatLoots()) {
-            if (phatLoot.containsChest(plChest)) {
-                return true;
-            }
-        }
-        return false;
     }
 }

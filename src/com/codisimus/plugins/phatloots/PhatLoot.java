@@ -51,6 +51,7 @@ public class PhatLoot implements ConfigurationSerializable {
     public boolean global = PhatLootsConfig.defaultGlobal; //Reset Type
     public boolean round = PhatLootsConfig.defaultRound;
     public boolean autoLoot = PhatLootsConfig.defaultAutoLoot;
+    public boolean breakAndRespawn = PhatLootsConfig.defaultBreakAndRespawn;
     private HashSet<PhatLootChest> chests = new HashSet<PhatLootChest>(); //Set of Chests linked to this PhatLoot
     Properties lootTimes = new Properties(); //PhatLootChest'PlayerName=Year'Day'Hour'Minute'Second
 
@@ -96,6 +97,9 @@ public class PhatLoot implements ConfigurationSerializable {
             global = (Boolean) map.get(currentLine = "Global");
             round = (Boolean) map.get(currentLine = "RoundDownTime");
             autoLoot = (Boolean) map.get(currentLine = "AutoLoot");
+            if (map.containsKey("BreakAndRespawn")) {
+                breakAndRespawn = (Boolean) map.get(currentLine = "BreakAndRespawn");
+            }
 
             nestedMap = (Map) map.get(currentLine = "Money");
             moneyUpper = (Integer) nestedMap.get(currentLine = "Upper");
@@ -475,6 +479,38 @@ public class PhatLoot implements ConfigurationSerializable {
     }
 
     /**
+     * Returns the remaining time until the global PhatLootChest resets
+     * Returns -1 if the PhatLootChest never resets
+     *
+     * @param chest The given PhatLootChest
+     * @return the remaining time until the PhatLootChest resets
+     */
+    public long getTimeRemaining(PhatLootChest chest) {
+        //Return null if the reset time is set to never
+        if (days < 0 || hours < 0 || minutes < 0 || seconds < 0) {
+            return -1;
+        }
+
+        String string = lootTimes.getProperty(chest.toString() + "'global");
+        long time = 0;
+        if (string != null) {
+            try {
+                time = Long.parseLong(string);
+            } catch (NumberFormatException notLong) {
+                PhatLoots.logger.severe("Fixed corrupted time value!");
+            }
+        }
+
+        //Calculate the time that the chest will reset
+        time += days * DateUtils.MILLIS_PER_DAY
+                + hours * DateUtils.MILLIS_PER_HOUR
+                + minutes * DateUtils.MILLIS_PER_MINUTE
+                + seconds * DateUtils.MILLIS_PER_SECOND;
+
+        return time - System.currentTimeMillis();
+    }
+
+    /**
      * Fills the Chest (Block) with loot
      * Each item is rolled for to determine if it will by added to the Chest
      * Money is rolled for to determine how much will be given within the range
@@ -542,7 +578,7 @@ public class PhatLoot implements ConfigurationSerializable {
      * @param block The given Block
      */
     public void addChest(Block block) {
-        chests.add(new PhatLootChest(block));
+        chests.add(PhatLootChest.getChest(block));
     }
 
     /**
@@ -551,7 +587,7 @@ public class PhatLoot implements ConfigurationSerializable {
      * @param block The given Block
      */
     public void removeChest(Block block) {
-        chests.remove(new PhatLootChest(block));
+        chests.remove(PhatLootChest.getChest(block));
     }
 
     /**
@@ -707,9 +743,11 @@ public class PhatLoot implements ConfigurationSerializable {
     public void save() {
         OutputStreamWriter out = null;
         try {
+            //Create a new config and populate it with this PhatLoot's information
             YamlConfiguration config = new YamlConfiguration();
             config.set(name, this);
 
+            //Save the config with UTF-8 encoding
             File file = new File(PhatLoots.dataFolder + File.separator + "LootTables" + File.separator + name + ".yml");
             String data = config.saveToString();
             out = new OutputStreamWriter(new FileOutputStream(file), "UTF-8");
@@ -828,7 +866,7 @@ public class PhatLoot implements ConfigurationSerializable {
             //Each line of the file is a new PhatLootChest
             scanner = new Scanner(file);
             while (scanner.hasNext()) {
-                chests.add(new PhatLootChest(scanner.next().split("'")));
+                chests.add(PhatLootChest.getChest(scanner.next().split("'")));
             }
         } catch (IOException ex) {
             PhatLoots.logger.log(Level.SEVERE, "Load Failed!", ex);
@@ -872,6 +910,7 @@ public class PhatLoot implements ConfigurationSerializable {
         map.put("Global", global);
         map.put("RoundDownTime", round);
         map.put("AutoLoot", autoLoot);
+        map.put("BreakAndRespawn", breakAndRespawn);
 
         nestedMap = new HashMap();
         nestedMap.put("Upper", moneyUpper);
@@ -1047,7 +1086,7 @@ public class PhatLoot implements ConfigurationSerializable {
                     continue;
                 }
 
-                PhatLootChest phatLootChest = new PhatLootChest(chestData[0], Integer.parseInt(chestData[1]), Integer.parseInt(chestData[2]), Integer.parseInt(chestData[3]));
+                PhatLootChest phatLootChest = PhatLootChest.getChest(chestData[0], Integer.parseInt(chestData[1]), Integer.parseInt(chestData[2]), Integer.parseInt(chestData[3]));
 
                 this.chests.add(phatLootChest);
             } catch (Exception invalidChest) {

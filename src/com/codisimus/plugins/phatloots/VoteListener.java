@@ -27,7 +27,7 @@ public class VoteListener implements Listener {
 
             Inventory inventory = Bukkit.createInventory(player, 54, name);
             player.openInventory(inventory);
-            phatLoot.rollForLoot(player, new PhatLootChest(player.getLocation().getBlock()), inventory);
+            phatLoot.rollForLoot(player, PhatLootChest.getTempChest(player.getLocation().getBlock()), inventory);
         }
     }
 }

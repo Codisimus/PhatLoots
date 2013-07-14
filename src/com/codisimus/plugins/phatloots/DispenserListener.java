@@ -34,7 +34,7 @@ public class DispenserListener implements Listener {
         }
 
         //Return if the Dispenser is not a PhatLootChest
-        if (!PhatLoots.isPhatLootChest(block)) {
+        if (!PhatLootChest.isPhatLootChest(block)) {
             return;
         }
 
@@ -49,7 +49,7 @@ public class DispenserListener implements Listener {
         Inventory inventory = dispenser.getInventory();
 
         //Roll for linked loot
-        PhatLootChest plChest = new PhatLootChest(block);
+        PhatLootChest plChest = PhatLootChest.getChest(block);
         for (PhatLoot phatLoot : PhatLoots.getPhatLoots(block, player)) {
             if (PhatLoots.canLoot(player, phatLoot)) {
                 phatLoot.rollForLoot(player, plChest, inventory);
