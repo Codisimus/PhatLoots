@@ -42,7 +42,7 @@ public class PhatLootsConfig {
         FileConfiguration config = PhatLoots.plugin.getConfig();
 
         //Check for an outdated config.yml file
-        if (config.get("BreakAndRespawn", null) == null) {
+        if (config.get("Defaults.BreakAndRespawn", null) == null) {
             PhatLoots.logger.warning("Your config.yml file is outdated! To get the most out of this plugin please (re)move the old file so a new one can be generated.");
         }
 
@@ -56,15 +56,17 @@ public class PhatLootsConfig {
             }
         }
         ConfigurationSection section = config.getConfigurationSection("AutoLink");
-        for (String world : section.getKeys(false)) {
-            ConfigurationSection worldSection = section.getConfigurationSection(world);
-            for (String string : worldSection.getKeys(false)) {
-                Material mat = Material.matchMaterial(string);
-                if (mat != null) {
-                    if (PhatLootsListener.types.get(mat) == null) {
-                        PhatLootsListener.types.put(mat, new HashMap());
+        if (section != null) {
+            for (String world : section.getKeys(false)) {
+                ConfigurationSection worldSection = section.getConfigurationSection(world);
+                for (String string : worldSection.getKeys(false)) {
+                    Material mat = Material.matchMaterial(string);
+                    if (mat != null) {
+                        if (PhatLootsListener.types.get(mat) == null) {
+                            PhatLootsListener.types.put(mat, new HashMap());
+                        }
+                        PhatLootsListener.types.get(mat).put(world, worldSection.getString(string));
                     }
-                    PhatLootsListener.types.get(mat).put(world, worldSection.getString(string));
                 }
             }
         }

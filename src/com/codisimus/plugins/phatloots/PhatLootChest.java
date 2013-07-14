@@ -65,7 +65,6 @@ public class PhatLootChest {
         } else {
             Block block = w.getBlockAt(x, y, z);
             isDispenser = block.getTypeId() == 23;
-            chests.put(world + "'" + x + "'" + y + "'" + z, this);
         }
     }
 
@@ -100,7 +99,9 @@ public class PhatLootChest {
         if (chests.containsKey(key)) {
             return chests.get(key);
         } else {
-            return new PhatLootChest(block);
+            PhatLootChest chest = new PhatLootChest(block);
+            chests.put(chest.world + "'" + chest.x + "'" + chest.y + "'" + chest.z, chest);
+            return chest;
         }
     }
 
@@ -117,7 +118,9 @@ public class PhatLootChest {
         if (chests.containsKey(key)) {
             return chests.get(key);
         } else {
-            return new PhatLootChest(world, x, y, z);
+            PhatLootChest chest = new PhatLootChest(world, x, y, z);
+            chests.put(world + "'" + x + "'" + y + "'" + z, chest);
+            return chest;
         }
     }
 
@@ -131,7 +134,9 @@ public class PhatLootChest {
         if (chests.containsKey(key)) {
             return chests.get(key);
         } else {
-            return new PhatLootChest(data[0], Integer.parseInt(data[1]), Integer.parseInt(data[2]), Integer.parseInt(data[3]));
+            PhatLootChest chest = new PhatLootChest(data[0], Integer.parseInt(data[1]), Integer.parseInt(data[2]), Integer.parseInt(data[3]));
+            chests.put(chest.world + "'" + chest.x + "'" + chest.y + "'" + chest.z, chest);
+            return chest;
         }
     }
 
