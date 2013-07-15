@@ -21,10 +21,10 @@ import org.bukkit.scheduler.BukkitRunnable;
 /**
  * A PhatLootChest is a Block location and a Map of Users with times attached to them
  *
- * @author Codisimus
+ * @author Cody
  */
 public class PhatLootChest {
-    private static HashMap<String, PhatLootChest> chests = new HashMap<String, PhatLootChest>();
+    static HashMap<String, PhatLootChest> chests = new HashMap<String, PhatLootChest>();
     static boolean soundOnAutoLoot;
     static boolean soundOnBreak;
     private String world;
@@ -90,9 +90,10 @@ public class PhatLootChest {
 //    }
 
     /**
-     * Constructs a new PhatLootChest with the given Block
+     * Returns the PhatLootChest of the given Block
      *
      * @param block The given Block
+     * @return The found or created PhatLootChest
      */
     public static PhatLootChest getChest(Block block) {
         String key = block.getWorld().getName() + "'" + block.getX() + "'" + block.getY() + "'" + block.getZ();
@@ -106,12 +107,13 @@ public class PhatLootChest {
     }
 
     /**
-     * Constructs a new PhatLootChest with the given Block Location data
+     * Returns the PhatLootChest with the given Block Location data
      *
      * @param world The name of the World
      * @param x The x-coordinate of the Block
      * @param y The y-coordinate of the Block
      * @param z The z-coordinate of the Block
+     * @return The found or created PhatLootChest
      */
     public static PhatLootChest getChest(String world, int x, int y, int z) {
         String key = world + "'" + x + "'" + y + "'" + z;
@@ -125,9 +127,10 @@ public class PhatLootChest {
     }
 
     /**
-     * Constructs a new PhatLootChest with the given Block Location data
+     * returns the PhatLootChest with the given Block Location data
      *
      * @param data The data in the form [world, x, y, z]
+     * @return The found or created PhatLootChest
      */
     public static PhatLootChest getChest(String[] data) {
         String key = data[0] + "'" + data[1] + "'" + data[2] + "'" + data[3];

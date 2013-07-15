@@ -160,6 +160,7 @@ Defaults:
 
 
     ##If set to true, when a global chest is looted, it will disappear and respawn when it may be looted again (or when the server is shutdown)
+    #'UseBreakAndRespawn' must be set to true below in order for this to have any effect
     BreakAndRespawn: false
 
 
@@ -215,8 +216,9 @@ DivideMoneyAmountBy100: false
 
 PlaySoundOnAutoLoot: true
 
-
 PlaySoundOnChestBreak: true
+
+UseBreakAndRespawn: false
 
 
 ##This is how long (in seconds) each inventory will be kept in memory

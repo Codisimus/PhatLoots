@@ -10,6 +10,11 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 
+/**
+ * Loads Config settings for the PhatLoots plugin
+ *
+ * @author Cody
+ */
 public class PhatLootsConfig {
     static int defaultDays; //Default cooldown time
     static int defaultHours;
@@ -42,7 +47,7 @@ public class PhatLootsConfig {
         FileConfiguration config = PhatLoots.plugin.getConfig();
 
         //Check for an outdated config.yml file
-        if (config.get("Defaults.BreakAndRespawn", null) == null) {
+        if (config.get("UseBreakAndRespawn", null) == null) {
             PhatLoots.logger.warning("Your config.yml file is outdated! To get the most out of this plugin please (re)move the old file so a new one can be generated.");
         }
 
@@ -161,6 +166,7 @@ public class PhatLootsConfig {
         PhatLoot.decimals = config.getBoolean("DivideMoneyAmountBy100");
         PhatLootChest.soundOnAutoLoot = config.getBoolean("PlaySoundOnAutoLoot");
         PhatLootChest.soundOnBreak = config.getBoolean("PlaySoundOnChestBreak");
+        PhatLoots.useBreakAndRepawn = config.getBoolean("UseBreakAndRepawn");
         ForgettableInventory.delay = config.getInt("ForgetInventoryTime") * 20L;
         PhatLoot.unlink = config.getBoolean("UnlinkGlobalChestsThatNeverReset");
 

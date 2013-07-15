@@ -9,7 +9,7 @@ import org.bukkit.event.entity.EntityDeathEvent;
 /**
  * Manages Mob drops when Mobs die
  *
- * @author Codisimus
+ * @author Cody
  */
 public class MobDeathListener extends MobListener {
     @EventHandler (ignoreCancelled = true)

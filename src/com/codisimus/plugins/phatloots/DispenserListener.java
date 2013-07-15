@@ -13,7 +13,7 @@ import org.bukkit.inventory.Inventory;
 /**
  * Listens for redstone activating PhatLoot Dispensers
  *
- * @author Codisimus
+ * @author Cody
  */
 public class DispenserListener implements Listener {
     /**

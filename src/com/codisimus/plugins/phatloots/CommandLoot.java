@@ -11,7 +11,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 /**
  * A CommandLoot is a Command which may be executed from the player or the console
  *
- * @author Codisimus
+ * @author Cody
  */
 @SerializableAs("Command")
 public class CommandLoot extends Loot {

@@ -17,7 +17,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 /**
  * An Item is the Loot representation of an ItemStack
  *
- * @author Codisimus
+ * @author Cody
  */
 @SerializableAs("Item")
 public class Item extends Loot {

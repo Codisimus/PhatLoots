@@ -12,7 +12,7 @@ import org.bukkit.plugin.Plugin;
 /**
  * Dispatches Commands for the PhatLoots Plugin
  *
- * @author Codisimus
+ * @author Cody
  */
 public class PhatLootsCommandSender implements CommandSender {
     private final String NAME = "PhatLoots";

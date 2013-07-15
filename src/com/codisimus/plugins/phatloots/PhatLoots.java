@@ -27,15 +27,16 @@ import org.bukkit.plugin.java.JavaPlugin;
 /**
  * Loads Plugin and manages Data/Listeners/etc.
  *
- * @author Codisimus
+ * @author Cody
  */
 public class PhatLoots extends JavaPlugin {
     static JavaPlugin plugin;
     static Logger logger;
     static Economy econ = null;
     static String dataFolder;
+    static boolean useBreakAndRepawn;
     private static Random random = new Random();
-    private static HashMap<String, PhatLoot> phatLoots = new HashMap<String, PhatLoot>();
+    private static HashMap<String, PhatLoot> phatLoots = new HashMap<String, PhatLoot>(); //PhatLoot Name -> PhatLoot
 
     @Override
     public void onDisable() {
@@ -384,115 +385,71 @@ public class PhatLoots extends JavaPlugin {
      * @param global Whether the animation should be sent to everyone (true) or just the Player (false)
      */
     public static void closeInventory(Player player, Inventory inv, PhatLootChest chest, Boolean global) {
-        player.closeInventory();
         Block block = chest.getBlock();
-        switch (block.getType()) {
-        case CHEST:
-        case TRAPPED_CHEST:
-        case ENDER_CHEST:
-            Location loc = block.getLocation();
-            if (global) {
-                if (inv.getViewers().size() <= 1) { //Last viewer
-                    //Play for each Player in the World
-                    for (Player p: player.getWorld().getPlayers()) {
+        Location loc = block.getLocation();
+        if (global) {
+            if (inv.getViewers().size() <= 1) { //Last viewer
+                //Play for each Player in the World
+                for (Player p: player.getWorld().getPlayers()) {
+                    switch (block.getType()) {
+                    case CHEST:
+                    case TRAPPED_CHEST:
+                    case ENDER_CHEST:
                         p.playSound(loc, Sound.CHEST_CLOSE, 0.75F, 0.95F);
                         p.playNote(loc, (byte) 1, (byte) 0); //Close animation
+                        break;
+                    default:
+                        break;
                     }
+                }
 
-                    for (ItemStack item : inv.getContents()) {
-                        if (item != null && item.getTypeId() != 0) {
+                //Return if not using the Break and Respawn setting
+                if (!useBreakAndRepawn) {
+                    return;
+                }
+
+                //Return if the Inventory is not empty
+                for (ItemStack item : inv.getContents()) {
+                    if (item != null && item.getTypeId() != 0) {
+                        return;
+                    }
+                }
+
+                //Get the shortest reset time
+                long time = -1;
+                for (PhatLoot phatLoot : phatLoots.values()) {
+                    if (phatLoot.containsChest(chest) && phatLoot.breakAndRespawn) {
+                        if (phatLoot.global) {
+                            long temp = phatLoot.getTimeRemaining(chest);
+                            if (temp < 1) {
+                                continue;
+                            }
+                            if (time < 0 || temp < time) {
+                                time = temp;
+                            }
+                        } else {
                             break;
                         }
                     }
-
-                    long time = -1;
-                    for (PhatLoot phatLoot : phatLoots.values()) {
-                        if (phatLoot.containsChest(chest) && phatLoot.breakAndRespawn) {
-                            if (phatLoot.global) {
-                                long temp = phatLoot.getTimeRemaining(chest);
-                                if (temp < 1) {
-                                    continue;
-                                }
-                                if (time < 0 || temp < time) {
-                                    time = temp;
-                                }
-                            } else {
-                                break;
-                            }
-                        }
-                    }
-
-                    if (time > 1) {
-                        chest.breakChest(time);
-                    }
                 }
-            } else {
+
+                //Don't break the chest if it will respawn in 1 second or less
+                if (time > 1000) {
+                    chest.breakChest(time);
+                }
+            }
+        } else {
+            switch (block.getType()) {
+            case CHEST:
+            case TRAPPED_CHEST:
+            case ENDER_CHEST:
                 //Play for only the individual Player
                 player.playSound(loc, Sound.CHEST_CLOSE, 0.75F, 0.95F);
                 player.playNote(loc, (byte) 1, (byte) 0); //Close animation
+                break;
+            default:
+                break;
             }
-            break;
-        default: break;
-        }
-    }
-
-    /**
-     * Plays animation/sound for closing a virtual Inventory
-     *
-     * @param player The Player closing the Inventory
-     * @param inv The virtual Inventory being closed
-     * @param loc The Location of the Chest which we want to be animation
-     * @param global Whether the animation should be sent to everyone (true) or just the Player (false)
-     */
-    public static void closeInventory(Player player, Inventory inv, Location loc, Boolean global) {
-        Block block = loc.getBlock();
-        switch (block.getType()) {
-        case CHEST:
-        case TRAPPED_CHEST:
-        case ENDER_CHEST:
-            if (global) {
-                if (inv.getViewers().size() <= 1) { //Last viewer
-                    //Play for each Player in the World
-                    for (Player p: player.getWorld().getPlayers()) {
-                        p.playSound(loc, Sound.CHEST_CLOSE, 0.75F, 0.95F);
-                        p.playNote(loc, (byte) 1, (byte) 0); //Close animation
-                    }
-
-                    for (ItemStack item : inv.getContents()) {
-                        if (item != null && item.getTypeId() != 0) {
-                            break;
-                        }
-                    }
-
-                    PhatLootChest chest = PhatLootChest.getChest(loc.getBlock());
-                    long time = -1;
-                    for (PhatLoot phatLoot : phatLoots.values()) {
-                        if (phatLoot.containsChest(chest) && phatLoot.breakAndRespawn) {
-                            if (phatLoot.global) {
-                                long temp = phatLoot.getTimeRemaining(chest);
-                                if (temp < 1) {
-                                    continue;
-                                }
-                                if (time < 0 || temp < time) {
-                                    time = temp;
-                                }
-                            } else {
-                                break;
-                            }
-                        }
-                    }
-
-                    if (time > 1) {
-                        chest.breakChest(time);
-                    }
-                }
-            } else {
-                //Play for only the individual Player
-                player.playSound(loc, Sound.CHEST_CLOSE, 0.75F, 0.95F);
-                player.playNote(loc, (byte) 1, (byte) 0); //Close animation
-            }
-            break;
-        default: break;
         }
     }
 

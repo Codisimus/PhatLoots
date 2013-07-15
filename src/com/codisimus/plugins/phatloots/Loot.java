@@ -8,7 +8,7 @@ import org.bukkit.inventory.ItemStack;
 /**
  * A Loot has a probability of looting
  *
- * @author Codisimus
+ * @author Cody
  */
 public abstract class Loot implements Comparable, ConfigurationSerializable {
     static Loot last; //The last successfully loaded Loot (used for debugging)

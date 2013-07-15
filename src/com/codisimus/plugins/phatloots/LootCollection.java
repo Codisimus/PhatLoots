@@ -11,7 +11,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 /**
  * A Collection is a list of Loots which has a unique name
  *
- * @author Codisimus
+ * @author Cody
  */
 @SerializableAs("LootCollection")
 public class LootCollection extends Loot {

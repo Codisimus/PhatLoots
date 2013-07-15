@@ -26,7 +26,7 @@ import org.bukkit.inventory.ItemStack;
 /**
  * Executes Sender Commands
  *
- * @author Codisimus
+ * @author Cody
  */
 public class PhatLootsCommand implements CommandExecutor {
     private static enum Action { //Loot Commands

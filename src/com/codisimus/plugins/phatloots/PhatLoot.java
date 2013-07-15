@@ -23,7 +23,7 @@ import org.bukkit.inventory.ItemStack;
 /**
  * A PhatLoot is a reward made up of money and items
  *
- * @author Codisimus
+ * @author Cody
  */
 @SerializableAs("PhatLoot")
 public class PhatLoot implements ConfigurationSerializable {
@@ -206,7 +206,7 @@ public class PhatLoot implements ConfigurationSerializable {
                             player.sendMessage(PhatLootsConfig.insufficientFunds.replace("<amount>", money));
                         }
                         if (autoClose) {
-                            PhatLoots.closeInventory(player, inventory, chest, global);
+                            player.closeInventory();
                         }
                         return;
                     }
@@ -214,7 +214,7 @@ public class PhatLoot implements ConfigurationSerializable {
                     //Don't let them loot without paying
                     player.sendMessage("§6Vault §4is not enabled, so no money can be processed.");
                     if (autoClose) {
-                        PhatLoots.closeInventory(player, inventory, chest, global);
+                        player.closeInventory();
                     }
                     return;
                 }
@@ -254,7 +254,7 @@ public class PhatLoot implements ConfigurationSerializable {
 
         //Close the chest if it was autolooted and nothing is left in the chest
         if (autoLoot && !itemsInChest) {
-            PhatLoots.closeInventory(player, inventory, chest, global);
+            player.closeInventory();
         }
 
         //Unlink the chest if it is global and never resets
@@ -438,6 +438,13 @@ public class PhatLoot implements ConfigurationSerializable {
     }
 
     /**
+     * Rolls for all loot
+     */
+    public LinkedList<ItemStack> rollForLoot() {
+        return lootAll(null, 0);
+    }
+
+    /**
      * Returns the remaining time until the PhatLootChest resets
      * Returns null if the PhatLootChest never resets
      *
@@ -588,6 +595,13 @@ public class PhatLoot implements ConfigurationSerializable {
      */
     public void removeChest(Block block) {
         chests.remove(PhatLootChest.getChest(block));
+    }
+
+    /**
+     * Removes all PhatLootChests that are linked to this PhatLoot
+     */
+    public void removeChests() {
+        chests.clear();
     }
 
     /**

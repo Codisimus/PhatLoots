@@ -10,7 +10,7 @@ import org.bukkit.inventory.ItemStack;
 /**
  * Listens for Fishing events and handles what is caught
  *
- * @author Codisimus
+ * @author Cody
  */
 public class FishingListener implements Listener {
     @EventHandler (ignoreCancelled = true)

@@ -23,7 +23,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 /**
  * Listens for interactions with PhatLoot info GUIs
  *
- * @author Codisimus
+ * @author Cody
  */
 public class PhatLootInfoListener implements Listener {
     private final static int SIZE = 54;
