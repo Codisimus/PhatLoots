@@ -358,12 +358,12 @@ public class PhatLoot implements ConfigurationSerializable {
     }
 
     /**
-     * Rolls for loot that becomes the given mob's equipment
+     * Rolls for loot that becomes the given entity's equipment
      *
      * @param entity The given LivingEntity
-     * @param level The 'level' of the mob
+     * @param level The 'level' of the entity
      */
-    public void rollForLoot(LivingEntity entity, double level) {
+    public void rollForEquipment(LivingEntity entity, double level) {
         //Roll for all loot
         LinkedList<ItemStack> loot = lootAll(null, level);
         //Ensure there are 5 items (even if some are air)
@@ -385,6 +385,12 @@ public class PhatLoot implements ConfigurationSerializable {
         eqp.setChestplateDropChance(chanceOfDrop);
         eqp.setLeggingsDropChance(chanceOfDrop);
         eqp.setBootsDropChance(chanceOfDrop);
+
+        MobEquipEvent event = new MobEquipEvent(entity);
+        Bukkit.getPluginManager().callEvent(event);
+        if (event.isCancelled()) {
+            eqp.clear();
+        }
 
         /*
          * This is another way that equipment could be handled
