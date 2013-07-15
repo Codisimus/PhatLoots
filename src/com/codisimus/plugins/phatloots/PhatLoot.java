@@ -7,7 +7,6 @@ import net.milkbowl.vault.economy.EconomyResponse;
 import org.apache.commons.lang.WordUtils;
 import org.apache.commons.lang.time.DateUtils;
 import org.bukkit.Bukkit;
-import org.bukkit.Color;
 import org.bukkit.GameMode;
 import org.bukkit.block.Block;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -16,7 +15,6 @@ import org.bukkit.configuration.serialization.SerializableAs;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
-import org.bukkit.event.Event;
 import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -55,19 +53,6 @@ public class PhatLoot implements ConfigurationSerializable {
     public boolean breakAndRespawn = PhatLootsConfig.defaultBreakAndRespawn;
     private HashSet<PhatLootChest> chests = new HashSet<PhatLootChest>(); //Set of Chests linked to this PhatLoot
     Properties lootTimes = new Properties(); //PhatLootChest'PlayerName=Year'Day'Hour'Minute'Second
-
-    /* OLD */
-    @Deprecated
-    public static final int INDIVIDUAL = 0, COLLECTIVE1 = 1,
-            COLLECTIVE2 = 2, COLLECTIVE3 = 3, COLLECTIVE4 = 4,
-            COLLECTIVE5 = 5, COLLECTIVE6 = 6, COLLECTIVE7 = 7,
-            COLLECTIVE8 = 8, COLLECTIVE9 = 9, COLLECTIVE10 = 10;
-    @Deprecated
-    public int numberCollectiveLoots = PhatLootsConfig.defaultLowerNumberOfLoots; //Amount of loots received from each collective loot
-    @Deprecated
-    private ArrayList<OldLoot>[] lootTables = (ArrayList[]) new ArrayList[11]; //List of items that may be given
-    @Deprecated
-    public ArrayList<String> commands = new ArrayList<String>(); //Commands that will be run upon looting the Chest
 
     /**
      * Constructs a new PhatLoot
@@ -114,22 +99,7 @@ public class PhatLoot implements ConfigurationSerializable {
             if (map.containsKey(currentLine = "LootList")) { //3.1+
                 lootList = (ArrayList) map.get(currentLine = "LootList");
             } else { //pre-3.1
-                //Load outdated data and then convert it and re-save
-                numberCollectiveLoots = (Integer) map.get(currentLine = "NumberCollectiveLoots");
-
-                nestedMap = (Map) map.get(currentLine = "Loots");
-                lootTables[0] = (ArrayList) nestedMap.get(currentLine = "Individual");
-                for (int i = 1; i < 11; i++) {
-                    lootTables[i] = (ArrayList) nestedMap.get(currentLine = "Coll" + i);
-                    Collections.sort(lootTables[i]);
-                }
-
-                if (map.containsKey(currentLine = "Commands")) {
-                    commands = (ArrayList) map.get(currentLine = "Commands");
-                }
-
-                convert();
-                save();
+                PhatLoots.logger.warning("Your save files are outdated, please use version 3.1-3.2 to update them");
             }
         } catch (Exception ex) {
             //Print debug messages
@@ -957,176 +927,5 @@ public class PhatLoot implements ConfigurationSerializable {
 
         map.put("LootList", lootList);
         return map;
-    }
-
-    /* OLD */
-    @Deprecated
-    public void convertLootTimes() {
-        Calendar cal = Calendar.getInstance();
-        for (Object key : lootTimes.keySet()) {
-            try {
-                String s = key.toString();
-                String[] fields = lootTimes.getProperty(s).split("'");
-                cal.set(Calendar.YEAR, Integer.parseInt(fields[0]));
-                cal.set(Calendar.DAY_OF_YEAR, Integer.parseInt(fields[1]));
-                cal.set(Calendar.HOUR_OF_DAY, Integer.parseInt(fields[2]));
-                cal.set(Calendar.MINUTE, Integer.parseInt(fields[3]));
-                cal.set(Calendar.SECOND, Integer.parseInt(fields[4]));
-                lootTimes.setProperty(s, String.valueOf(cal.getTimeInMillis()));
-            } catch (Exception ex) {
-                PhatLoots.logger.severe(name + ".loottimes has been corrupted");
-            }
-        }
-        saveLootTimes();
-    }
-
-    @Deprecated
-    private void convert() {
-        //Convert each command
-        for (String cmd : commands) {
-            double percent = 100;
-            if (cmd.matches(".*%[0-9]*[.]?[0-9]+")) {
-                int index = cmd.lastIndexOf('%');
-                percent = Double.parseDouble(cmd.substring(index + 1));
-                cmd = cmd.substring(0, index);
-            }
-            CommandLoot command = new CommandLoot(cmd);
-            command.setProbability(percent);
-            lootList.add(command);
-        }
-
-        //Convert each Loot
-        for (OldLoot loot : lootTables[INDIVIDUAL]) {
-            lootList.add(new Item(loot));
-        }
-
-        //Convert each Collection
-        for (int i = 1; i <= 10; i++) {
-            if (!lootTables[i].isEmpty()) {
-                LootCollection coll = new LootCollection(String.valueOf(i));
-                for (OldLoot loot : lootTables[i]) {
-                    coll.lootList.add(new Item(loot));
-                }
-                coll.lowerNumberOfLoots = numberCollectiveLoots;
-                coll.upperNumberOfLoots = numberCollectiveLoots;
-                lootList.add(coll);
-            }
-        }
-    }
-
-    @Deprecated
-    public void setLoots(int id, String lootsString) {
-        if (lootsString.isEmpty()) {
-            return;
-        }
-
-        while ((lootsString.endsWith(",")) || (lootsString.endsWith(" "))) {
-            lootsString = lootsString.substring(0, lootsString.length() - 1);
-        }
-
-        for (String lootString : lootsString.split(", ")) {
-            try {
-                String[] lootData = lootString.split("'");
-
-                String item = lootData[0];
-
-                Color color = null;
-                String skullOwner = null;
-                if (item.startsWith("(")) {
-                    int index = item.indexOf(41);
-                    String string = item.substring(1, index);
-                    if (string.matches("[0-9]+")) {
-                        color = Color.fromRGB(Integer.parseInt(item.substring(1, index)));
-                    } else {
-                        skullOwner = item.substring(1, index);
-                    }
-                    item = item.substring(index + 1);
-                }
-                int itemID;
-                if (item.contains("+")) {
-                    int index = item.indexOf(43);
-                    itemID = Integer.parseInt(item.substring(0, index));
-                    item = item.substring(index + 1);
-                } else {
-                    itemID = Integer.parseInt(item);
-                    item = "";
-                }
-
-                String data = lootData[1];
-                Map enchantments = null;
-                boolean autoEnchant = false;
-
-                if (lootData[1].endsWith("auto")) {
-                    autoEnchant = true;
-                    lootData[1] = lootData[1].substring(0, lootData[1].length() - 5);
-                }
-                if (data.contains("+")) {
-                    int index = data.indexOf(43);
-                    enchantments = PhatLootsCommand.getEnchantments(data.substring(index + 1));
-
-                    data = data.substring(0, index);
-                }
-
-                String amount = lootData[2];
-                int lower = PhatLootsCommand.getLowerBound(amount);
-                int upper = PhatLootsCommand.getUpperBound(amount);
-
-                if ((lower == -1) || (upper == -1)) {
-                    throw new RuntimeException();
-                }
-
-                OldLoot loot = new OldLoot(itemID, lower, upper);
-                if (color != null) {
-                    loot.setColor(color);
-                } else {
-                    if (skullOwner != null) {
-                        loot.setSkullOwner(skullOwner);
-                    }
-                }
-                loot.setProbability(Double.parseDouble(lootData[3]));
-                try {
-                    loot.setDurability(Short.parseShort(data));
-                } catch (Exception notDurability) {
-                    enchantments = PhatLootsCommand.getEnchantments(data);
-                }
-                loot.setEnchantments(enchantments);
-                if (autoEnchant) {
-                    loot.autoEnchant = true;
-                }
-
-                loot.name = item;
-                loot.updateItemStack();
-                this.lootTables[id].add(loot);
-            } catch (Exception invalidLoot) {
-                PhatLoots.logger.info("Error occured while loading PhatLoot \"" + this.name + '"' + ", " + '"' + lootString + '"' + " is not a valid Loot");
-
-                invalidLoot.printStackTrace();
-            }
-        }
-    }
-
-    @Deprecated
-    public void setChests(String data) {
-        if (data.isEmpty()) {
-            return;
-        }
-
-        for (String chest : data.split(", ")) {
-            try {
-                String[] chestData = chest.split("'");
-
-                if (Bukkit.getWorld(chestData[0]) == null) {
-                    continue;
-                }
-
-                PhatLootChest phatLootChest = PhatLootChest.getChest(chestData[0], Integer.parseInt(chestData[1]), Integer.parseInt(chestData[2]), Integer.parseInt(chestData[3]));
-
-                this.chests.add(phatLootChest);
-            } catch (Exception invalidChest) {
-                PhatLoots.logger.info("Error occured while loading PhatLoot \"" + this.name + '"' + ", " + '"' + chest + '"' + " is not a valid PhatLootChest");
-
-                invalidChest.printStackTrace();
-            }
-        }
     }
 }

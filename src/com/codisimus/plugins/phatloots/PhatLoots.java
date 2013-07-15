@@ -1,7 +1,9 @@
 package com.codisimus.plugins.phatloots;
 
 import com.google.common.io.Files;
-import java.io.*;
+import java.io.File;
+import java.io.FilenameFilter;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.Charset;
@@ -11,7 +13,6 @@ import java.util.logging.Logger;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.Server;
 import org.bukkit.Sound;
 import org.bukkit.block.Block;
 import org.bukkit.command.CommandSender;
@@ -54,7 +55,6 @@ public class PhatLoots extends JavaPlugin {
         try { new Metrics(this).start(); } catch (IOException e) {}
 
         //Register ConfigurationSerializable classes
-        ConfigurationSerialization.registerClass(OldLoot.class, "Loot");
         ConfigurationSerialization.registerClass(PhatLoot.class, "PhatLoot");
         ConfigurationSerialization.registerClass(LootCollection.class, "LootCollection");
         ConfigurationSerialization.registerClass(Item.class, "Item");
@@ -182,9 +182,6 @@ public class PhatLoots extends JavaPlugin {
                     return name.toLowerCase().endsWith(".yml");
                 }
             });
-        if (files.length == 0) {
-            loadOld();
-        }
         for (File file : files) {
             try {
                 String name = file.getName();
@@ -529,96 +526,4 @@ public class PhatLoots extends JavaPlugin {
             return false;
         }
     }
-
-    /* OLD */
-@Deprecated
-public static void loadOld()
-  {
-    FileInputStream fis = null;
-    File dir = new File(dataFolder + File.separator + "PhatLoots");
-    if (!dir.exists()) {
-      return;
-    }
-    for (File file : dir.listFiles()) {
-      String name = file.getName();
-      if (!name.endsWith(".properties"))
-        continue;
-      try {
-        Properties p = new Properties();
-        fis = new FileInputStream(file);
-        p.load(fis);
-        fis.close();
-
-        PhatLoot phatLoot = new PhatLoot(name.substring(0, name.length() - 11));
-
-        String[] resetTime = p.getProperty("ResetTime").split("'");
-        phatLoot.days = Integer.parseInt(resetTime[0]);
-        phatLoot.hours = Integer.parseInt(resetTime[1]);
-        phatLoot.minutes = Integer.parseInt(resetTime[2]);
-        phatLoot.seconds = Integer.parseInt(resetTime[3]);
-
-        phatLoot.global = Boolean.parseBoolean(p.getProperty("GlobalReset"));
-        phatLoot.round = Boolean.parseBoolean(p.getProperty("RoundDownTime"));
-
-        String[] moneyRange = p.getProperty("MoneyRange").split("-");
-        phatLoot.moneyLower = Integer.parseInt(moneyRange[0]);
-        phatLoot.moneyUpper = Integer.parseInt(moneyRange[0]);
-
-        if (p.containsKey("ExpRange")) {
-          String[] expRange = p.getProperty("ExpRange").split("-");
-          phatLoot.expLower = Integer.parseInt(expRange[0]);
-          phatLoot.expUpper = Integer.parseInt(expRange[0]);
-        }
-
-        if (p.containsKey("Commands")) {
-          String value = p.getProperty("Commands");
-          if (!value.isEmpty()) {
-            for (String string : value.split(", ")) {
-              if (string.startsWith("/")) {
-                string = string.substring(1);
-              }
-
-              phatLoot.commands.add(string);
-            }
-          }
-
-        }
-
-        phatLoot.setLoots(0, p.getProperty("IndividualLoots"));
-        phatLoot.setLoots(1, p.getProperty("Coll1"));
-        phatLoot.setLoots(2, p.getProperty("Coll2"));
-        phatLoot.setLoots(3, p.getProperty("Coll3"));
-        phatLoot.setLoots(4, p.getProperty("Coll4"));
-        phatLoot.setLoots(5, p.getProperty("Coll5"));
-
-        phatLoot.numberCollectiveLoots = Integer.parseInt(p.getProperty("ItemsPerColl"));
-
-        phatLoot.setChests(p.getProperty("ChestsData"));
-
-        phatLoots.put(phatLoot.name, phatLoot);
-
-        fis.close();
-
-        file = new File(dataFolder + File.separator + "PhatLoots" + File.separator + phatLoot.name + ".loottimes");
-
-        if (file.exists()) {
-          fis = new FileInputStream(file);
-          phatLoot.lootTimes.load(fis);
-          if (phatLoot.lootTimes.values().toString().contains("'"))
-            phatLoot.convertLootTimes();
-        }
-      }
-      catch (Exception loadFailed) {
-        logger.severe("Failed to load " + name);
-        loadFailed.printStackTrace();
-      } finally {
-        try {
-          fis.close();
-        }
-        catch (Exception e) {
-        }
-      }
-    }
-    saveAll();
-  }
 }

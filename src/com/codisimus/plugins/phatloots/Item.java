@@ -115,18 +115,6 @@ public class Item extends Loot {
         this.amountBonus = amountBonus;
     }
 
-    @Deprecated
-    public Item(OldLoot loot) {
-        item = loot.item;
-        amountBonus = loot.amountBonus;
-        durabilityBonus = loot.durabilityBonus;
-        probability = loot.probability;
-        autoEnchant = loot.autoEnchant;
-        generateName = loot.generateName;
-        randomLore = loot.randomLore;
-        tieredName = loot.tieredName;
-    }
-
     /**
      * Constructs a new Item from a Configuration Serialized phase
      *
