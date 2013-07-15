@@ -14,7 +14,7 @@ public class EBRListener implements Listener {
     public void onBossDeath(BossDeathEvent event) {
         PhatLoot phatLoot = PhatLoots.getPhatLoot(event.getBossName());
         if (phatLoot != null) {
-            event.setExp(phatLoot.rollForLoot(event.getPlayer(), event.getDrops()));
+            event.setExp(phatLoot.rollForMobDrops(null, event.getPlayer(), event.getDrops()));
         }
     }
 }

@@ -17,7 +17,7 @@ public class MobDeathListener extends MobListener {
         LivingEntity entity = event.getEntity();
         PhatLoot phatLoot = getPhatLoot(entity);
         if (phatLoot != null) {
-            event.setDroppedExp(phatLoot.rollForLoot(entity.getKiller(), event.getDrops()));
+            event.setDroppedExp(phatLoot.rollForMobDrops(entity, entity.getKiller(), event.getDrops()));
         }
     }
 

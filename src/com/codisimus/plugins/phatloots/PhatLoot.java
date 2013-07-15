@@ -16,6 +16,7 @@ import org.bukkit.configuration.serialization.SerializableAs;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.event.Event;
 import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -270,11 +271,12 @@ public class PhatLoot implements ConfigurationSerializable {
     /**
      * Rolls for loot to add to the given mob drops
      *
+     * @param mob The LivingEntity that was killed
      * @param player The player who killed the mob or null if the mob died of natural causes
      * @param drops The list of items that the mob drops
      * @return The amount of experience that the mob should drop
      */
-    public int rollForLoot(Player player, List<ItemStack> drops) {
+    public int rollForMobDrops(LivingEntity mob, Player player, List<ItemStack> drops) {
         if (onlyDropOnPlayerKill && player == null) {
             drops.clear();
             return 0;
@@ -285,7 +287,7 @@ public class PhatLoot implements ConfigurationSerializable {
         //The looting bonus is determined by the LOOT_BONUS_MOBS enchantment on the weapon
         double lootingBonus = weapon == null
                               ? 0
-                              :lootingBonusPerLvl * weapon.getEnchantmentLevel(Enchantment.LOOT_BONUS_MOBS);
+                              : lootingBonusPerLvl * weapon.getEnchantmentLevel(Enchantment.LOOT_BONUS_MOBS);
 
         if (replaceMobLoot) {
             Iterator itr = drops.iterator();
@@ -319,10 +321,44 @@ public class PhatLoot implements ConfigurationSerializable {
         }
 
         //Get the list of looted items
-        List<ItemStack> loot = lootAll(player, lootingBonus);
+        drops.addAll(lootAll(player, lootingBonus));
+
+        //Get the amount of money to be looted
+        double money = 0;
+        //Check if there is money to be dropped
+        if (moneyUpper > 0 && player != null) {
+            money = PhatLoots.rollForInt(moneyLower, moneyUpper);
+            if (decimals) {
+                money /= 100;
+            }
+            //Check if the player is allowed to loot money
+            if (money > 0 && (player.getGameMode().equals(GameMode.CREATIVE) || !player.hasPermission("phatloots.moneyfrommobs"))) {
+                money = 0;
+            }
+        }
+
+        //Get the amount of experience to be looted
+        int exp = 0;
+        //Check if there is experience to be dropped
+        if (expUpper > 0) {
+            //Roll for the amount
+            exp = PhatLoots.rollForInt(expLower, expUpper);
+        }
+
+        //Call the event to be modified
+        MobDropLootEvent event = new MobDropLootEvent(mob, player, drops, money, exp);
+        Bukkit.getPluginManager().callEvent(event);
+        if (event.isCancelled()) {
+            drops.clear();
+            return 0;
+        } else {
+            money = event.getMoney();
+            exp = event.getExp();
+        }
+
+        //Send a message for each item looted
         if (player != null && PhatLootsConfig.mobDroppedItem != null) {
-            //Send a message for each item looted
-            for (ItemStack item : loot) {
+            for (ItemStack item : drops) {
                 String msg = PhatLootsConfig.mobDroppedItem.replace("<item>", getItemName(item));
                 int amount = item.getAmount();
                 msg = amount > 1
@@ -331,41 +367,24 @@ public class PhatLoot implements ConfigurationSerializable {
                 player.sendMessage(msg);
             }
         }
-        drops.addAll(loot);
 
-        //Check if there is money to be dropped
-        if (moneyUpper > 0 && player != null) {
-            //Roll for the amount
-            double amount = PhatLoots.rollForInt(moneyLower, moneyUpper);
-            if (decimals) {
-                amount = amount / 100;
+        //Give the player the looted money
+        if (PhatLoots.econ != null) {
+            EconomyResponse r = PhatLoots.econ.depositPlayer(player.getName(), money);
+            if (r.transactionSuccess() && PhatLootsConfig.mobDroppedMoney != null) {
+                String amount = PhatLoots.econ.format(money).replace(".00", "");
+                player.sendMessage(PhatLootsConfig.mobDroppedMoney.replace("<amount>", amount));
             }
-
-            //Only give the player money if they have the propper permission node and are not in creative mode
-            if (amount > 0 && !player.getGameMode().equals(GameMode.CREATIVE) && player.hasPermission("phatloots.moneyfrommobs")) {
-                if (PhatLoots.econ != null) {
-                    EconomyResponse r = PhatLoots.econ.depositPlayer(player.getName(), amount);
-                    if (r.transactionSuccess() && PhatLootsConfig.mobDroppedMoney != null) {
-                        String money = PhatLoots.econ.format(amount).replace(".00", "");
-                        player.sendMessage(PhatLootsConfig.mobDroppedMoney.replace("<amount>", money));
-                    }
-                } else {
-                    player.sendMessage("§6Vault §4is not enabled, so no money can be processed.");
-                }
-            }
+        } else {
+            player.sendMessage("§6Vault §4is not enabled, so no money can be processed.");
         }
 
-        //Check if there is experience to be dropped
-        if (expUpper > 0) {
-            //Roll for the amount
-            int amount = PhatLoots.rollForInt(expLower, expUpper);
-            if (player != null && PhatLootsConfig.mobDroppedExperience != null) {
-                player.sendMessage(PhatLootsConfig.mobDroppedExperience.replace("<amount>", String.valueOf(amount)));
-            }
-            return amount;
+        //Send the experienced dropped message if it is present
+        if (exp > 0 && player != null && PhatLootsConfig.mobDroppedExperience != null) {
+            player.sendMessage(PhatLootsConfig.mobDroppedExperience.replace("<amount>", String.valueOf(exp)));
         }
 
-        return 0;
+        return exp;
     }
 
     /**
