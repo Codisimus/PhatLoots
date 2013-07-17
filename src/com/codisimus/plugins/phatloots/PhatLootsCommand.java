@@ -548,12 +548,8 @@ public class PhatLootsCommand implements CommandExecutor {
 
         case GIVE: //Force a Player to open a PhatLoot
             if (args.length < 3) {
-                if (sender instanceof Player) {
-                    sendHelp(sender);
-                    return true;
-                } else {
-                    return false;
-                }
+                sendHelp(sender);
+                return true;
             }
 
             Player player = Bukkit.getPlayer(args[1]);

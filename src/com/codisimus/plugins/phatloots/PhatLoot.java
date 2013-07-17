@@ -534,21 +534,30 @@ public class PhatLoot implements ConfigurationSerializable {
     }
 
     /**
-     * Rolls for all loot
+     * Rolls for a new LootBundle from this PhatLoot
+     *
+     * @return The Loot that has been rolled for
      */
     public LootBundle rollForLoot() {
         return rollForLoot(0);
     }
 
     /**
-     * Rolls for all loot
+     * Rolls for a new LootBundle from this PhatLoot
+     *
+     * @param lootingBonus The amount to increase each roll by
+     * @return The Loot that has been rolled for
      */
     public LootBundle rollForLoot(double lootingBonus) {
         return rollForLoot(new LootBundle(), lootingBonus);
     }
 
     /**
-     * Rolls for all loot
+     * Rolls for a Loot to add to the given LootBundle
+     *
+     * @param lootBundle The given LootBundle
+     * @param lootingBonus The amount to increase each roll by
+     * @return The Loot that has been rolled for
      */
     public LootBundle rollForLoot(LootBundle lootBundle, double lootingBonus) {
         lootBundle.setMoney(rollForMoney());
@@ -563,6 +572,8 @@ public class PhatLoot implements ConfigurationSerializable {
 
     /**
      * Rolls for the amount of money
+     *
+     * @return The amount of money rolled for
      */
     public double rollForMoney() {
         double money = PhatLoots.rollForInt(moneyLower, moneyUpper);
@@ -574,6 +585,8 @@ public class PhatLoot implements ConfigurationSerializable {
 
     /**
      * Rolls for the amount of experience
+     *
+     * @return The amount of experience rolled for
      */
     public int rollForExp() {
         return Math.max(PhatLoots.rollForInt(expLower, expUpper), 0);

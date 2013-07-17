@@ -177,7 +177,20 @@ public class PhatLootInfoListener implements Listener {
         //Show the autoloot status
         infoStack = new ItemStack(phatLoot.autoLoot ? Material.REDSTONE_TORCH_ON : Material.REDSTONE_TORCH_OFF);
         info = Bukkit.getItemFactory().getItemMeta(infoStack.getType());
-        details.add("§4AutoLoot: §6" + phatLoot.autoLoot);
+        info.setDisplayName("§4AutoLoot: §6" + phatLoot.autoLoot);
+        infoStack.setItemMeta(info);
+        index--;
+        inv.setItem(index, infoStack);
+
+        //Show the break and respawn status
+        infoStack = new ItemStack(phatLoot.breakAndRespawn ? Material.MOB_SPAWNER : Material.CHEST);
+        info = Bukkit.getItemFactory().getItemMeta(infoStack.getType());
+        info.setDisplayName("§4Break and Respawn: §6" + phatLoot.breakAndRespawn);
+        details = new ArrayList();
+        details.add(phatLoot.breakAndRespawn
+                    ? "§6This chest will break after it is looted and respawn once it may be looted again."
+                    : "§6This chest will always be present even after it is looted.");
+        info.setLore(details);
         infoStack.setItemMeta(info);
         index--;
         inv.setItem(index, infoStack);
