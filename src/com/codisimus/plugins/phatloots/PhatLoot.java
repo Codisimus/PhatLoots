@@ -8,7 +8,9 @@ import org.apache.commons.lang.WordUtils;
 import org.apache.commons.lang.time.DateUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
+import org.bukkit.Sound;
 import org.bukkit.block.Block;
+import org.bukkit.block.Dispenser;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.configuration.serialization.SerializableAs;
@@ -18,6 +20,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.PlayerInventory;
 
 /**
  * A PhatLoot is a reward made up of money and items
@@ -32,9 +35,9 @@ public class PhatLoot implements ConfigurationSerializable {
     static boolean replaceMobLoot; //False if default mob loot should still be present
     static float chanceOfDrop; //The chance of mobs dropping their loot armor
     static double lootingBonusPerLvl;
-    static boolean autoClose; //True if inventories should automatically close if the Player does not have sufficient funds
     static boolean decimals; //True if money values should include decimals
     static boolean unlink; //True if global chests that never reset should be unlinked after looting
+    static boolean soundOnAutoLoot;
 
     public String name; //A unique name for the PhatLoot
     public int moneyLower; //Range of money that may be given
@@ -65,145 +68,258 @@ public class PhatLoot implements ConfigurationSerializable {
     }
 
     /**
-     * Constructs a new PhatLoot from a Configuration Serialized phase
+     * Convenience method for getTimeRemaining(player, chest) where chest == null
      *
-     * @param map The map of data values
+     * @param player The given Player
+     * @return the remaining time until the player resets
      */
-    public PhatLoot(Map<String, Object> map) {
-        String currentLine = null; //The value that is about to be loaded (used for debugging)
-        try {
-            current = name = (String) map.get(currentLine = "Name");
-
-            Map nestedMap = (Map) map.get(currentLine = "Reset");
-            days = (Integer) nestedMap.get(currentLine = "Days");
-            hours = (Integer) nestedMap.get(currentLine = "Hours");
-            minutes = (Integer) nestedMap.get(currentLine = "Minutes");
-            seconds = (Integer) nestedMap.get(currentLine = "Seconds");
-
-            global = (Boolean) map.get(currentLine = "Global");
-            round = (Boolean) map.get(currentLine = "RoundDownTime");
-            autoLoot = (Boolean) map.get(currentLine = "AutoLoot");
-            if (map.containsKey("BreakAndRespawn")) {
-                breakAndRespawn = (Boolean) map.get(currentLine = "BreakAndRespawn");
-            }
-
-            nestedMap = (Map) map.get(currentLine = "Money");
-            moneyUpper = (Integer) nestedMap.get(currentLine = "Upper");
-            moneyLower = (Integer) nestedMap.get(currentLine = "Lower");
-
-            nestedMap = (Map) map.get(currentLine = "Exp");
-            expUpper = (Integer) nestedMap.get(currentLine = "Upper");
-            expLower = (Integer) nestedMap.get(currentLine = "Lower");
-
-            //Check which version the file is
-            if (map.containsKey(currentLine = "LootList")) { //3.1+
-                lootList = (ArrayList) map.get(currentLine = "LootList");
-            } else { //pre-3.1
-                PhatLoots.logger.warning("Your save files are outdated, please use version 3.1-3.2 to update them");
-            }
-        } catch (Exception ex) {
-            //Print debug messages
-            PhatLoots.logger.severe("Failed to load line: " + currentLine);
-            PhatLoots.logger.severe("of PhatLoot: " + (current == null ? "unknown" : current));
-            if (current == null) {
-                PhatLoots.logger.severe("Last successfull load was...");
-                PhatLoots.logger.severe("PhatLoot: " + (last == null ? "unknown" : last));
-            }
-        }
-        last = current;
-        current = null;
-
-        loadChests();
-        loadLootTimes();
+    public long getTimeRemaining(Player player) {
+        return getTimeRemaining(player, null);
     }
 
     /**
-     * Rolls for loot of a given PhatLootChest
+     * Convenience method for getTimeRemaining(player, chest) where player == null
      *
-     * @param player The Player who is looting
      * @param chest The given PhatLootChest
-     * @param inventory  The Inventory to place the items in
+     * @return the remaining time until the global PhatLootChest resets
      */
-    public void rollForLoot(Player player, PhatLootChest chest, Inventory inventory) {
-        //Retrieve the last time the chest was looted by the user
-        String user = global ? "global" : player.getName();
-        long time = getTime(chest, user);
-        if (time > 0L) {
-            String timeRemaining = getTimeRemaining(time);
-            if (timeRemaining == null) { //The PhatLoot never resets
-                return;
-            }
+    public long getTimeRemaining(PhatLootChest chest) {
+        return getTimeRemaining(null, chest);
+    }
 
-            if (!timeRemaining.equals("0")) { //There is time remaining
-                if (PhatLootsConfig.timeRemaining != null) {
-                    player.sendMessage(PhatLootsConfig.timeRemaining.replace("<time>", timeRemaining));
-                }
-                return;
+    /**
+     * Returns the remaining time until the PhatLootChest resets for the given Player
+     * Returns -1 if the PhatLootChest never resets
+     *
+     * @param player The given Player
+     * @param chest The given PhatLootChest
+     * @return the remaining time until the PhatLootChest resets
+     */
+    public long getTimeRemaining(Player player, PhatLootChest chest) {
+        //Return -1 if the reset time is set to never
+        if (days < 0 || hours < 0 || minutes < 0 || seconds < 0) {
+            return -1;
+        }
+
+        //Return 0 if the reset time is set to 0
+        if (days == 0 && hours == 0 && minutes == 0 && seconds == 0) {
+            return 0;
+        }
+
+        //Get the correct timestamp
+        String timeStamp = lootTimes.getProperty(getKey(player, chest));
+        long time = System.currentTimeMillis();
+        if (timeStamp != null) {
+            try {
+                time = Long.parseLong(timeStamp);
+            } catch (NumberFormatException notLong) {
+                PhatLoots.logger.severe("Fixed corrupted time value!");
             }
         }
 
-        //Reset the Inventory, old loot is thrown away
-        inventory.clear();
+        //Calculate the time that the chest will reset
+        time += days * DateUtils.MILLIS_PER_DAY
+                + hours * DateUtils.MILLIS_PER_HOUR
+                + minutes * DateUtils.MILLIS_PER_MINUTE
+                + seconds * DateUtils.MILLIS_PER_SECOND;
 
-        //Check if there is money to loot
-        if (moneyLower != 0 && moneyUpper != 0) {
-            //Roll for the amount of money
-            double amount = PhatLoots.rollForInt(moneyLower, moneyUpper);
-            if (decimals) {
-                amount = amount / 100;
-            }
+        //Return the remaining time or 0 if the time has already passed
+        return Math.max(time - System.currentTimeMillis(), 0);
+    }
 
-            if (amount > 0) { //Reward
-                if (PhatLoots.econ != null) {
-                    EconomyResponse r = PhatLoots.econ.depositPlayer(player.getName(), amount);
-                    if (r.transactionSuccess() && PhatLootsConfig.moneyLooted != null) {
-                        String money = PhatLoots.econ.format(amount).replace(".00", "");
-                        player.sendMessage(PhatLootsConfig.moneyLooted.replace("<amount>", money));
-                    }
+    /**
+     * Returns a human friendly String of the remaining time until the PhatLootChest resets
+     *
+     * @param time The given time
+     * @return the remaining time until the PhatLootChest resets
+     */
+    public String timeToString(long time) {
+        if (time < 0) {
+            return "forever";
+        }
+
+        //Find the appropriate unit of time and return that amount
+        if (time > DateUtils.MILLIS_PER_DAY) {
+            return (int) time / DateUtils.MILLIS_PER_DAY + " day(s)";
+        } else {
+            if (time > DateUtils.MILLIS_PER_HOUR) {
+                return (int) time / DateUtils.MILLIS_PER_HOUR + " hour(s)";
+            } else {
+                if (time > DateUtils.MILLIS_PER_MINUTE) {
+                    return (int) time / DateUtils.MILLIS_PER_MINUTE + " minute(s)";
                 } else {
-                    player.sendMessage("§6Vault §4is not enabled, so no money can be processed.");
+                    return (int) time / DateUtils.MILLIS_PER_SECOND + " second(s)";
                 }
-            } else if (amount < 0) { //Cost
-                amount *= -1;
-                if (PhatLoots.econ != null) {
-                    EconomyResponse r = PhatLoots.econ.withdrawPlayer(player.getName(), amount);
-                    String money = PhatLoots.econ.format(amount).replace(".00", "");
-                    if (r.transactionSuccess()) {
-                        if (PhatLootsConfig.moneyCharged != null) {
-                            player.sendMessage(PhatLootsConfig.moneyCharged.replace("<amount>", money));
-                        }
-                    } else {
-                        if (PhatLootsConfig.insufficientFunds != null) {
-                            player.sendMessage(PhatLootsConfig.insufficientFunds.replace("<amount>", money));
-                        }
-                        if (autoClose) {
-                            player.closeInventory();
-                        }
-                        return;
+            }
+        }
+    }
+
+    /**
+     * Updates the Player's time value in the Map with the current time
+     *
+     * @param player The Player whose time is to be updated
+     * @param chest The PhatLootChest to set the time for
+     */
+    public void setTime(Player player, PhatLootChest chest) {
+        Calendar calendar = Calendar.getInstance();
+
+        if (round) {
+            //Don't worry about the lower unset time values
+            if (seconds == 0) {
+                calendar.clear(Calendar.SECOND);
+                if (minutes == 0) {
+                    calendar.clear(Calendar.MINUTE);
+                    if (hours == 0) {
+                        calendar.clear(Calendar.HOUR_OF_DAY);
+                    }
+                }
+            }
+        }
+
+        lootTimes.setProperty(getKey(player, chest), String.valueOf(calendar.getTimeInMillis()));
+    }
+
+    /**
+     * Rolls for loot to give to the specified player
+     *
+     * @param player The Player who is looting
+     */
+    public void rollForLoot(Player player) {
+        rollForLoot(player, null);
+    }
+
+    /**
+     * Rolls for loot to give to the specified player
+     *
+     * @param player The Player who is looting
+     * @param title The title of the Inventory
+     */
+    public void rollForLoot(Player player, String title) {
+        rollForChestLoot(player, null, title);
+    }
+
+    /**
+     * Rolls for loot to place in the given PhatLootChest
+     *
+     * @param player The Player who is looting
+     * @param chest The PhatLootChest that is being looted
+     */
+    public void rollForChestLoot(Player player, PhatLootChest chest) {
+        rollForChestLoot(player, chest, null);
+    }
+
+    /**
+     * Rolls for loot to place in the given PhatLootChest
+     *
+     * @param player The Player who is looting
+     * @param chest The PhatLootChest that is being looted
+     * @param title The title of the Inventory
+     */
+    public void rollForChestLoot(Player player, PhatLootChest chest, String title) {
+        if (title == null) {
+            title = name;
+        }
+
+        //Check if the PhatLoot has timed out
+        long time = getTimeRemaining(player);
+        if (time > 0) {
+            if (PhatLootsConfig.timeRemaining != null) {
+                player.sendMessage(PhatLootsConfig.timeRemaining.replace("<time>", timeToString(time)));
+            }
+            if (chest != null) {
+                //Open the Inventory if it is not already open
+                Inventory inv = chest.getInventory(getUser(player), title);
+                if (player.getOpenInventory().getTopInventory() != inv) {
+                    chest.openInventory(player, inv, global);
+                }
+            }
+            return;
+        }
+
+        //Roll for the all the Loot
+        LootBundle lootBundle = rollForLoot();
+
+        //Call the event to be modified
+        PlayerLootEvent event = new PlayerLootEvent(player, this, chest, lootBundle);
+        Bukkit.getPluginManager().callEvent(event);
+        if (event.isCancelled()) {
+            return;
+        }
+
+        //Do money transactions
+        double money = lootBundle.getMoney();
+        if (money > 0) { //Reward
+            if (PhatLoots.econ != null) {
+                EconomyResponse r = PhatLoots.econ.depositPlayer(player.getName(), money);
+                if (r.transactionSuccess() && PhatLootsConfig.moneyLooted != null) {
+                    String amount = PhatLoots.econ.format(money).replace(".00", "");
+                    player.sendMessage(PhatLootsConfig.moneyLooted.replace("<amount>", amount));
+                }
+            } else {
+                player.sendMessage("§6Vault §4is not enabled, so no money can be processed.");
+            }
+        } else if (money < 0) { //Cost
+            money *= -1;
+            if (PhatLoots.econ != null) {
+                EconomyResponse r = PhatLoots.econ.withdrawPlayer(player.getName(), money);
+                String amount = PhatLoots.econ.format(money).replace(".00", "");
+                if (r.transactionSuccess()) {
+                    if (PhatLootsConfig.moneyCharged != null) {
+                        player.sendMessage(PhatLootsConfig.moneyCharged.replace("<amount>", amount));
                     }
                 } else {
-                    //Don't let them loot without paying
-                    player.sendMessage("§6Vault §4is not enabled, so no money can be processed.");
-                    if (autoClose) {
-                        player.closeInventory();
+                    if (PhatLootsConfig.insufficientFunds != null) {
+                        player.sendMessage(PhatLootsConfig.insufficientFunds.replace("<amount>", amount));
                     }
                     return;
                 }
-            }
-
-        }
-
-        //Check if there is experience to be looted
-        if (expUpper > 0) {
-            int amount = PhatLoots.rollForInt(expLower, expUpper);
-            if (amount > 0) {
-                player.giveExp(amount);
-                if (PhatLootsConfig.experienceLooted != null) {
-                    player.sendMessage(PhatLootsConfig.experienceLooted.replace("<amount>", String.valueOf(amount)));
-                }
+            } else {
+                //Don't let them loot without paying
+                player.sendMessage("§6Vault §4is not enabled, so no money can be processed.");
+                return;
             }
         }
 
+        //Give the looted experience
+        if (lootBundle.getExp() > 0) {
+            player.giveExp(lootBundle.getExp());
+            if (PhatLootsConfig.experienceLooted != null) {
+                player.sendMessage(PhatLootsConfig.experienceLooted.replace("<amount>", String.valueOf(lootBundle.getExp())));
+            }
+        }
+
+        //Execute each command
+        for (CommandLoot command : lootBundle.getCommandList()) {
+            command.execute(player);
+        }
+
+        //Give all of the items
+        Collection<ItemStack> itemList = lootBundle.getItemList();
+
+        if (autoLoot) { //AutoLoot the items
+            itemList = player.getInventory().addItem(itemList.toArray(new ItemStack[itemList.size()])).values();
+        }
+        if (!itemList.isEmpty()) {
+            //Get the Inventory for the user
+            Inventory inv = PhatLootChest.getInventory(getUser(player), title, chest);
+            if (player.getOpenInventory().getTopInventory() != inv) {
+                //Reset the Inventory, old loot is thrown away
+                inv.clear();
+            }
+
+            //Fill the inventory with items
+            chest.addItems(itemList, player, inv);
+
+            //Open the Inventory if it is not already open
+            if (player.getOpenInventory().getTopInventory() != inv) {
+                chest.openInventory(player, inv, global);
+            } else {
+                //Solves some inventory issues
+                player.updateInventory();
+            }
+        }
+
+        //Send loot notification messages
         if (PhatLootsConfig.lootMessage != null) {
             player.sendMessage(PhatLootsConfig.lootMessage.replace("<phatloot>", name));
         }
@@ -213,29 +329,8 @@ public class PhatLoot implements ConfigurationSerializable {
                                                 .replace("<phatloot>", name));
         }
 
-        //Loot all the loot!
-        //Add the loot to the chest (or player's inventory if autoloot is true)
-        //The returned value is whether there are still items in the chest
-        boolean itemsInChest = chest.addLoots(lootAll(player, 0), player, inventory, autoLoot);
-
-        //Solves some inventory issues
-        if (!chest.isDispenser) {
-            player.updateInventory();
-        }
-
-        //Close the chest if it was autolooted and nothing is left in the chest
-        if (autoLoot && !itemsInChest) {
-            player.closeInventory();
-        }
-
-        //Unlink the chest if it is global and never resets
-        if (global && unlink && (days < 0 || hours < 0 || minutes < 0 || seconds < 0)) {
-            chests.remove(chest);
-            saveChests();
-        } else {
-            //Update the time that the user looted the chest
-            setTime(chest, user);
-        }
+        //Update the time that the user looted
+        setTime(player, chest);
     }
 
     /**
@@ -248,20 +343,13 @@ public class PhatLoot implements ConfigurationSerializable {
      */
     public int rollForMobDrops(LivingEntity mob, Player player, List<ItemStack> drops) {
         if (onlyDropOnPlayerKill && player == null) {
-            drops.clear();
-            return 0;
+            drops.clear(); //Drop no items
+            return 0; //Drop no experience
         }
 
-        //Get the weapon that caused the final blow
-        ItemStack weapon = player == null ? null : player.getItemInHand();
-        //The looting bonus is determined by the LOOT_BONUS_MOBS enchantment on the weapon
-        double lootingBonus = weapon == null
-                              ? 0
-                              : lootingBonusPerLvl * weapon.getEnchantmentLevel(Enchantment.LOOT_BONUS_MOBS);
-
         if (replaceMobLoot) {
-            Iterator itr = drops.iterator();
             //Remove each item from the drops
+            Iterator itr = drops.iterator();
             while (itr.hasNext()) {
                 ItemStack item = (ItemStack) itr.next();
                 if (item.hasItemMeta() && item.getItemMeta().hasDisplayName()) {
@@ -272,64 +360,85 @@ public class PhatLoot implements ConfigurationSerializable {
             }
         }
 
-        if (player != null) {
-            //Check if the PhatLoot has timed out
-            long time = getTime(null, player.getName());
-            if (time > 0) {
-                String timeRemaining = getTimeRemaining(time);
-                if (timeRemaining == null) {
-                    return 0;
-                }
-
-                if (!timeRemaining.equals("0")) {
-                    if (PhatLootsConfig.mobTimeRemaining != null) {
-                        player.sendMessage(PhatLootsConfig.mobTimeRemaining.replace("<time>", timeRemaining));
-                    }
-                    return 0;
-                }
+        //Check if the PhatLoot has timed out
+        long time = getTimeRemaining(player);
+        if (time > 0) {
+            if (player != null && PhatLootsConfig.mobTimeRemaining != null) {
+                player.sendMessage(PhatLootsConfig.mobTimeRemaining.replace("<time>", timeToString(time)));
             }
+            return 0; //Drop no experience
         }
 
-        //Get the list of looted items
-        drops.addAll(lootAll(player, lootingBonus));
+        //Get the weapon that caused the final blow
+        ItemStack weapon = player == null ? null : player.getItemInHand();
+        //The looting bonus is determined by the LOOT_BONUS_MOBS enchantment on the weapon
+        double lootingBonus = weapon == null
+                              ? 0
+                              : lootingBonusPerLvl * weapon.getEnchantmentLevel(Enchantment.LOOT_BONUS_MOBS);
 
-        //Get the amount of money to be looted
-        double money = 0;
-        //Check if there is money to be dropped
-        if (moneyUpper > 0 && player != null) {
-            money = PhatLoots.rollForInt(moneyLower, moneyUpper);
-            if (decimals) {
-                money /= 100;
-            }
-            //Check if the player is allowed to loot money
-            if (money > 0 && (player.getGameMode().equals(GameMode.CREATIVE) || !player.hasPermission("phatloots.moneyfrommobs"))) {
-                money = 0;
-            }
-        }
+        //Roll for the all the Loot
+        LootBundle lootBundle = rollForLoot(new LootBundle(drops), lootingBonus);
 
-        //Get the amount of experience to be looted
-        int exp = 0;
-        //Check if there is experience to be dropped
-        if (expUpper > 0) {
-            //Roll for the amount
-            exp = PhatLoots.rollForInt(expLower, expUpper);
+        //Check if the player is allowed to loot money
+        if (lootBundle.getMoney() > 0 && (player.getGameMode().equals(GameMode.CREATIVE) || !player.hasPermission("phatloots.moneyfrommobs"))) {
+            lootBundle.setMoney(0);
         }
 
         //Call the event to be modified
-        MobDropLootEvent event = new MobDropLootEvent(mob, player, drops, money, exp);
+        MobDropLootEvent event = new MobDropLootEvent(mob, player, lootBundle);
         Bukkit.getPluginManager().callEvent(event);
         if (event.isCancelled()) {
-            drops.clear();
-            return 0;
-        } else {
-            money = event.getMoney();
-            exp = event.getExp();
+            drops.clear(); //Drop no items
+            return 0; //Drop no experience
+        }
+
+        //Do money transactions
+        if (player != null) {
+            double money = lootBundle.getMoney();
+            if (money > 0) { //Reward
+                if (PhatLoots.econ != null) {
+                    EconomyResponse r = PhatLoots.econ.depositPlayer(player.getName(), money);
+                    if (r.transactionSuccess() && PhatLootsConfig.moneyLooted != null) {
+                        String amount = PhatLoots.econ.format(money).replace(".00", "");
+                        player.sendMessage(PhatLootsConfig.moneyLooted.replace("<amount>", amount));
+                    }
+                } else {
+                    PhatLoots.logger.warning("§6Vault §4is not enabled, so no money can be processed.");
+                }
+            } else if (money < 0) { //Cost
+                money *= -1;
+                if (PhatLoots.econ != null) {
+                    EconomyResponse r = PhatLoots.econ.withdrawPlayer(player.getName(), money);
+                    String amount = PhatLoots.econ.format(money).replace(".00", "");
+                    if (r.transactionSuccess()) {
+                        if (PhatLootsConfig.moneyCharged != null) {
+                            player.sendMessage(PhatLootsConfig.moneyCharged.replace("<amount>", amount));
+                        }
+                    } else {
+                        if (PhatLootsConfig.insufficientFunds != null) {
+                            player.sendMessage(PhatLootsConfig.insufficientFunds.replace("<amount>", amount));
+                        }
+                        drops.clear(); //Drop no items
+                        return 0; //Drop no experience
+                    }
+                } else {
+                    //Don't let them loot without paying
+                    PhatLoots.logger.warning("§6Vault §4is not enabled, so no money can be processed.");
+                    drops.clear(); //Drop no items
+                    return 0; //Drop no experience
+                }
+            }
+        }
+
+        //Execute each command
+        for (CommandLoot command : lootBundle.getCommandList()) {
+            command.execute(player);
         }
 
         //Send a message for each item looted
         if (player != null && PhatLootsConfig.mobDroppedItem != null) {
             for (ItemStack item : drops) {
-                String msg = PhatLootsConfig.mobDroppedItem.replace("<item>", getItemName(item));
+                String msg = PhatLootsConfig.mobDroppedItem.replace("<item>", PhatLoots.getItemName(item));
                 int amount = item.getAmount();
                 msg = amount > 1
                       ? msg.replace("<amount>", String.valueOf(amount))
@@ -338,23 +447,12 @@ public class PhatLoot implements ConfigurationSerializable {
             }
         }
 
-        //Give the player the looted money
-        if (PhatLoots.econ != null) {
-            EconomyResponse r = PhatLoots.econ.depositPlayer(player.getName(), money);
-            if (r.transactionSuccess() && PhatLootsConfig.mobDroppedMoney != null) {
-                String amount = PhatLoots.econ.format(money).replace(".00", "");
-                player.sendMessage(PhatLootsConfig.mobDroppedMoney.replace("<amount>", amount));
-            }
-        } else {
-            player.sendMessage("§6Vault §4is not enabled, so no money can be processed.");
+        //Send the experience dropped message if it is present
+        if (lootBundle.getExp() > 0 && player != null && PhatLootsConfig.mobDroppedExperience != null) {
+            player.sendMessage(PhatLootsConfig.mobDroppedExperience.replace("<amount>", String.valueOf(lootBundle.getExp())));
         }
 
-        //Send the experienced dropped message if it is present
-        if (exp > 0 && player != null && PhatLootsConfig.mobDroppedExperience != null) {
-            player.sendMessage(PhatLootsConfig.mobDroppedExperience.replace("<amount>", String.valueOf(exp)));
-        }
-
-        return exp;
+        return lootBundle.getExp();
     }
 
     /**
@@ -365,7 +463,7 @@ public class PhatLoot implements ConfigurationSerializable {
      */
     public void rollForEquipment(LivingEntity entity, double level) {
         //Roll for all loot
-        LinkedList<ItemStack> loot = lootAll(null, level);
+        List<ItemStack> loot = rollForLoot(level).getItemList();
         //Ensure there are 5 items (even if some are air)
         if (loot.size() != 5) {
             PhatLoots.logger.warning("Cannot add loot to " + entity.getType().getName() + " because the amount of loot was not equal to 5");
@@ -373,11 +471,11 @@ public class PhatLoot implements ConfigurationSerializable {
 
         //The order of equipment should be Hand, Helm, Plate, Legs, Boots
         EntityEquipment eqp = entity.getEquipment();
-        eqp.setItemInHand(loot.removeFirst());
-        eqp.setHelmet(loot.removeFirst());
-        eqp.setChestplate(loot.removeFirst());
-        eqp.setLeggings(loot.removeFirst());
-        eqp.setBoots(loot.removeFirst());
+        eqp.setItemInHand(loot.remove(0));
+        eqp.setHelmet(loot.remove(0));
+        eqp.setChestplate(loot.remove(0));
+        eqp.setLeggings(loot.remove(0));
+        eqp.setBoots(loot.remove(0));
 
         //Set the drop chance of each item
         eqp.setItemInHandDropChance(chanceOfDrop);
@@ -435,143 +533,178 @@ public class PhatLoot implements ConfigurationSerializable {
     /**
      * Rolls for all loot
      */
-    public LinkedList<ItemStack> rollForLoot() {
-        return lootAll(null, 0);
+    public LootBundle rollForLoot() {
+        return rollForLoot(0);
     }
 
     /**
-     * Returns the remaining time until the PhatLootChest resets
-     * Returns null if the PhatLootChest never resets
-     *
-     * @param time The given time
-     * @return the remaining time until the PhatLootChest resets
+     * Rolls for all loot
      */
-    public String getTimeRemaining(long time) {
-        //Return null if the reset time is set to never
-        if (days < 0 || hours < 0 || minutes < 0 || seconds < 0) {
-            return null;
-        }
-
-        //Calculate the time that the chest will reset
-        time += days * DateUtils.MILLIS_PER_DAY
-                + hours * DateUtils.MILLIS_PER_HOUR
-                + minutes * DateUtils.MILLIS_PER_MINUTE
-                + seconds * DateUtils.MILLIS_PER_SECOND;
-
-        long timeRemaining = time - System.currentTimeMillis();
-
-        //Find the appropriate unit of time and return that amount
-        if (timeRemaining > DateUtils.MILLIS_PER_DAY) {
-            return (int) timeRemaining / DateUtils.MILLIS_PER_DAY + " day(s)";
-        } else {
-            if (timeRemaining > DateUtils.MILLIS_PER_HOUR) {
-                return (int) timeRemaining / DateUtils.MILLIS_PER_HOUR + " hour(s)";
-            } else {
-                if (timeRemaining > DateUtils.MILLIS_PER_MINUTE) {
-                    return (int) timeRemaining / DateUtils.MILLIS_PER_MINUTE + " minute(s)";
-                } else {
-                    if (timeRemaining > DateUtils.MILLIS_PER_SECOND) {
-                        return (int) timeRemaining / DateUtils.MILLIS_PER_SECOND + " second(s)";
-                    } else {
-                        return "0";
-                    }
-                }
-            }
-        }
+    public LootBundle rollForLoot(double lootingBonus) {
+        return rollForLoot(new LootBundle(), lootingBonus);
     }
 
     /**
-     * Returns the remaining time until the global PhatLootChest resets
-     * Returns -1 if the PhatLootChest never resets
-     *
-     * @param chest The given PhatLootChest
-     * @return the remaining time until the PhatLootChest resets
+     * Rolls for all loot
      */
-    public long getTimeRemaining(PhatLootChest chest) {
-        //Return null if the reset time is set to never
-        if (days < 0 || hours < 0 || minutes < 0 || seconds < 0) {
-            return -1;
-        }
-
-        String string = lootTimes.getProperty(chest.toString() + "'global");
-        long time = 0;
-        if (string != null) {
-            try {
-                time = Long.parseLong(string);
-            } catch (NumberFormatException notLong) {
-                PhatLoots.logger.severe("Fixed corrupted time value!");
-            }
-        }
-
-        //Calculate the time that the chest will reset
-        time += days * DateUtils.MILLIS_PER_DAY
-                + hours * DateUtils.MILLIS_PER_HOUR
-                + minutes * DateUtils.MILLIS_PER_MINUTE
-                + seconds * DateUtils.MILLIS_PER_SECOND;
-
-        return time - System.currentTimeMillis();
-    }
-
-    /**
-     * Fills the Chest (Block) with loot
-     * Each item is rolled for to determine if it will by added to the Chest
-     * Money is rolled for to determine how much will be given within the range
-     */
-    public LinkedList<ItemStack> lootAll(Player player, double lootingBonus) {
-        LinkedList<ItemStack> itemList = new LinkedList<ItemStack>();
+    public LootBundle rollForLoot(LootBundle lootBundle, double lootingBonus) {
+        lootBundle.setMoney(rollForMoney());
+        lootBundle.setExp(rollForExp());
         for (Loot loot : lootList) {
             if (loot.rollForLoot(lootingBonus)) {
-                loot.getLoot(player, lootingBonus, itemList);
+                loot.getLoot(lootBundle, lootingBonus);
             }
         }
-        return itemList;
+        return lootBundle;
     }
 
     /**
-     * Updates the Player's time value in the Map with the current time
-     *
-     * @param chest The PhatLootChest to set the time for
-     * @param player The Player whose time is to be updated
+     * Rolls for the amount of money
      */
-    public void setTime(PhatLootChest chest, String player) {
-        Calendar calendar = Calendar.getInstance();
-
-        if (round) {
-            //Don't worry about the lower unset time values
-            if (seconds == 0) {
-                calendar.clear(Calendar.SECOND);
-                if (minutes == 0) {
-                    calendar.clear(Calendar.MINUTE);
-                    if (hours == 0) {
-                        calendar.clear(Calendar.HOUR_OF_DAY);
-                    }
-                }
-            }
+    public double rollForMoney() {
+        double money = PhatLoots.rollForInt(moneyLower, moneyUpper);
+        if (decimals) {
+            money /= 100;
         }
-
-        lootTimes.setProperty(chest.toString() + "'" + player, String.valueOf(calendar.getTimeInMillis()));
+        return money;
     }
 
     /**
-     * Retrieves the time for the given Player
-     *
-     * @param chest The PhatLootChest to set the time for or null if it is for a mob
-     * @param player The Player whose time is requested
-     * @return The time as an array of ints
+     * Rolls for the amount of experience
      */
-    public long getTime(PhatLootChest chest, String player) {
-        String string = lootTimes.getProperty(chest == null
-                                              ? player
-                                              : chest.toString() + "'" + player);
-        long time = 0;
-        if (string != null) {
-            try {
-                time = Long.parseLong(string);
-            } catch (NumberFormatException notLong) {
-                PhatLoots.logger.severe("Fixed corrupted time value!");
-            }
-        }
-        return time;
+    public int rollForExp() {
+        return Math.max(PhatLoots.rollForInt(expLower, expUpper), 0);
+    }
+
+//    /**
+//     * Adds the list of ItemStacks to the given Inventory
+//     *
+//     * @param itemList The list of ItemStacks to add
+//     * @param player The Player looting the Chest
+//     * @param inventory The Inventory to add the items to
+//     * @param autoLoot True if the items should go straight to the Player's inventory
+//     * @return true if autoLoot is true and there are items in the inventory at the end
+//     */
+//    public boolean autoLoot(List<ItemStack> itemList, Player player) {
+//        boolean itemsInChest = false;
+//        for (ItemStack item: itemList) {
+//            if (addLoot(item, player)) {
+//                itemsInChest = true;
+//            }
+//        }
+//        return itemsInChest;
+//    }
+//
+//    /**
+//     * Adds the ItemStack to the given Inventory
+//     *
+//     * @param item The ItemStack to add
+//     * @param player The Player looting the Chest
+//     * @return true if autoLoot is true and the item was added to the inventory
+//     */
+//    public boolean autoLoot(ItemStack item, Player player) {
+//        //Make sure loots do not exceed the stack size
+//        if (item.getAmount() > item.getMaxStackSize()) {
+//            int amount = item.getAmount();
+//            int maxStackSize = item.getMaxStackSize();
+//            while (amount > maxStackSize) {
+//                ItemStack fraction = item.clone();
+//                fraction.setAmount(maxStackSize);
+//                autoLoot(item, player);
+//                amount -= maxStackSize;
+//            }
+//        }
+//
+//        //Get the Player's inventory in case of auto looting
+//        PlayerInventory sack = player.getInventory();
+//
+//            //Add the Loot to the Player's Inventory
+//            if (PhatLootsConfig.autoLoot != null) {
+//                String msg = PhatLootsConfig.autoLoot.replace("<item>", PhatLoots.getItemName(item));
+//                int amount = item.getAmount();
+//                msg = amount > 1
+//                      ? msg.replace("<amount>", String.valueOf(item.getAmount()))
+//                      : msg.replace("x<amount>", "").replace("<amount>", String.valueOf(item.getAmount()));
+//                player.sendMessage(msg);
+//            }
+//            sack.addItem(item);
+//            if (soundOnAutoLoot) {
+//                player.playSound(player.getLocation(), Sound.ITEM_PICKUP, 1, 0.2F);
+//            }
+//            return false;
+//        } else {
+//            //Add the Loot to the Inventory
+//            if (inventory.firstEmpty() != -1) {
+//                inventory.addItem(item);
+//            } else { //The item will not fit in the inventory
+//                overFlow(item, player);
+//            }
+//            return true;
+//        }
+//    }
+//
+//    /**
+//     * Drops the given item outside the PhatLootChest
+//     *
+//     * @param item The ItemStack that will be dropped
+//     * @param player The Player (if any) that will be informed of the drop
+//     */
+//    public void overFlow(ItemStack item, Player player) {
+//        Block block = getBlock();
+//        block.getWorld().dropItemNaturally(block.getLocation(), item);
+//        if (player != null && PhatLootsConfig.overflow != null) {
+//            String msg = PhatLootsConfig.overflow.replace("<item>", PhatLoots.getItemName(item));
+//            int amount = item.getAmount();
+//            msg = amount > 1
+//                  ? msg.replace("<amount>", String.valueOf(item.getAmount()))
+//                  : msg.replace("x<amount>", "").replace("<amount>", String.valueOf(item.getAmount()));
+//            player.sendMessage(msg);
+//        }
+//    }
+
+    /**
+     * Returns the key for the given Player and PhatLootChest
+     *
+     * @param player The Player or null if global
+     * @param chest The PhatLootChest which may be null
+     * @return the key that represents this player and chest
+     */
+    private String getKey(Player player, PhatLootChest chest) {
+        String user = getUser(player);
+        return chest == null
+               ? user
+               : chest.toString() + "'" + user;
+    }
+
+    /**
+     * Returns the user whether it is the Player's name or 'global'
+     *
+     * @param player The Player or null if global
+     * @return the String of the user
+     */
+    private String getUser(Player player) {
+        return global || player == null
+               ? "global"
+               : player.getName();
+    }
+
+    /**
+     * Returns a Collection of PhatLootChests linked to this PhatLoot
+     *
+     * @return a Collection of linked chests
+     */
+    public Collection<PhatLootChest> getChests() {
+        return chests;
+    }
+
+    /**
+     * Returns whether the given PhatLootChest is linked to this PhatLoot
+     *
+     * @param chest The given PhatLootChest
+     * @return true if the PhatLoot chest is linked
+     */
+    public boolean containsChest(PhatLootChest chest) {
+        return chests.contains(chest);
     }
 
     /**
@@ -597,25 +730,6 @@ public class PhatLoot implements ConfigurationSerializable {
      */
     public void removeChests() {
         chests.clear();
-    }
-
-    /**
-     * Returns whether the given PhatLootChest is linked to this PhatLoot
-     *
-     * @param chest The given PhatLootChest
-     * @return true if the PhatLoot chest is linked
-     */
-    public boolean containsChest(PhatLootChest chest) {
-        return chests.contains(chest);
-    }
-
-    /**
-     * Returns a Collection of PhatLootChests linked to this PhatLoot
-     *
-     * @return a Collection of linked chests
-     */
-    public Collection<PhatLootChest> getChests() {
-        return chests;
     }
 
     /**
@@ -736,6 +850,8 @@ public class PhatLoot implements ConfigurationSerializable {
         }
     }
 
+    /** Save/Load Methods **/
+
     /**
      * Saves all data of the PhatLoot
      */
@@ -743,33 +859,6 @@ public class PhatLoot implements ConfigurationSerializable {
         save();
         saveLootTimes();
         saveChests();
-    }
-
-    /**
-     * Writes the Loot Tables of the PhatLoot to file
-     * if there is an old file it is over written
-     */
-    public void save() {
-        OutputStreamWriter out = null;
-        try {
-            //Create a new config and populate it with this PhatLoot's information
-            YamlConfiguration config = new YamlConfiguration();
-            config.set(name, this);
-
-            //Save the config with UTF-8 encoding
-            File file = new File(PhatLoots.dataFolder + File.separator + "LootTables" + File.separator + name + ".yml");
-            String data = config.saveToString();
-            out = new OutputStreamWriter(new FileOutputStream(file), "UTF-8");
-            out.write(data, 0, data.length());
-        } catch (IOException ex) {
-            PhatLoots.logger.log(Level.SEVERE, "Could not save PhatLoot " + name, ex);
-        } finally {
-            try {
-                out.flush();
-                out.close();
-            } catch (Exception e) {
-            }
-        }
     }
 
     /**
@@ -887,21 +976,30 @@ public class PhatLoot implements ConfigurationSerializable {
     }
 
     /**
-     * Returns a user friendly String of the given ItemStack's name
-     *
-     * @param item The given ItemStack
-     * @return The name of the item
+     * Writes the Loot Tables of the PhatLoot to file
+     * if there is an old file it is over written
      */
-    public static String getItemName(ItemStack item) {
-        //Return the Display name of the item if there is one
-        if (item.hasItemMeta()) {
-            String name = item.getItemMeta().getDisplayName();
-            if (name != null && !name.isEmpty()) {
-                return name;
+    public void save() {
+        OutputStreamWriter out = null;
+        try {
+            //Create a new config and populate it with this PhatLoot's information
+            YamlConfiguration config = new YamlConfiguration();
+            config.set(name, this);
+
+            //Save the config with UTF-8 encoding
+            File file = new File(PhatLoots.dataFolder + File.separator + "LootTables" + File.separator + name + ".yml");
+            String data = config.saveToString();
+            out = new OutputStreamWriter(new FileOutputStream(file), "UTF-8");
+            out.write(data, 0, data.length());
+        } catch (IOException ex) {
+            PhatLoots.logger.log(Level.SEVERE, "Could not save PhatLoot " + name, ex);
+        } finally {
+            try {
+                out.flush();
+                out.close();
+            } catch (Exception e) {
             }
         }
-        //A display name was not found so use a cleaned up version of the Material name
-        return WordUtils.capitalizeFully(item.getType().toString().replace("_", " "));
     }
 
     @Override
@@ -933,5 +1031,58 @@ public class PhatLoot implements ConfigurationSerializable {
 
         map.put("LootList", lootList);
         return map;
+    }
+
+    /**
+     * Constructs a new PhatLoot from a Configuration Serialized phase
+     *
+     * @param map The map of data values
+     */
+    public PhatLoot(Map<String, Object> map) {
+        String currentLine = null; //The value that is about to be loaded (used for debugging)
+        try {
+            current = name = (String) map.get(currentLine = "Name");
+
+            Map nestedMap = (Map) map.get(currentLine = "Reset");
+            days = (Integer) nestedMap.get(currentLine = "Days");
+            hours = (Integer) nestedMap.get(currentLine = "Hours");
+            minutes = (Integer) nestedMap.get(currentLine = "Minutes");
+            seconds = (Integer) nestedMap.get(currentLine = "Seconds");
+
+            global = (Boolean) map.get(currentLine = "Global");
+            round = (Boolean) map.get(currentLine = "RoundDownTime");
+            autoLoot = (Boolean) map.get(currentLine = "AutoLoot");
+            if (map.containsKey("BreakAndRespawn")) {
+                breakAndRespawn = (Boolean) map.get(currentLine = "BreakAndRespawn");
+            }
+
+            nestedMap = (Map) map.get(currentLine = "Money");
+            moneyUpper = (Integer) nestedMap.get(currentLine = "Upper");
+            moneyLower = (Integer) nestedMap.get(currentLine = "Lower");
+
+            nestedMap = (Map) map.get(currentLine = "Exp");
+            expUpper = (Integer) nestedMap.get(currentLine = "Upper");
+            expLower = (Integer) nestedMap.get(currentLine = "Lower");
+
+            //Check which version the file is
+            if (map.containsKey(currentLine = "LootList")) { //3.1+
+                lootList = (ArrayList) map.get(currentLine = "LootList");
+            } else { //pre-3.1
+                PhatLoots.logger.warning("Your save files are outdated, please use version 3.1-3.2 to update them");
+            }
+        } catch (Exception ex) {
+            //Print debug messages
+            PhatLoots.logger.severe("Failed to load line: " + currentLine);
+            PhatLoots.logger.severe("of PhatLoot: " + (current == null ? "unknown" : current));
+            if (current == null) {
+                PhatLoots.logger.severe("Last successfull load was...");
+                PhatLoots.logger.severe("PhatLoot: " + (last == null ? "unknown" : last));
+            }
+        }
+        last = current;
+        current = null;
+
+        loadChests();
+        loadLootTimes();
     }
 }

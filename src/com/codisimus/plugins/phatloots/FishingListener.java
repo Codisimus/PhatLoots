@@ -29,12 +29,16 @@ public class FishingListener implements Listener {
 
             //Change the 'fish' to which ever Item has been looted
             Item fish = (Item) event.getCaught();
-            fish.setItemStack(phatLoot.lootAll(event.getPlayer(), lootingBonus).getFirst());
+            LootBundle lootBundle = phatLoot.rollForLoot(lootingBonus);
+            fish.setItemStack(lootBundle.getItemList().get(0));
 
-            //Roll for experience to be gained by the fisher
-            event.setExpToDrop(phatLoot.expUpper > 0
-                               ? PhatLoots.rollForInt(phatLoot.expLower, phatLoot.expUpper)
-                               : 0);
+            //Execute commands that were rolled for
+            for (CommandLoot command : lootBundle.getCommandList()) {
+                command.execute(event.getPlayer());
+            }
+
+            //Set experience to be gained by the fisher
+            event.setExpToDrop(lootBundle.getExp());
         }
     }
 }

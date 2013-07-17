@@ -157,13 +157,12 @@ public class Item extends Loot {
     /**
      * Adds the item to the item list
      *
-     * @param player The Player looting
+     * @param lootBundle The loot that has been rolled for
      * @param lootingBonus The increased chance of getting rarer loots
-     * @param items The list of items that are looted
      */
     @Override
-    public void getLoot(Player player, double lootingBonus, LinkedList<ItemStack> items) {
-        items.add(getItem());
+    public void getLoot(LootBundle lootBundle, double lootingBonus) {
+        lootBundle.addItem(getItem());
     }
 
     /**
@@ -335,7 +334,7 @@ public class Item extends Loot {
                     PhatLoots.logger.severe("You are attempting to use an undocumented feature (Random Lore), please contact Codisimus if you actually want to know how to use this.");
                 }
             } else {
-                nameBuilder.append(PhatLoot.getItemName(clone));
+                nameBuilder.append(PhatLoots.getItemName(clone));
             }
 
             if (generateName) {
@@ -815,7 +814,7 @@ public class Item extends Loot {
         if (tieredName) {
             sb.append("tiered ");
         }
-        sb.append(PhatLoot.getItemName(item));
+        sb.append(PhatLoots.getItemName(item));
 
         sb.append(" @ ");
         //Only display the decimal values if the probability is not a whole number

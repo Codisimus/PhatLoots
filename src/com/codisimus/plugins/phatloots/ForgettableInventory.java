@@ -27,13 +27,13 @@ public class ForgettableInventory {
     public ForgettableInventory(String key, Inventory inventory) {
         this.key = key;
         this.inventory = inventory;
-        inventories.put(key, this);
     }
 
     /**
      * Schedules this ForgettableInventory to be forgotten
      */
     public void schedule() {
+        inventories.put(key, this);
         if (task != null) {
             task.cancel();
         }

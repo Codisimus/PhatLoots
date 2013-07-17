@@ -28,9 +28,7 @@ import org.bukkit.inventory.InventoryHolder;
  * @author Cody
  */
 public class PhatLootsListener implements Listener {
-    static String chestName;
     static EnumMap<Material, HashMap<String, String>> types = new EnumMap(Material.class); //Material -> World Name -> PhatLoot Name
-    static HashMap<OfflinePlayer, PhatLootChest> openPhatLootChests = new HashMap<OfflinePlayer, PhatLootChest>(); //Player -> Open PhatLootChest
 
     /**
      * Checks if a Player loots a PhatLootChest
@@ -46,7 +44,6 @@ public class PhatLootsListener implements Listener {
         }
 
         Player player = event.getPlayer();
-        Inventory inventory = null;
         LinkedList<PhatLoot> phatLoots = null;
 
         //Check if this Block has been automatically linked
@@ -88,9 +85,6 @@ public class PhatLootsListener implements Listener {
                         return;
                     }
                 }
-
-                Dispenser dispenser = (Dispenser) block.getState();
-                inventory = dispenser.getInventory();
                 break;
             }
             return;
@@ -104,7 +98,7 @@ public class PhatLootsListener implements Listener {
                     case TRAPPED_CHEST:
                     case CHEST:
                         Chest chest = (Chest) block.getState();
-                        inventory = chest.getInventory();
+                        Inventory inventory = chest.getInventory();
                         //We only care about the left side because that is the Block that would be linked
                         if (inventory instanceof DoubleChestInventory) {
                             chest = (Chest) ((DoubleChestInventory) inventory).getLeftSide().getHolder();
@@ -121,53 +115,17 @@ public class PhatLootsListener implements Listener {
                     }
                 }
             }
-
-            boolean global = true;
-            for (PhatLoot phatLoot : phatLoots) {
-                if (!phatLoot.global) {
-                    global = false;
-                    break;
-                }
-            }
-
-            //Create the custom key using the Player Name and Block location
-            final String key = (global ? "global" : player.getName())
-                                + "@" + plChest.toString();
-
-            //Grab the custom Inventory belonging to the Player
-            ForgettableInventory fInventory = ForgettableInventory.get(key);
-            if (fInventory != null) {
-                inventory = fInventory.getInventory();
-            } else {
-                String name = chestName.replace("<name>", phatLoots.getFirst().name.replace('_', ' '));
-
-                //Create a new Inventory for the Player
-                inventory = Bukkit.createInventory(null, inventory == null ? 27 : inventory.getSize(), name);
-                fInventory = new ForgettableInventory(key, inventory);
-            }
-
-            //Forget the Inventory in the scheduled time
-            fInventory.schedule();
-
-            switch (type) {
-            case TRAPPED_CHEST:
-            case ENDER_CHEST:
-            case CHEST:
-                //Swap the Inventories
-                event.setCancelled(true);
-                PhatLoots.openInventory(player, inventory, block.getLocation(), global);
-            }
-            player.openInventory(inventory);
-            openPhatLootChests.put(player, plChest);
-
             break;
 
         default: return;
         }
 
+        //Cancel any interaction events
+        event.setCancelled(true);
+
         //Roll for Loot of each linked PhatLoot
         for (PhatLoot phatLoot : phatLoots) {
-            phatLoot.rollForLoot(player, plChest, inventory);
+            phatLoot.rollForChestLoot(player, plChest);
         }
     }
 
@@ -181,12 +139,10 @@ public class PhatLootsListener implements Listener {
         HumanEntity human = event.getPlayer();
         if (human instanceof Player) {
             Player player = (Player) human;
-            if (openPhatLootChests.containsKey(player)) {
-                PhatLootChest chest = openPhatLootChests.get(player);
-                String key = "global@" + chest.toString();
-                boolean global = ForgettableInventory.has(key);
-                PhatLoots.closeInventory(player, event.getInventory(), chest, global);
-                openPhatLootChests.remove(player);
+            if (PhatLootChest.openPhatLootChests.containsKey(player)) {
+                PhatLootChest chest = PhatLootChest.openPhatLootChests.get(player);
+                boolean global = ForgettableInventory.has("global@" + chest.toString());
+                chest.closeInventory(player, event.getInventory(), global);
             }
         }
     }

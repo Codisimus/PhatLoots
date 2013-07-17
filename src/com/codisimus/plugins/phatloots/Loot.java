@@ -17,11 +17,10 @@ public abstract class Loot implements Comparable, ConfigurationSerializable {
     /**
      * Adds the loot to the item list
      *
-     * @param player The Player looting
+     * @param lootBundle The loot that has been rolled for
      * @param lootingBonus The increased chance of getting rarer loots
-     * @param items The list of items that are looted
      */
-    public abstract void getLoot(Player player, double lootingBonus, LinkedList<ItemStack> items);
+    public abstract void getLoot(LootBundle lootBundle, double lootingBonus);
 
     /**
      * Returns the information of the loot in the form of an ItemStack

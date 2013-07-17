@@ -105,7 +105,7 @@ public class PhatLootsConfig {
         lootMessage = getString(section, "LootMessage");
         lootBroadcast = getString(section, "LootBroadcast");
 
-        PhatLootsListener.chestName = getString(config, "ChestName");
+        PhatLootChest.chestName = getString(config, "ChestName");
 
 
         /* TAGS */
@@ -162,11 +162,10 @@ public class PhatLootsConfig {
         }
         Item.tierNotify = config.getInt("MinimumTierNotification");
         PhatLootsCommand.setUnlockable = config.getBoolean("SetChestsAsUnlockable");
-        PhatLoot.autoClose = config.getBoolean("AutoCloseOnInsufficientFunds");
         PhatLoot.decimals = config.getBoolean("DivideMoneyAmountBy100");
-        PhatLootChest.soundOnAutoLoot = config.getBoolean("PlaySoundOnAutoLoot");
+        PhatLoot.soundOnAutoLoot = config.getBoolean("PlaySoundOnAutoLoot");
+        PhatLootChest.useBreakAndRepawn = config.getBoolean("UseBreakAndRepawn");
         PhatLootChest.soundOnBreak = config.getBoolean("PlaySoundOnChestBreak");
-        PhatLoots.useBreakAndRepawn = config.getBoolean("UseBreakAndRepawn");
         ForgettableInventory.delay = config.getInt("ForgetInventoryTime") * 20L;
         PhatLoot.unlink = config.getBoolean("UnlinkGlobalChestsThatNeverReset");
 

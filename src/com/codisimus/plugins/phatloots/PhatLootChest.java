@@ -1,12 +1,10 @@
 package com.codisimus.plugins.phatloots;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import org.bukkit.Bukkit;
-import org.bukkit.Material;
-import org.bukkit.Sound;
-import org.bukkit.World;
+import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Chest;
@@ -24,9 +22,11 @@ import org.bukkit.scheduler.BukkitRunnable;
  * @author Cody
  */
 public class PhatLootChest {
-    static HashMap<String, PhatLootChest> chests = new HashMap<String, PhatLootChest>();
-    static boolean soundOnAutoLoot;
+    static HashMap<String, PhatLootChest> chests = new HashMap<String, PhatLootChest>(); //Chest Location -> PhatLootChest
+    static HashMap<OfflinePlayer, PhatLootChest> openPhatLootChests = new HashMap<OfflinePlayer, PhatLootChest>(); //Player -> Open PhatLootChest
+    static boolean useBreakAndRepawn;
     static boolean soundOnBreak;
+    static String chestName;
     private String world;
     private int x, y, z;
     public boolean isDispenser;
@@ -67,27 +67,6 @@ public class PhatLootChest {
             isDispenser = block.getTypeId() == 23;
         }
     }
-
-//    /**
-//     * Constructs a new PhatLootChest with the given Block Location data
-//     *
-//     * @param data The data in the form [world, x, y, z]
-//     */
-//    private PhatLootChest(String[] data) {
-//        world = data[0];
-//        x = Integer.parseInt(data[1]);
-//        y = Integer.parseInt(data[2]);
-//        z = Integer.parseInt(data[3]);
-//        World w = Bukkit.getWorld(world);
-//        if (w == null) { //The world is not currently loaded
-//            PhatLoots.logger.warning("The world '" + world + "' is not currently loaded, all linked chests in this world are being unlinked.");
-//            PhatLoots.logger.warning("THIS CHEST UNLINKING IS PERMANANT IF YOU LINK/UNLINK ANY OTHER CHESTS IN THIS PHATLOOT!");
-//        } else {
-//            Block block = w.getBlockAt(x, y, z);
-//            isDispenser = block.getTypeId() == 23;
-//            chests.put(world + "'" + x + "'" + y + "'" + z, this);
-//        }
-//    }
 
     /**
      * Returns the PhatLootChest of the given Block
@@ -140,20 +119,6 @@ public class PhatLootChest {
             PhatLootChest chest = new PhatLootChest(data[0], Integer.parseInt(data[1]), Integer.parseInt(data[2]), Integer.parseInt(data[3]));
             chests.put(chest.world + "'" + chest.x + "'" + chest.y + "'" + chest.z, chest);
             return chest;
-        }
-    }
-
-    /**
-     * Constructs a new PhatLootChest with the given Block
-     *
-     * @param block The given Block
-     */
-    public static PhatLootChest getTempChest(Block block) {
-        String key = block.getWorld().getName() + "'" + block.getX() + "'" + block.getY() + "'" + block.getZ();
-        if (chests.containsKey(key)) {
-            return chests.get(key);
-        } else {
-            return new PhatLootChest(block);
         }
     }
 
@@ -239,23 +204,65 @@ public class PhatLootChest {
         return world.equals(block.getWorld().getName());
     }
 
+    public Inventory getInventory(String user, String name) {
+        return getInventory(user, name, this);
+    }
+
+    public static Inventory getInventory(String user, String name, PhatLootChest chest) {
+        if (chest != null && chest.isDispenser) {
+            return ((Dispenser) chest.getBlock().getState()).getInventory();
+        }
+
+        //Create the custom key using the user and Block location
+        String key = user;
+        if (chest != null) {
+            key += '@' + chest.toString();
+        }
+
+        //Grab the custom Inventory belonging to the Player
+        Inventory inventory;
+        ForgettableInventory fInventory = ForgettableInventory.get(key);
+        if (fInventory != null) {
+            inventory = fInventory.getInventory();
+        } else {
+            name = chestName.replace("<name>", name.replace('_', ' '));
+
+            if (chest != null) {
+                Block block = chest.getBlock();
+                switch (block.getType()) {
+                case TRAPPED_CHEST:
+                case CHEST:
+                    inventory = ((Chest) block.getState()).getInventory();
+                    break;
+                default:
+                    inventory = null;
+                    break;
+                }
+            } else {
+                inventory = null;
+            }
+
+            //Create a new Inventory for the user
+            inventory = Bukkit.createInventory(null, inventory == null ? 27 : inventory.getSize(), name);
+            fInventory = new ForgettableInventory(key, inventory);
+        }
+
+        //Forget the Inventory in the scheduled time
+        fInventory.schedule();
+        return inventory;
+    }
+
     /**
-     * Adds the list of ItemStacks to the given Inventory
+     * Adds the ItemStacks to the given Inventory
      *
-     * @param itemList The list of ItemStacks to add
+     * @param itemList The Collection of ItemStacks to add
      * @param player The Player looting the Chest
      * @param inventory The Inventory to add the items to
-     * @param autoLoot True if the items should go straight to the Player's inventory
-     * @return true if autoLoot is true and there are items in the inventory at the end
      */
-    public boolean addLoots(List<ItemStack> itemList, Player player, Inventory inventory, boolean autoLoot) {
-        boolean itemsInChest = false;
+    public void addItems(Collection<ItemStack> itemList, Player player, Inventory inventory) {
         for (ItemStack item: itemList) {
-            if (addLoot(item, player, inventory, autoLoot)) {
-                itemsInChest = true;
-            }
+            addItem(item, player, inventory);
         }
-        return itemsInChest;
     }
 
     /**
@@ -264,58 +271,34 @@ public class PhatLootChest {
      * @param item The ItemStack to add
      * @param player The Player looting the Chest
      * @param inventory The Inventory to add the item to
-     * @param autoLoot True if the item should go straight to the Player's inventory
-     * @return true if autoLoot is true and the item was added to the inventory
      */
-    public boolean addLoot(ItemStack item, Player player, Inventory inventory, boolean autoLoot) {
-        //Make sure loots do not exceed the stack size
-        if (item.getAmount() > item.getMaxStackSize()) {
-            int id = item.getTypeId();
-            short durability = item.getDurability();
-            int amount = item.getAmount();
-            int maxStackSize = item.getMaxStackSize();
-            while (amount > maxStackSize) {
-                addLoot(new ItemStack(id, maxStackSize, durability), player, inventory, autoLoot);
-                amount -= maxStackSize;
+    public void addItem(ItemStack item, Player player, Inventory inventory) {
+        /* Bukkit should be able to handle this */
+//        //Make sure loots do not exceed the stack size
+//        if (item.getAmount() > item.getMaxStackSize()) {
+//            int amount = item.getAmount();
+//            int maxStackSize = item.getMaxStackSize();
+//            while (amount > maxStackSize) {
+//                ItemStack fraction = item.clone();
+//                fraction.setAmount(maxStackSize);
+//                addItem(item, player, inventory);
+//                amount -= maxStackSize;
+//            }
+//        }
+
+        Collection<ItemStack> leftOvers = inventory.addItem(item).values();
+        if (!leftOvers.isEmpty()) {
+            for (ItemStack stack : leftOvers) {
+                overFlow(stack, player);
             }
         }
 
-        //Get the Player's inventory in case of auto looting
-        PlayerInventory sack = player.getInventory();
-
         if (isDispenser) {
-            //Add the item to the Dispenser inventory
-            Dispenser dispenser = (Dispenser) getBlock().getState();
-            inventory.addItem(item);
-
             //Dispense until the Dispenser is empty
+            Dispenser dispenser = (Dispenser) getBlock().getState();
             while (inventory.firstEmpty() > 0) {
                 dispenser.dispense();
             }
-            return false;
-        } else if (autoLoot && sack.firstEmpty() != -1) {
-            //Add the Loot to the Player's Inventory
-            if (PhatLootsConfig.autoLoot != null) {
-                String msg = PhatLootsConfig.autoLoot.replace("<item>", PhatLoot.getItemName(item));
-                int amount = item.getAmount();
-                msg = amount > 1
-                      ? msg.replace("<amount>", String.valueOf(item.getAmount()))
-                      : msg.replace("x<amount>", "").replace("<amount>", String.valueOf(item.getAmount()));
-                player.sendMessage(msg);
-            }
-            sack.addItem(item);
-            if (soundOnAutoLoot) {
-                player.playSound(player.getLocation(), Sound.ITEM_PICKUP, 1, 0.2F);
-            }
-            return false;
-        } else {
-            //Add the Loot to the Inventory
-            if (inventory.firstEmpty() != -1) {
-                inventory.addItem(item);
-            } else { //The item will not fit in the inventory
-                overFlow(item, player);
-            }
-            return true;
         }
     }
 
@@ -329,12 +312,120 @@ public class PhatLootChest {
         Block block = getBlock();
         block.getWorld().dropItemNaturally(block.getLocation(), item);
         if (player != null && PhatLootsConfig.overflow != null) {
-            String msg = PhatLootsConfig.overflow.replace("<item>", PhatLoot.getItemName(item));
+            String msg = PhatLootsConfig.overflow.replace("<item>", PhatLoots.getItemName(item));
             int amount = item.getAmount();
             msg = amount > 1
                   ? msg.replace("<amount>", String.valueOf(item.getAmount()))
                   : msg.replace("x<amount>", "").replace("<amount>", String.valueOf(item.getAmount()));
             player.sendMessage(msg);
+        }
+    }
+
+    /**
+     * Opens the virtual Inventory to the Player
+     * Plays animation/sound for opening a virtual Inventory
+     *
+     * @param player The Player opening the Inventory
+     * @param inv The virtual Inventory being opened
+     * @param global Whether the animation should be sent to everyone (true) or just the Player (false)
+     */
+    public void openInventory(Player player, Inventory inv, boolean global) {
+        openPhatLootChests.put(player, this);
+        player.openInventory(inv);
+
+        Location loc = new Location(Bukkit.getWorld(world), x, y, z);
+        if (global) {
+            if (inv.getViewers().size() <= 1) { //First viewer
+                //Play for each Player in the World
+                for (Player p: player.getWorld().getPlayers()) {
+                    p.playSound(loc, Sound.CHEST_OPEN, 0.75F, 0.95F);
+                    p.playNote(loc, (byte) 1, (byte) 1); //Open animation
+                }
+            }
+        } else {
+            //Play for only the individual Player
+            player.playSound(loc, Sound.CHEST_OPEN, 0.75F, 0.95F);
+            player.playNote(loc, (byte) 1, (byte) 1); //Open animation
+        }
+    }
+
+    /**
+     * Closes the virtual Inventory for the Player
+     * Plays animation/sound for closing a virtual Inventory
+     *
+     * @param player The Player closing the Inventory
+     * @param inv The virtual Inventory being closed
+     * @param global Whether the animation should be sent to everyone (true) or just the Player (false)
+     */
+    public void closeInventory(Player player, Inventory inv, boolean global) {
+        openPhatLootChests.remove(player);
+        player.closeInventory();
+
+        Block block = getBlock();
+        Location loc = block.getLocation();
+        if (global) {
+            if (inv.getViewers().size() <= 1) { //Last viewer
+                //Play for each Player in the World
+                for (Player p: player.getWorld().getPlayers()) {
+                    switch (block.getType()) {
+                    case CHEST:
+                    case TRAPPED_CHEST:
+                    case ENDER_CHEST:
+                        p.playSound(loc, Sound.CHEST_CLOSE, 0.75F, 0.95F);
+                        p.playNote(loc, (byte) 1, (byte) 0); //Close animation
+                        break;
+                    default:
+                        break;
+                    }
+                }
+
+                //Return if not using the Break and Respawn setting
+                if (!useBreakAndRepawn) {
+                    return;
+                }
+
+                //Return if the Inventory is not empty
+                for (ItemStack item : inv.getContents()) {
+                    if (item != null && item.getTypeId() != 0) {
+                        return;
+                    }
+                }
+
+                //Get the shortest reset time
+                long time = -1;
+                for (PhatLoot phatLoot : PhatLoots.getPhatLoots()) {
+                    if (phatLoot.containsChest(this) && phatLoot.breakAndRespawn) {
+                        if (phatLoot.global) {
+                            long temp = phatLoot.getTimeRemaining(this);
+                            if (temp < 1) {
+                                continue;
+                            }
+                            if (time < 0 || temp < time) {
+                                time = temp;
+                            }
+                        } else {
+                            break;
+                        }
+                    }
+                }
+
+                //Don't break the chest if it will respawn in 1 second or less
+                if (time > 1000) {
+                    breakChest(time);
+                }
+            }
+        } else {
+            switch (block.getType()) {
+            case CHEST:
+            case TRAPPED_CHEST:
+            case ENDER_CHEST:
+                //Play for only the individual Player
+                player.playSound(loc, Sound.CHEST_CLOSE, 0.75F, 0.95F);
+                player.playNote(loc, (byte) 1, (byte) 0); //Close animation
+                break;
+            default:
+                break;
+            }
         }
     }
 

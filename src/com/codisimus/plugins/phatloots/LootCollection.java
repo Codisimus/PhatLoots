@@ -72,17 +72,16 @@ public class LootCollection extends Loot {
     /**
      * Rolls for each Loot within the collection
      *
-     * @param player The Player looting
+     * @param lootBundle The loot that has been rolled for
      * @param lootingBonus The increased chance of getting rarer loots
-     * @param items The list of items that are looted
      */
     @Override
-    public void getLoot(Player player, double lootingBonus, LinkedList<ItemStack> items) {
+    public void getLoot(LootBundle lootBundle, double lootingBonus) {
         if (isRollForEach()) { //Roll for each Loot individually
             for (Loot loot : lootList) {
                 if (loot.rollForLoot(lootingBonus)) {
                     if (loot.rollForLoot(lootingBonus)) {
-                        loot.getLoot(player, lootingBonus, items);
+                        loot.getLoot(lootBundle, lootingBonus);
                     }
                 }
             }
@@ -110,7 +109,7 @@ public class LootCollection extends Loot {
                         roll -= loot.getProbability();
                         if (roll <= 0) {
                             //Give this loot
-                            loot.getLoot(player, lootingBonus, items);
+                            loot.getLoot(lootBundle, lootingBonus);
                             break;
                         }
                     }

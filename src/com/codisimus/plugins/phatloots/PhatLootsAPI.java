@@ -39,10 +39,10 @@ public class PhatLootsAPI {
      * @param phatLootName The name of the specified loot tables
      * @return The loot that was given from the roll
      */
-    public static LinkedList<ItemStack> rollForLoot(String phatLootName) {
+    public static LootBundle rollForLoot(String phatLootName) {
         PhatLoot phatLoot = PhatLoots.getPhatLoot(phatLootName);
         return phatLoot == null
-               ? new LinkedList<ItemStack>()
+               ? new LootBundle()
                : phatLoot.rollForLoot();
     }
 

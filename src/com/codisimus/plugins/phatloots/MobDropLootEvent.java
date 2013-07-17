@@ -17,9 +17,7 @@ public class MobDropLootEvent extends Event implements Cancellable {
     private static final HandlerList handlers = new HandlerList();
     private LivingEntity mob;
     private Player killer;
-    private List<ItemStack> drops;
-    private double money;
-    private int exp;
+    private LootBundle lootBundle;
     private boolean cancelled;
 
     /**
@@ -27,16 +25,12 @@ public class MobDropLootEvent extends Event implements Cancellable {
      *
      * @param mob The mob that was killed
      * @param killer The Player who killed the mob or null if the mob died of natural causes
-     * @param drops The items that will be dropped by the mob
-     * @param money The amount of money that the Player will loot
-     * @param exp The amount of experience that will be dropped by the mob
+     * @param lootBundle The bundle of loot dropped by the mob
      */
-    public MobDropLootEvent(LivingEntity mob, Player killer, List<ItemStack> drops, double money, int exp) {
+    public MobDropLootEvent(LivingEntity mob, Player killer, LootBundle lootBundle) {
         this.mob = mob;
         this.killer = killer;
-        this.drops = drops;
-        this.money = money;
-        this.exp = exp;
+        this.lootBundle = lootBundle;
     }
 
     /**
@@ -58,12 +52,21 @@ public class MobDropLootEvent extends Event implements Cancellable {
     }
 
     /**
+     * Returns the loot that will be dropped by the mob
+     *
+     * @return the bundle of loot that will be dropped by the mob
+     */
+    public LootBundle getLootBundle() {
+        return lootBundle;
+    }
+
+    /**
      * Returns the items that will be dropped by the mob
      *
      * @return A list of items that will be dropped by the mob
      */
     public List<ItemStack> getDrops() {
-        return drops;
+        return lootBundle.getItemList();
     }
 
     /**
@@ -72,7 +75,7 @@ public class MobDropLootEvent extends Event implements Cancellable {
      * @return The amount of money that the Player will loot
      */
     public double getMoney() {
-        return money;
+        return lootBundle.getMoney();
     }
 
     /**
@@ -81,7 +84,7 @@ public class MobDropLootEvent extends Event implements Cancellable {
      * @param money The amount of money to be looted
      */
     public void setMoney(double money) {
-        this.money = money;
+        lootBundle.setMoney(money);
     }
 
     /**
@@ -90,7 +93,7 @@ public class MobDropLootEvent extends Event implements Cancellable {
      * @return The amount of experience dropped
      */
     public int getExp() {
-        return exp;
+        return lootBundle.getExp();
     }
 
     /**
@@ -99,7 +102,7 @@ public class MobDropLootEvent extends Event implements Cancellable {
      * @param money The amount of experience to be dropped
      */
     public void setExp(int exp) {
-        this.exp = exp;
+        lootBundle.setExp(exp);
     }
 
     @Override

@@ -3,12 +3,10 @@ package com.codisimus.plugins.phatloots;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
-import org.bukkit.block.Dispenser;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockPhysicsEvent;
-import org.bukkit.inventory.Inventory;
 
 /**
  * Listens for redstone activating PhatLoot Dispensers
@@ -44,15 +42,11 @@ public class DispenserListener implements Listener {
             return;
         }
 
-        //Get the inventory of the Dispenser
-        Dispenser dispenser = (Dispenser) block.getState();
-        Inventory inventory = dispenser.getInventory();
-
         //Roll for linked loot
         PhatLootChest plChest = PhatLootChest.getChest(block);
         for (PhatLoot phatLoot : PhatLoots.getPhatLoots(block, player)) {
             if (PhatLoots.canLoot(player, phatLoot)) {
-                phatLoot.rollForLoot(player, plChest, inventory);
+                phatLoot.rollForChestLoot(player, plChest);
             }
         }
     }

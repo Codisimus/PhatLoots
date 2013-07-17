@@ -65,15 +65,33 @@ public class CommandLoot extends Loot {
     }
 
     /**
-     * Executes the command for the looting player
+     * Adds this command to the LootBundle
      *
-     * @param player The Player looting
-     * @param lootingBonus The increased chance of getting rarer loots (not used)
-     * @param items The list of items that are looted (not used)
+     * @param lootBundle The loot that has been rolled for
+     * @param lootingBonus The increased chance of getting rarer loots
      */
     @Override
-    public void getLoot(Player player, double lootingBonus, LinkedList<ItemStack> items) {
-        String cmd = command.replace("<player>", player.getName());
+    public void getLoot(LootBundle lootBundle, double lootingBonus) {
+        lootBundle.addCommand(this);
+    }
+
+    /**
+     * Executes the command for the looting player
+     *
+     * @param player The Player looting or null if no Player is involved
+     */
+    public void execute(Player player) {
+        String cmd;
+        if (player == null) {
+            //Return if the command is ment for a player
+            if (!fromConsole || command.contains("<player>")) {
+                return;
+            } else {
+                cmd = command;
+            }
+        } else {
+            cmd = command.replace("<player>", player.getName());
+        }
         if (fromConsole) { //From console
             Bukkit.dispatchCommand(cs, cmd);
         } else if (tempOP) { //From Player as OP

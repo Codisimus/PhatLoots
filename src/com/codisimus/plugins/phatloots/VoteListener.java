@@ -25,15 +25,9 @@ public class VoteListener implements Listener {
             PhatLoot phatLoot = PhatLoots.getPhatLoot("Vote");
             if (phatLoot == null) {
                 PhatLoots.logger.severe("§4PhatLoot §6Vote§4 does not exist");
-                return;
+            } else {
+                phatLoot.rollForLoot(player);
             }
-
-            //Set the custom name of the PhatLoot Inventory
-            String name = ChatColor.translateAlternateColorCodes('&', phatLoot.name);
-
-            Inventory inventory = Bukkit.createInventory(player, 54, name);
-            player.openInventory(inventory);
-            phatLoot.rollForLoot(player, PhatLootChest.getTempChest(player.getLocation().getBlock()), inventory);
         }
     }
 }

@@ -85,11 +85,7 @@ public class PhatLootsCommand implements CommandExecutor {
                     player.sendMessage(PhatLootsConfig.permission);
             	    return true;
             	}
-            	Inventory inventory = Bukkit.createInventory(player, 54, phatLoot.name);
-
-            	//Open the Inventory
-            	player.openInventory(inventory);
-            	phatLoot.rollForLoot(player, PhatLootChest.getTempChest(player.getLocation().getBlock()), inventory);
+            	phatLoot.rollForLoot(player);
             }
             return true;
         }
@@ -572,10 +568,7 @@ public class PhatLootsCommand implements CommandExecutor {
                           ? pLoot.name
                           : concatArgs(args, 3);
             name = ChatColor.translateAlternateColorCodes('&', name);
-
-            Inventory inventory = Bukkit.createInventory(player, 54, name);
-            player.openInventory(inventory);
-            pLoot.rollForLoot(player, PhatLootChest.getTempChest(player.getLocation().getBlock()), inventory);
+            pLoot.rollForLoot(player, name);
             return true;
 
         case RL: //Reload plugin data and settings

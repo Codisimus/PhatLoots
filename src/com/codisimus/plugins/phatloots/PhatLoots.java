@@ -11,6 +11,7 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import net.milkbowl.vault.economy.Economy;
+import org.apache.commons.lang.WordUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Sound;
@@ -35,7 +36,6 @@ public class PhatLoots extends JavaPlugin {
     static Logger logger;
     static Economy econ = null;
     static String dataFolder;
-    static boolean useBreakAndRepawn;
     private static Random random = new Random();
     private static HashMap<String, PhatLoot> phatLoots = new HashMap<String, PhatLoot>(); //PhatLoot Name -> PhatLoot
 
@@ -350,107 +350,6 @@ public class PhatLoots extends JavaPlugin {
     }
 
     /**
-     * Plays animation/sound for opening a virtual Inventory
-     *
-     * @param player The Player opening the Inventory
-     * @param inv The virtual Inventory being opened
-     * @param loc The Location of the Chest which we want to be animation
-     * @param global Whether the animation should be sent to everyone (true) or just the Player (false)
-     */
-    public static void openInventory(Player player, Inventory inv, Location loc, Boolean global) {
-        if (global) {
-            if (inv.getViewers().size() <= 1) { //First viewer
-                //Play for each Player in the World
-                for (Player p: player.getWorld().getPlayers()) {
-                    p.playSound(loc, Sound.CHEST_OPEN, 0.75F, 0.95F);
-                    p.playNote(loc, (byte) 1, (byte) 1); //Open animation
-                }
-            }
-        } else {
-            //Play for only the individual Player
-            player.playSound(loc, Sound.CHEST_OPEN, 0.75F, 0.95F);
-            player.playNote(loc, (byte) 1, (byte) 1); //Open animation
-        }
-    }
-
-    /**
-     * Plays animation/sound for closing a virtual Inventory
-     *
-     * @param player The Player closing the Inventory
-     * @param inv The virtual Inventory being closed
-     * @param chest The Chest which we want to be animation
-     * @param global Whether the animation should be sent to everyone (true) or just the Player (false)
-     */
-    public static void closeInventory(Player player, Inventory inv, PhatLootChest chest, Boolean global) {
-        Block block = chest.getBlock();
-        Location loc = block.getLocation();
-        if (global) {
-            if (inv.getViewers().size() <= 1) { //Last viewer
-                //Play for each Player in the World
-                for (Player p: player.getWorld().getPlayers()) {
-                    switch (block.getType()) {
-                    case CHEST:
-                    case TRAPPED_CHEST:
-                    case ENDER_CHEST:
-                        p.playSound(loc, Sound.CHEST_CLOSE, 0.75F, 0.95F);
-                        p.playNote(loc, (byte) 1, (byte) 0); //Close animation
-                        break;
-                    default:
-                        break;
-                    }
-                }
-
-                //Return if not using the Break and Respawn setting
-                if (!useBreakAndRepawn) {
-                    return;
-                }
-
-                //Return if the Inventory is not empty
-                for (ItemStack item : inv.getContents()) {
-                    if (item != null && item.getTypeId() != 0) {
-                        return;
-                    }
-                }
-
-                //Get the shortest reset time
-                long time = -1;
-                for (PhatLoot phatLoot : phatLoots.values()) {
-                    if (phatLoot.containsChest(chest) && phatLoot.breakAndRespawn) {
-                        if (phatLoot.global) {
-                            long temp = phatLoot.getTimeRemaining(chest);
-                            if (temp < 1) {
-                                continue;
-                            }
-                            if (time < 0 || temp < time) {
-                                time = temp;
-                            }
-                        } else {
-                            break;
-                        }
-                    }
-                }
-
-                //Don't break the chest if it will respawn in 1 second or less
-                if (time > 1000) {
-                    chest.breakChest(time);
-                }
-            }
-        } else {
-            switch (block.getType()) {
-            case CHEST:
-            case TRAPPED_CHEST:
-            case ENDER_CHEST:
-                //Play for only the individual Player
-                player.playSound(loc, Sound.CHEST_CLOSE, 0.75F, 0.95F);
-                player.playNote(loc, (byte) 1, (byte) 0); //Close animation
-                break;
-            default:
-                break;
-            }
-        }
-    }
-
-    /**
      * Returns a random int between 0 (inclusive) and y (inclusive)
      *
      * @param upper y
@@ -490,6 +389,24 @@ public class PhatLoots extends JavaPlugin {
      */
     public static double rollForDouble(int lower, int upper) {
         return random.nextInt(upper + 1 - lower) + lower;
+    }
+
+    /**
+     * Returns a user friendly String of the given ItemStack's name
+     *
+     * @param item The given ItemStack
+     * @return The name of the item
+     */
+    public static String getItemName(ItemStack item) {
+        //Return the Display name of the item if there is one
+        if (item.hasItemMeta()) {
+            String name = item.getItemMeta().getDisplayName();
+            if (name != null && !name.isEmpty()) {
+                return name;
+            }
+        }
+        //A display name was not found so use a cleaned up version of the Material name
+        return WordUtils.capitalizeFully(item.getType().toString().replace("_", " "));
     }
 
     /**
