@@ -11,7 +11,7 @@ import org.bukkit.scheduler.BukkitTask;
  * @author Mtihc
  */
 public class ForgettableInventory {
-    static HashMap<String, ForgettableInventory> inventories = new HashMap<String, ForgettableInventory>(); //User+Chest Location -> Inventory
+    private static HashMap<String, ForgettableInventory> inventories = new HashMap<String, ForgettableInventory>(); //User+Chest Location -> Inventory
     static long delay;
     private Inventory inventory;
     private String key;

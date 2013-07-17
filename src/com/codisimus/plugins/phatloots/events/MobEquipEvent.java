@@ -1,4 +1,4 @@
-package com.codisimus.plugins.phatloots;
+package com.codisimus.plugins.phatloots.events;
 
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.event.Cancellable;

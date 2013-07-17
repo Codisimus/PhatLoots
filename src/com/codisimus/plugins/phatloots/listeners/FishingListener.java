@@ -1,5 +1,9 @@
-package com.codisimus.plugins.phatloots;
+package com.codisimus.plugins.phatloots.listeners;
 
+import com.codisimus.plugins.phatloots.PhatLoot;
+import com.codisimus.plugins.phatloots.PhatLoots;
+import com.codisimus.plugins.phatloots.loot.CommandLoot;
+import com.codisimus.plugins.phatloots.loot.LootBundle;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Item;
 import org.bukkit.event.EventHandler;

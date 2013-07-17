@@ -1,5 +1,6 @@
 package com.codisimus.plugins.phatloots;
 
+import com.codisimus.plugins.phatloots.loot.LootBundle;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
@@ -70,7 +71,7 @@ public class PhatLootsAPI {
      * @return A collection of all PhatLootChests
      */
     public static Collection<PhatLootChest> getAllPhatLootChests() {
-        return PhatLootChest.chests.values();
+        return PhatLootChest.getChests();
     }
 
     /**

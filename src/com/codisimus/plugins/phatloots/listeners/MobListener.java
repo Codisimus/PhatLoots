@@ -1,5 +1,7 @@
-package com.codisimus.plugins.phatloots;
+package com.codisimus.plugins.phatloots.listeners;
 
+import com.codisimus.plugins.phatloots.PhatLoot;
+import com.codisimus.plugins.phatloots.PhatLoots;
 import com.codisimus.plugins.regionown.Region;
 import com.codisimus.plugins.regionown.RegionOwn;
 import org.bukkit.Location;
@@ -13,10 +15,10 @@ import org.bukkit.event.Listener;
  * @author Cody
  */
 public abstract class MobListener implements Listener {
-    static boolean mobTypes;
-    static boolean namedMobs;
-    boolean mobWorlds;
-    boolean mobRegions;
+    public static boolean mobTypes;
+    public static boolean namedMobs;
+    public boolean mobWorlds;
+    public boolean mobRegions;
 
     /**
      * Returns a cleaned up string representation of the given Entity's type

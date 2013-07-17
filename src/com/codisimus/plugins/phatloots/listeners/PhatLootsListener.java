@@ -1,5 +1,11 @@
-package com.codisimus.plugins.phatloots;
+package com.codisimus.plugins.phatloots.listeners;
 
+import com.codisimus.plugins.phatloots.ForgettableInventory;
+import com.codisimus.plugins.phatloots.PhatLoot;
+import com.codisimus.plugins.phatloots.PhatLootChest;
+import com.codisimus.plugins.phatloots.PhatLoots;
+import com.codisimus.plugins.phatloots.PhatLootsCommand;
+import com.codisimus.plugins.phatloots.PhatLootsConfig;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -23,7 +29,7 @@ import org.bukkit.inventory.Inventory;
  * @author Cody
  */
 public class PhatLootsListener implements Listener {
-    static EnumMap<Material, HashMap<String, String>> types = new EnumMap(Material.class); //Material -> World Name -> PhatLoot Name
+    public static EnumMap<Material, HashMap<String, String>> types = new EnumMap(Material.class); //Material -> World Name -> PhatLoot Name
 
     /**
      * Checks if a Player loots a PhatLootChest

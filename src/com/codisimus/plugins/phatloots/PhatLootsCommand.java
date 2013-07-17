@@ -2,6 +2,11 @@ package com.codisimus.plugins.phatloots;
 
 import com.codisimus.plugins.chestlock.ChestLock;
 import com.codisimus.plugins.chestlock.Safe;
+import com.codisimus.plugins.phatloots.listeners.PhatLootInfoListener;
+import com.codisimus.plugins.phatloots.loot.CommandLoot;
+import com.codisimus.plugins.phatloots.loot.Item;
+import com.codisimus.plugins.phatloots.loot.Loot;
+import com.codisimus.plugins.phatloots.loot.LootCollection;
 import com.codisimus.plugins.regionown.Region;
 import com.codisimus.plugins.regionown.RegionSelector;
 import com.google.common.collect.Sets;

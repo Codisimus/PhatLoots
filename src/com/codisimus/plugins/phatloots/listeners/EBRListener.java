@@ -1,5 +1,7 @@
-package com.codisimus.plugins.phatloots;
+package com.codisimus.plugins.phatloots.listeners;
 
+import com.codisimus.plugins.phatloots.PhatLoot;
+import com.codisimus.plugins.phatloots.PhatLoots;
 import me.ThaH3lper.com.Api.BossDeathEvent;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;

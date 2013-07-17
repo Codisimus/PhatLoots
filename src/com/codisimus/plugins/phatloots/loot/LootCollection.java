@@ -1,5 +1,8 @@
-package com.codisimus.plugins.phatloots;
+package com.codisimus.plugins.phatloots.loot;
 
+import com.codisimus.plugins.phatloots.PhatLoot;
+import com.codisimus.plugins.phatloots.PhatLoots;
+import com.codisimus.plugins.phatloots.PhatLootsConfig;
 import java.util.*;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -14,10 +17,10 @@ import org.bukkit.inventory.meta.ItemMeta;
  */
 @SerializableAs("LootCollection")
 public class LootCollection extends Loot {
-    String name;
-    int lowerNumberOfLoots;
-    int upperNumberOfLoots;
-    LinkedList<Loot> lootList;
+    public String name;
+    private int lowerNumberOfLoots;
+    private int upperNumberOfLoots;
+    private LinkedList<Loot> lootList;
 
     /**
      * Contructs a new LootCollection with the given name
@@ -116,6 +119,15 @@ public class LootCollection extends Loot {
                 }
             }
         }
+    }
+
+    /**
+     * Returns the list of loot in the collection
+     *
+     * @return The list of Loot in this Collection
+     */
+    public LinkedList<Loot> getLootList() {
+        return lootList;
     }
 
     /**

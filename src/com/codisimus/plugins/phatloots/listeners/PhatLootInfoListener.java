@@ -1,5 +1,9 @@
-package com.codisimus.plugins.phatloots;
+package com.codisimus.plugins.phatloots.listeners;
 
+import com.codisimus.plugins.phatloots.PhatLoot;
+import com.codisimus.plugins.phatloots.PhatLoots;
+import com.codisimus.plugins.phatloots.loot.Loot;
+import com.codisimus.plugins.phatloots.loot.LootCollection;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -25,9 +29,9 @@ import org.bukkit.scheduler.BukkitRunnable;
  */
 public class PhatLootInfoListener implements Listener {
     private final static int SIZE = 54;
-    static HashMap<String, Boolean> switchingPages = new HashMap<String, Boolean>(); //Player name -> Going deeper (true) or back (false)
-    static HashMap<String, PhatLoot> infoViewers = new HashMap<String, PhatLoot>(); //Player name -> PhatLoot they are viewing
-    static HashMap<String, Stack<Inventory>> pageStacks = new HashMap<String, Stack<Inventory>>(); //Player name -> Page history
+    private static HashMap<String, Boolean> switchingPages = new HashMap<String, Boolean>(); //Player name -> Going deeper (true) or back (false)
+    private static HashMap<String, PhatLoot> infoViewers = new HashMap<String, PhatLoot>(); //Player name -> PhatLoot they are viewing
+    private static HashMap<String, Stack<Inventory>> pageStacks = new HashMap<String, Stack<Inventory>>(); //Player name -> Page history
 
     @EventHandler (ignoreCancelled = true)
     public void onPlayerInvClick(InventoryClickEvent event) {
@@ -247,7 +251,7 @@ public class PhatLootInfoListener implements Listener {
 
         //Populate the inventory
         int index = 0;
-        for (Loot loot : coll.lootList) {
+        for (Loot loot : coll.getLootList()) {
             inv.setItem(index, loot.getInfoStack());
             index++;
             if (index >= SIZE - 9) {

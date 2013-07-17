@@ -1,5 +1,8 @@
 package com.codisimus.plugins.phatloots;
 
+import com.codisimus.plugins.phatloots.listeners.MobListener;
+import com.codisimus.plugins.phatloots.listeners.PhatLootsListener;
+import com.codisimus.plugins.phatloots.loot.Item;
 import java.io.File;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -20,28 +23,28 @@ public class PhatLootsConfig {
     static int defaultHours;
     static int defaultMinutes;
     static int defaultSeconds;
-    static int defaultLowerNumberOfLoots; //Default collection range
-    static int defaultUpperNumberOfLoots;
+    public static int defaultLowerNumberOfLoots; //Default collection range
+    public static int defaultUpperNumberOfLoots;
     static boolean defaultGlobal;
     static boolean defaultRound;
     static boolean defaultAutoLoot;
     static boolean defaultBreakAndRespawn;
     static boolean restrictAll; //True if all PhatLoots should require permission
     static HashSet<String> restricted = new HashSet();
-    static String permission;
-    static String moneyLooted;
-    static String moneyCharged;
-    static String insufficientFunds;
-    static String experienceLooted;
-    static String autoLoot;
-    static String timeRemaining;
-    static String overflow;
-    static String mobTimeRemaining;
-    static String mobDroppedMoney;
-    static String mobDroppedItem;
-    static String mobDroppedExperience;
-    static String lootMessage;
-    static String lootBroadcast;
+    public static String permission;
+    public static String moneyLooted;
+    public static String moneyCharged;
+    public static String insufficientFunds;
+    public static String experienceLooted;
+    public static String autoLoot;
+    public static String timeRemaining;
+    public static String overflow;
+    public static String mobTimeRemaining;
+    public static String mobDroppedMoney;
+    public static String mobDroppedItem;
+    public static String mobDroppedExperience;
+    public static String lootMessage;
+    public static String lootBroadcast;
 
     public static void load() {
         FileConfiguration config = PhatLoots.plugin.getConfig();

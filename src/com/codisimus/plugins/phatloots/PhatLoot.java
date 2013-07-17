@@ -1,5 +1,12 @@
 package com.codisimus.plugins.phatloots;
 
+import com.codisimus.plugins.phatloots.events.MobDropLootEvent;
+import com.codisimus.plugins.phatloots.events.MobEquipEvent;
+import com.codisimus.plugins.phatloots.events.PlayerLootEvent;
+import com.codisimus.plugins.phatloots.loot.CommandLoot;
+import com.codisimus.plugins.phatloots.loot.Loot;
+import com.codisimus.plugins.phatloots.loot.LootBundle;
+import com.codisimus.plugins.phatloots.loot.LootCollection;
 import java.io.*;
 import java.util.*;
 import java.util.logging.Level;
@@ -25,12 +32,12 @@ import org.bukkit.inventory.ItemStack;
  */
 @SerializableAs("PhatLoot")
 public class PhatLoot implements ConfigurationSerializable {
-    static String current; //The currently loadeding PhatLoot (used for debugging)
-    static String last; //The last successfully loaded PhatLoot (used for debugging)
+    public static String current; //The currently loadeding PhatLoot (used for debugging)
+    public static String last; //The last successfully loaded PhatLoot (used for debugging)
     static boolean onlyDropOnPlayerKill; //True if mobs should drop loot when dying of natural causes
     static boolean replaceMobLoot; //False if default mob loot should still be present
     static float chanceOfDrop; //The chance of mobs dropping their loot armor
-    static double lootingBonusPerLvl;
+    public static double lootingBonusPerLvl;
     static boolean decimals; //True if money values should include decimals
     static boolean unlink; //True if global chests that never reset should be unlinked after looting
     static boolean soundOnAutoLoot;
@@ -51,7 +58,7 @@ public class PhatLoot implements ConfigurationSerializable {
     public boolean autoLoot = PhatLootsConfig.defaultAutoLoot;
     public boolean breakAndRespawn = PhatLootsConfig.defaultBreakAndRespawn;
     private HashSet<PhatLootChest> chests = new HashSet<PhatLootChest>(); //Set of Chests linked to this PhatLoot
-    Properties lootTimes = new Properties(); //PhatLootChest'PlayerName=Year'Day'Hour'Minute'Second
+    private Properties lootTimes = new Properties(); //PhatLootChest'PlayerName=Year'Day'Hour'Minute'Second
 
     /**
      * Constructs a new PhatLoot
@@ -571,92 +578,6 @@ public class PhatLoot implements ConfigurationSerializable {
     public int rollForExp() {
         return Math.max(PhatLoots.rollForInt(expLower, expUpper), 0);
     }
-
-//    /**
-//     * Adds the list of ItemStacks to the given Inventory
-//     *
-//     * @param itemList The list of ItemStacks to add
-//     * @param player The Player looting the Chest
-//     * @param inventory The Inventory to add the items to
-//     * @param autoLoot True if the items should go straight to the Player's inventory
-//     * @return true if autoLoot is true and there are items in the inventory at the end
-//     */
-//    public boolean autoLoot(List<ItemStack> itemList, Player player) {
-//        boolean itemsInChest = false;
-//        for (ItemStack item: itemList) {
-//            if (addLoot(item, player)) {
-//                itemsInChest = true;
-//            }
-//        }
-//        return itemsInChest;
-//    }
-//
-//    /**
-//     * Adds the ItemStack to the given Inventory
-//     *
-//     * @param item The ItemStack to add
-//     * @param player The Player looting the Chest
-//     * @return true if autoLoot is true and the item was added to the inventory
-//     */
-//    public boolean autoLoot(ItemStack item, Player player) {
-//        //Make sure loots do not exceed the stack size
-//        if (item.getAmount() > item.getMaxStackSize()) {
-//            int amount = item.getAmount();
-//            int maxStackSize = item.getMaxStackSize();
-//            while (amount > maxStackSize) {
-//                ItemStack fraction = item.clone();
-//                fraction.setAmount(maxStackSize);
-//                autoLoot(item, player);
-//                amount -= maxStackSize;
-//            }
-//        }
-//
-//        //Get the Player's inventory in case of auto looting
-//        PlayerInventory sack = player.getInventory();
-//
-//            //Add the Loot to the Player's Inventory
-//            if (PhatLootsConfig.autoLoot != null) {
-//                String msg = PhatLootsConfig.autoLoot.replace("<item>", PhatLoots.getItemName(item));
-//                int amount = item.getAmount();
-//                msg = amount > 1
-//                      ? msg.replace("<amount>", String.valueOf(item.getAmount()))
-//                      : msg.replace("x<amount>", "").replace("<amount>", String.valueOf(item.getAmount()));
-//                player.sendMessage(msg);
-//            }
-//            sack.addItem(item);
-//            if (soundOnAutoLoot) {
-//                player.playSound(player.getLocation(), Sound.ITEM_PICKUP, 1, 0.2F);
-//            }
-//            return false;
-//        } else {
-//            //Add the Loot to the Inventory
-//            if (inventory.firstEmpty() != -1) {
-//                inventory.addItem(item);
-//            } else { //The item will not fit in the inventory
-//                overFlow(item, player);
-//            }
-//            return true;
-//        }
-//    }
-//
-//    /**
-//     * Drops the given item outside the PhatLootChest
-//     *
-//     * @param item The ItemStack that will be dropped
-//     * @param player The Player (if any) that will be informed of the drop
-//     */
-//    public void overFlow(ItemStack item, Player player) {
-//        Block block = getBlock();
-//        block.getWorld().dropItemNaturally(block.getLocation(), item);
-//        if (player != null && PhatLootsConfig.overflow != null) {
-//            String msg = PhatLootsConfig.overflow.replace("<item>", PhatLoots.getItemName(item));
-//            int amount = item.getAmount();
-//            msg = amount > 1
-//                  ? msg.replace("<amount>", String.valueOf(item.getAmount()))
-//                  : msg.replace("x<amount>", "").replace("<amount>", String.valueOf(item.getAmount()));
-//            player.sendMessage(msg);
-//        }
-//    }
 
     /**
      * Returns the key for the given Player and PhatLootChest

@@ -1,6 +1,17 @@
 package com.codisimus.plugins.phatloots;
 
-import com.codisimus.plugins.phatloots.ChestRespawnEvent.RespawnReason;
+import com.codisimus.plugins.phatloots.listeners.VoteListener;
+import com.codisimus.plugins.phatloots.loot.Item;
+import com.codisimus.plugins.phatloots.loot.LootCollection;
+import com.codisimus.plugins.phatloots.loot.CommandLoot;
+import com.codisimus.plugins.phatloots.listeners.PhatLootsListener;
+import com.codisimus.plugins.phatloots.listeners.EBRListener;
+import com.codisimus.plugins.phatloots.listeners.MobSpawnListener;
+import com.codisimus.plugins.phatloots.listeners.DispenserListener;
+import com.codisimus.plugins.phatloots.listeners.FishingListener;
+import com.codisimus.plugins.phatloots.listeners.MobDeathListener;
+import com.codisimus.plugins.phatloots.listeners.PhatLootInfoListener;
+import com.codisimus.plugins.phatloots.events.ChestRespawnEvent.RespawnReason;
 import com.google.common.io.Files;
 import java.io.File;
 import java.io.FilenameFilter;
@@ -30,10 +41,10 @@ import org.bukkit.plugin.java.JavaPlugin;
  * @author Cody
  */
 public class PhatLoots extends JavaPlugin {
-    static JavaPlugin plugin;
-    static Logger logger;
-    static Economy econ = null;
-    static String dataFolder;
+    public static JavaPlugin plugin;
+    public static Logger logger;
+    public static Economy econ = null;
+    public static String dataFolder;
     private static Random random = new Random();
     private static HashMap<String, PhatLoot> phatLoots = new HashMap<String, PhatLoot>(); //PhatLoot Name -> PhatLoot
 

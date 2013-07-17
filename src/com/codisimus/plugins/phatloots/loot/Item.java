@@ -1,5 +1,7 @@
-package com.codisimus.plugins.phatloots;
+package com.codisimus.plugins.phatloots.loot;
 
+import com.codisimus.plugins.phatloots.PhatLoot;
+import com.codisimus.plugins.phatloots.PhatLoots;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -79,29 +81,29 @@ public class Item extends Loot {
         Material.DIAMOND_AXE, Material.IRON_AXE, Material.GOLD_AXE,
         Material.STONE_AXE, Material.WOOD_AXE
     );
-    static int tierNotify;
-    static FileConfiguration loreConfig;
-    static ConfigurationSection tiersConfig;
-    static FileConfiguration enchantmentConfig;
-    static boolean damageTags;
-    static String damageString;
-    static String holyString;
-    static String bugString;
-    static String fireString;
-    static String thornsString;
-    static String defenseString;
-    static String fireDefenseString;
-    static String rangeDefenseString;
-    static String blastDefenseString;
-    static String fallDefenseString;
+    public static int tierNotify;
+    public static FileConfiguration loreConfig;
+    public static ConfigurationSection tiersConfig;
+    public static FileConfiguration enchantmentConfig;
+    public static boolean damageTags;
+    public static String damageString;
+    public static String holyString;
+    public static String bugString;
+    public static String fireString;
+    public static String thornsString;
+    public static String defenseString;
+    public static String fireDefenseString;
+    public static String rangeDefenseString;
+    public static String blastDefenseString;
+    public static String fallDefenseString;
 
-    private ItemStack item;
-    private int amountBonus = 0;
-    private int durabilityBonus = 0;
-    boolean autoEnchant = false;
-    boolean generateName = false;
-    private boolean randomLore = false;
-    boolean tieredName = false;
+    public ItemStack item;
+    public int amountBonus = 0;
+    public int durabilityBonus = 0;
+    public boolean autoEnchant = false;
+    public boolean generateName = false;
+    public boolean randomLore = false;
+    public boolean tieredName = false;
 
     /**
      * Constructs a new Loot with the given ItemStack and bonus amount

@@ -1,5 +1,6 @@
-package com.codisimus.plugins.phatloots;
+package com.codisimus.plugins.phatloots.loot;
 
+import com.codisimus.plugins.phatloots.PhatLoots;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.inventory.ItemStack;
 

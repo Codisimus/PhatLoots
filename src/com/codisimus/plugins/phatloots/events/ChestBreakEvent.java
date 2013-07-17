@@ -1,5 +1,6 @@
-package com.codisimus.plugins.phatloots;
+package com.codisimus.plugins.phatloots.events;
 
+import com.codisimus.plugins.phatloots.PhatLootChest;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.Event;

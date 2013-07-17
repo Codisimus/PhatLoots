@@ -1,5 +1,6 @@
-package com.codisimus.plugins.phatloots;
+package com.codisimus.plugins.phatloots.events;
 
+import com.codisimus.plugins.phatloots.PhatLootChest;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
@@ -54,6 +55,15 @@ public class ChestRespawnEvent extends Event implements Cancellable {
      */
     public void setRespawnTime(long time) {
         delay = time;
+    }
+
+    /**
+     * Returns the reason that the chest has respawned
+     *
+     * @return The reason for the respawning of the PhatLootChest
+     */
+    public RespawnReason getReason() {
+        return reason;
     }
 
     @Override

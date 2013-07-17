@@ -1,6 +1,8 @@
 package com.codisimus.plugins.phatloots;
 
-import com.codisimus.plugins.phatloots.ChestRespawnEvent.RespawnReason;
+import com.codisimus.plugins.phatloots.events.ChestBreakEvent;
+import com.codisimus.plugins.phatloots.events.ChestRespawnEvent;
+import com.codisimus.plugins.phatloots.events.ChestRespawnEvent.RespawnReason;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -22,15 +24,15 @@ import org.bukkit.scheduler.BukkitTask;
  * @author Cody
  */
 public class PhatLootChest {
-    static HashMap<String, PhatLootChest> chests = new HashMap<String, PhatLootChest>(); //Chest Location -> PhatLootChest
+    private static HashMap<String, PhatLootChest> chests = new HashMap<String, PhatLootChest>(); //Chest Location -> PhatLootChest
     static HashSet<PhatLootChest> chestsToRespawn = new HashSet<PhatLootChest>();
-    static HashMap<OfflinePlayer, PhatLootChest> openPhatLootChests = new HashMap<OfflinePlayer, PhatLootChest>(); //Player -> Open PhatLootChest
+    public static HashMap<OfflinePlayer, PhatLootChest> openPhatLootChests = new HashMap<OfflinePlayer, PhatLootChest>(); //Player -> Open PhatLootChest
     static boolean useBreakAndRepawn;
     static boolean soundOnBreak;
     static String chestName;
     private String world;
     private int x, y, z;
-    public boolean isDispenser;
+    private boolean isDispenser;
     private BlockState state;
 
     /**
@@ -121,6 +123,15 @@ public class PhatLootChest {
             chests.put(chest.world + "'" + chest.x + "'" + chest.y + "'" + chest.z, chest);
             return chest;
         }
+    }
+
+    /**
+     * Returns a collection of all linked chests
+     *
+     * @return A collection of all PhatLootChests
+     */
+    public static Collection<PhatLootChest> getChests() {
+        return chests.values();
     }
 
     /**

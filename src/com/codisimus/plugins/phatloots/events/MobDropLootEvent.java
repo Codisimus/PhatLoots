@@ -1,5 +1,6 @@
-package com.codisimus.plugins.phatloots;
+package com.codisimus.plugins.phatloots.events;
 
+import com.codisimus.plugins.phatloots.loot.LootBundle;
 import java.util.List;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
