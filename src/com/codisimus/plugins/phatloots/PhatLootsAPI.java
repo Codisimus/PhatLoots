@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
 import org.bukkit.block.Block;
-import org.bukkit.inventory.ItemStack;
 
 /**
  * API for the PhatLoots plugin

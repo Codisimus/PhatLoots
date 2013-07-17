@@ -1,9 +1,9 @@
 package com.codisimus.plugins.phatloots;
 
+import com.codisimus.plugins.phatloots.ChestRespawnEvent.RespawnReason;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
@@ -13,8 +13,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.DoubleChestInventory;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scheduler.BukkitTask;
 
 /**
  * A PhatLootChest is a Block location and a Map of Users with times attached to them
@@ -23,6 +23,7 @@ import org.bukkit.scheduler.BukkitRunnable;
  */
 public class PhatLootChest {
     static HashMap<String, PhatLootChest> chests = new HashMap<String, PhatLootChest>(); //Chest Location -> PhatLootChest
+    static HashSet<PhatLootChest> chestsToRespawn = new HashSet<PhatLootChest>();
     static HashMap<OfflinePlayer, PhatLootChest> openPhatLootChests = new HashMap<OfflinePlayer, PhatLootChest>(); //Player -> Open PhatLootChest
     static boolean useBreakAndRepawn;
     static boolean soundOnBreak;
@@ -146,7 +147,19 @@ public class PhatLootChest {
      *
      * @param time How long (in milliseconds) until the chest should respawn
      */
-    public void breakChest(long time) {
+    public void breakChest(Player lastLooter, long time) {
+        //Convert the time from milliseconds to ticks
+        time /= 50;
+
+        //Call the event to be modified
+        ChestBreakEvent event = new ChestBreakEvent(lastLooter, this, time);
+        Bukkit.getPluginManager().callEvent(event);
+        if (event.isCancelled()) {
+            return;
+        }
+
+        chestsToRespawn.add(this);
+
         //Save the BlockState
         Block block = getBlock();
         state = block.getState();
@@ -155,12 +168,14 @@ public class PhatLootChest {
         block.setTypeId(0);
 
         //Schedule the chest to respawn
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-                respawn();
-            }
-        }.runTaskLater(PhatLoots.plugin, time / 50);
+        if (event.getRespawnTime() < 0) {
+            new BukkitRunnable() {
+                @Override
+                public void run() {
+                    respawn(RespawnReason.INITIAL);
+                }
+            }.runTaskLater(PhatLoots.plugin, event.getRespawnTime());
+        }
 
         if (soundOnBreak) {
             block.getWorld().playSound(block.getLocation(), Sound.ZOMBIE_WOODBREAK, 1, 1);
@@ -170,10 +185,27 @@ public class PhatLootChest {
     /**
      * Respawns the chest as it was before is was broken
      */
-    public void respawn() {
+    public void respawn(RespawnReason reason) {
         if (state != null) {
-            state.update(true);
-            state = null;
+            //Call the event to be modified
+            ChestRespawnEvent event = new ChestRespawnEvent(this, 0, reason);
+            Bukkit.getPluginManager().callEvent(event);
+            if (event.isCancelled()) {
+                return;
+            }
+
+            if (event.getRespawnTime() > 0) {
+                new BukkitRunnable() {
+                    @Override
+                    public void run() {
+                        respawn(RespawnReason.DELAYED);
+                    }
+                }.runTaskLater(PhatLoots.plugin, event.getRespawnTime());
+            } else {
+                state.update(true);
+                state = null;
+                chestsToRespawn.remove(this);
+            }
         }
     }
 
@@ -411,7 +443,7 @@ public class PhatLootChest {
 
                 //Don't break the chest if it will respawn in 1 second or less
                 if (time > 1000) {
-                    breakChest(time);
+                    breakChest(player, time);
                 }
             }
         } else {

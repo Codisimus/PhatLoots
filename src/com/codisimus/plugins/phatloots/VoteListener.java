@@ -3,11 +3,9 @@ package com.codisimus.plugins.phatloots;
 import com.vexsoftware.votifier.model.Vote;
 import com.vexsoftware.votifier.model.VotifierEvent;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.inventory.Inventory;
 
 /**
  * Listens for Votes triggered by Votifier and gives the Voter Loot

@@ -4,13 +4,10 @@ import java.io.*;
 import java.util.*;
 import java.util.logging.Level;
 import net.milkbowl.vault.economy.EconomyResponse;
-import org.apache.commons.lang.WordUtils;
 import org.apache.commons.lang.time.DateUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
-import org.bukkit.Sound;
 import org.bukkit.block.Block;
-import org.bukkit.block.Dispenser;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.configuration.serialization.SerializableAs;
@@ -20,7 +17,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.PlayerInventory;
 
 /**
  * A PhatLoot is a reward made up of money and items

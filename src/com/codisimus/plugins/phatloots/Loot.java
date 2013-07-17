@@ -1,8 +1,6 @@
 package com.codisimus.plugins.phatloots;
 
-import java.util.LinkedList;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
-import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
 /**

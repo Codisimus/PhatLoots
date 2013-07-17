@@ -1,5 +1,6 @@
 package com.codisimus.plugins.phatloots;
 
+import com.codisimus.plugins.phatloots.ChestRespawnEvent.RespawnReason;
 import com.google.common.io.Files;
 import java.io.File;
 import java.io.FilenameFilter;
@@ -13,14 +14,11 @@ import java.util.logging.Logger;
 import net.milkbowl.vault.economy.Economy;
 import org.apache.commons.lang.WordUtils;
 import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.Sound;
 import org.bukkit.block.Block;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.RegisteredServiceProvider;
@@ -46,6 +44,11 @@ public class PhatLoots extends JavaPlugin {
             //Clean up the loot times before writing to file
             phatLoot.clean(null);
             phatLoot.saveLootTimes();
+        }
+
+        //Respawn all chests
+        for (PhatLootChest chest : PhatLootChest.chestsToRespawn) {
+            chest.respawn(RespawnReason.PLUGIN_DISABLED);
         }
     }
 

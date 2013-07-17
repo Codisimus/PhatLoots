@@ -24,11 +24,9 @@ public class PlayerLootEvent extends Event implements Cancellable {
      * Creates a new event with the given data
      *
      * @param looter The Player who is looting
-     * @param itemList The items that will be looted
-     * @param money The amount of money that the Player will loot
-     * @param exp The amount of experience that will be looted
      * @param phatLoot The PhatLoot that the Player looted
      * @param chest The PhatLootChest being looted or null if no chest was involved
+     * @param lootBundle The Loot that the Player received
      */
     public PlayerLootEvent(Player looter, PhatLoot phatLoot, PhatLootChest chest, LootBundle lootBundle) {
         this.looter = looter;
@@ -67,7 +65,7 @@ public class PlayerLootEvent extends Event implements Cancellable {
     /**
      * Returns the loot that will be added to the chest
      *
-     * @return the bundle of loot that will be looted
+     * @return The bundle of loot that will be looted
      */
     public LootBundle getLootBundle() {
         return lootBundle;
