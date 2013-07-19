@@ -29,8 +29,8 @@ public abstract class MobListener implements Listener {
     abstract String getType(Entity entity);
 
     /**
-     * Returns the PhatLoot for the given Entity if one exists
-     * A PhatLoot for a mob is search for in the following order
+     * Returns the PhatLoot for the given Entity if one exists.
+     * A PhatLoot for a mob is searched for in the following order
      *     With a custom name
      *     Of a specific Type
      *         In a specific Region

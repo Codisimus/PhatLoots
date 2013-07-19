@@ -154,14 +154,37 @@ public class PhatLootChest {
     }
 
     /**
+     * Moves the chest to the given Block location
+     *
+     * @param target The given Block
+     */
+    public void moveTo(Block target) {
+        //Remove the old Block
+        if (state != null) {
+            state.update(true);
+        }
+        Block block = getBlock();
+        block.setTypeId(0);
+
+        //Set the new Block
+        x = target.getX();
+        y = target.getY();
+        z = target.getZ();
+        //Only 'spawn' the new chest if it is not triggered to respawn
+        if (state == null) {
+            target.setType(block.getType());
+            target.setData(block.getData());
+        } else {
+            state = target.getState();
+        }
+    }
+
+    /**
      * Breaks the PhatLootChest and schedules it to respawn in the given amount of time
      *
-     * @param time How long (in milliseconds) until the chest should respawn
+     * @param time How long (in ticks) until the chest should respawn
      */
     public void breakChest(Player lastLooter, long time) {
-        //Convert the time from milliseconds to ticks
-        time /= 50;
-
         //Call the event to be modified
         ChestBreakEvent event = new ChestBreakEvent(lastLooter, this, time);
         Bukkit.getPluginManager().callEvent(event);
@@ -175,11 +198,16 @@ public class PhatLootChest {
         Block block = getBlock();
         state = block.getState();
 
+        //Don't break the chest if it will immediately come back
+        if (event.getRespawnTime() == 0) {
+            return;
+        }
+
         //Set the Block to AIR
         block.setTypeId(0);
 
         //Schedule the chest to respawn
-        if (event.getRespawnTime() < 0) {
+        if (event.getRespawnTime() > 0) {
             new BukkitRunnable() {
                 @Override
                 public void run() {
@@ -365,7 +393,7 @@ public class PhatLootChest {
     }
 
     /**
-     * Opens the virtual Inventory to the Player
+     * Opens the virtual Inventory to the Player.
      * Plays animation/sound for opening a virtual Inventory
      *
      * @param player The Player opening the Inventory
@@ -393,7 +421,7 @@ public class PhatLootChest {
     }
 
     /**
-     * Closes the virtual Inventory for the Player
+     * Closes the virtual Inventory for the Player.
      * Plays animation/sound for closing a virtual Inventory
      *
      * @param player The Player closing the Inventory
@@ -407,7 +435,7 @@ public class PhatLootChest {
         Block block = getBlock();
         Location loc = block.getLocation();
         if (global) {
-            if (inv.getViewers().size() <= 1) { //Last viewer
+            if (inv.getViewers().size() < 1) { //Last viewer
                 //Play for each Player in the World
                 for (Player p: player.getWorld().getPlayers()) {
                     switch (block.getType()) {
@@ -454,6 +482,9 @@ public class PhatLootChest {
 
                 //Don't break the chest if it will respawn in 1 second or less
                 if (time > 1000) {
+                    //Convert the time from milliseconds to ticks
+                    time /= 50;
+
                     breakChest(player, time);
                 }
             }
@@ -473,7 +504,7 @@ public class PhatLootChest {
     }
 
     /**
-     * Returns the String representation of this PhatLootChest
+     * Returns the String representation of this PhatLootChest.
      * The format of the returned String is world'x'y'z
      *
      * @return The String representation of this Chest

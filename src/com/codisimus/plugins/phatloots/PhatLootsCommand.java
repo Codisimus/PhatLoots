@@ -747,7 +747,7 @@ public class PhatLootsCommand implements CommandExecutor {
     }
 
     /**
-     * Unlinks the target Block from the specified PhatLoots
+     * Unlinks the target Block from the specified PhatLoots.
      * If a name is not provided, a list of PhatLoots linked to the target Block is displayed
      *
      * @param sender The CommandSender unlinking the Block they are targeting
@@ -844,7 +844,7 @@ public class PhatLootsCommand implements CommandExecutor {
             if (phatLoot.breakAndRespawn != breakAndRespawn) {
                 phatLoot.breakAndRespawn = breakAndRespawn;
 
-                sender.sendMessage("§5PhatLoot §6" + phatLoot.name + "§5 has been set to"
+                sender.sendMessage("§5PhatLoot §6" + phatLoot.name + "§5 has been set to "
                         + (breakAndRespawn
                            ? "automatically break global chests when they are looted and have them respawn."
                            : "keep chests present after looting."));
@@ -1042,7 +1042,7 @@ public class PhatLootsCommand implements CommandExecutor {
     }
 
     /**
-     * Displays the info of the specified PhatLoot
+     * Displays the info of the specified PhatLoot.
      * If a name is not provided, a list of PhatLoots linked to the target Block is displayed
      *
      * @param sender The CommandSender requesting the info
@@ -1086,7 +1086,7 @@ public class PhatLootsCommand implements CommandExecutor {
     }
 
     /**
-     * Reset the use times of the specified PhatLoot/PhatLootChest
+     * Reset the use times of the specified PhatLoot/PhatLootChest.
      * If a name is not provided, the target PhatLootChest is reset
      *
      * @param sender The CommandSender reseting the PhatLootChests
@@ -1141,7 +1141,7 @@ public class PhatLootsCommand implements CommandExecutor {
     }
 
     /**
-     * Clean the use times of the specified PhatLoot/PhatLootChest
+     * Clean the use times of the specified PhatLoot/PhatLootChest.
      * If a name is not provided, the target PhatLootChest is cleaned
      *
      * @param sender The CommandSender cleaning the PhatLootChests
@@ -1288,8 +1288,8 @@ public class PhatLootsCommand implements CommandExecutor {
     }
 
     /**
-     * Returns the a LinkedList of PhatLoots
-     * If a name is provided then only the PhatLoot with the given name will be in the List
+     * Returns the a LinkedList of PhatLoots.
+     * If a name is provided then only the PhatLoot with the given name will be in the List.
      * If no name is provided then each PhatLoot that is linked to the target Block will be in the List
      *
      * @param sender The CommandSender targeting a Block
@@ -1488,7 +1488,7 @@ public class PhatLootsCommand implements CommandExecutor {
     }
 
     /**
-     * Concats arguments together to create a sentence from words
+     * Concats arguments together to create a sentence from words.
      * This also replaces & with § to add color codes
      *
      * @param args the arguments to concat

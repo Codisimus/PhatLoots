@@ -197,7 +197,7 @@ RestrictedPhatLoots: []
 
 
 ##Whenever an Item is generated that has a Tier above this number it will be logged
-MinimumTierNotification: 50
+MinimumTierNotification: 100
 
 
 ##This setting is only used if you have the plugin ChestLock
@@ -214,7 +214,7 @@ PlaySoundOnAutoLoot: true
 
 PlaySoundOnChestBreak: true
 
-UseBreakAndRespawn: false
+UseBreakAndRespawn: true
 
 
 ##This is how long (in seconds) each inventory will be kept in memory

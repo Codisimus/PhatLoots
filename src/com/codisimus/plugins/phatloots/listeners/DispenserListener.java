@@ -55,7 +55,7 @@ public class DispenserListener implements Listener {
     }
 
     /**
-     * Returns the Player that is closest to the given Location
+     * Returns the Player that is closest to the given Location.
      * Returns null if no Players are within 50 Blocks
      *
      * @param location The given Location

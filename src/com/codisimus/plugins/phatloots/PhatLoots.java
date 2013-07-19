@@ -13,9 +13,7 @@ import com.codisimus.plugins.phatloots.listeners.MobDeathListener;
 import com.codisimus.plugins.phatloots.listeners.PhatLootInfoListener;
 import com.codisimus.plugins.phatloots.events.ChestRespawnEvent.RespawnReason;
 import com.google.common.io.Files;
-import java.io.File;
-import java.io.FilenameFilter;
-import java.io.IOException;
+import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.Charset;
@@ -100,6 +98,39 @@ public class PhatLoots extends JavaPlugin {
             dir.mkdir();
         }
 
+        //Save SampleLoot.yml if it does not exist
+        File file = new File(PhatLoots.dataFolder + File.separator + "SampleLoot.yml");
+        if (!file.exists()) {
+            InputStream inputStream = this.getResource("SampleLoot.yml");
+            OutputStream outputStream = null;
+
+            try {
+                outputStream = new FileOutputStream(dataFolder + File.separator + "LootTables/SampleLoot.yml");
+
+                int read = 0;
+                byte[] bytes = new byte[1024];
+
+                while ((read = inputStream.read(bytes)) != -1) {
+                    outputStream.write(bytes, 0, read);
+                }
+            } catch (IOException ex) {
+                logger.log(Level.WARNING, "Could not save resource: SampleLoot.yml", ex);
+            } finally {
+                if (inputStream != null) {
+                    try {
+                        inputStream.close();
+                    } catch (IOException e) {
+                    }
+                }
+                if (outputStream != null) {
+                    try {
+                        outputStream.close();
+                    } catch (IOException e) {
+                    }
+                }
+            }
+        }
+
         load();
 
         /* Register Events */
@@ -148,8 +179,8 @@ public class PhatLoots extends JavaPlugin {
     }
 
     /**
-     * Reloads the config from the config.yml file
-     * Loads values from the newly loaded config
+     * Reloads the config from the config.yml file.
+     * Loads values from the newly loaded config.
      * This method is automatically called when the plugin is enabled
      */
     @Override
@@ -254,7 +285,7 @@ public class PhatLoots extends JavaPlugin {
     }
 
     /**
-     * Removes the given PhatLoot from the collection of PhatLoots
+     * Removes the given PhatLoot from the collection of PhatLoots.
      * PhatLoot files are also deleted
      *
      * @param PhatLoot The given PhatLoot
@@ -304,7 +335,7 @@ public class PhatLoots extends JavaPlugin {
     }
 
     /**
-     * Iterates through every PhatLoot to find PhatLoots linked with the given Block
+     * Iterates through every PhatLoot to find PhatLoots linked with the given Block.
      * PhatLoots are only added to the List if the Player has permission to loot them
      *
      * @param block The given Block
@@ -429,7 +460,7 @@ public class PhatLoots extends JavaPlugin {
      * @param file The file to load
      * @return The YamlConfiguration loaded
      */
-    public static YamlConfiguration loadConfig(File file) {
+    private static YamlConfiguration loadConfig(File file) {
         YamlConfiguration fileConfiguration = new YamlConfiguration();
         try {
             if (isValidUTF8(Files.toByteArray(file))) {
@@ -449,7 +480,7 @@ public class PhatLoots extends JavaPlugin {
      * @param bytes The array of bytes to check for validity
      * @return true when validly UTF8 encoded
      */
-    public static boolean isValidUTF8(byte[] bytes) {
+    private static boolean isValidUTF8(byte[] bytes) {
         try {
             Charset.availableCharsets().get("UTF-8").newDecoder().decode(ByteBuffer.wrap(bytes));
             return true;

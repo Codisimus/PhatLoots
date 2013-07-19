@@ -28,6 +28,7 @@ public class ChestBreakEvent extends Event implements Cancellable {
     public ChestBreakEvent(Player lastLooter, PhatLootChest chest, long respawnTime) {
         this.lastLooter = lastLooter;
         this.chest = chest;
+        this.respawnTime = respawnTime;
     }
 
     /**

@@ -91,7 +91,7 @@ public class PhatLoot implements ConfigurationSerializable {
     }
 
     /**
-     * Returns the remaining time until the PhatLootChest resets for the given Player
+     * Returns the remaining time until the PhatLootChest resets for the given Player.
      * Returns -1 if the PhatLootChest never resets
      *
      * @param player The given Player
@@ -111,7 +111,7 @@ public class PhatLoot implements ConfigurationSerializable {
 
         //Get the correct timestamp
         String timeStamp = lootTimes.getProperty(getKey(player, chest));
-        long time = System.currentTimeMillis();
+        long time = 0;
         if (timeStamp != null) {
             try {
                 time = Long.parseLong(timeStamp);
@@ -224,7 +224,7 @@ public class PhatLoot implements ConfigurationSerializable {
         }
 
         //Check if the PhatLoot has timed out
-        long time = getTimeRemaining(player);
+        long time = getTimeRemaining(player, chest);
         if (time > 0) {
             if (PhatLootsConfig.timeRemaining != null) {
                 player.sendMessage(PhatLootsConfig.timeRemaining.replace("<time>", timeToString(time)));
@@ -319,6 +319,14 @@ public class PhatLoot implements ConfigurationSerializable {
             } else {
                 //Solves some inventory issues
                 player.updateInventory();
+            }
+        } else if (!autoLoot) {
+            //Get the Inventory for the user
+            Inventory inv = PhatLootChest.getInventory(getUser(player), title, chest);
+
+            //Open the Inventory if it is not already open (even though no loot was added)
+            if (player.getOpenInventory().getTopInventory() != inv) {
+                chest.openInventory(player, inv, global);
             }
         }
 
@@ -470,6 +478,7 @@ public class PhatLoot implements ConfigurationSerializable {
         //Ensure there are 5 items (even if some are air)
         if (loot.size() != 5) {
             PhatLoots.logger.warning("Cannot add loot to " + entity.getType().getName() + " because the amount of loot was not equal to 5");
+            return;
         }
 
         //The order of equipment should be Hand, Helm, Plate, Legs, Boots
@@ -718,7 +727,7 @@ public class PhatLoot implements ConfigurationSerializable {
     }
 
     /**
-     * Resets the user times for all PhatLootChests of this PhatLoot
+     * Resets the user times for all PhatLootChests of this PhatLoot.
      * If a Block is given then only reset that PhatLootChest
      *
      * @param block The given Block
@@ -792,8 +801,8 @@ public class PhatLoot implements ConfigurationSerializable {
     }
 
     /**
-     * Writes the Loot times of the PhatLoot to file
-     * if there is an old file it is over written
+     * Writes the Loot times of the PhatLoot to file.
+     * If there is an old file it is over written
      */
     public void saveLootTimes() {
         //Don't save an empty file
@@ -842,8 +851,8 @@ public class PhatLoot implements ConfigurationSerializable {
     }
 
     /**
-     * Writes the Chest Locations of the PhatLoot to file
-     * if there is an old file it is over written
+     * Writes the Chest Locations of the PhatLoot to file.
+     * If there is an old file it is over written
      */
     public void saveChests() {
         //Don't save an empty file
@@ -885,12 +894,6 @@ public class PhatLoot implements ConfigurationSerializable {
                 return;
             }
 
-            //Delete empty files
-            if (file.length() == 0) {
-                file.delete();
-                return;
-            }
-
             //Each line of the file is a new PhatLootChest
             scanner = new Scanner(file);
             while (scanner.hasNext()) {
@@ -906,8 +909,8 @@ public class PhatLoot implements ConfigurationSerializable {
     }
 
     /**
-     * Writes the Loot Tables of the PhatLoot to file
-     * if there is an old file it is over written
+     * Writes the Loot Tables of the PhatLoot to file.
+     * If there is an old file it is over written
      */
     public void save() {
         OutputStreamWriter out = null;

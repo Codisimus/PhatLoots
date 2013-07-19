@@ -33,7 +33,7 @@ public class PhatLootsAPI {
     }
 
     /**
-     * Rolls for loot of the specified loot tables
+     * Rolls for loot of the specified loot tables.
      * An empty list is returned if the PhatLoot of the given name does not exist
      *
      * @param phatLootName The name of the specified loot tables
@@ -88,7 +88,7 @@ public class PhatLootsAPI {
     }
 
     /**
-     * Reloads the PhatLoot plugin
+     * Reloads the PhatLoot plugin.
      * This includes save data and config settings
      */
     public static void reload() {
@@ -96,9 +96,9 @@ public class PhatLootsAPI {
     }
 
     /**
-     * Saves all plugin information
-     * This includes loot tables, linked chests, and loot times
-     * This is a lot of data writing and should not be called too often
+     * Saves all plugin information.
+     * This includes loot tables, linked chests, and loot times.
+     * This is a lot of data writing and should not be called too often.
      * It is better to save individual PhatLoots and only the modified information
      */
     public static void saveAll() {

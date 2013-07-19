@@ -1,6 +1,7 @@
 package com.codisimus.plugins.phatloots.events;
 
 import com.codisimus.plugins.phatloots.PhatLootChest;
+import org.bukkit.block.Block;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
@@ -55,6 +56,15 @@ public class ChestRespawnEvent extends Event implements Cancellable {
      */
     public void setRespawnTime(long time) {
         delay = time;
+    }
+
+    /**
+     * Sets where the chest should respawn
+     *
+     * @param target The Block location
+     */
+    public void setRespawnLocation(Block target) {
+        chest.moveTo(target);
     }
 
     /**

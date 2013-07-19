@@ -167,7 +167,7 @@ public class PhatLootsConfig {
         PhatLootsCommand.setUnlockable = config.getBoolean("SetChestsAsUnlockable");
         PhatLoot.decimals = config.getBoolean("DivideMoneyAmountBy100");
         PhatLoot.soundOnAutoLoot = config.getBoolean("PlaySoundOnAutoLoot");
-        PhatLootChest.useBreakAndRepawn = config.getBoolean("UseBreakAndRepawn");
+        PhatLootChest.useBreakAndRepawn = config.getBoolean("UseBreakAndRespawn");
         PhatLootChest.soundOnBreak = config.getBoolean("PlaySoundOnChestBreak");
         ForgettableInventory.delay = config.getInt("ForgetInventoryTime") * 20L;
         PhatLoot.unlink = config.getBoolean("UnlinkGlobalChestsThatNeverReset");
@@ -219,7 +219,7 @@ public class PhatLootsConfig {
     }
 
     /**
-     * Returns the converted string that is loaded from the given configuration
+     * Returns the converted string that is loaded from the given configuration.
      * & will be converted to § where color codes are used
      *
      * @param config The given ConfigurationSection

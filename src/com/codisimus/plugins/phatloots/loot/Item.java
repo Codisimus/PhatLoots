@@ -779,27 +779,6 @@ public class Item extends Loot {
         }
     }
 
-    /**
-     * Returns the Enchantments of this Loot as a String in the following format
-     * Enchantment1(level)&Enchantment2(level)&Enchantment3(level)...
-     *
-     * @return The String representation of this Loot's Enchantments
-     */
-    @Deprecated
-    public String enchantmentsToString() {
-        Map<Enchantment, Integer> enchantments = item.getEnchantments();
-        String string = "";
-        for (Enchantment enchantment : enchantments.keySet()) {
-            string += "&" + enchantment.getName();
-
-            int level = enchantments.get(enchantment);
-            if (level != enchantment.getStartLevel()) {
-                string += "(" + enchantments.get(enchantment) + ")";
-            }
-        }
-        return string.substring(1);
-    }
-
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
