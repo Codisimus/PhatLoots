@@ -321,7 +321,7 @@ public class PhatLoot implements ConfigurationSerializable {
         if (autoLoot) { //AutoLoot the items
             itemList = player.getInventory().addItem(itemList.toArray(new ItemStack[itemList.size()])).values();
         }
-        if (!itemList.isEmpty()) {
+        if (!itemList.isEmpty()) { //Loot did not fit in the Player's Inventory
             //Fill the inventory with items
             chest.addItems(itemList, player, inv);
 
@@ -495,8 +495,10 @@ public class PhatLoot implements ConfigurationSerializable {
             return;
         }
 
-        //The order of equipment should be Hand, Helm, Plate, Legs, Boots
         EntityEquipment eqp = entity.getEquipment();
+        //Remove Minecraft spawned armor
+        eqp.clear();
+        //The order of equipment should be Hand, Head, Body, Legs, Feet
         eqp.setItemInHand(loot.remove(0));
         eqp.setHelmet(loot.remove(0));
         eqp.setChestplate(loot.remove(0));

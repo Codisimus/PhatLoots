@@ -174,9 +174,12 @@ public class Item extends Loot {
     @Override
     public ItemStack getInfoStack() {
         ItemStack infoStack = item.clone();
-        ItemMeta info = infoStack.hasItemMeta() ? infoStack.getItemMeta() : Bukkit.getItemFactory().getItemMeta(infoStack.getType());
-        if (infoStack.getTypeId() == 0) {
+        boolean air = infoStack.getTypeId() == 0;
+        if (air) {
             infoStack.setType(Material.LOCKED_CHEST);
+        }
+        ItemMeta info = infoStack.hasItemMeta() ? infoStack.getItemMeta() : Bukkit.getItemFactory().getItemMeta(infoStack.getType());
+        if (air) {
             info.setDisplayName("AIR");
         }
 
