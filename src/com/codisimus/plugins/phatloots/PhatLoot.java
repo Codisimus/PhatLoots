@@ -49,14 +49,14 @@ public class PhatLoot implements ConfigurationSerializable {
     public int expUpper;
     public ArrayList<Loot> lootList; //List of Loot
 
-    public int days = PhatLootsConfig.defaultDays; //Reset time (will never reset if any are negative)
-    public int hours = PhatLootsConfig.defaultHours;
-    public int minutes = PhatLootsConfig.defaultMinutes;
-    public int seconds = PhatLootsConfig.defaultSeconds;
-    public boolean global = PhatLootsConfig.defaultGlobal; //Reset Type
-    public boolean round = PhatLootsConfig.defaultRound;
-    public boolean autoLoot = PhatLootsConfig.defaultAutoLoot;
-    public boolean breakAndRespawn = PhatLootsConfig.defaultBreakAndRespawn;
+    public int days; //Reset time (will never reset if any are negative)
+    public int hours;
+    public int minutes;
+    public int seconds;
+    public boolean global; //Reset Type
+    public boolean round;
+    public boolean autoLoot;
+    public boolean breakAndRespawn;
     private HashSet<PhatLootChest> chests = new HashSet<PhatLootChest>(); //Set of Chests linked to this PhatLoot
     private Properties lootTimes = new Properties(); //PhatLootChest'PlayerName=Year'Day'Hour'Minute'Second
 
@@ -68,6 +68,14 @@ public class PhatLoot implements ConfigurationSerializable {
     public PhatLoot(String name) {
         this.name = name;
         lootList = new ArrayList<Loot>();
+        days = PhatLootsConfig.defaultDays;
+        hours = PhatLootsConfig.defaultHours;
+        minutes = PhatLootsConfig.defaultMinutes;
+        seconds = PhatLootsConfig.defaultSeconds;
+        global = PhatLootsConfig.defaultGlobal;
+        round = PhatLootsConfig.defaultRound;
+        autoLoot = PhatLootsConfig.defaultAutoLoot;
+        breakAndRespawn = PhatLootsConfig.defaultBreakAndRespawn;
     }
 
     /**
@@ -320,9 +328,6 @@ public class PhatLoot implements ConfigurationSerializable {
             //Open the Inventory if it is not already open
             if (player.getOpenInventory().getTopInventory() != inv) {
                 chest.openInventory(player, inv, global);
-            } else {
-                //Solves some inventory issues
-                player.updateInventory();
             }
         } else if (!autoLoot) {
             //Open the Inventory if it is not already open (even though no loot was added)
@@ -343,6 +348,9 @@ public class PhatLoot implements ConfigurationSerializable {
                                                 .replace("<name>", player.getName())
                                                 .replace("<phatloot>", name));
         }
+
+        //Solves some inventory issues
+        player.updateInventory();
 
         //Update the time that the user looted
         setTime(player, chest);

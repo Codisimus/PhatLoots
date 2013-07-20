@@ -813,7 +813,7 @@ public class PhatLootsCommand implements CommandExecutor {
             if (phatLoot.autoLoot != autoLoot) {
                 phatLoot.autoLoot = autoLoot;
 
-                sender.sendMessage("§5PhatLoot §6" + phatLoot.name + "§5 has been set to"
+                sender.sendMessage("§5PhatLoot §6" + phatLoot.name + "§5 has been set to "
                         + (autoLoot ? "automatically add Loot to the looters inventory." : "open the chest inventory for the looter."));
             }
             phatLoot.save();
