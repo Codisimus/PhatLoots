@@ -99,7 +99,7 @@ LootingBonusPerLevel: 5
 ##Use & to specify colors for messages (ex. &3hi&a.)
 ##<time> will be replaced by the amount of time remaining
 ##<item> will be replaced by the name of the item
-##<amount> will be replaced by the amount of money/experience
+##<amount> will be replaced by the amount of money/experience/items
 Messages:
     Permission: '&4You do not have permission to do that.'
     ExperienceLooted: '&5You gained &6<amount>&5 experience from looting the chest.'

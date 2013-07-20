@@ -309,7 +309,7 @@ public class PhatLoot implements ConfigurationSerializable {
         }
 
         //Give all of the items
-        Collection<ItemStack> itemList = lootBundle.getItemList();
+        List<ItemStack> itemList = lootBundle.getItemList();
 
         //Get the Inventory for the user
         Inventory inv = PhatLootChest.getInventory(getUser(player), title, chest);
@@ -319,7 +319,24 @@ public class PhatLoot implements ConfigurationSerializable {
         }
 
         if (autoLoot) { //AutoLoot the items
-            itemList = player.getInventory().addItem(itemList.toArray(new ItemStack[itemList.size()])).values();
+            HashMap<Integer, ItemStack> leftovers = player.getInventory().addItem(itemList.toArray(new ItemStack[itemList.size()]));
+            if (PhatLootsConfig.autoLoot != null) {
+                int i = 0;
+                for (ItemStack item : itemList) {
+                    String msg = PhatLootsConfig.autoLoot.replace("<item>", PhatLoots.getItemName(item));
+                    int amount = item.getAmount();
+                    if (leftovers.containsKey(i)) {
+                        amount -= leftovers.get(i).getAmount();
+                    }
+                    if (amount > 0) {
+                        msg = amount > 1
+                              ? msg.replace("<amount>", String.valueOf(item.getAmount()))
+                              : msg.replace("x<amount>", "").replace("<amount>", String.valueOf(item.getAmount()));
+                        player.sendMessage(msg);
+                    }
+                    i++;
+                }
+            }
         }
         if (!itemList.isEmpty()) { //Loot did not fit in the Player's Inventory
             //Fill the inventory with items
