@@ -206,9 +206,10 @@ public class PhatLoot implements ConfigurationSerializable {
      *
      * @param player The Player who is looting
      * @param chest The PhatLootChest that is being looted
+     * @return true if the PhatLootChest should be manually broken
      */
-    public void rollForChestLoot(Player player, PhatLootChest chest) {
-        rollForChestLoot(player, chest, null);
+    public boolean rollForChestLoot(Player player, PhatLootChest chest) {
+        return rollForChestLoot(player, chest, null);
     }
 
     /**
@@ -217,8 +218,11 @@ public class PhatLoot implements ConfigurationSerializable {
      * @param player The Player who is looting
      * @param chest The PhatLootChest that is being looted
      * @param title The title of the Inventory
+     * @return true if the PhatLootChest should be manually broken
      */
-    public void rollForChestLoot(Player player, PhatLootChest chest, String title) {
+    public boolean rollForChestLoot(Player player, PhatLootChest chest, String title) {
+        boolean flagToBreak = false;
+
         if (title == null) {
             title = name;
         }
@@ -236,7 +240,7 @@ public class PhatLoot implements ConfigurationSerializable {
                     chest.openInventory(player, inv, global);
                 }
             }
-            return;
+            return flagToBreak;
         }
 
         //Roll for the all the Loot
@@ -246,7 +250,7 @@ public class PhatLoot implements ConfigurationSerializable {
         PlayerLootEvent event = new PlayerLootEvent(player, this, chest, lootBundle);
         Bukkit.getPluginManager().callEvent(event);
         if (event.isCancelled()) {
-            return;
+            return flagToBreak;
         }
 
         //Do money transactions
@@ -274,12 +278,12 @@ public class PhatLoot implements ConfigurationSerializable {
                     if (PhatLootsConfig.insufficientFunds != null) {
                         player.sendMessage(PhatLootsConfig.insufficientFunds.replace("<amount>", amount));
                     }
-                    return;
+                    return flagToBreak;
                 }
             } else {
                 //Don't let them loot without paying
                 player.sendMessage("§6Vault §4is not enabled, so no money can be processed.");
-                return;
+                return flagToBreak;
             }
         }
 
@@ -299,17 +303,17 @@ public class PhatLoot implements ConfigurationSerializable {
         //Give all of the items
         Collection<ItemStack> itemList = lootBundle.getItemList();
 
+        //Get the Inventory for the user
+        Inventory inv = PhatLootChest.getInventory(getUser(player), title, chest);
+        if (player.getOpenInventory().getTopInventory() != inv) {
+            //Reset the Inventory, old loot is thrown away
+            inv.clear();
+        }
+
         if (autoLoot) { //AutoLoot the items
             itemList = player.getInventory().addItem(itemList.toArray(new ItemStack[itemList.size()])).values();
         }
         if (!itemList.isEmpty()) {
-            //Get the Inventory for the user
-            Inventory inv = PhatLootChest.getInventory(getUser(player), title, chest);
-            if (player.getOpenInventory().getTopInventory() != inv) {
-                //Reset the Inventory, old loot is thrown away
-                inv.clear();
-            }
-
             //Fill the inventory with items
             chest.addItems(itemList, player, inv);
 
@@ -321,13 +325,13 @@ public class PhatLoot implements ConfigurationSerializable {
                 player.updateInventory();
             }
         } else if (!autoLoot) {
-            //Get the Inventory for the user
-            Inventory inv = PhatLootChest.getInventory(getUser(player), title, chest);
-
             //Open the Inventory if it is not already open (even though no loot was added)
             if (player.getOpenInventory().getTopInventory() != inv) {
                 chest.openInventory(player, inv, global);
             }
+        } else {
+            //The chest should be broken bc it was fully autolooted
+            flagToBreak = PhatLootChest.useBreakAndRepawn && breakAndRespawn;
         }
 
         //Send loot notification messages
@@ -342,6 +346,7 @@ public class PhatLoot implements ConfigurationSerializable {
 
         //Update the time that the user looted
         setTime(player, chest);
+        return flagToBreak;
     }
 
     /**
@@ -477,6 +482,7 @@ public class PhatLoot implements ConfigurationSerializable {
         List<ItemStack> loot = rollForLoot(level).getItemList();
         //Ensure there are 5 items (even if some are air)
         if (loot.size() != 5) {
+            //Try to organize the loot
             PhatLoots.logger.warning("Cannot add loot to " + entity.getType().getName() + " because the amount of loot was not equal to 5");
             return;
         }

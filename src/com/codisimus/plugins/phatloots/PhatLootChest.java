@@ -462,29 +462,10 @@ public class PhatLootChest {
                     }
                 }
 
-                //Get the shortest reset time
-                long time = -1;
-                for (PhatLoot phatLoot : PhatLoots.getPhatLoots()) {
-                    if (phatLoot.containsChest(this) && phatLoot.breakAndRespawn) {
-                        if (phatLoot.global) {
-                            long temp = phatLoot.getTimeRemaining(this);
-                            if (temp < 1) {
-                                continue;
-                            }
-                            if (time < 0 || temp < time) {
-                                time = temp;
-                            }
-                        } else {
-                            break;
-                        }
-                    }
-                }
+                long time = getResetTime();
 
                 //Don't break the chest if it will respawn in 1 second or less
-                if (time > 1000) {
-                    //Convert the time from milliseconds to ticks
-                    time /= 50;
-
+                if (time > 20) {
                     breakChest(player, time);
                 }
             }
@@ -501,6 +482,43 @@ public class PhatLootChest {
                 break;
             }
         }
+    }
+
+    /**
+     * Returns the shortest amount of time until one of the linked PhatLoots resets
+     *
+     * @return The amount of time (in ticks) that the PhatLootChest should reset
+     */
+    public long getResetTime() {
+        return getResetTime(PhatLoots.getPhatLoots());
+    }
+
+    /**
+     * Returns the shortest amount of time until one of the linked PhatLoots resets
+     *
+     * @param phatLoots The collection of PhatLoots to scan through
+     * @return The amount of time (in ticks) that the PhatLootChest should reset
+     */
+    public long getResetTime(Collection<PhatLoot> phatLoots) {
+        long time = -1;
+        for (PhatLoot phatLoot : phatLoots) {
+            //Check if this is a linked PhatLoot
+            if (phatLoot.containsChest(this) && phatLoot.breakAndRespawn) {
+                if (phatLoot.global) {
+                    long temp = phatLoot.getTimeRemaining(this);
+                    if (temp < 1) {
+                        continue;
+                    }
+                    if (time < 0 || temp < time) {
+                        time = temp;
+                    }
+                } else {
+                    break;
+                }
+            }
+        }
+        //Convert the time from milliseconds to ticks
+        return time /= 50;
     }
 
     /**

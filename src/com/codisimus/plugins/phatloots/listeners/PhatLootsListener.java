@@ -125,8 +125,16 @@ public class PhatLootsListener implements Listener {
         event.setCancelled(true);
 
         //Roll for Loot of each linked PhatLoot
+        boolean flagToBreak = true;
         for (PhatLoot phatLoot : phatLoots) {
-            phatLoot.rollForChestLoot(player, plChest);
+            if (!phatLoot.rollForChestLoot(player, plChest)) {
+                //Don't break the Chest if any PhatLoots return false
+                flagToBreak = false;
+            }
+        }
+
+        if (flagToBreak) {
+            plChest.breakChest(player, plChest.getResetTime(phatLoots));
         }
     }
 

@@ -175,6 +175,10 @@ public class Item extends Loot {
     public ItemStack getInfoStack() {
         ItemStack infoStack = item.clone();
         ItemMeta info = infoStack.hasItemMeta() ? infoStack.getItemMeta() : Bukkit.getItemFactory().getItemMeta(infoStack.getType());
+        if (infoStack.getTypeId() == 0) {
+            infoStack.setType(Material.LOCKED_CHEST);
+            info.setDisplayName("AIR");
+        }
 
         //Add more specific details of the command
         List<String> details;

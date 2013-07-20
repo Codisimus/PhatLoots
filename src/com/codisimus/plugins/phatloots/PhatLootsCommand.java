@@ -39,18 +39,6 @@ public class PhatLootsCommand implements CommandExecutor {
         ADD, REMOVE, COST, MONEY, EXP, LIST, INFO, GIVE, RESET, CLEAN, RL
     }
     private static enum Help { CREATE, SETUP, LOOT } //Help Pages
-    private static final HashSet<Byte> TRANSPARENT = Sets.newHashSet(
-            (byte)0,   (byte)6,   (byte)8,   (byte)9,   (byte)10,  (byte)11,
-            (byte)26,  (byte)27,  (byte)28,  (byte)30,  (byte)31,  (byte)32,
-            (byte)37,  (byte)38,  (byte)39,  (byte)40,  (byte)44,  (byte)50,
-            (byte)51,  (byte)53,  (byte)55,  (byte)59,  (byte)64,  (byte)63,
-            (byte)65,  (byte)66,  (byte)67,  (byte)68,  (byte)69,  (byte)70,
-            (byte)71,  (byte)72,  (byte)75,  (byte)76,  (byte)77,  (byte)78,
-            (byte)85,  (byte)90,  (byte)92,  (byte)96,  (byte)101, (byte)102,
-            (byte)104, (byte)105, (byte)106, (byte)107, (byte)108, (byte)109,
-            (byte)111, (byte)113, (byte)114, (byte)115, (byte)117, (byte)126,
-            (byte)127, (byte)131, (byte)132, (byte)139, (byte)140, (byte)141,
-            (byte)142, (byte)144, (byte)145);
     static String command; //Main Command
     static boolean setUnlockable; //True if linked Chests should be set as unlockable by ChestLock
 
@@ -645,7 +633,7 @@ public class PhatLootsCommand implements CommandExecutor {
     	}
 
         //Cancel if the sender is not targeting a correct Block
-        Block block  = ((Player) sender).getTargetBlock(TRANSPARENT, 10);
+        Block block  = ((Player) sender).getTargetBlock(null, 10);
         String blockName = block.getType().toString();
         if (!PhatLoots.isLinkableType(block)) {
             sender.sendMessage("§6" + blockName + "§4 is not a linkable type.");
@@ -760,7 +748,7 @@ public class PhatLootsCommand implements CommandExecutor {
             return;
     	}
 
-        Block block = ((Player) sender).getTargetBlock(TRANSPARENT, 10);
+        Block block = ((Player) sender).getTargetBlock(null, 10);
         for (PhatLoot phatLoot : getPhatLoots(sender, name)) {
             phatLoot.removeChest(block);
             sender.sendMessage("§5Target " + block.getType().toString() + " has been unlinked from PhatLoot §6" + phatLoot.name);
@@ -833,7 +821,8 @@ public class PhatLootsCommand implements CommandExecutor {
     }
 
     /**
-     * Modifies breakAndRespawn of the specified PhatLoot
+     * Modifies breakAndRespawn of the specified PhatLoot.
+     * PhatLoots that are an individual reset are automatically switched to global
      *
      * @param sender The CommandSender modifying the PhatLoot
      * @param name The name of the PhatLoot to be modified or null to indicate all linked PhatLoots
@@ -841,6 +830,12 @@ public class PhatLootsCommand implements CommandExecutor {
      */
     public static void breakAndRespawn(CommandSender sender, String name, boolean breakAndRespawn) {
         for (PhatLoot phatLoot : getPhatLoots(sender, name)) {
+            if (breakAndRespawn && !phatLoot.global) {
+                phatLoot.global = true;
+                phatLoot.reset(null);
+
+                sender.sendMessage("§5PhatLoot §6" + phatLoot.name + "§5 has been set to §6global§5 reset");
+            }
             if (phatLoot.breakAndRespawn != breakAndRespawn) {
                 phatLoot.breakAndRespawn = breakAndRespawn;
 
@@ -1132,7 +1127,7 @@ public class PhatLootsCommand implements CommandExecutor {
                 return;
             }
 
-            Block block = ((Player) sender).getTargetBlock(TRANSPARENT, 10);
+            Block block = ((Player) sender).getTargetBlock(null, 10);
             for (PhatLoot phatLoot : getPhatLoots(sender, name)) {
                 phatLoot.reset(block);
                 sender.sendMessage("§5Target "+ block.getType().toString() + " has been reset.");
@@ -1187,7 +1182,7 @@ public class PhatLootsCommand implements CommandExecutor {
                     return;
         	}
 
-            Block block = ((Player) sender).getTargetBlock(TRANSPARENT, 10);
+            Block block = ((Player) sender).getTargetBlock(null, 10);
             for (PhatLoot phatLoot : getPhatLoots(sender, name)) {
                 phatLoot.clean(block);
                 sender.sendMessage("§5Target "+ block.getType().toString() + " has been reset.");
@@ -1251,7 +1246,7 @@ public class PhatLootsCommand implements CommandExecutor {
         sender.sendMessage("§2/"+command+" time [Name] never§b Set PhatLoot to only be lootable once per chest");
         sender.sendMessage("§2/"+command+" global [Name] <true|false>§b Set PhatLoot to global or individual");
         sender.sendMessage("§2/"+command+" autoloot [Name] <true|false>§b Set if Items are automatically looted");
-        sender.sendMessage("§2/"+command+" autoloot [Name] <true|false>§b Set if global Chests are broken after looting");
+        sender.sendMessage("§2/"+command+" break [Name] <true|false>§b Set if global Chests are broken after looting");
         sender.sendMessage("§2/"+command+" round [Name] <true|false>§b Set if cooldown times should round down (ex. Daily/Hourly loots)");
         sender.sendMessage("§2/"+command+" cost [Name] <Amount>§b Set cost of looting");
         sender.sendMessage("§2/"+command+" money [Name] <Amount>§b Set money range to be looted");
@@ -1317,7 +1312,7 @@ public class PhatLootsCommand implements CommandExecutor {
             }
 
             //Cancel if the sender is not targeting a correct Block
-            Block block = ((Player) sender).getTargetBlock(TRANSPARENT, 10);
+            Block block = ((Player) sender).getTargetBlock(null, 10);
             String blockName = block.getType().toString();
             if (!PhatLoots.isLinkableType(block)) {
                 sender.sendMessage("§6" + blockName + "§4 is not a linkable type.");
