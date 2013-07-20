@@ -99,7 +99,7 @@ public class PhatLoots extends JavaPlugin {
         }
 
         //Save SampleLoot.yml if it does not exist
-        File file = new File(PhatLoots.dataFolder + File.separator + "SampleLoot.yml");
+        File file = new File(PhatLoots.dataFolder + File.separator + "LootTables/SampleLoot.yml");
         if (!file.exists()) {
             InputStream inputStream = this.getResource("SampleLoot.yml");
             OutputStream outputStream = null;
