@@ -309,7 +309,7 @@ public class PhatLoot implements ConfigurationSerializable {
         }
 
         //Give all of the items
-        List<ItemStack> itemList = lootBundle.getItemList();
+        Collection<ItemStack> itemList = lootBundle.getItemList();
 
         //Get the Inventory for the user
         Inventory inv = PhatLootChest.getInventory(getUser(player), title, chest);
@@ -337,6 +337,8 @@ public class PhatLoot implements ConfigurationSerializable {
                     i++;
                 }
             }
+            //Update the reduced item list
+            itemList = leftovers.values();
         }
         if (!itemList.isEmpty()) { //Loot did not fit in the Player's Inventory
             //Fill the inventory with items
