@@ -3,9 +3,7 @@ package com.codisimus.plugins.phatloots;
 import com.codisimus.plugins.phatloots.events.ChestBreakEvent;
 import com.codisimus.plugins.phatloots.events.ChestRespawnEvent;
 import com.codisimus.plugins.phatloots.events.ChestRespawnEvent.RespawnReason;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.*;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
@@ -29,6 +27,7 @@ public class PhatLootChest {
     public static HashMap<OfflinePlayer, PhatLootChest> openPhatLootChests = new HashMap<OfflinePlayer, PhatLootChest>(); //Player -> Open PhatLootChest
     static boolean useBreakAndRepawn;
     static boolean soundOnBreak;
+    static boolean shuffleLoot;
     static String chestName;
     private String world;
     private int x, y, z;
@@ -333,6 +332,11 @@ public class PhatLootChest {
     public void addItems(Collection<ItemStack> itemList, Player player, Inventory inventory) {
         for (ItemStack item: itemList) {
             addItem(item, player, inventory);
+        }
+        if (shuffleLoot) {
+            List<ItemStack> contents = Arrays.asList(inventory.getContents());
+            Collections.shuffle(contents);
+            inventory.setContents(contents.toArray(new ItemStack[contents.size()]));
         }
     }
 

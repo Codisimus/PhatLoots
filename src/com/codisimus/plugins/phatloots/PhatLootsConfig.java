@@ -50,7 +50,7 @@ public class PhatLootsConfig {
         FileConfiguration config = PhatLoots.plugin.getConfig();
 
         //Check for an outdated config.yml file
-        if (config.get("UseBreakAndRespawn", null) == null) {
+        if (config.get("ShuffleLoot", null) == null) {
             PhatLoots.logger.warning("Your config.yml file is outdated! To get the most out of this plugin please (re)move the old file so a new one can be generated.");
         }
 
@@ -169,6 +169,7 @@ public class PhatLootsConfig {
         PhatLoot.soundOnAutoLoot = config.getBoolean("PlaySoundOnAutoLoot");
         PhatLootChest.useBreakAndRepawn = config.getBoolean("UseBreakAndRespawn");
         PhatLootChest.soundOnBreak = config.getBoolean("PlaySoundOnChestBreak");
+        PhatLootChest.shuffleLoot = config.getBoolean("ShuffleLoot");
         ForgettableInventory.delay = config.getInt("ForgetInventoryTime") * 20L;
         PhatLoot.unlink = config.getBoolean("UnlinkGlobalChestsThatNeverReset");
 

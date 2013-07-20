@@ -217,6 +217,10 @@ PlaySoundOnChestBreak: true
 UseBreakAndRespawn: true
 
 
+#If set to true, Loot will be scattered throughout the Chest rather than all in the top left corner
+ShuffleLoot: false
+
+
 ##This is how long (in seconds) each inventory will be kept in memory
 ##Items that have not been looted before the inventory is forgotten will be lost
 ForgetInventoryTime: 60
