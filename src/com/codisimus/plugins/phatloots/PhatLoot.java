@@ -340,7 +340,28 @@ public class PhatLoot implements ConfigurationSerializable {
             //Update the reduced item list
             itemList = leftovers.values();
         }
-        if (!itemList.isEmpty()) { //Loot did not fit in the Player's Inventory
+
+        if (chest == null) {
+            //Add each item to the Inventory
+            for (ItemStack item : itemList) {
+                Collection<ItemStack> leftOvers = inv.addItem(item).values();
+                if (!leftOvers.isEmpty()) {
+                    //Overflow all that could not fit in the Inventory
+                    for (ItemStack stack : leftOvers) {
+                        player.getWorld().dropItemNaturally(player.getLocation(), stack);
+                        if (PhatLootsConfig.overflow != null) {
+                            String msg = PhatLootsConfig.overflow.replace("<item>", PhatLoots.getItemName(stack));
+                            int amount = stack.getAmount();
+                            msg = amount > 1
+                                  ? msg.replace("<amount>", String.valueOf(stack.getAmount()))
+                                  : msg.replace("x<amount>", "").replace("<amount>", String.valueOf(stack.getAmount()));
+                            player.sendMessage(msg);
+                        }
+                    }
+                }
+            }
+            player.openInventory(inv);
+        } else if (!itemList.isEmpty()) { //Loot did not fit in the Player's Inventory
             //Fill the inventory with items
             chest.addItems(itemList, player, inv);
 

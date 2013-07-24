@@ -330,7 +330,7 @@ public class PhatLootChest {
      * @param inventory The Inventory to add the items to
      */
     public void addItems(Collection<ItemStack> itemList, Player player, Inventory inventory) {
-        for (ItemStack item: itemList) {
+        for (ItemStack item : itemList) {
             addItem(item, player, inventory);
         }
         if (shuffleLoot) {
