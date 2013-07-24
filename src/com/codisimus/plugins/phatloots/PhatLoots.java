@@ -241,6 +241,7 @@ public class PhatLoots extends JavaPlugin {
                     phatLoot.name = name;
                 }
                 phatLoots.put(name, phatLoot);
+                phatLoot.save();
             } catch (Exception ex) {
                 logger.log(Level.SEVERE, "Failed to load " + file.getName(), ex);
             }

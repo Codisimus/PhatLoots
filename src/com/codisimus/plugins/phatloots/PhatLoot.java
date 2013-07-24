@@ -539,11 +539,11 @@ public class PhatLoot implements ConfigurationSerializable {
         //Remove Minecraft spawned armor
         eqp.clear();
         //The order of equipment should be Hand, Head, Body, Legs, Feet
-        eqp.setItemInHand(loot.remove(0));
-        eqp.setHelmet(loot.remove(0));
-        eqp.setChestplate(loot.remove(0));
-        eqp.setLeggings(loot.remove(0));
-        eqp.setBoots(loot.remove(0));
+        eqp.setItemInHand(loot.get(0));
+        eqp.setHelmet(loot.get(0));
+        eqp.setChestplate(loot.get(0));
+        eqp.setLeggings(loot.get(0));
+        eqp.setBoots(loot.get(0));
 
         //Set the drop chance of each item
         eqp.setItemInHandDropChance(chanceOfDrop);
@@ -911,15 +911,21 @@ public class PhatLoot implements ConfigurationSerializable {
      * If there is an old file it is over written
      */
     public void saveChests() {
+        File file = new File(PhatLoots.dataFolder + File.separator + "Chests" + File.separator + name + ".txt");
+
         //Don't save an empty file
         if (chests.isEmpty()) {
+            //Delete the pre-existing file
+            if (file.exists()) {
+                file.delete();
+            }
             return;
         }
 
         FileWriter fWriter = null;
         PrintWriter pWriter = null;
         try {
-            fWriter = new FileWriter(PhatLoots.dataFolder + File.separator + "Chests" + File.separator + name + ".txt");
+            fWriter = new FileWriter(file);
             pWriter = new PrintWriter(fWriter);
             for (PhatLootChest chest : getChests()) {
                 pWriter.println(chest.toString());
