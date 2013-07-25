@@ -678,7 +678,7 @@ public class PhatLootsCommand implements CommandExecutor {
         PhatLoot phatLoot = PhatLoots.getPhatLoot(name);
 
         phatLoot.addChest(block);
-        sender.sendMessage("§5Target " + blockName + " has been linked to PhatLoot §6" + name);
+        sender.sendMessage("§5Target §6" + blockName + "§5 has been linked to PhatLoot §6" + name);
         phatLoot.saveChests();
     }
 
@@ -690,7 +690,7 @@ public class PhatLootsCommand implements CommandExecutor {
      */
     public static void regionLink(Player player, String name) {
         if (!Bukkit.getPluginManager().isPluginEnabled("RegionOwn")) {
-            player.sendMessage("You must install RegionOwn to use that command");
+            player.sendMessage("§4You must install RegionOwn to use that command");
             return;
         }
 
@@ -707,7 +707,7 @@ public class PhatLootsCommand implements CommandExecutor {
         }
 
         if (!RegionSelector.hasSelection(player)) {
-            player.sendMessage("You must first select a Region");
+            player.sendMessage("§4You must first select a Region");
             return;
         }
 
@@ -751,7 +751,7 @@ public class PhatLootsCommand implements CommandExecutor {
         Block block = ((Player) sender).getTargetBlock(null, 10);
         for (PhatLoot phatLoot : getPhatLoots(sender, name)) {
             phatLoot.removeChest(block);
-            sender.sendMessage("§5Target " + block.getType().toString() + " has been unlinked from PhatLoot §6" + phatLoot.name);
+            sender.sendMessage("§5Target §6" + block.getType().toString() + "§5 has been unlinked from PhatLoot §6" + phatLoot.name);
             phatLoot.saveChests();
         }
     }
@@ -1130,7 +1130,7 @@ public class PhatLootsCommand implements CommandExecutor {
             Block block = ((Player) sender).getTargetBlock(null, 10);
             for (PhatLoot phatLoot : getPhatLoots(sender, name)) {
                 phatLoot.reset(block);
-                sender.sendMessage("§5Target "+ block.getType().toString() + " has been reset.");
+                sender.sendMessage("§5Target §6" + block.getType().toString() + "§5 has been reset.");
             }
         }
     }
@@ -1185,7 +1185,7 @@ public class PhatLootsCommand implements CommandExecutor {
             Block block = ((Player) sender).getTargetBlock(null, 10);
             for (PhatLoot phatLoot : getPhatLoots(sender, name)) {
                 phatLoot.clean(block);
-                sender.sendMessage("§5Target "+ block.getType().toString() + " has been reset.");
+                sender.sendMessage("§5Target §6"+ block.getType().toString() + "§5 has been reset.");
             }
         }
     }
@@ -1323,7 +1323,7 @@ public class PhatLootsCommand implements CommandExecutor {
 
             //Inform the sender if the Block is not linked to any PhatLoots
             if (phatLoots.isEmpty()) {
-                sender.sendMessage("§4Target " + blockName + " is not linked to a PhatLoot");
+                sender.sendMessage("§4Target §6" + blockName + "§4 is not linked to a PhatLoot");
             }
         }
 

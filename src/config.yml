@@ -227,4 +227,4 @@ ForgetInventoryTime: 60
 
 
 ##Set to true if global chests that never reset should be unlinked after looting
-UnlinkGlobalChestsThatNeverReset: true
+UnlinkGlobalChestsThatNeverReset: false

@@ -121,7 +121,6 @@ public class PhatLootsListener implements Listener {
         default: return;
         }
 
-        //Cancel any interaction events
         event.setCancelled(true);
 
         //Roll for Loot of each linked PhatLoot

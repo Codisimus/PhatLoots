@@ -5,11 +5,11 @@ import com.codisimus.plugins.phatloots.events.ChestRespawnEvent;
 import com.codisimus.plugins.phatloots.events.ChestRespawnEvent.RespawnReason;
 import java.util.*;
 import org.bukkit.*;
-import org.bukkit.block.Block;
-import org.bukkit.block.BlockState;
-import org.bukkit.block.Chest;
-import org.bukkit.block.Dispenser;
+import org.bukkit.block.*;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.TNTPrimed;
+import org.bukkit.event.block.BlockRedstoneEvent;
 import org.bukkit.inventory.DoubleChestInventory;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -22,6 +22,17 @@ import org.bukkit.scheduler.BukkitTask;
  * @author Cody
  */
 public class PhatLootChest {
+    private static EnumSet<Material> untriggeredRedstone = EnumSet.of(
+        Material.REDSTONE_WIRE, Material.REDSTONE_COMPARATOR_OFF,
+        Material.REDSTONE_LAMP_OFF, Material.REDSTONE_TORCH_OFF,
+        Material.DIODE_BLOCK_OFF, Material.DISPENSER, Material.DROPPER,
+        Material.NOTE_BLOCK, Material.PISTON_BASE, Material.TNT
+    );
+    private static EnumSet<Material> triggeredRedstone = EnumSet.of(
+        Material.REDSTONE_WIRE, Material.REDSTONE_COMPARATOR_ON,
+        Material.REDSTONE_LAMP_ON, Material.REDSTONE_TORCH_ON,
+        Material.DIODE_BLOCK_ON, Material.PISTON_BASE
+    );
     private static HashMap<String, PhatLootChest> chests = new HashMap<String, PhatLootChest>(); //Chest Location -> PhatLootChest
     static HashSet<PhatLootChest> chestsToRespawn = new HashSet<PhatLootChest>();
     public static HashMap<OfflinePlayer, PhatLootChest> openPhatLootChests = new HashMap<OfflinePlayer, PhatLootChest>(); //Player -> Open PhatLootChest
@@ -408,19 +419,31 @@ public class PhatLootChest {
         openPhatLootChests.put(player, this);
         player.openInventory(inv);
 
-        Location loc = new Location(Bukkit.getWorld(world), x, y, z);
-        if (global) {
-            if (inv.getViewers().size() <= 1) { //First viewer
-                //Play for each Player in the World
-                for (Player p: player.getWorld().getPlayers()) {
-                    p.playSound(loc, Sound.CHEST_OPEN, 0.75F, 0.95F);
-                    p.playNote(loc, (byte) 1, (byte) 1); //Open animation
-                }
+        switch (getBlock().getType()) {
+        case TRAPPED_CHEST:
+            //Trigger redstone
+            for (Block block : findRedstone(getBlock(), false)) {
+                trigger(block);
             }
-        } else {
-            //Play for only the individual Player
-            player.playSound(loc, Sound.CHEST_OPEN, 0.75F, 0.95F);
-            player.playNote(loc, (byte) 1, (byte) 1); //Open animation
+        case ENDER_CHEST:
+        case CHEST:
+            //Play chest animations
+            Location loc = new Location(Bukkit.getWorld(world), x, y, z);
+            if (global) {
+                if (inv.getViewers().size() <= 1) { //First viewer
+                    //Play for each Player in the World
+                    for (Player p: player.getWorld().getPlayers()) {
+                        p.playSound(loc, Sound.CHEST_OPEN, 0.75F, 0.95F);
+                        p.playNote(loc, (byte) 1, (byte) 1); //Open animation
+                    }
+                }
+            } else {
+                //Play for only the individual Player
+                player.playSound(loc, Sound.CHEST_OPEN, 0.75F, 0.95F);
+                player.playNote(loc, (byte) 1, (byte) 1); //Open animation
+            }
+            break;
+        default: break;
         }
     }
 
@@ -436,55 +459,67 @@ public class PhatLootChest {
         openPhatLootChests.remove(player);
         player.closeInventory();
 
-        Block block = getBlock();
-        Location loc = block.getLocation();
-        if (global) {
-            if (inv.getViewers().size() < 1) { //Last viewer
-                //Play for each Player in the World
-                for (Player p: player.getWorld().getPlayers()) {
-                    switch (block.getType()) {
-                    case CHEST:
-                    case TRAPPED_CHEST:
-                    case ENDER_CHEST:
-                        p.playSound(loc, Sound.CHEST_CLOSE, 0.75F, 0.95F);
-                        p.playNote(loc, (byte) 1, (byte) 0); //Close animation
-                        break;
-                    default:
-                        break;
+        switch (getBlock().getType()) {
+        case TRAPPED_CHEST:
+            //Trigger redstone
+            for (Block block : findRedstone(getBlock(), true)) {
+                trigger(block);
+            }
+        case ENDER_CHEST:
+        case CHEST:
+            //Play chest animations
+            Block block = getBlock();
+            Location loc = block.getLocation();
+            if (global) {
+                if (inv.getViewers().size() < 1) { //Last viewer
+                    //Play for each Player in the World
+                    for (Player p: player.getWorld().getPlayers()) {
+                        switch (block.getType()) {
+                        case CHEST:
+                        case TRAPPED_CHEST:
+                        case ENDER_CHEST:
+                            p.playSound(loc, Sound.CHEST_CLOSE, 0.75F, 0.95F);
+                            p.playNote(loc, (byte) 1, (byte) 0); //Close animation
+                            break;
+                        default:
+                            break;
+                        }
                     }
-                }
 
-                //Return if not using the Break and Respawn setting
-                if (!useBreakAndRepawn) {
-                    return;
-                }
-
-                //Return if the Inventory is not empty
-                for (ItemStack item : inv.getContents()) {
-                    if (item != null && item.getTypeId() != 0) {
+                    //Return if not using the Break and Respawn setting
+                    if (!useBreakAndRepawn) {
                         return;
                     }
+
+                    //Return if the Inventory is not empty
+                    for (ItemStack item : inv.getContents()) {
+                        if (item != null && item.getTypeId() != 0) {
+                            return;
+                        }
+                    }
+
+                    long time = getResetTime();
+
+                    //Don't break the chest if it will respawn in 1 second or less
+                    if (time > 20) {
+                        breakChest(player, time);
+                    }
                 }
-
-                long time = getResetTime();
-
-                //Don't break the chest if it will respawn in 1 second or less
-                if (time > 20) {
-                    breakChest(player, time);
+            } else {
+                switch (block.getType()) {
+                case CHEST:
+                case TRAPPED_CHEST:
+                case ENDER_CHEST:
+                    //Play for only the individual Player
+                    player.playSound(loc, Sound.CHEST_CLOSE, 0.75F, 0.95F);
+                    player.playNote(loc, (byte) 1, (byte) 0); //Close animation
+                    break;
+                default:
+                    break;
                 }
             }
-        } else {
-            switch (block.getType()) {
-            case CHEST:
-            case TRAPPED_CHEST:
-            case ENDER_CHEST:
-                //Play for only the individual Player
-                player.playSound(loc, Sound.CHEST_CLOSE, 0.75F, 0.95F);
-                player.playNote(loc, (byte) 1, (byte) 0); //Close animation
-                break;
-            default:
-                break;
-            }
+            break;
+        default: break;
         }
     }
 
@@ -523,6 +558,107 @@ public class PhatLootChest {
         }
         //Convert the time from milliseconds to ticks
         return time /= 50;
+    }
+
+    private static LinkedList<Block> findRedstone(Block block, boolean on) {
+        EnumSet redstone = on ? triggeredRedstone : untriggeredRedstone;
+        LinkedList<Block> redstoneList = new LinkedList<Block>();
+        Block neighbor = block.getRelative(1, 0, 0);
+        if (redstone.contains(neighbor.getType())) {
+            redstoneList.add(neighbor);
+        } else {
+            neighbor = block.getRelative(2, 0, 0);
+            if (redstone.contains(neighbor.getType())) {
+                redstoneList.add(neighbor);
+            }
+        }
+        neighbor = block.getRelative(0, 0, 1);
+        if (redstone.contains(neighbor.getType())) {
+            redstoneList.add(neighbor);
+        } else {
+            neighbor = block.getRelative(0, 0, 2);
+            if (redstone.contains(neighbor.getType())) {
+                redstoneList.add(neighbor);
+            }
+        }
+        neighbor = block.getRelative(-1, 0, 0);
+        if (redstone.contains(neighbor.getType())) {
+            redstoneList.add(neighbor);
+        } else {
+            neighbor = block.getRelative(-2, 0, 0);
+            if (redstone.contains(neighbor.getType())) {
+                redstoneList.add(neighbor);
+            }
+        }
+        neighbor = block.getRelative(0, 0, -1);
+        if (redstone.contains(neighbor.getType())) {
+            redstoneList.add(neighbor);
+        } else {
+            neighbor = block.getRelative(0, 0, -2);
+            if (redstone.contains(neighbor.getType())) {
+                redstoneList.add(neighbor);
+            }
+        }
+        neighbor = block.getRelative(0, -1, 0);
+        if (redstone.contains(neighbor.getType())) {
+            redstoneList.add(neighbor);
+        } else {
+            neighbor = block.getRelative(0, -2, 0);
+            if (redstone.contains(neighbor.getType())) {
+                redstoneList.add(neighbor);
+            }
+        }
+        return redstoneList;
+    }
+
+    private static void trigger(Block block) {
+        switch (block.getType()) {
+        case REDSTONE_WIRE: //Toggle the power level
+            block.setData((byte) (block.getData() ^ (byte) 15), true);
+            break;
+        case REDSTONE_COMPARATOR_OFF: //Turn the Comparator on
+            block.setTypeId(Material.REDSTONE_COMPARATOR_ON.getId(), true);
+            break;
+        case REDSTONE_LAMP_OFF: //Turn the Lamp on
+            block.setTypeId(Material.REDSTONE_LAMP_ON.getId(), true);
+            break;
+        case REDSTONE_TORCH_OFF: //Turn the Torch on
+            block.setTypeId(Material.REDSTONE_TORCH_ON.getId(), true);
+            break;
+        case DIODE_BLOCK_OFF: //Turn the Diode on
+            block.setTypeId(Material.DIODE_BLOCK_ON.getId(), true);
+            break;
+        case DISPENSER: //Dispense
+            ((Dispenser) block.getState()).dispense();
+            break;
+        case DROPPER: //Drop
+            ((Dropper) block.getState()).drop();
+            break;
+        case NOTE_BLOCK: //Play note
+            ((NoteBlock) block.getState()).play();
+            break;
+        case PISTON_BASE: //Toggle the extended bit
+            block.setData((byte) (block.getData() ^ (byte) 8), true);
+            break;
+        case TNT: //Replace the TNT with primed TNT
+            block.setTypeId(0);
+            TNTPrimed tnt = (TNTPrimed) block.getWorld().spawnEntity(block.getLocation(), EntityType.PRIMED_TNT);
+            tnt.setFuseTicks(80);
+            break;
+        case REDSTONE_COMPARATOR_ON: //Turn the Comparator off
+            block.setTypeId(Material.REDSTONE_COMPARATOR_OFF.getId(), true);
+            break;
+        case REDSTONE_LAMP_ON: //Turn the Lamp off
+            block.setTypeId(Material.REDSTONE_LAMP_OFF.getId(), true);
+            break;
+        case REDSTONE_TORCH_ON: //Turn the Torch off
+            block.setTypeId(Material.REDSTONE_TORCH_OFF.getId(), true);
+            break;
+        case DIODE_BLOCK_ON: //Turn the Diode off
+            block.setTypeId(Material.DIODE_BLOCK_OFF.getId(), true);
+            break;
+        default: break;
+        }
     }
 
     /**
