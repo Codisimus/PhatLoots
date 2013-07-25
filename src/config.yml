@@ -8,6 +8,7 @@
 ##You should disable all of these that you will not be using
 
 ##Using Dispensers may cause significant lag if you have a decent amount of redstone circuts on the server
+##This also applies to Droppers
 DispenserLoot: true
 
 ##Using MobLoot may cause significant lag if there are numerous mobs on the server
@@ -51,6 +52,7 @@ Blocks:
     - Trapped Chest
     - Ender Chest
     - Dispenser
+    - Dropper
     - Bookshelf
 
 ##Every block in the specified Worlds that matches a listed Material will be linked to the given PhatLoot

@@ -55,7 +55,11 @@ public class PhatLootChest {
         x = block.getX();
         y = block.getY();
         z = block.getZ();
-        isDispenser = block.getTypeId() == 23;
+        switch (block.getType()) {
+        case DISPENSER:
+        case DROPPER:
+            isDispenser = true;
+        }
     }
 
     /**
@@ -77,7 +81,11 @@ public class PhatLootChest {
             PhatLoots.logger.warning("THIS CHEST UNLINKING IS PERMANANT IF YOU LINK/UNLINK ANY OTHER CHESTS IN THIS PHATLOOT!");
         } else {
             Block block = w.getBlockAt(x, y, z);
-            isDispenser = block.getTypeId() == 23;
+            switch (block.getType()) {
+            case DISPENSER:
+            case DROPPER:
+                isDispenser = true;
+            }
         }
     }
 
@@ -291,7 +299,12 @@ public class PhatLootChest {
 
     public static Inventory getInventory(String user, String name, PhatLootChest chest) {
         if (chest != null && chest.isDispenser) {
-            return ((Dispenser) chest.getBlock().getState()).getInventory();
+            BlockState state = chest.getBlock().getState();
+            switch (state.getType()) {
+            case DISPENSER: return ((Dispenser) state).getInventory();
+            case DROPPER: return ((Dropper) state).getInventory();
+            default: chest.isDispenser = false;
+            }
         }
 
         //Create the custom key using the user and Block location
@@ -380,10 +393,25 @@ public class PhatLootChest {
         }
 
         if (isDispenser) {
-            //Dispense until the Dispenser is empty
-            Dispenser dispenser = (Dispenser) getBlock().getState();
-            while (inventory.firstEmpty() > 0) {
-                dispenser.dispense();
+            BlockState state = getBlock().getState();
+            switch (state.getType()) {
+            case DISPENSER:
+                //Dispense until the Dispenser is empty
+                Dispenser dispenser = (Dispenser) state;
+                while (inventory.firstEmpty() > 0) {
+                    dispenser.dispense();
+                }
+                break;
+            case DROPPER:
+                //Drop until the Dropper is empty
+                Dropper dropper = (Dropper) state;
+                while (inventory.firstEmpty() > 0) {
+                    dropper.drop();
+                }
+                break;
+            default:
+                isDispenser = false;
+                break;
             }
         }
     }
@@ -560,6 +588,13 @@ public class PhatLootChest {
         return time /= 50;
     }
 
+    /**
+     * Finds Redstone Blocks that surround the given Block
+     *
+     * @param block The given Block which is most likely a Trapped Chest
+     * @param on Whether we want blocks that are currently powered
+     * @return The List of Blocks
+     */
     private static LinkedList<Block> findRedstone(Block block, boolean on) {
         EnumSet redstone = on ? triggeredRedstone : untriggeredRedstone;
         LinkedList<Block> redstoneList = new LinkedList<Block>();
@@ -611,6 +646,11 @@ public class PhatLootChest {
         return redstoneList;
     }
 
+    /**
+     * Activates the redstone of the given Block
+     *
+     * @param block The given Block which has redstone qualities
+     */
     private static void trigger(Block block) {
         switch (block.getType()) {
         case REDSTONE_WIRE: //Toggle the power level

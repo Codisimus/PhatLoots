@@ -25,8 +25,10 @@ public class DispenserListener implements Listener {
     @EventHandler (ignoreCancelled = true)
     public void onBlockPowered(BlockPhysicsEvent event) {
         Block block = event.getBlock();
-        if (block.getType() != Material.DISPENSER) {
-            return;
+        switch (block.getType()) {
+        case DISPENSER: break;
+        case DROPPER: break;
+        default: return;
         }
 
         //We don't care if a block loses power
