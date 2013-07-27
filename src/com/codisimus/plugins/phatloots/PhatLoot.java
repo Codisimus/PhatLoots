@@ -151,15 +151,15 @@ public class PhatLoot implements ConfigurationSerializable {
 
         //Find the appropriate unit of time and return that amount
         if (time > DateUtils.MILLIS_PER_DAY) {
-            return (int) time / DateUtils.MILLIS_PER_DAY + " day(s)";
+            return time / DateUtils.MILLIS_PER_DAY + " day(s)";
         } else {
             if (time > DateUtils.MILLIS_PER_HOUR) {
-                return (int) time / DateUtils.MILLIS_PER_HOUR + " hour(s)";
+                return time / DateUtils.MILLIS_PER_HOUR + " hour(s)";
             } else {
                 if (time > DateUtils.MILLIS_PER_MINUTE) {
-                    return (int) time / DateUtils.MILLIS_PER_MINUTE + " minute(s)";
+                    return time / DateUtils.MILLIS_PER_MINUTE + " minute(s)";
                 } else {
-                    return (int) time / DateUtils.MILLIS_PER_SECOND + " second(s)";
+                    return time / DateUtils.MILLIS_PER_SECOND + " second(s)";
                 }
             }
         }
@@ -306,6 +306,11 @@ public class PhatLoot implements ConfigurationSerializable {
         //Execute each command
         for (CommandLoot command : lootBundle.getCommandList()) {
             command.execute(player);
+        }
+
+        //Send each message
+        for (String message : lootBundle.getMessageList()) {
+            player.sendMessage(message);
         }
 
         //Give all of the items

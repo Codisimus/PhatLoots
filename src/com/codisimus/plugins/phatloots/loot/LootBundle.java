@@ -12,6 +12,7 @@ import org.bukkit.inventory.ItemStack;
 public class LootBundle {
     private List<ItemStack> itemList;
     private List<CommandLoot> commandList = new LinkedList<CommandLoot>();
+    private List<String> messageList = new LinkedList<String>();
     private double money = 0;
     private int exp = 0;
 
@@ -65,6 +66,24 @@ public class LootBundle {
      */
     public void addCommand(CommandLoot command) {
         commandList.add(command);
+    }
+
+    /**
+     * Returns the list of message to be sent
+     *
+     * @return The list of Message
+     */
+    public List<String> getMessageList() {
+        return messageList;
+    }
+
+    /**
+     * Adds the given message to the list of looted messages
+     *
+     * @param msg The given message to add as loot
+     */
+    public void addMessage(String msg) {
+        messageList.add(msg);
     }
 
     /**

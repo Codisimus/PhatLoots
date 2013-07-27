@@ -3,10 +3,7 @@ package com.codisimus.plugins.phatloots;
 import com.codisimus.plugins.chestlock.ChestLock;
 import com.codisimus.plugins.chestlock.Safe;
 import com.codisimus.plugins.phatloots.listeners.PhatLootInfoListener;
-import com.codisimus.plugins.phatloots.loot.CommandLoot;
-import com.codisimus.plugins.phatloots.loot.Item;
-import com.codisimus.plugins.phatloots.loot.Loot;
-import com.codisimus.plugins.phatloots.loot.LootCollection;
+import com.codisimus.plugins.phatloots.loot.*;
 import com.codisimus.plugins.regionown.Region;
 import com.codisimus.plugins.regionown.RegionSelector;
 import com.google.common.collect.Sets;
@@ -290,6 +287,7 @@ public class PhatLootsCommand implements CommandExecutor {
             ItemStack item = null; //The ItemStack to be added/removed
             String collName = null; //The name of the Loot Collection to be added/removed
             String cmd = null; //The command to be added/removed
+            String msg = null; //The message to be added/removed
 
             String phatLoot = null; //The name of the PhatLoot
             double percent = 100; //The chance of receiving the Loot (defaulted to 100)
@@ -310,7 +308,7 @@ public class PhatLootsCommand implements CommandExecutor {
                 lowerBound = PhatLootsConfig.defaultLowerNumberOfLoots;
                 upperBound = PhatLootsConfig.defaultUpperNumberOfLoots;
                 i++;
-            } else if (!args[1].equals("cmd")) { //Item
+            } else if (!args[1].equals("cmd") && !args[1].equals("msg")) { //Item
                 item = getItemStack(sender, args[1]);
                 if (item == null) {
                     return true;
@@ -389,6 +387,15 @@ public class PhatLootsCommand implements CommandExecutor {
                     }
                     break;
 
+                case '-': //Message
+                    msg = args[i];
+                    i++;
+                    while (i < args.length) {
+                        msg += " " + args[i];
+                        i++;
+                    }
+                    break;
+
                 default: //Invalid Parameter
                     sender.sendMessage("§6" + c + "§4 is not a valid parameter ID");
                     return true;
@@ -412,8 +419,10 @@ public class PhatLootsCommand implements CommandExecutor {
                 }
             } else if (collName != null) { //LootCollection
                 loot = new LootCollection(collName, lowerBound, upperBound);
-            } else { //CommandLoot
+            } else if (cmd != null) { //CommandLoot
                 loot = new CommandLoot(cmd);
+            } else { //Message
+                loot = new Message(msg);
             }
             loot.setProbability(percent);
 
@@ -1278,6 +1287,7 @@ public class PhatLootsCommand implements CommandExecutor {
         sender.sendMessage("§2/"+command+" <add|remove> coll <Name> [Parameter1] [Parameter2]...");
         sender.sendMessage("§bex. §6/"+command+" add coll Weapon %25");
         sender.sendMessage("§2/"+command+" <add|remove> cmd [Parameter1] [Parameter2]... /<Command>");
+        sender.sendMessage("§2/"+command+" <add|remove> msg [Parameter1] [Parameter2]... -<Message>");
         sender.sendMessage("§bTutorial Video (OUTDATED):");
         sender.sendMessage("§1§nwww.youtu.be/tRQuKbRTaA4");
     }

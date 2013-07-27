@@ -12,6 +12,7 @@ import com.codisimus.plugins.phatloots.listeners.FishingListener;
 import com.codisimus.plugins.phatloots.listeners.MobDeathListener;
 import com.codisimus.plugins.phatloots.listeners.PhatLootInfoListener;
 import com.codisimus.plugins.phatloots.events.ChestRespawnEvent.RespawnReason;
+import com.codisimus.plugins.phatloots.loot.Message;
 import com.google.common.io.Files;
 import java.io.*;
 import java.nio.ByteBuffer;
@@ -71,6 +72,7 @@ public class PhatLoots extends JavaPlugin {
         ConfigurationSerialization.registerClass(LootCollection.class, "LootCollection");
         ConfigurationSerialization.registerClass(Item.class, "Item");
         ConfigurationSerialization.registerClass(CommandLoot.class, "Command");
+        ConfigurationSerialization.registerClass(Message.class, "Message");
 
         logger = getLogger();
         plugin = this;
@@ -147,14 +149,16 @@ public class PhatLoots extends JavaPlugin {
             MobDeathListener listener = new MobDeathListener();
             listener.mobWorlds = getConfig().getBoolean("WorldMobDropLoot");
             listener.mobRegions = getConfig().getBoolean("RegionMobDropLoot")
-                                  && pm.isPluginEnabled("RegionOwn");
+                                  && (pm.isPluginEnabled("RegionOwn")
+                                      || pm.isPluginEnabled("WorldGuard"));
             pm.registerEvents(listener, this);
         }
         if (getConfig().getBoolean("MobSpawnLoot")) {
             MobSpawnListener listener = new MobSpawnListener();
             listener.mobWorlds = getConfig().getBoolean("WorldMobSpawnLoot");
             listener.mobRegions = getConfig().getBoolean("RegionMobSpawnLoot")
-                                  && pm.isPluginEnabled("RegionOwn");
+                                  && (pm.isPluginEnabled("RegionOwn")
+                                      || pm.isPluginEnabled("WorldGuard"));
             pm.registerEvents(listener, this);
         }
         if (getConfig().getBoolean("FishingLoot")) {

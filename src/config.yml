@@ -23,7 +23,7 @@ WorldMobDropLoot: true
 ##e.g. ZombieSpawn@MainWorld, ZombieSpawn@DungeonWorld
 WorldMobSpawnLoot: true
 
-##Region Mob Loots are automatically disabled if RegionOwn is not installed
+##Region Mob Loots are automatically disabled if RegionOwn or WorldGuard is not installed
 ##e.g. Zombie@Graveyard, Spider@Nest
 RegionMobDropLoot: true
 RegionMobSpawnLoot: true
