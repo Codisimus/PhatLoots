@@ -184,6 +184,7 @@ public class PhatLootsListener implements Listener {
         if (!player.hasPermission("phatloots.admin")) {
             player.sendMessage(PhatLootsConfig.permission);
             event.setCancelled(true);
+            return;
         }
 
         //Unlink the broken Block
