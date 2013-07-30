@@ -963,8 +963,15 @@ public class PhatLoot implements ConfigurationSerializable {
 
             //Each line of the file is a new PhatLootChest
             scanner = new Scanner(file);
-            while (scanner.hasNext()) {
-                chests.add(PhatLootChest.getChest(scanner.next().split("'")));
+            while (scanner.hasNextLine()) {
+                String line = scanner.nextLine();
+                String[] split = line.split("'");
+                if (split.length == 4) {
+                    chests.add(PhatLootChest.getChest(split));
+                } else {
+                    PhatLoots.logger.severe("Invalid chest data for PhatLoot: " + name);
+                    PhatLoots.logger.severe("Failed line of data: " + line);
+                }
             }
         } catch (IOException ex) {
             PhatLoots.logger.log(Level.SEVERE, "Load Failed!", ex);
