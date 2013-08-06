@@ -319,7 +319,7 @@ public class PhatLootChest {
         if (fInventory != null) {
             inventory = fInventory.getInventory();
         } else {
-            name = chestName.replace("<name>", name.replace('_', ' '));
+            name = chestName.replace("<name>", ChatColor.translateAlternateColorCodes('&', name.replace('_', ' ')));
 
             if (chest != null) {
                 Block block = chest.getBlock();

@@ -107,11 +107,6 @@ public class PhatLoot implements ConfigurationSerializable {
      * @return the remaining time until the PhatLootChest resets
      */
     public long getTimeRemaining(Player player, PhatLootChest chest) {
-        //Return -1 if the reset time is set to never
-        if (days < 0 || hours < 0 || minutes < 0 || seconds < 0) {
-            return -1;
-        }
-
         //Return 0 if the reset time is set to 0
         if (days == 0 && hours == 0 && minutes == 0 && seconds == 0) {
             return 0;
@@ -120,12 +115,19 @@ public class PhatLoot implements ConfigurationSerializable {
         //Get the correct timestamp
         String timeStamp = lootTimes.getProperty(getKey(player, chest));
         long time = 0;
-        if (timeStamp != null) {
-            try {
-                time = Long.parseLong(timeStamp);
-            } catch (NumberFormatException notLong) {
-                PhatLoots.logger.severe("Fixed corrupted time value!");
-            }
+        if (timeStamp == null) {
+            return 0;
+        }
+
+        try {
+            time = Long.parseLong(timeStamp);
+        } catch (NumberFormatException notLong) {
+            PhatLoots.logger.severe("Fixed corrupted time value!");
+        }
+
+        //Return -1 if the reset time is set to never
+        if (days < 0 || hours < 0 || minutes < 0 || seconds < 0) {
+            return -1;
         }
 
         //Calculate the time that the chest will reset
@@ -237,8 +239,8 @@ public class PhatLoot implements ConfigurationSerializable {
 
         //Check if the PhatLoot has timed out
         long time = getTimeRemaining(player, chest);
-        if (time > 0) {
-            if (PhatLootsConfig.timeRemaining != null) {
+        if (time != 0) {
+            if (time > 0 && PhatLootsConfig.timeRemaining != null) {
                 player.sendMessage(PhatLootsConfig.timeRemaining.replace("<time>", timeToString(time)));
             }
             if (chest != null) {
@@ -449,7 +451,7 @@ public class PhatLoot implements ConfigurationSerializable {
         LootBundle lootBundle = rollForLoot(new LootBundle(drops), lootingBonus);
 
         //Check if the player is allowed to loot money
-        if (lootBundle.getMoney() > 0 && (player.getGameMode().equals(GameMode.CREATIVE) || !player.hasPermission("phatloots.moneyfrommobs"))) {
+        if (player != null && lootBundle.getMoney() > 0 && (player.getGameMode().equals(GameMode.CREATIVE) || !player.hasPermission("phatloots.moneyfrommobs"))) {
             lootBundle.setMoney(0);
         }
 
@@ -469,7 +471,7 @@ public class PhatLoot implements ConfigurationSerializable {
                     EconomyResponse r = PhatLoots.econ.depositPlayer(player.getName(), money);
                     if (r.transactionSuccess() && PhatLootsConfig.moneyLooted != null) {
                         String amount = PhatLoots.econ.format(money).replace(".00", "");
-                        player.sendMessage(PhatLootsConfig.moneyLooted.replace("<amount>", amount));
+                        player.sendMessage(PhatLootsConfig.mobDroppedMoney.replace("<amount>", amount));
                     }
                 } else {
                     PhatLoots.logger.warning("§6Vault §4is not enabled, so no money can be processed.");
