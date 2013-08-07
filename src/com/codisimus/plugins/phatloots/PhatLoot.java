@@ -546,11 +546,11 @@ public class PhatLoot implements ConfigurationSerializable {
         //Remove Minecraft spawned armor
         eqp.clear();
         //The order of equipment should be Hand, Head, Body, Legs, Feet
-        eqp.setItemInHand(loot.get(0));
-        eqp.setHelmet(loot.get(0));
-        eqp.setChestplate(loot.get(0));
-        eqp.setLeggings(loot.get(0));
-        eqp.setBoots(loot.get(0));
+        eqp.setItemInHand(loot.remove(0));
+        eqp.setHelmet(loot.remove(0));
+        eqp.setChestplate(loot.remove(0));
+        eqp.setLeggings(loot.remove(0));
+        eqp.setBoots(loot.remove(0));
 
         //Set the drop chance of each item
         eqp.setItemInHandDropChance(chanceOfDrop);
