@@ -3,6 +3,7 @@ package com.codisimus.plugins.phatloots;
 import com.codisimus.plugins.phatloots.listeners.MobListener;
 import com.codisimus.plugins.phatloots.listeners.PhatLootsListener;
 import com.codisimus.plugins.phatloots.loot.Item;
+import com.codisimus.plugins.phatloots.loot.LootCollection;
 import java.io.File;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -50,7 +51,7 @@ public class PhatLootsConfig {
         FileConfiguration config = PhatLoots.plugin.getConfig();
 
         //Check for an outdated config.yml file
-        if (config.get("ShuffleLoot", null) == null) {
+        if (config.get("AllowDuplicateItemsFromCollections", null) == null) {
             PhatLoots.logger.warning("Your config.yml file is outdated! To get the most out of this plugin please (re)move the old file so a new one can be generated.");
         }
 
@@ -170,6 +171,7 @@ public class PhatLootsConfig {
         PhatLootChest.useBreakAndRepawn = config.getBoolean("UseBreakAndRespawn");
         PhatLootChest.soundOnBreak = config.getBoolean("PlaySoundOnChestBreak");
         PhatLootChest.shuffleLoot = config.getBoolean("ShuffleLoot");
+        LootCollection.allowDuplicates = config.getBoolean("AllowDuplicateItemsFromCollections");
         ForgettableInventory.delay = config.getInt("ForgetInventoryTime") * 20L;
         PhatLoot.unlink = config.getBoolean("UnlinkGlobalChestsThatNeverReset");
 

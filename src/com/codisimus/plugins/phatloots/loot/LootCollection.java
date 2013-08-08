@@ -17,6 +17,7 @@ import org.bukkit.inventory.meta.ItemMeta;
  */
 @SerializableAs("LootCollection")
 public class LootCollection extends Loot {
+    public static boolean allowDuplicates;
     public String name;
     private int lowerNumberOfLoots;
     private int upperNumberOfLoots;
@@ -97,6 +98,7 @@ public class LootCollection extends Loot {
                 //Sort the loot from lowest probability to highest
                 Collections.sort(lootList);
                 int numberLooted = 0;
+                LinkedList<Loot> removed = new LinkedList<Loot>();
                 while (numberLooted < numberOfLoots) {
                     //Calculate the total probability to determine the maximum amount that can be rolled
                     double total = 0;
@@ -112,11 +114,17 @@ public class LootCollection extends Loot {
                         if (roll <= 0) {
                             //Give this loot
                             loot.getLoot(lootBundle, lootingBonus);
+                            if (!allowDuplicates) {
+                                removed.add(loot);
+                                lootList.remove(loot);
+                            }
                             break;
                         }
                     }
                     numberLooted++;
                 }
+                //Readd all removed Loot
+                lootList.addAll(removed);
             }
         }
     }
