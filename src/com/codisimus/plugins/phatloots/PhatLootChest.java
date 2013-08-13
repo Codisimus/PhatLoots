@@ -444,6 +444,10 @@ public class PhatLootChest {
      * @param global Whether the animation should be sent to everyone (true) or just the Player (false)
      */
     public void openInventory(Player player, Inventory inv, boolean global) {
+        if (isDispenser) {
+            return;
+        }
+
         openPhatLootChests.put(player, this);
         player.openInventory(inv);
 

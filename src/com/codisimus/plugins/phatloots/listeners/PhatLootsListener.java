@@ -66,62 +66,61 @@ public class PhatLootsListener implements Listener {
 
             phatLoots = new LinkedList<PhatLoot>();
             phatLoots.add(phatLoot);
-        }
+        } else {
+            Block block = event.getClickedBlock();
+            if (!PhatLootChest.isPhatLootChest(block)) {
+                return;
+            }
 
+            switch (event.getAction()) {
+            case LEFT_CLICK_BLOCK:
+                //PhatLoot Dispensers may be activated by punching them
+                if (type == Material.DISPENSER) {
+                    if (phatLoots == null) {
+                        //Return if the Dispenser is not a PhatLootChest
+                        phatLoots = PhatLoots.getPhatLoots(block, player);
+                        if (phatLoots.isEmpty()) {
+                            return;
+                        }
+                    }
+                    break;
+                }
+                return;
 
-        Block block = event.getClickedBlock();
-        if (!PhatLootChest.isPhatLootChest(block)) {
-            return;
-        }
-        PhatLootChest plChest = PhatLootChest.getChest(block);
-
-        switch (event.getAction()) {
-        case LEFT_CLICK_BLOCK:
-            //PhatLoot Dispensers may be activated by punching them
-            if (type == Material.DISPENSER) {
+            case RIGHT_CLICK_BLOCK:
                 if (phatLoots == null) {
-                    //Return if the Dispenser is not a PhatLootChest
+                    //Return if the Block is not a PhatLootChest
                     phatLoots = PhatLoots.getPhatLoots(block, player);
                     if (phatLoots.isEmpty()) {
-                        return;
+                        switch (type) {
+                        case TRAPPED_CHEST:
+                        case CHEST:
+                            Chest chest = (Chest) block.getState();
+                            Inventory inventory = chest.getInventory();
+                            //We only care about the left side because that is the Block that would be linked
+                            if (inventory instanceof DoubleChestInventory) {
+                                chest = (Chest) ((DoubleChestInventory) inventory).getLeftSide().getHolder();
+                                block = chest.getBlock();
+                                phatLoots = PhatLoots.getPhatLoots(block, player);
+                                if (phatLoots.isEmpty()) {
+                                    return;
+                                } else {
+                                    break;
+                                }
+                            }
+                        default:
+                            return;
+                        }
                     }
                 }
                 break;
-            }
-            return;
 
-        case RIGHT_CLICK_BLOCK:
-            if (phatLoots == null) {
-                //Return if the Block is not a PhatLootChest
-                phatLoots = PhatLoots.getPhatLoots(block, player);
-                if (phatLoots.isEmpty()) {
-                    switch (type) {
-                    case TRAPPED_CHEST:
-                    case CHEST:
-                        Chest chest = (Chest) block.getState();
-                        Inventory inventory = chest.getInventory();
-                        //We only care about the left side because that is the Block that would be linked
-                        if (inventory instanceof DoubleChestInventory) {
-                            chest = (Chest) ((DoubleChestInventory) inventory).getLeftSide().getHolder();
-                            block = chest.getBlock();
-                            phatLoots = PhatLoots.getPhatLoots(block, player);
-                            if (phatLoots.isEmpty()) {
-                                return;
-                            } else {
-                                break;
-                            }
-                        }
-                    default:
-                        return;
-                    }
-                }
+            default: return;
             }
-            break;
-
-        default: return;
         }
 
         event.setCancelled(true);
+        PhatLootChest plChest = PhatLootChest.getChest(event.getClickedBlock());
 
         //Roll for Loot of each linked PhatLoot
         boolean flagToBreak = true;
