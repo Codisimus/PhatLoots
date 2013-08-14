@@ -38,7 +38,9 @@ public class PhatLootsConfig {
     public static String insufficientFunds;
     public static String experienceLooted;
     public static String autoLoot;
-    public static String timeRemaining;
+    public static String chestTimeRemaining;
+    public static String commandTimeRemaining;
+    public static String dispenserTimeRemaining;
     public static String overflow;
     public static String mobTimeRemaining;
     public static String mobDroppedMoney;
@@ -51,7 +53,7 @@ public class PhatLootsConfig {
         FileConfiguration config = PhatLoots.plugin.getConfig();
 
         //Check for an outdated config.yml file
-        if (config.get("AllowDuplicateItemsFromCollections", null) == null) {
+        if (config.get("ChestTimeRemaining", null) == null) {
             PhatLoots.logger.warning("Your config.yml file is outdated! To get the most out of this plugin please (re)move the old file so a new one can be generated.");
         }
 
@@ -101,7 +103,9 @@ public class PhatLootsConfig {
         insufficientFunds = getString(section, "InsufficientFunds");
         autoLoot = getString(section, "AutoLoot");
         overflow = getString(section, "Overflow");
-        timeRemaining = getString(section, "TimeRemaining");
+        chestTimeRemaining = getString(section, "ChestTimeRemaining");
+        commandTimeRemaining = getString(section, "CommandTimeRemaining");
+        dispenserTimeRemaining = getString(section, "DispenserTimeRemaining");
         mobTimeRemaining = getString(section, "MobTimeRemaining");
         mobDroppedMoney = getString(section, "MobDroppedMoney");
         mobDroppedItem = getString(section, "MobDroppedItem");

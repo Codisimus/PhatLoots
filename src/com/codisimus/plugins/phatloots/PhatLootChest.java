@@ -163,6 +163,15 @@ public class PhatLootChest {
     }
 
     /**
+     * Returns true if the PhatLootChest is a Dispenser or Dropper
+     *
+     * @return true if the PhatLootChest is a Dispenser or Dropper
+     */
+    public boolean isDispenser() {
+        return isDispenser;
+    }
+
+    /**
      * Returns the Block that this Chest Represents
      *
      * @return The Block that this Chest Represents

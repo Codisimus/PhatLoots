@@ -24,6 +24,7 @@ public class DispenserListener implements Listener {
      */
     @EventHandler (ignoreCancelled = true)
     public void onBlockPowered(BlockPhysicsEvent event) {
+        //Check if the Block is a Dispenser/Dropper
         Block block = event.getBlock();
         switch (block.getType()) {
         case DISPENSER: break;
@@ -41,7 +42,7 @@ public class DispenserListener implements Listener {
             return;
         }
 
-        //Return if there is not any player that is close enough
+        //Return if there are not any player that are close enough
         Player player = getNearestPlayer(block.getLocation());
         if (player == null) {
             return;

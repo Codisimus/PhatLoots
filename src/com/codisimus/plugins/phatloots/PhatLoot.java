@@ -154,16 +154,14 @@ public class PhatLoot implements ConfigurationSerializable {
         //Find the appropriate unit of time and return that amount
         if (time > DateUtils.MILLIS_PER_DAY) {
             return time / DateUtils.MILLIS_PER_DAY + " day(s)";
+        } else if (time > DateUtils.MILLIS_PER_HOUR) {
+            return time / DateUtils.MILLIS_PER_HOUR + " hour(s)";
+        } else if (time > DateUtils.MILLIS_PER_MINUTE) {
+            return time / DateUtils.MILLIS_PER_MINUTE + " minute(s)";
+        } else if (time > DateUtils.MILLIS_PER_SECOND) {
+            return time / DateUtils.MILLIS_PER_SECOND + " second(s)";
         } else {
-            if (time > DateUtils.MILLIS_PER_HOUR) {
-                return time / DateUtils.MILLIS_PER_HOUR + " hour(s)";
-            } else {
-                if (time > DateUtils.MILLIS_PER_MINUTE) {
-                    return time / DateUtils.MILLIS_PER_MINUTE + " minute(s)";
-                } else {
-                    return time / DateUtils.MILLIS_PER_SECOND + " second(s)";
-                }
-            }
+            return time + " millisecond(s)";
         }
     }
 
@@ -240,8 +238,14 @@ public class PhatLoot implements ConfigurationSerializable {
         //Check if the PhatLoot has timed out
         long time = getTimeRemaining(player, chest);
         if (time != 0) {
-            if (time > 0 && PhatLootsConfig.timeRemaining != null) {
-                player.sendMessage(PhatLootsConfig.timeRemaining.replace("<time>", timeToString(time)));
+            String timeRemainingMsg;
+            if (chest == null) {
+                timeRemainingMsg = PhatLootsConfig.commandTimeRemaining;
+            } else {
+                timeRemainingMsg = chest.isDispenser() ? PhatLootsConfig.dispenserTimeRemaining : PhatLootsConfig.chestTimeRemaining;
+            }
+            if (time > 0 && timeRemainingMsg != null) {
+                player.sendMessage(timeRemainingMsg.replace("<time>", timeToString(time)));
             }
             if (chest != null) {
                 //Open the Inventory if it is not already open
