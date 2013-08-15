@@ -3,6 +3,7 @@ package com.codisimus.plugins.phatloots.listeners;
 import com.codisimus.plugins.phatloots.PhatLoot;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.entity.EntityDeathEvent;
 
@@ -23,6 +24,6 @@ public class MobDeathListener extends MobListener {
 
     @Override
     String getType(Entity entity) {
-        return entity.getType().getName();
+        return (entity instanceof Player) ? "Player" : entity.getType().getName();
     }
 }

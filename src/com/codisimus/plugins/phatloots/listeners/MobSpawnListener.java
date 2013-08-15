@@ -4,6 +4,7 @@ import com.codisimus.plugins.phatloots.PhatLoot;
 import com.codisimus.plugins.phatloots.PhatLoots;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.entity.CreatureSpawnEvent;
@@ -36,6 +37,6 @@ public class MobSpawnListener extends MobListener {
 
     @Override
     String getType(Entity entity) {
-        return entity.getType().getName() + "Spawn";
+        return ((entity instanceof Player) ? "Player" : entity.getType().getName()) + "Spawn";
     }
 }
