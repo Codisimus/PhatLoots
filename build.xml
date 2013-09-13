@@ -79,7 +79,6 @@
 
     <target name="-post-jar">
         <copy failonerror="true" file="${dist.jar}" todir="..\Libraries"/>
-        <copy failonerror="true" file="${dist.jar}" todir="F:\Minecraft\Justin's Server\plugins"/>
 
         <delete dir="${build.dir}"/>
     </target>
