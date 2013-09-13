@@ -53,11 +53,16 @@ public abstract class MobListener implements Listener {
      */
     public PhatLoot getPhatLoot(LivingEntity entity) {
         //First check for a PhatLoot matching the mob's custom name
-        if (namedMobs && entity.getCustomName() != null) {
-            PhatLoot phatLoot = PhatLoots.getPhatLoot(entity.getCustomName());
-            if (phatLoot != null) {
-                //A PhatLoot for a named mob trumps all others
-                return phatLoot;
+        if (namedMobs) {
+            String name = entity instanceof HumanEntity
+                          ? ((HumanEntity) entity).getName() //NPC or Player
+                          : entity.getCustomName(); //Mob
+            if (name != null) {
+                PhatLoot phatLoot = PhatLoots.getPhatLoot(name);
+                if (phatLoot != null) {
+                    //A PhatLoot for a named mob trumps all others
+                    return phatLoot;
+                }
             }
         }
 

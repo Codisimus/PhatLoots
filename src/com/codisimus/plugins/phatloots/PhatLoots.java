@@ -12,6 +12,7 @@ import com.codisimus.plugins.phatloots.listeners.FishingListener;
 import com.codisimus.plugins.phatloots.listeners.MobDeathListener;
 import com.codisimus.plugins.phatloots.listeners.PhatLootInfoListener;
 import com.codisimus.plugins.phatloots.events.ChestRespawnEvent.RespawnReason;
+import com.codisimus.plugins.phatloots.listeners.*;
 import com.codisimus.plugins.phatloots.loot.Message;
 import com.google.common.io.Files;
 import java.io.*;
@@ -140,12 +141,19 @@ public class PhatLoots extends JavaPlugin {
         pm.registerEvents(new PhatLootsListener(), this);
         pm.registerEvents(new PhatLootInfoListener(), this);
         if (pm.isPluginEnabled("EpicBossRecoded")) {
+            logger.info("Listening for EpicBoss deaths");
             pm.registerEvents(new EBRListener(), this);
         }
+        if (pm.isPluginEnabled("Citizens")) {
+            logger.info("Listening for Citizens NPC deaths");
+            pm.registerEvents(new CitizensListener(), this);
+        }
         if (getConfig().getBoolean("DispenserLoot")) {
+            logger.info("Listening for Dispenser");
             pm.registerEvents(new DispenserListener(), this);
         }
         if (getConfig().getBoolean("MobDropLoot")) {
+            logger.info("Listening for Mob deaths");
             MobDeathListener listener = new MobDeathListener();
             listener.mobWorlds = getConfig().getBoolean("WorldMobDropLoot");
             listener.mobRegions = getConfig().getBoolean("RegionMobDropLoot")
@@ -154,6 +162,7 @@ public class PhatLoots extends JavaPlugin {
             pm.registerEvents(listener, this);
         }
         if (getConfig().getBoolean("MobSpawnLoot")) {
+            logger.info("Listening for Mob spawns");
             MobSpawnListener listener = new MobSpawnListener();
             listener.mobWorlds = getConfig().getBoolean("WorldMobSpawnLoot");
             listener.mobRegions = getConfig().getBoolean("RegionMobSpawnLoot")
@@ -162,9 +171,11 @@ public class PhatLoots extends JavaPlugin {
             pm.registerEvents(listener, this);
         }
         if (getConfig().getBoolean("FishingLoot")) {
+            logger.info("Listening for Players fishing");
             pm.registerEvents(new FishingListener(), this);
         }
         if (getConfig().getBoolean("VotifierLoot")) {
+            logger.info("Listening for Votifier loots");
             pm.registerEvents(new VoteListener(), this);
         }
 
