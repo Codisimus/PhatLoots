@@ -41,6 +41,7 @@ public class PhatLoot implements ConfigurationSerializable {
     static boolean decimals; //True if money values should include decimals
     static boolean unlink; //True if global chests that never reset should be unlinked after looting
     static boolean soundOnAutoLoot;
+    static boolean commandCooldown;
 
     public String name; //A unique name for the PhatLoot
     public int moneyLower; //Range of money that may be given
@@ -237,7 +238,7 @@ public class PhatLoot implements ConfigurationSerializable {
 
         //Check if the PhatLoot has timed out
         long time = getTimeRemaining(player, chest);
-        if (time != 0) {
+        if (time != 0 && (chest != null || commandCooldown)) {
             String timeRemainingMsg;
             if (chest == null) {
                 timeRemainingMsg = PhatLootsConfig.commandTimeRemaining;
