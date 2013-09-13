@@ -238,10 +238,10 @@ public class PhatLoots extends JavaPlugin {
         File dir = new File(dataFolder + File.separator + "LootTables");
         File[] files = dir.listFiles(new FilenameFilter() {
             @Override
-                public boolean accept(File dir, String name) {
-                    return name.toLowerCase().endsWith(".yml");
-                }
-            });
+            public boolean accept(File dir, String name) {
+                return name.toLowerCase().endsWith(".yml");
+            }
+        });
         for (File file : files) {
             try {
                 String name = file.getName();
