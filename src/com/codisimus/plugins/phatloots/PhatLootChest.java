@@ -656,6 +656,42 @@ public class PhatLootChest {
                 redstoneList.add(neighbor);
             }
         }
+        neighbor = block.getRelative(1, -1, 0);
+        if (redstone.contains(neighbor.getType())) {
+            redstoneList.add(neighbor);
+        } else {
+            neighbor = block.getRelative(2, -1, 0);
+            if (redstone.contains(neighbor.getType())) {
+                redstoneList.add(neighbor);
+            }
+        }
+        neighbor = block.getRelative(0, -1, 1);
+        if (redstone.contains(neighbor.getType())) {
+            redstoneList.add(neighbor);
+        } else {
+            neighbor = block.getRelative(0, -1, 2);
+            if (redstone.contains(neighbor.getType())) {
+                redstoneList.add(neighbor);
+            }
+        }
+        neighbor = block.getRelative(-1, -11, 0);
+        if (redstone.contains(neighbor.getType())) {
+            redstoneList.add(neighbor);
+        } else {
+            neighbor = block.getRelative(-2, -1, 0);
+            if (redstone.contains(neighbor.getType())) {
+                redstoneList.add(neighbor);
+            }
+        }
+        neighbor = block.getRelative(0, -1, -1);
+        if (redstone.contains(neighbor.getType())) {
+            redstoneList.add(neighbor);
+        } else {
+            neighbor = block.getRelative(0, -1, -2);
+            if (redstone.contains(neighbor.getType())) {
+                redstoneList.add(neighbor);
+            }
+        }
         return redstoneList;
     }
 
