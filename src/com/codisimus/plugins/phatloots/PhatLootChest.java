@@ -213,7 +213,7 @@ public class PhatLootChest {
      */
     public void breakChest(Player lastLooter, long time) {
         //Call the event to be modified
-        ChestBreakEvent event = new ChestBreakEvent(lastLooter, this, time);
+        ChestBreakEvent event = new ChestBreakEvent(this, lastLooter, time);
         Bukkit.getPluginManager().callEvent(event);
         if (event.isCancelled()) {
             return;

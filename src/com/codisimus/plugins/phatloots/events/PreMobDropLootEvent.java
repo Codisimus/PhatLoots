@@ -1,6 +1,5 @@
 package com.codisimus.plugins.phatloots.events;
 
-import com.codisimus.plugins.phatloots.loot.LootBundle;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 
@@ -9,7 +8,7 @@ import org.bukkit.entity.Player;
  *
  * @author Cody
  */
-public class MobDropLootEvent extends LootEvent {
+public class PreMobDropLootEvent extends PreLootEvent {
     private LivingEntity mob;
     private Player killer;
 
@@ -18,12 +17,12 @@ public class MobDropLootEvent extends LootEvent {
      *
      * @param mob The mob that was killed
      * @param killer The Player who killed the mob or null if the mob died of natural causes
-     * @param lootBundle The bundle of loot dropped by the mob
+     * @param lootingBonus The bonus amount of looting probability
      */
-    public MobDropLootEvent(LivingEntity mob, Player killer, LootBundle lootBundle) {
+    public PreMobDropLootEvent(LivingEntity mob, Player killer, double lootingBonus) {
         this.mob = mob;
         this.killer = killer;
-        this.lootBundle = lootBundle;
+        this.lootingBonus = lootingBonus;
     }
 
     /**

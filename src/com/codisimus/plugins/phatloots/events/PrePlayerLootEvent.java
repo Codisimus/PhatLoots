@@ -2,15 +2,14 @@ package com.codisimus.plugins.phatloots.events;
 
 import com.codisimus.plugins.phatloots.PhatLoot;
 import com.codisimus.plugins.phatloots.PhatLootChest;
-import com.codisimus.plugins.phatloots.loot.LootBundle;
 import org.bukkit.entity.Player;
 
 /**
- * Called when a Player loots a PhatLoot
+ * Called before a Player loots a PhatLoot
  *
  * @author Cody
  */
-public class PlayerLootEvent extends LootEvent {
+public class PrePlayerLootEvent extends PreLootEvent {
     private Player looter;
     private PhatLoot phatLoot;
     private PhatLootChest chest;
@@ -21,13 +20,13 @@ public class PlayerLootEvent extends LootEvent {
      * @param looter The Player who is looting
      * @param phatLoot The PhatLoot that the Player looted
      * @param chest The PhatLootChest being looted or null if no chest was involved
-     * @param lootBundle The Loot that the Player received
+     * @param lootingBonus The bonus amount of looting probability
      */
-    public PlayerLootEvent(Player looter, PhatLoot phatLoot, PhatLootChest chest, LootBundle lootBundle) {
+    public PrePlayerLootEvent(Player looter, PhatLoot phatLoot, PhatLootChest chest, double lootingBonus) {
         this.looter = looter;
         this.phatLoot = phatLoot;
         this.chest = chest;
-        this.lootBundle = lootBundle;
+        this.lootingBonus = lootingBonus;
     }
 
     /**

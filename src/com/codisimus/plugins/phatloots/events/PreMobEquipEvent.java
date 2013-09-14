@@ -8,16 +8,18 @@ import org.bukkit.inventory.EntityEquipment;
  *
  * @author Cody
  */
-public class MobEquipEvent extends PhatLootsEvent {
+public class PreMobEquipEvent extends PreLootEvent {
     private LivingEntity mob;
 
     /**
      * Creates a new event with the given data
      *
      * @param mob The mob whose equipment was modified
+     * @param lootingBonus The bonus amount of looting probability
      */
-    public MobEquipEvent(LivingEntity mob) {
+    public PreMobEquipEvent(LivingEntity mob, double lootingBonus) {
         this.mob = mob;
+        this.lootingBonus = lootingBonus;
     }
 
     /**

@@ -1,8 +1,6 @@
 package com.codisimus.plugins.phatloots;
 
-import com.codisimus.plugins.phatloots.events.MobDropLootEvent;
-import com.codisimus.plugins.phatloots.events.MobEquipEvent;
-import com.codisimus.plugins.phatloots.events.PlayerLootEvent;
+import com.codisimus.plugins.phatloots.events.*;
 import com.codisimus.plugins.phatloots.loot.CommandLoot;
 import com.codisimus.plugins.phatloots.loot.Loot;
 import com.codisimus.plugins.phatloots.loot.LootBundle;
@@ -258,8 +256,15 @@ public class PhatLoot implements ConfigurationSerializable {
             return flagToBreak;
         }
 
-        //Roll for the all the Loot
-        LootBundle lootBundle = rollForLoot();
+        //Call the pre-event to be modified
+        PreLootEvent preEvent = new PrePlayerLootEvent(player, this, chest, 0);
+        Bukkit.getPluginManager().callEvent(preEvent);
+        if (preEvent.isCancelled()) {
+            return flagToBreak;
+        }
+
+        //Roll for all the Loot
+        LootBundle lootBundle = rollForLoot(preEvent.getLootingBonus());
 
         //Call the event to be modified
         PlayerLootEvent event = new PlayerLootEvent(player, this, chest, lootBundle);
@@ -452,8 +457,15 @@ public class PhatLoot implements ConfigurationSerializable {
                               ? 0
                               : lootingBonusPerLvl * weapon.getEnchantmentLevel(Enchantment.LOOT_BONUS_MOBS);
 
+        //Call the pre-event to be modified
+        PreLootEvent preEvent = new PreMobDropLootEvent(mob, player, lootingBonus);
+        Bukkit.getPluginManager().callEvent(preEvent);
+        if (preEvent.isCancelled()) {
+            return 0; //Drop no experience
+        }
+
         //Roll for the all the Loot
-        LootBundle lootBundle = rollForLoot(new LootBundle(drops), lootingBonus);
+        LootBundle lootBundle = rollForLoot(new LootBundle(drops), preEvent.getLootingBonus());
 
         //Check if the player is allowed to loot money
         if (player != null && lootBundle.getMoney() > 0 && (player.getGameMode().equals(GameMode.CREATIVE) || !player.hasPermission("phatloots.moneyfrommobs"))) {
@@ -538,8 +550,15 @@ public class PhatLoot implements ConfigurationSerializable {
      * @param level The 'level' of the entity
      */
     public void rollForEquipment(LivingEntity entity, double level) {
+        //Call the pre-event to be modified
+        PreLootEvent preEvent = new PreMobEquipEvent(entity, level);
+        Bukkit.getPluginManager().callEvent(preEvent);
+        if (preEvent.isCancelled()) {
+            return;
+        }
+
         //Roll for all loot
-        List<ItemStack> loot = rollForLoot(level).getItemList();
+        List<ItemStack> loot = rollForLoot(preEvent.getLootingBonus()).getItemList();
         //Ensure there are 5 items (even if some are air)
         if (loot.size() != 5) {
             //Try to organize the loot
@@ -666,7 +685,7 @@ public class PhatLoot implements ConfigurationSerializable {
      * @return The amount of experience rolled for
      */
     public int rollForExp() {
-        return Math.max(PhatLoots.rollForInt(expLower, expUpper), 0);
+        return PhatLoots.rollForInt(expLower, expUpper);
     }
 
     /**
