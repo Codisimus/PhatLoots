@@ -1,6 +1,6 @@
 name: PhatLoots
 main: com.codisimus.plugins.phatloots.PhatLoots
-version: 3.4.0
+version: 3.5.1
 author: Codisimus
 website: www.codisimus.com
 description: Chests with randomly generated money/items
@@ -18,8 +18,8 @@ permissions:
     default: true
   phatloots.commandloot:
     description: Needed to receive loots through command
-  phatloots.rl:
-    description: Needed to reload the PhatLoots plugin (/loot rl)
+  phatloots.reload:
+    description: Needed to reload the PhatLoots plugin (/loot reload)
   phatloots.reset:
     description: Needed to reset the list of users who looted PhatLoots (/loot reset)
   phatloots.clean:
@@ -40,10 +40,8 @@ permissions:
     description: Needed to link a PhatLoot to a chest (/loot link)
   phatloots.unlink:
     description: Needed to unlink a PhatLoot from a chest (/loot unlink)
-  phatloots.add:
-    description: Needed to add loot to a PhatLoot (/loot add)
-  phatloots.remove:
-    description: Needed to remove loot from a PhatLoot (/loot remove)
+  phatloots.manage:
+    description: Needed to add/remove loot to a PhatLoot (/loot add)
   phatloots.time:
     description: Needed to set the reset time of a PhatLoot (/loot time)
   phatloots.global:
@@ -67,8 +65,7 @@ permissions:
       phatloots.delete: true
       phatloots.link: true
       phatloots.unlink: true
-      phatloots.add: true
-      phatloots.remove: true
+      phatloots.manage: true
       phatloots.time: true
       phatloots.global: true
       phatloots.autoloot: true

@@ -32,6 +32,7 @@ public class PhatLootsConfig {
     static boolean defaultBreakAndRespawn;
     static boolean restrictAll; //True if all PhatLoots should require permission
     static HashSet<String> restricted = new HashSet();
+    public static String lootBagKey;
     public static String permission;
     public static String moneyLooted;
     public static String moneyCharged;
@@ -53,7 +54,7 @@ public class PhatLootsConfig {
         FileConfiguration config = PhatLoots.plugin.getConfig();
 
         //Check for an outdated config.yml file
-        if (config.get("ApplyCooldownToCommandLoot", null) == null) {
+        if (config.get("LootBagKey", null) == null) {
             PhatLoots.logger.warning("Your config.yml file is outdated! To get the most out of this plugin please (re)move the old file so a new one can be generated.");
         }
 
@@ -168,6 +169,7 @@ public class PhatLootsConfig {
         for (String string : restricted) {
             string = ChatColor.translateAlternateColorCodes('&', string);
         }
+        lootBagKey = config.getString("LootBagKey");
         Item.tierNotify = config.getInt("MinimumTierNotification");
         PhatLootsCommand.setUnlockable = config.getBoolean("SetChestsAsUnlockable");
         PhatLoot.decimals = config.getBoolean("DivideMoneyAmountBy100");

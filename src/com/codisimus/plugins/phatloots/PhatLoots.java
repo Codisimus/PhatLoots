@@ -1,18 +1,12 @@
 package com.codisimus.plugins.phatloots;
 
-import com.codisimus.plugins.phatloots.listeners.VoteListener;
-import com.codisimus.plugins.phatloots.loot.Item;
-import com.codisimus.plugins.phatloots.loot.LootCollection;
-import com.codisimus.plugins.phatloots.loot.CommandLoot;
-import com.codisimus.plugins.phatloots.listeners.PhatLootsListener;
-import com.codisimus.plugins.phatloots.listeners.EBRListener;
-import com.codisimus.plugins.phatloots.listeners.MobSpawnListener;
-import com.codisimus.plugins.phatloots.listeners.DispenserListener;
-import com.codisimus.plugins.phatloots.listeners.FishingListener;
-import com.codisimus.plugins.phatloots.listeners.MobDeathListener;
-import com.codisimus.plugins.phatloots.listeners.PhatLootInfoListener;
+import com.codisimus.plugins.phatloots.commands.CommandHandler;
+import com.codisimus.plugins.phatloots.commands.LootCommand;
 import com.codisimus.plugins.phatloots.events.ChestRespawnEvent.RespawnReason;
 import com.codisimus.plugins.phatloots.listeners.*;
+import com.codisimus.plugins.phatloots.loot.CommandLoot;
+import com.codisimus.plugins.phatloots.loot.Item;
+import com.codisimus.plugins.phatloots.loot.LootCollection;
 import com.codisimus.plugins.phatloots.loot.Message;
 import com.google.common.io.Files;
 import java.io.*;
@@ -148,8 +142,12 @@ public class PhatLoots extends JavaPlugin {
             logger.info("Listening for Citizens NPC deaths");
             pm.registerEvents(new CitizensListener(), this);
         }
+        if (getConfig().getBoolean("LootBags")) {
+            logger.info("Listening for Loot bags");
+            pm.registerEvents(new LootBagListener(), this);
+        }
         if (getConfig().getBoolean("DispenserLoot")) {
-            logger.info("Listening for Dispenser");
+            logger.info("Listening for Dispensers");
             pm.registerEvents(new DispenserListener(), this);
         }
         if (getConfig().getBoolean("MobDropLoot")) {
@@ -175,13 +173,14 @@ public class PhatLoots extends JavaPlugin {
             pm.registerEvents(new FishingListener(), this);
         }
         if (getConfig().getBoolean("VotifierLoot")) {
-            logger.info("Listening for Votifier loots");
+            logger.info("Listening for Votifier votes");
             pm.registerEvents(new VoteListener(), this);
         }
 
         /* Register the command found in the plugin.yml */
-        PhatLootsCommand.command = (String) getDescription().getCommands().keySet().toArray()[0];
-        getCommand(PhatLootsCommand.command).setExecutor(new PhatLootsCommand());
+        //PhatLootsCommand.command = (String) getDescription().getCommands().keySet().toArray()[0];
+        //getCommand(PhatLootsCommand.command).setExecutor(new PhatLootsCommand());
+        new CommandHandler(this, (String) getDescription().getCommands().keySet().toArray()[0]).registerCommands(LootCommand.class);
 
         Properties version = new Properties();
         try {
