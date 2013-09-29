@@ -332,17 +332,36 @@ public class CommandHandler implements CommandExecutor {
      */
     private void displayHelpPage(CommandSender sender) {
         sender.sendMessage("§1Sub commands of §6/" + parentCommand + "§1:");
-        for (CodCommand meta : metas) {
-            sender.sendMessage("§2" + getCommand(meta));
-        }
         sender.sendMessage("§2/" + parentCommand + " help §f<§6command§f> =§b Display the usage of a sub command");
-        CodCommand meta = findMeta("&none", null);
-        if (meta != null) {
-            displayUsage(sender, meta);
+        for (CodCommand meta : metas) {
+            displayOneLiner(sender, meta);
         }
-        meta = findMeta("&variable", null);
-        if (meta != null) {
-            displayUsage(sender, meta);
+    }
+
+    /**
+     * Displays a one line usage of the given command
+     *
+     * @param sender The sender to display the command usage to
+     * @param command The given CodCommand
+     */
+    private void displayOneLiner(CommandSender sender, CodCommand meta) {
+        String cmd = getCommand(meta);
+        if (meta.usage().length == 1) {
+            sender.sendMessage(meta.usage()[0].replace("<command>", cmd));
+        } else {
+            StringBuilder sb = new StringBuilder();
+            sb.append("§2");
+            sb.append(getCommand(meta));
+            sb.append(" =§b '/");
+            sb.append(parentCommand);
+            sb.append(" help ");
+            sb.append(meta.command());
+            if (!meta.subcommand().isEmpty()) {
+                sb.append(' ');
+                sb.append(meta.subcommand());
+            }
+            sb.append("' for full usage.");
+            sender.sendMessage(sb.toString());
         }
     }
 
@@ -350,7 +369,7 @@ public class CommandHandler implements CommandExecutor {
      * Displays the usage of the given command
      *
      * @param sender The sender to display the command usage to
-     * @param command The given command
+     * @param command The given CodCommand
      */
     private void displayUsage(CommandSender sender, CodCommand meta) {
         String cmd = getCommand(meta);
@@ -362,7 +381,7 @@ public class CommandHandler implements CommandExecutor {
     /**
      * Returns the correctly formatted command
      *
-     * @param command The requested command
+     * @param command The requested CodCommand
      * @return The command including '/' and any parent command
      */
     private String getCommand(CodCommand meta) {

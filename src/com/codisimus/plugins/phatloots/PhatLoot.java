@@ -739,7 +739,16 @@ public class PhatLoot implements ConfigurationSerializable {
      * @param block The given Block
      */
     public void addChest(Block block) {
-        chests.add(PhatLootChest.getChest(block));
+        addChest(PhatLootChest.getChest(block));
+    }
+
+    /**
+     * Links the given PhatLootChest to this PhatLoot
+     *
+     * @param chest The given PhatLootChest
+     */
+    public void addChest(PhatLootChest chest) {
+        chests.add(chest);
     }
 
     /**
@@ -748,7 +757,16 @@ public class PhatLoot implements ConfigurationSerializable {
      * @param block The given Block
      */
     public void removeChest(Block block) {
-        chests.remove(PhatLootChest.getChest(block));
+        removeChest(PhatLootChest.getChest(block));
+    }
+
+    /**
+     * Removes the given PhatLootChest from this PhatLoot
+     *
+     * @param chest The given PhatLootChest
+     */
+    public void removeChest(PhatLootChest chest) {
+        chests.remove(chest);
     }
 
     /**

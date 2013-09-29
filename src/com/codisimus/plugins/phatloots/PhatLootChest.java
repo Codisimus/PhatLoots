@@ -181,6 +181,21 @@ public class PhatLootChest {
     }
 
     /**
+     * Returns all PhatLoots that are linked this PhatLootChest
+     *
+     * @return a list of PhatLoots linked to the chest
+     */
+    public LinkedList<PhatLoot> getLinkedPhatLoots() {
+        LinkedList<PhatLoot> phatLoots = new LinkedList<PhatLoot>();
+        for (PhatLoot phatLoot : PhatLoots.getPhatLoots()) {
+            if (phatLoot.containsChest(this)) {
+                phatLoots.add(phatLoot);
+            }
+        }
+        return phatLoots;
+    }
+
+    /**
      * Moves the chest to the given Block location
      *
      * @param target The given Block

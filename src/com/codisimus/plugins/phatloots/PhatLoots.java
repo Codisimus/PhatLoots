@@ -2,6 +2,8 @@ package com.codisimus.plugins.phatloots;
 
 import com.codisimus.plugins.phatloots.commands.CommandHandler;
 import com.codisimus.plugins.phatloots.commands.LootCommand;
+import com.codisimus.plugins.phatloots.commands.ManageLootCommand;
+import com.codisimus.plugins.phatloots.commands.VariableLootCommand;
 import com.codisimus.plugins.phatloots.events.ChestRespawnEvent.RespawnReason;
 import com.codisimus.plugins.phatloots.listeners.*;
 import com.codisimus.plugins.phatloots.loot.CommandLoot;
@@ -180,7 +182,10 @@ public class PhatLoots extends JavaPlugin {
         /* Register the command found in the plugin.yml */
         //PhatLootsCommand.command = (String) getDescription().getCommands().keySet().toArray()[0];
         //getCommand(PhatLootsCommand.command).setExecutor(new PhatLootsCommand());
-        new CommandHandler(this, (String) getDescription().getCommands().keySet().toArray()[0]).registerCommands(LootCommand.class);
+        CommandHandler handler = new CommandHandler(this, (String) getDescription().getCommands().keySet().toArray()[0]);
+        handler.registerCommands(LootCommand.class);
+        handler.registerCommands(ManageLootCommand.class);
+        handler.registerCommands(VariableLootCommand.class);
 
         Properties version = new Properties();
         try {

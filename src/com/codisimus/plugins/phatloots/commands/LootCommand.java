@@ -670,19 +670,6 @@ public class LootCommand {
         return true;
     }
 
-    @CodCommand(
-        command = "&variable",
-        weight = 200,
-        usage = {
-            "§2<command> <Name>§b Loot a virtual Chest for the given PhatLoot"
-        },
-        permission = "phatloots.commandloot"
-    )
-    public boolean loot(Player player, PhatLoot phatLoot) {
-        phatLoot.rollForLoot(player);
-        return true;
-    }
-
     /**
      * Returns the a LinkedList of PhatLoots that are linked to the target Block
      *

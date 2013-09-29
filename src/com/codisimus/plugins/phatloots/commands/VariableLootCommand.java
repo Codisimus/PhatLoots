@@ -12,7 +12,6 @@ import org.bukkit.entity.Player;
 public class VariableLootCommand {
     @CodCommand(
         command = "&variable",
-        weight = 200,
         usage = {
             "§2<command> <Name>§b Loot a virtual Chest for the given PhatLoot"
         },
