@@ -169,7 +169,7 @@ public class PhatLootsConfig {
         for (String string : restricted) {
             string = ChatColor.translateAlternateColorCodes('&', string);
         }
-        lootBagKey = config.getString("LootBagKey");
+        lootBagKey = ChatColor.translateAlternateColorCodes('&', config.getString("LootBagKey"));
         Item.tierNotify = config.getInt("MinimumTierNotification");
         PhatLootsCommand.setUnlockable = config.getBoolean("SetChestsAsUnlockable");
         PhatLoot.decimals = config.getBoolean("DivideMoneyAmountBy100");
