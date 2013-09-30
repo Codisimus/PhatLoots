@@ -22,16 +22,27 @@ public class LootBagListener implements Listener {
         switch (event.getAction()) {
         case RIGHT_CLICK_AIR:
         case RIGHT_CLICK_BLOCK:
+            //Verify that the item has lore
             if (event.hasItem()) {
                 ItemStack hand = event.getItem();
                 if (hand.hasItemMeta()) {
                     ItemMeta meta = hand.getItemMeta();
                     if (meta.hasLore()) {
+                        //Scan the lore for linked PhatLoots
                         List<String> lore = meta.getLore();
                         for (String line : lore) {
                             if (line.startsWith(PhatLootsConfig.lootBagKey)) {
                                 PhatLoot phatLoot = PhatLoots.getPhatLoot(line.substring(PhatLootsConfig.lootBagKey.length()));
-                                phatLoot.rollForLoot(event.getPlayer());
+                                if (phatLoot != null) { //Valid PhatLoot
+                                    //Remove the bag from the player's inventory
+                                    if (hand.getAmount() > 1) {
+                                        hand.setAmount(hand.getAmount() - 1);
+                                    } else {
+                                        hand.setTypeId(0);
+                                    }
+                                    //Give loot to the player
+                                    phatLoot.rollForLoot(event.getPlayer());
+                                }
                             }
                         }
                     }
