@@ -82,6 +82,8 @@ public class LootCommand {
         ItemMeta meta = item.hasItemMeta() ? item.getItemMeta() : Bukkit.getItemFactory().getItemMeta(item.getType());
         List<String> lore = meta.hasLore() ? meta.getLore() : new ArrayList<String>();
         lore.add(PhatLootsConfig.lootBagKey + phatLoot.name);
+        meta.setLore(lore);
+        item.setItemMeta(meta);
 
         player.sendMessage("§6" + PhatLoots.getItemName(item) + "§5 has been linked to PhatLoot §6" + phatLoot.name);
         return true;
