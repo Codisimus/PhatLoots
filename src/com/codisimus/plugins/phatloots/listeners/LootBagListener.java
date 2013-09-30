@@ -34,6 +34,7 @@ public class LootBagListener implements Listener {
                             if (line.startsWith(PhatLootsConfig.lootBagKey)) {
                                 PhatLoot phatLoot = PhatLoots.getPhatLoot(line.substring(PhatLootsConfig.lootBagKey.length()));
                                 if (phatLoot != null) { //Valid PhatLoot
+                                    event.setCancelled(true);
                                     //Remove the bag from the player's inventory
                                     if (hand.getAmount() > 1) {
                                         hand.setAmount(hand.getAmount() - 1);
