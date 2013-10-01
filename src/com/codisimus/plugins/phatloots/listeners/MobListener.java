@@ -72,10 +72,11 @@ public abstract class MobListener implements Listener {
         String specificType = null;
         if (mobTypes) {
             switch (entity.getType()) {
+            case PIG_ZOMBIE:
             case ZOMBIE:
                 Zombie zombie = (Zombie) entity;
                 if (zombie.isBaby()) {
-                    specificType = "Baby";
+                    specificType = zombie.isVillager() ? "BabyVillager" : "Baby";
                 } else if (zombie.isVillager()) {
                     specificType = "Villager";
                 } else {
