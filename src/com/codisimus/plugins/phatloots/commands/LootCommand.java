@@ -55,7 +55,7 @@ public class LootCommand {
         usage = {
             "§2<command> <Name>§b Delete PhatLoot"
         },
-        permission = "phatloots.commandloot"
+        permission = "phatloots.delete"
     )
     public boolean delete(CommandSender sender, PhatLoot phatLoot) {
         PhatLoots.removePhatLoot(phatLoot);
@@ -70,7 +70,7 @@ public class LootCommand {
         usage = {
             "§2<command> <Name>§b Link Item in hand with PhatLoot"
         },
-        permission = "phatloots.commandloot"
+        permission = "phatloots.link"
     )
     public boolean linkHand(Player player, PhatLoot phatLoot) {
         //Cancel if the player is not holding an item
@@ -95,7 +95,7 @@ public class LootCommand {
         usage = {
             "§2<command> <Name>§b Link target Block with PhatLoot"
         },
-        permission = "phatloots.commandloot"
+        permission = "phatloots.link"
     )
     public boolean link(Player player, PhatLoot phatLoot) {
         //Cancel if the player is not targeting a correct Block
@@ -148,7 +148,7 @@ public class LootCommand {
             "§2<command> [Name]§b Unlink target Block from PhatLoot",
             "§7If Name is not specified then all PhatLoots linked to the target Block will be affected"
         },
-        permission = "phatloots.commandloot"
+        permission = "phatloots.unlink"
     )
     public boolean unlink(Player player, PhatLoot phatLoot) {
         Block block = player.getTargetBlock(null, 10);
