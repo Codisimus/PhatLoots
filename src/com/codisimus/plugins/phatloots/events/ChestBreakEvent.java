@@ -2,6 +2,7 @@ package com.codisimus.plugins.phatloots.events;
 
 import com.codisimus.plugins.phatloots.PhatLootChest;
 import org.bukkit.entity.Player;
+import org.bukkit.event.HandlerList;
 
 /**
  * Called when a PhatLootChest breaks
@@ -9,6 +10,7 @@ import org.bukkit.entity.Player;
  * @author Cody
  */
 public class ChestBreakEvent extends PhatLootChestEvent {
+    private static final HandlerList handlers = new HandlerList();
     private Player lastLooter;
     private long respawnTime;
 
@@ -23,6 +25,15 @@ public class ChestBreakEvent extends PhatLootChestEvent {
         this.chest = chest;
         this.lastLooter = lastLooter;
         this.respawnTime = respawnTime;
+    }
+
+    @Override
+    public HandlerList getHandlers() {
+        return handlers;
+    }
+
+    public static HandlerList getHandlerList() {
+        return handlers;
     }
 
     /**

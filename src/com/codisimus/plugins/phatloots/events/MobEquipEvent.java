@@ -1,6 +1,7 @@
 package com.codisimus.plugins.phatloots.events;
 
 import org.bukkit.entity.LivingEntity;
+import org.bukkit.event.HandlerList;
 import org.bukkit.inventory.EntityEquipment;
 
 /**
@@ -9,6 +10,7 @@ import org.bukkit.inventory.EntityEquipment;
  * @author Cody
  */
 public class MobEquipEvent extends PhatLootsEvent {
+    private static final HandlerList handlers = new HandlerList();
     private LivingEntity mob;
 
     /**
@@ -18,6 +20,15 @@ public class MobEquipEvent extends PhatLootsEvent {
      */
     public MobEquipEvent(LivingEntity mob) {
         this.mob = mob;
+    }
+
+    @Override
+    public HandlerList getHandlers() {
+        return handlers;
+    }
+
+    public static HandlerList getHandlerList() {
+        return handlers;
     }
 
     /**

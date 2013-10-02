@@ -5,7 +5,7 @@ package com.codisimus.plugins.phatloots.events;
  *
  * @author Cody
  */
-public class PreLootEvent extends PhatLootsEvent {
+public abstract class PreLootEvent extends PhatLootsEvent {
     protected double lootingBonus;
 
     /**

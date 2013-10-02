@@ -9,18 +9,8 @@ import org.bukkit.event.HandlerList;
  *
  * @author Cody
  */
-public class PhatLootsEvent extends Event implements Cancellable {
-    private static final HandlerList handlers = new HandlerList();
+public abstract class PhatLootsEvent extends Event implements Cancellable {
     private boolean cancelled;
-
-    @Override
-    public HandlerList getHandlers() {
-        return handlers;
-    }
-
-    public HandlerList getHandlerList() {
-        return handlers;
-    }
 
     @Override
     public boolean isCancelled() {

@@ -9,7 +9,7 @@ import org.bukkit.inventory.ItemStack;
  *
  * @author Cody
  */
-public class LootEvent extends PhatLootsEvent {
+public abstract class LootEvent extends PhatLootsEvent {
     protected LootBundle lootBundle;
 
     /**

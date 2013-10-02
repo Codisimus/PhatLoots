@@ -2,6 +2,7 @@ package com.codisimus.plugins.phatloots.events;
 
 import com.codisimus.plugins.phatloots.PhatLootChest;
 import org.bukkit.block.Block;
+import org.bukkit.event.HandlerList;
 
 /**
  * Called when a PhatLootChest respawns
@@ -9,6 +10,7 @@ import org.bukkit.block.Block;
  * @author Cody
  */
 public class ChestRespawnEvent extends PhatLootChestEvent {
+    private static final HandlerList handlers = new HandlerList();
     public static enum RespawnReason { INITIAL, DELAYED, PLUGIN_DISABLED, OTHER }
     private long delay;
     private RespawnReason reason;
@@ -24,6 +26,15 @@ public class ChestRespawnEvent extends PhatLootChestEvent {
         this.chest = chest;
         this.delay = delay;
         this.reason = reason;
+    }
+
+    @Override
+    public HandlerList getHandlers() {
+        return handlers;
+    }
+
+    public static HandlerList getHandlerList() {
+        return handlers;
     }
 
     /**

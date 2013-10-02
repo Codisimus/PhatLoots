@@ -3,6 +3,7 @@ package com.codisimus.plugins.phatloots.events;
 import com.codisimus.plugins.phatloots.loot.LootBundle;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.event.HandlerList;
 
 /**
  * Called when a mob is killed and drops custom loot
@@ -10,6 +11,7 @@ import org.bukkit.entity.Player;
  * @author Cody
  */
 public class MobDropLootEvent extends LootEvent {
+    private static final HandlerList handlers = new HandlerList();
     private LivingEntity mob;
     private Player killer;
 
@@ -24,6 +26,15 @@ public class MobDropLootEvent extends LootEvent {
         this.mob = mob;
         this.killer = killer;
         this.lootBundle = lootBundle;
+    }
+
+    @Override
+    public HandlerList getHandlers() {
+        return handlers;
+    }
+
+    public static HandlerList getHandlerList() {
+        return handlers;
     }
 
     /**

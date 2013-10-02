@@ -1,6 +1,7 @@
 package com.codisimus.plugins.phatloots.events;
 
 import org.bukkit.entity.LivingEntity;
+import org.bukkit.event.HandlerList;
 import org.bukkit.inventory.EntityEquipment;
 
 /**
@@ -9,6 +10,7 @@ import org.bukkit.inventory.EntityEquipment;
  * @author Cody
  */
 public class PreMobEquipEvent extends PreLootEvent {
+    private static final HandlerList handlers = new HandlerList();
     private LivingEntity mob;
 
     /**
@@ -20,6 +22,15 @@ public class PreMobEquipEvent extends PreLootEvent {
     public PreMobEquipEvent(LivingEntity mob, double lootingBonus) {
         this.mob = mob;
         this.lootingBonus = lootingBonus;
+    }
+
+    @Override
+    public HandlerList getHandlers() {
+        return handlers;
+    }
+
+    public static HandlerList getHandlerList() {
+        return handlers;
     }
 
     /**

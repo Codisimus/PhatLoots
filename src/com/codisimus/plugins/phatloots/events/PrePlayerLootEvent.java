@@ -3,6 +3,7 @@ package com.codisimus.plugins.phatloots.events;
 import com.codisimus.plugins.phatloots.PhatLoot;
 import com.codisimus.plugins.phatloots.PhatLootChest;
 import org.bukkit.entity.Player;
+import org.bukkit.event.HandlerList;
 
 /**
  * Called before a Player loots a PhatLoot
@@ -10,6 +11,7 @@ import org.bukkit.entity.Player;
  * @author Cody
  */
 public class PrePlayerLootEvent extends PreLootEvent {
+    private static final HandlerList handlers = new HandlerList();
     private Player looter;
     private PhatLoot phatLoot;
     private PhatLootChest chest;
@@ -27,6 +29,15 @@ public class PrePlayerLootEvent extends PreLootEvent {
         this.phatLoot = phatLoot;
         this.chest = chest;
         this.lootingBonus = lootingBonus;
+    }
+
+    @Override
+    public HandlerList getHandlers() {
+        return handlers;
+    }
+
+    public static HandlerList getHandlerList() {
+        return handlers;
     }
 
     /**
