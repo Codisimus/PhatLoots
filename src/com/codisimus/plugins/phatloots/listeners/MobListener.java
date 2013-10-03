@@ -11,6 +11,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Villager.Profession;
 import org.bukkit.entity.*;
+import org.bukkit.entity.Horse.Style;
 import org.bukkit.event.Listener;
 
 /**
@@ -31,7 +32,7 @@ public abstract class MobListener implements Listener {
      * @param entity The given Entity
      * @return The name of the type of the Entity
      */
-    abstract String getType(Entity entity);
+    abstract String getLootType();
 
     /**
      * Returns the PhatLoot for the given Entity if one exists.
@@ -69,11 +70,12 @@ public abstract class MobListener implements Listener {
         //Retrieve the more specific type of the mob if there is one
         //ex. Wither Skeleton as opposed to normal Skeleton
         //    or a Priest rather than a normal Villager
+        String type = (entity instanceof Player) ? "Player" : entity.getType().getName();
         String specificType = null;
         if (mobTypes) {
             switch (entity.getType()) {
             case PIG_ZOMBIE:
-            case ZOMBIE:
+            case ZOMBIE: //'BabyVillager' | 'Baby' | 'Villager' | 'Normal'
                 Zombie zombie = (Zombie) entity;
                 if (zombie.isBaby()) {
                     specificType = zombie.isVillager() ? "BabyVillager" : "Baby";
@@ -83,19 +85,39 @@ public abstract class MobListener implements Listener {
                     specificType = "Normal";
                 }
                 break;
-            case SKELETON:
+            case SKELETON: //'Wither' | 'Normal'
                 specificType = ((Skeleton) entity).getSkeletonType().toString();
                 break;
-            case VILLAGER:
+            case VILLAGER: //Profession
                 Profession prof = ((Villager) entity).getProfession();
                 if (prof != null) {
                     specificType = prof.toString();
                 }
                 break;
+            case CREEPER: //'Powered' | 'Normal'
+                Creeper creeper = (Creeper) entity;
+                specificType = creeper.isPowered() ? "Powered" : "Normal";
+                break;
+            case HORSE: //Color + Style (type is also determined by variant
+                Horse horse = (Horse) entity;
+                type = horse.getVariant().name();
+                specificType = horse.getColor().name();
+                if (horse.getStyle() != Style.NONE) {
+                    specificType += horse.getStyle().name();
+                }
+                break;
+            case SHEEP: //Color
+                Sheep sheep = (Sheep) entity;
+                specificType = sheep.getColor().name();
+                break;
             default:
-                specificType = null;
                 break;
             }
+        }
+        //Check if the entity is a baby
+        if (entity instanceof Ageable && !((Ageable) entity).isAdult()) {
+            //Ammend 'Baby' to the beggining of the specific type
+            specificType = specificType == null ? "Baby" : "Baby" + specificType;
         }
 
         //Check if the mob is within a region
@@ -110,8 +132,8 @@ public abstract class MobListener implements Listener {
             }
         }
 
-        //Get the mob type and the name of the world for constructing the PhatLoot name
-        String type = getType(entity);
+        //Get the loot type and the name of the world for constructing the PhatLoot name
+        type += getLootType();
         String worldName = mobWorlds ? '@' + location.getWorld().getName() : null;
 
         //The order of priority for finding the correct PhatLoot may be found in the documentation of this method
