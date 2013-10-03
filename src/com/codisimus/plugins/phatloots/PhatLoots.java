@@ -153,21 +153,41 @@ public class PhatLoots extends JavaPlugin {
             pm.registerEvents(new DispenserListener(), this);
         }
         if (getConfig().getBoolean("MobDropLoot")) {
-            logger.info("Listening for Mob deaths");
+            StringBuilder sb = new StringBuilder();
+            sb.append("Listening for Mob deaths");
             MobDeathListener listener = new MobDeathListener();
             listener.mobWorlds = getConfig().getBoolean("WorldMobDropLoot");
             listener.mobRegions = getConfig().getBoolean("RegionMobDropLoot")
                                   && (pm.isPluginEnabled("RegionOwn")
                                       || pm.isPluginEnabled("WorldGuard"));
+            if (listener.mobWorlds) {
+                sb.append(" w/ MultiWorld support");
+            }
+            if (listener.mobRegions) {
+                sb.append(listener.mobWorlds ? " and" : " w/ ");
+                sb.append(pm.isPluginEnabled("RegionOwn") ? "RegionOwn" : "WorldGuard");
+                sb.append(" Regions");
+            }
+            logger.info(sb.toString());
             pm.registerEvents(listener, this);
         }
         if (getConfig().getBoolean("MobSpawnLoot")) {
-            logger.info("Listening for Mob spawns");
+            StringBuilder sb = new StringBuilder();
+            sb.append("Listening for Mob spawns");
             MobSpawnListener listener = new MobSpawnListener();
             listener.mobWorlds = getConfig().getBoolean("WorldMobSpawnLoot");
             listener.mobRegions = getConfig().getBoolean("RegionMobSpawnLoot")
                                   && (pm.isPluginEnabled("RegionOwn")
                                       || pm.isPluginEnabled("WorldGuard"));
+            if (listener.mobWorlds) {
+                sb.append(" w/ MultiWorld support");
+            }
+            if (listener.mobRegions) {
+                sb.append(listener.mobWorlds ? " and" : " w/ ");
+                sb.append(pm.isPluginEnabled("RegionOwn") ? "RegionOwn" : "WorldGuard");
+                sb.append(" support");
+            }
+            logger.info(sb.toString());
             pm.registerEvents(listener, this);
         }
         if (getConfig().getBoolean("FishingLoot")) {
@@ -204,11 +224,11 @@ public class PhatLoots extends JavaPlugin {
      */
     @Override
     public void reloadConfig() {
-        //Reload the config as this method would normally do if not overriden
-        super.reloadConfig();
-
         //Save the config file if it does not already exist
         PhatLoots.plugin.saveDefaultConfig();
+
+        //Reload the config as this method would normally do if not overriden
+        super.reloadConfig();
 
         //Load values from the config now that it has been reloaded
         PhatLootsConfig.load();

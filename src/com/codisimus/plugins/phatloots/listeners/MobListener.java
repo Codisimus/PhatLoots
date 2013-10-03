@@ -7,11 +7,13 @@ import com.codisimus.plugins.regionown.RegionOwn;
 import com.sk89q.worldguard.bukkit.WGBukkit;
 import com.sk89q.worldguard.protection.ApplicableRegionSet;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
+import org.apache.commons.lang.WordUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Villager.Profession;
 import org.bukkit.entity.*;
 import org.bukkit.entity.Horse.Style;
+import org.bukkit.entity.Horse.Variant;
 import org.bukkit.event.Listener;
 
 /**
@@ -86,13 +88,10 @@ public abstract class MobListener implements Listener {
                 }
                 break;
             case SKELETON: //'Wither' | 'Normal'
-                specificType = ((Skeleton) entity).getSkeletonType().toString();
+                specificType = enumToString(((Skeleton) entity).getSkeletonType());
                 break;
             case VILLAGER: //Profession
-                Profession prof = ((Villager) entity).getProfession();
-                if (prof != null) {
-                    specificType = prof.toString();
-                }
+                specificType = enumToString(((Villager) entity).getProfession());
                 break;
             case CREEPER: //'Powered' | 'Normal'
                 Creeper creeper = (Creeper) entity;
@@ -100,15 +99,17 @@ public abstract class MobListener implements Listener {
                 break;
             case HORSE: //Color + Style (type is also determined by variant
                 Horse horse = (Horse) entity;
-                type = horse.getVariant().name();
-                specificType = horse.getColor().name();
-                if (horse.getStyle() != Style.NONE) {
-                    specificType += horse.getStyle().name();
+                type = enumToString(horse.getVariant());
+                if (horse.getVariant() == Variant.HORSE) {
+                    specificType = enumToString(horse.getColor());
+                    if (horse.getStyle() != Style.NONE) {
+                        specificType += enumToString(horse.getStyle());
+                    }
                 }
                 break;
             case SHEEP: //Color
                 Sheep sheep = (Sheep) entity;
-                specificType = sheep.getColor().name();
+                specificType = enumToString(sheep.getColor());
                 break;
             default:
                 break;
@@ -135,6 +136,7 @@ public abstract class MobListener implements Listener {
         //Get the loot type and the name of the world for constructing the PhatLoot name
         type += getLootType();
         String worldName = mobWorlds ? '@' + location.getWorld().getName() : null;
+        System.out.println(specificType + type);
 
         //The order of priority for finding the correct PhatLoot may be found in the documentation of this method
         PhatLoot phatLoot;
@@ -192,5 +194,9 @@ public abstract class MobListener implements Listener {
         }
 
         return PhatLoots.getPhatLoot(type);
+    }
+
+    private static String enumToString(Enum type) {
+        return WordUtils.capitalizeFully(type.name().replace("_", " ")).replace(" ", "");
     }
 }
