@@ -164,7 +164,7 @@ public class PhatLoots extends JavaPlugin {
                 sb.append(" w/ MultiWorld support");
             }
             if (listener.mobRegions) {
-                sb.append(listener.mobWorlds ? " and" : " w/ ");
+                sb.append(listener.mobWorlds ? " and " : " w/ ");
                 sb.append(pm.isPluginEnabled("RegionOwn") ? "RegionOwn" : "WorldGuard");
                 sb.append(" Regions");
             }
@@ -183,7 +183,7 @@ public class PhatLoots extends JavaPlugin {
                 sb.append(" w/ MultiWorld support");
             }
             if (listener.mobRegions) {
-                sb.append(listener.mobWorlds ? " and" : " w/ ");
+                sb.append(listener.mobWorlds ? " and " : " w/ ");
                 sb.append(pm.isPluginEnabled("RegionOwn") ? "RegionOwn" : "WorldGuard");
                 sb.append(" support");
             }

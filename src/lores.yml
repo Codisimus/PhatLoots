@@ -1,7 +1,7 @@
 ARMOR:
     PROTECTION_ENVIRONMENTAL:
         1: of the Ox
-        2: of the Gorrila
+        2: of the Gorilla
         3: of the Rhino
         4: of the Elephant
     PROTECTION_FIRE:
@@ -116,3 +116,35 @@ BOW:
         1: Spruce
         2: Birch
         3: Ironwood
+
+PICKAXE:
+    DIG_SPEED:
+        0: Piolet
+        1: Pick
+        2: Pickaxe
+        3: Mattock
+        4: Drill
+        5: GigaDrill
+    DURABILITY:
+        1: Sturdy
+        2: Reinforced
+        3: Fortified
+
+SPADE:
+    DIG_SPEED:
+        0: Spoon
+        1: Trowel
+        2: Shovel
+        3: Spade
+        4: Excavator
+        5: Super Excavator
+    DURABILITY:
+        1: Sturdy
+        2: Reinforced
+        3: Fortified
+
+HOE:
+    DURABILITY:
+        1: Sturdy
+        2: Reinforced
+        3: Fortified

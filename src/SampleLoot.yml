@@ -16,11 +16,11 @@ SampleLoot:
   RoundDownTime: false
   #True if everyone shares loot (allows for ninjaing)
   Global: false
-  #Experience looted may be a range of both the same number
+  #Experience looted may be a range or both the same number
   Exp:
     Lower: 0
     Upper: 0
-  #Money looted may be a range of both the same number
+  #Money looted may be a range or both the same number
   Money:
     Lower: 0
     Upper: 0

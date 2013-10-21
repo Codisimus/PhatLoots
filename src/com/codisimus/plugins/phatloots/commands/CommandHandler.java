@@ -145,7 +145,9 @@ public class CommandHandler implements CommandExecutor {
             return true;
         }
 
-        String subcommand = args[0];
+        String subcommand = aliases.containsKey(args[0])
+                            ? aliases.get(args[0])
+                            : args[0];
         String arg1 = args.length > 1 ? args[1] : null;
         CodCommand meta = findMeta(subcommand, arg1);
         if (meta != null) {
@@ -155,12 +157,15 @@ public class CommandHandler implements CommandExecutor {
             }
             handleCommand(sender, meta, Arrays.copyOfRange(args, index, args.length));
         } else if (subcommand.equals("help")) { //Default 'help' subcommand
+            subcommand = aliases.containsKey(arg1)
+                         ? aliases.get(arg1)
+                         : arg1;
             switch (args.length) {
             case 2:
-                meta = findMeta(arg1, null);
+                meta = findMeta(subcommand, null);
                 break;
             case 3:
-                meta = findMeta(arg1, args[2]);
+                meta = findMeta(subcommand, args[2]);
                 break;
             default:
                 break;
@@ -352,7 +357,7 @@ public class CommandHandler implements CommandExecutor {
             StringBuilder sb = new StringBuilder();
             sb.append("§2");
             sb.append(getCommand(meta));
-            sb.append(" =§b '/");
+            sb.append(" §f=§b '/");
             sb.append(parentCommand);
             sb.append(" help ");
             sb.append(meta.command());

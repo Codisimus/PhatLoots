@@ -5,15 +5,11 @@ import com.codisimus.plugins.phatloots.PhatLoots;
 import com.codisimus.plugins.regionown.Region;
 import com.codisimus.plugins.regionown.RegionOwn;
 import com.sk89q.worldguard.bukkit.WGBukkit;
-import com.sk89q.worldguard.protection.ApplicableRegionSet;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
-import org.apache.commons.lang.WordUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.entity.Villager.Profession;
-import org.bukkit.entity.*;
-import org.bukkit.entity.Horse.Style;
 import org.bukkit.entity.Horse.Variant;
+import org.bukkit.entity.*;
 import org.bukkit.event.Listener;
 
 /**
@@ -61,6 +57,9 @@ public abstract class MobListener implements Listener {
                           ? ((HumanEntity) entity).getName() //NPC or Player
                           : entity.getCustomName(); //Mob
             if (name != null) {
+                name = name.replace(" ", "_");
+                name = name.replace("§", "&");
+                name += getLootType();
                 PhatLoot phatLoot = PhatLoots.getPhatLoot(name);
                 if (phatLoot != null) {
                     //A PhatLoot for a named mob trumps all others
@@ -88,10 +87,10 @@ public abstract class MobListener implements Listener {
                 }
                 break;
             case SKELETON: //'Wither' | 'Normal'
-                specificType = enumToString(((Skeleton) entity).getSkeletonType());
+                specificType = toCamelCase(((Skeleton) entity).getSkeletonType());
                 break;
             case VILLAGER: //Profession
-                specificType = enumToString(((Villager) entity).getProfession());
+                specificType = toCamelCase(((Villager) entity).getProfession());
                 break;
             case CREEPER: //'Powered' | 'Normal'
                 Creeper creeper = (Creeper) entity;
@@ -99,17 +98,28 @@ public abstract class MobListener implements Listener {
                 break;
             case HORSE: //Color + Style (type is also determined by variant
                 Horse horse = (Horse) entity;
-                type = enumToString(horse.getVariant());
+                type = toCamelCase(horse.getVariant());
                 if (horse.getVariant() == Variant.HORSE) {
-                    specificType = enumToString(horse.getColor());
-                    if (horse.getStyle() != Style.NONE) {
-                        specificType += enumToString(horse.getStyle());
+                    specificType = toCamelCase(horse.getColor());
+                    switch (horse.getStyle()) {
+                    case WHITE_DOTS:
+                        specificType += "Spotted";
+                        break;
+                    case BLACK_DOTS:
+                        specificType += "Dark";
+                        break;
+                    case WHITE:
+                        specificType += "Light";
+                        break;
+                    case WHITEFIELD:
+                        specificType += "Milky";
+                        break;
                     }
                 }
                 break;
             case SHEEP: //Color
                 Sheep sheep = (Sheep) entity;
-                specificType = enumToString(sheep.getColor());
+                specificType = toCamelCase(sheep.getColor());
                 break;
             default:
                 break;
@@ -117,7 +127,7 @@ public abstract class MobListener implements Listener {
         }
         //Check if the entity is a baby
         if (entity instanceof Ageable && !((Ageable) entity).isAdult()) {
-            //Ammend 'Baby' to the beggining of the specific type
+            //Amend 'Baby' to the beginning of the specific type
             specificType = specificType == null ? "Baby" : "Baby" + specificType;
         }
 
@@ -136,7 +146,6 @@ public abstract class MobListener implements Listener {
         //Get the loot type and the name of the world for constructing the PhatLoot name
         type += getLootType();
         String worldName = mobWorlds ? '@' + location.getWorld().getName() : null;
-        System.out.println(specificType + type);
 
         //The order of priority for finding the correct PhatLoot may be found in the documentation of this method
         PhatLoot phatLoot;
@@ -149,7 +158,8 @@ public abstract class MobListener implements Listener {
                     }
                 } else { //WorldGuard support
                     for (ProtectedRegion region : WGBukkit.getRegionManager(location.getWorld()).getApplicableRegions(location)) {
-                        phatLoot = PhatLoots.getPhatLoot(specificType + type + region.getId());
+                        //System.out.println("Searching for PhatLoot: " + specificType + type + '@' + region.getId());
+                        phatLoot = PhatLoots.getPhatLoot(specificType + type + '@' + region.getId());
                         if (phatLoot != null) {
                             return phatLoot;
                         }
@@ -172,7 +182,7 @@ public abstract class MobListener implements Listener {
                 }
             } else { //WorldGuard support
                 for (ProtectedRegion region : WGBukkit.getRegionManager(location.getWorld()).getApplicableRegions(location)) {
-                    phatLoot = PhatLoots.getPhatLoot(type + region.getId());
+                    phatLoot = PhatLoots.getPhatLoot(type + '@' + region.getId());
                     if (phatLoot != null) {
                         return phatLoot;
                     }
@@ -196,7 +206,17 @@ public abstract class MobListener implements Listener {
         return PhatLoots.getPhatLoot(type);
     }
 
-    private static String enumToString(Enum type) {
-        return WordUtils.capitalizeFully(type.name().replace("_", " ")).replace(" ", "");
+    private static String toCamelCase(Enum type){
+        String s = type.name();
+        String[] parts = s.split("_");
+        String camelCaseString = "";
+        for (String part : parts){
+            camelCaseString = camelCaseString + toProperCase(part);
+        }
+        return camelCaseString;
+    }
+
+    private static String toProperCase(String s) {
+        return s.substring(0, 1).toUpperCase() + s.substring(1).toLowerCase();
     }
 }

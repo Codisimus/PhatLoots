@@ -27,6 +27,9 @@ public class Item extends Loot {
     private static final String SWORD = "SWORD";
     private static final String AXE = "AXE";
     private static final String BOW = "BOW";
+    private static final String PICKAXE = "PICKAXE";
+    private static final String SPADE = "SPADE";
+    private static final String HOE = "HOE";
     private static final String DAMAGE = "<dam>";
     private static final String HOLY = "<holy>";
     private static final String FIRE = "<fire>";
@@ -60,6 +63,15 @@ public class Item extends Loot {
         Enchantment.ARROW_FIRE, Enchantment.ARROW_INFINITE,
         Enchantment.DURABILITY
     };
+    private static final Enchantment[] PICKAXE_ENCHANTMENTS = {
+        Enchantment.DIG_SPEED, Enchantment.DURABILITY
+    };
+    private static final Enchantment[] SPADE_ENCHANTMENTS = {
+        Enchantment.DIG_SPEED, Enchantment.DURABILITY
+    };
+    private static final Enchantment[] HOE_ENCHANTMENTS = {
+        Enchantment.DURABILITY
+    };
     /* MATERIALS */
     private static final EnumSet<Material> ARMOR_MATERIAL_SET = EnumSet.of(
         Material.DIAMOND_HELMET, Material.DIAMOND_CHESTPLATE,
@@ -80,6 +92,18 @@ public class Item extends Loot {
     private static final EnumSet<Material> AXE_MATERIAL_SET = EnumSet.of(
         Material.DIAMOND_AXE, Material.IRON_AXE, Material.GOLD_AXE,
         Material.STONE_AXE, Material.WOOD_AXE
+    );
+    private static final EnumSet<Material> PICKAXE_MATERIAL_SET = EnumSet.of(
+        Material.DIAMOND_PICKAXE, Material.IRON_PICKAXE, Material.GOLD_PICKAXE,
+        Material.STONE_PICKAXE, Material.WOOD_PICKAXE
+    );
+    private static final EnumSet<Material> SPADE_MATERIAL_SET = EnumSet.of(
+        Material.DIAMOND_SPADE, Material.IRON_SPADE, Material.GOLD_SPADE,
+        Material.STONE_SPADE, Material.WOOD_SPADE
+    );
+    private static final EnumSet<Material> HOE_MATERIAL_SET = EnumSet.of(
+        Material.DIAMOND_HOE, Material.IRON_HOE, Material.GOLD_HOE,
+        Material.STONE_HOE, Material.WOOD_HOE
     );
     public static int tierNotify;
     public static FileConfiguration loreConfig;
@@ -250,6 +274,15 @@ public class Item extends Loot {
             } else if (AXE_MATERIAL_SET.contains(mat)) {
                 type = AXE;
                 enchantments = AXE_ENCHANTMENTS;
+            } else if (PICKAXE_MATERIAL_SET.contains(mat)) {
+                type = PICKAXE;
+                enchantments = PICKAXE_ENCHANTMENTS;
+            } else if (SPADE_MATERIAL_SET.contains(mat)) {
+                type = SPADE;
+                enchantments = SPADE_ENCHANTMENTS;
+            } else if (HOE_MATERIAL_SET.contains(mat)) {
+                type = HOE;
+                enchantments = HOE_ENCHANTMENTS;
             } else if (mat == Material.BOW) {
                 type = BOW;
                 enchantments = BOW_ENCHANTMENTS;
@@ -606,6 +639,45 @@ public class Item extends Loot {
             if (lore != null) {
                 nameBuilder.append(' ');
                 nameBuilder.append(lore);
+            }
+        } else if (PICKAXE_MATERIAL_SET.contains(mat)) {
+            type = PICKAXE;
+            enchantment = Enchantment.DIG_SPEED;
+            level = getLevel(enchantments, enchantment);
+            lore = loreConfig.getString(type + '.' + enchantment.getName() + '.' + level);
+            if (lore != null) {
+                nameBuilder.replace(nameBuilder.length() - 7, nameBuilder.length(), lore);
+            }
+            enchantment = Enchantment.DURABILITY;
+            level = getLevel(enchantments, enchantment);
+            lore = loreConfig.getString(type + '.' + enchantment.getName() + '.' + level);
+            if (lore != null) {
+                nameBuilder.insert(0, ' ');
+                nameBuilder.insert(0, lore);
+            }
+        } else if (SPADE_MATERIAL_SET.contains(mat)) {
+            type = SPADE;
+            enchantment = Enchantment.DIG_SPEED;
+            level = getLevel(enchantments, enchantment);
+            lore = loreConfig.getString(type + '.' + enchantment.getName() + '.' + level);
+            if (lore != null) {
+                nameBuilder.replace(nameBuilder.length() - 5, nameBuilder.length(), lore);
+            }
+            enchantment = Enchantment.DURABILITY;
+            level = getLevel(enchantments, enchantment);
+            lore = loreConfig.getString(type + '.' + enchantment.getName() + '.' + level);
+            if (lore != null) {
+                nameBuilder.insert(0, ' ');
+                nameBuilder.insert(0, lore);
+            }
+        } else if (HOE_MATERIAL_SET.contains(mat)) {
+            type = HOE;
+            enchantment = Enchantment.DURABILITY;
+            level = getLevel(enchantments, enchantment);
+            lore = loreConfig.getString(type + '.' + enchantment.getName() + '.' + level);
+            if (lore != null) {
+                nameBuilder.insert(0, ' ');
+                nameBuilder.insert(0, lore);
             }
         } else if (mat == Material.BOW) {
             type = BOW;
