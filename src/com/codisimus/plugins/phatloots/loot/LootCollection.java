@@ -19,8 +19,8 @@ import org.bukkit.inventory.meta.ItemMeta;
 public class LootCollection extends Loot {
     public static boolean allowDuplicates;
     public String name;
-    private int lowerNumberOfLoots;
-    private int upperNumberOfLoots;
+    public int lowerNumberOfLoots;
+    public int upperNumberOfLoots;
     private LinkedList<Loot> lootList;
 
     /**

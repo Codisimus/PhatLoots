@@ -1,5 +1,6 @@
 package com.codisimus.plugins.phatloots;
 
+import com.codisimus.plugins.phatloots.commands.LootCommand;
 import com.codisimus.plugins.phatloots.listeners.MobListener;
 import com.codisimus.plugins.phatloots.listeners.PhatLootsListener;
 import com.codisimus.plugins.phatloots.loot.Item;
@@ -171,7 +172,7 @@ public class PhatLootsConfig {
         }
         lootBagKey = ChatColor.translateAlternateColorCodes('&', config.getString("LootBagKey"));
         Item.tierNotify = config.getInt("MinimumTierNotification");
-        PhatLootsCommand.setUnlockable = config.getBoolean("SetChestsAsUnlockable");
+        LootCommand.setUnlockable = config.getBoolean("SetChestsAsUnlockable");
         PhatLoot.decimals = config.getBoolean("DivideMoneyAmountBy100");
         PhatLoot.soundOnAutoLoot = config.getBoolean("PlaySoundOnAutoLoot");
         PhatLootChest.useBreakAndRepawn = config.getBoolean("UseBreakAndRespawn");

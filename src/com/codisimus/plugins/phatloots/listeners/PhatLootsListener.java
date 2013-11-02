@@ -4,7 +4,6 @@ import com.codisimus.plugins.phatloots.ForgettableInventory;
 import com.codisimus.plugins.phatloots.PhatLoot;
 import com.codisimus.plugins.phatloots.PhatLootChest;
 import com.codisimus.plugins.phatloots.PhatLoots;
-import com.codisimus.plugins.phatloots.PhatLootsCommand;
 import com.codisimus.plugins.phatloots.PhatLootsConfig;
 import java.util.EnumMap;
 import java.util.HashMap;

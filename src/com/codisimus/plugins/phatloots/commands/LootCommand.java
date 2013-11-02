@@ -27,7 +27,7 @@ import org.bukkit.inventory.meta.ItemMeta;
  * @author Codisimus
  */
 public class LootCommand {
-    static boolean setUnlockable; //True if linked Chests should be set as unlockable by ChestLock
+    public static boolean setUnlockable; //True if linked Chests should be set as unlockable by ChestLock
 
     @CodCommand(
         command = "make",
@@ -522,7 +522,7 @@ public class LootCommand {
         permission = "phatloots.info"
     )
     public boolean info(Player player, PhatLoot phatLoot) {
-        PhatLootInfoListener.viewPhatLoot(player, phatLoot);
+        PhatLootInfoListener.viewPhatLoot(player, phatLoot, null);
         return true;
     }
     @CodCommand(command = "info", weight = 140.1)

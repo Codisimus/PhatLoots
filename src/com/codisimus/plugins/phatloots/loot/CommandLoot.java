@@ -22,9 +22,9 @@ import org.bukkit.inventory.meta.ItemMeta;
 @SerializableAs("Command")
 public class CommandLoot extends Loot {
     private static PhatLootsCommandSender cs = new PhatLootsCommandSender();
-    private String command;
-    private boolean fromConsole;
-    private boolean tempOP;
+    public String command;
+    public boolean fromConsole;
+    public boolean tempOP;
 
     /**
      * Constructs a new CommandLoot for the given command
