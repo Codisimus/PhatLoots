@@ -136,10 +136,6 @@ public class PhatLoots extends JavaPlugin {
         PluginManager pm = Bukkit.getPluginManager();
         pm.registerEvents(new PhatLootsListener(), this);
         pm.registerEvents(new PhatLootInfoListener(), this);
-        if (pm.isPluginEnabled("EpicBossRecoded")) {
-            logger.info("Listening for EpicBoss deaths");
-            pm.registerEvents(new EBRListener(), this);
-        }
         if (pm.isPluginEnabled("Citizens")) {
             logger.info("Listening for Citizens NPC deaths");
             pm.registerEvents(new CitizensListener(), this);
