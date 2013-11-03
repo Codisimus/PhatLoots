@@ -30,6 +30,10 @@ import org.bukkit.scheduler.BukkitRunnable;
 public class PhatLootInfoListener implements Listener {
     private final static int SIZE = 54;
     private final static int TOOL_SLOT = SIZE - 9;
+    private static HashMap<String, Boolean> switchingPages = new HashMap<String, Boolean>(); //Player name -> Going deeper (true) or back (false)
+    private static HashMap<String, PhatLoot> infoViewers = new HashMap<String, PhatLoot>(); //Player name -> PhatLoot they are viewing
+    private static HashMap<String, Stack<Inventory>> pageStacks = new HashMap<String, Stack<Inventory>>(); //Player name -> Page history
+    private static HashMap<String, Loot> holding = new HashMap<String, Loot>();
     private static enum Tool {
         NAVIGATE_AND_MOVE(0, Material.LEASH),
         MODIFY_PROBABILITY_AND_TOGGLE(1, Material.NAME_TAG),
@@ -140,10 +144,24 @@ public class PhatLootInfoListener implements Listener {
             return null;
         }
     }
-    private static HashMap<String, Boolean> switchingPages = new HashMap<String, Boolean>(); //Player name -> Going deeper (true) or back (false)
-    private static HashMap<String, PhatLoot> infoViewers = new HashMap<String, PhatLoot>(); //Player name -> PhatLoot they are viewing
-    private static HashMap<String, Stack<Inventory>> pageStacks = new HashMap<String, Stack<Inventory>>(); //Player name -> Page history
-    private static HashMap<String, Loot> holding = new HashMap<String, Loot>();
+
+    /**
+     * Returns the List of loot for the current Inventory
+     *
+     * @param phatLoot The PhatLoot that contains the Loot
+     * @param inv The current Inventory
+     * @return The List of loot for the PhatLoot/LootCollection
+     */
+    private static List<Loot> getLootList(PhatLoot phatLoot, Inventory inv) {
+        LootCollection coll = null;
+        String invName = inv.getName();
+        if (invName.endsWith(" (Collection)")) {
+            coll = phatLoot.findCollection(invName.substring(0, invName.length() - 13));
+        }
+        return coll == null ? phatLoot.lootList : coll.getLootList();
+    }
+
+    /** LISTENERS **/
 
     @EventHandler (ignoreCancelled = true)
     public void onPlayerInvClick(InventoryClickEvent event) {
@@ -153,7 +171,8 @@ public class PhatLootInfoListener implements Listener {
         }
         //Return if the Player is not viewing a PhatLoot's info
         Player player = (Player) human;
-        if (!infoViewers.containsKey(player.getName())) {
+        String playerName = player.getName();
+        if (!infoViewers.containsKey(playerName)) {
             return;
         }
 
@@ -161,211 +180,148 @@ public class PhatLootInfoListener implements Listener {
         event.setResult(Event.Result.DENY);
         player.updateInventory();
 
-        //Check if the player is switching tools
+        //Store popularly accessed variables
+        PhatLoot phatLoot = infoViewers.get(playerName);
         Inventory inv = event.getInventory();
         Tool tool = Tool.getTool(inv.getItem(TOOL_SLOT));
-        if (event.getSlot() == -999 || event.getSlot() == TOOL_SLOT) {
-            if (holding.containsKey(player.getName())) {
+        ItemStack stack = event.getCurrentItem();
+        List<Loot> lootList = getLootList(phatLoot, inv);
+        int slot = event.getRawSlot();
+        Loot loot = lootList.size() > slot ? lootList.get(slot) : null;
+
+        //Check if the Player is holding a Loot
+        if (holding.containsKey(playerName)) {
+            if (slot > 44) { //Minecraft crash avoidance
                 return;
             }
             switch (event.getClick()) {
-            case LEFT:
-                inv.setItem(TOOL_SLOT, tool.prevTool().getItem());
-                player.updateInventory();
+            case LEFT: //Allow
+                if (loot == null) {
+                    if (lootList.size() == slot) {
+                        lootList.add(holding.remove(playerName));
+                        event.setCurrentItem(event.getCursor()); //Put down Loot
+                    }
+                    return;
+                }
                 break;
-            case RIGHT:
+            case RIGHT: //Go back a page
+                up(player);
+                return;
+            default: //Deny all other actions
+                return;
+            }
+        }
+
+        /** Switch Tools **/
+        if (event.getSlot() == -999 || event.getSlot() == TOOL_SLOT) {
+            switch (event.getClick()) {
+            case LEFT: //Previous Tool
+                //Deny switching toos while holding Loot
+                if (!holding.containsKey(playerName)) {
+                    inv.setItem(TOOL_SLOT, tool.prevTool().getItem());
+                    player.updateInventory();
+                }
+                break;
+            case RIGHT: //Next Tool
                 inv.setItem(TOOL_SLOT, tool.nextTool().getItem());
                 player.updateInventory();
                 break;
-            default:
+            default: //Do nothing
                 break;
             }
             return;
         }
 
-        if (holding.containsKey(player.getName())) {
-            switch (event.getClick()) {
-            case LEFT:
-                break;
-            case RIGHT:
-                up(player, event.getCursor());
-                return;
-            default:
-                //Don't allow anything else while holding an item
-                return;
-            }
-            if (event.getRawSlot() > 44) { //Minecraft crash avoidance
-                return;
-            }
-        }
-
-        //Check if the player is climbing a ladder
-        ItemStack stack = event.getCurrentItem();
+        /** Go back to a previous View **/
         if (stack.getType() == Material.LADDER) {
             ItemMeta details = stack.getItemMeta();
             if (details.hasDisplayName()) {
                 String name = stack.getItemMeta().getDisplayName();
-                if (name.equals("§2Up to...")) {
-                    up(player, event.getCursor());
+                if (name.equals("§2Up to...")) { //Back one view
+                    up(player);
                     return;
-                } else if (name.equals("§2Back to top...")) {
-                    viewPhatLoot(player, infoViewers.get(player.getName()), event.getCursor());
+                } else if (name.equals("§2Back to top...")) { //Back to first view
+                    viewPhatLoot(player, infoViewers.get(playerName));
                     return;
                 }
             }
         }
 
-        //Store popularly accessed variables
-        PhatLoot phatLoot = infoViewers.get(player.getName());
-        int slot = event.getRawSlot();
-        List<Loot> lootList = getLootList(phatLoot, inv);
-        Loot loot = lootList.size() > slot ? lootList.get(slot) : null;
-
-        //Check if the player is creating a new Collection
+        /** Create a new LootCollection **/
         if (slot == TOOL_SLOT + 1) {
+            //Find a unique collection name for the PhatLoot
             int i = 1;
             while (phatLoot.findCollection(String.valueOf(i)) != null) {
                 i++;
             }
             lootList.add(new LootCollection(String.valueOf(i)));
             refreshPage(player, inv, lootList);
+            return;
         }
 
-        switch (tool) {
-        case NAVIGATE_AND_MOVE:
-            switch (event.getClick()) {
-            case LEFT: //Switch Pages
-                if (stack == null && !holding.containsKey(player.getName())) {
-                    return;
-                }
-                switch (stack.getType()) {
-                case ENDER_CHEST:
-                    ItemMeta meta = stack.getItemMeta();
-                    if (meta.hasDisplayName()) {
-                        //Get the collection name from the item's display name
-                        String name = stack.getItemMeta().getDisplayName();
-                        if (name.endsWith(" (Collection)")) {
-                            name = name.substring(2, name.length() - 13);
-                            if (holding.containsKey(player.getName())) {
-                                Loot l = holding.remove(player.getName());
-                                phatLoot.findCollection(name).addLoot(l);
-                                event.setCursor(null);
-                            } else { //Enter LootCollection
-                                viewCollection(player, name, event.getCursor());
-                            }
-                        }
-                    }
+        /** No Loot was Clicked **/
+        if (loot == null) {
+            if (tool == Tool.NAVIGATE_AND_MOVE) {
+                switch (event.getClick()) {
+                case RIGHT: //Go back a page
+                    up(player);
                     break;
-                default:
-                    if (holding.containsKey(player.getName())) {
-                        if (lootList.size() < slot) {
-                            return;
-                        }
-                        Loot l = holding.remove(player.getName());
-                        if (lootList.size() > slot) {
-                            holding.put(player.getName(), lootList.get(slot));
-                            lootList.set(slot, l);
-                        } else {
-                            lootList.add(l);
-                        }
-                        ItemStack i = inv.getItem(slot);
-                        inv.setItem(slot, event.getCursor());
-                        event.setCursor(i);
-                        player.updateInventory();
-                    } else if (loot != null) {
-                        holding.put(player.getName(), lootList.remove(slot));
-                        event.setCursor(inv.getItem(slot));
+                case MIDDLE: //Add an Item as Loot
+                    if (slot > SIZE) {
+                        ItemStack item = stack == null ? new ItemStack(Material.AIR) : stack.clone();
+                        lootList.add(new Item(item, 0));
                         refreshPage(player, inv, lootList);
                     }
-                    break;
                 }
-                break;
-            case RIGHT: //Go back a page
-                up(player, event.getCursor());
-                break;
-            case SHIFT_LEFT: //Move Loot left
-                if (loot != null) {
-                    Loot temp = lootList.get(slot);
-                    lootList.set(slot, lootList.get(slot - 1));
-                    lootList.set(slot - 1, temp);
-                    refreshPage(player, inv, lootList);
-                }
-                break;
-            case SHIFT_RIGHT: //Move Loot right
-                if (loot != null) {
-                    Loot temp = lootList.get(slot);
-                    lootList.set(slot, lootList.get(slot + 1));
-                    lootList.set(slot + 1, temp);
-                    refreshPage(player, inv, lootList);
-                }
-                break;
-            case MIDDLE: //Add/Remove Loot
-                if (loot != null) {
-                    lootList.remove(slot);
-                } else if (slot > SIZE) {
-                    ItemStack item = event.getCurrentItem() == null ? new ItemStack(Material.AIR) : event.getCurrentItem().clone();
-                    lootList.add(new Item(item, 0));
-                } else {
-                    break;
-                }
-                refreshPage(player, inv, lootList);
-                break;
+                return;
             }
-            break;
 
-        case MODIFY_PROBABILITY_AND_TOGGLE:
-            if (loot != null) {
+            int amount = 0;
+            boolean both = false;
+            if (tool == Tool.MODIFY_AMOUNT) {
                 switch (event.getClick()) {
-                case LEFT: //+1%
-                    loot.setProbability(loot.getProbability() + 1);
+                case LEFT: //+1 amount
+                    amount = 1;
+                    both = true;
                     break;
-                case DOUBLE_CLICK: //+9%
-                    loot.setProbability(loot.getProbability() + 9);
+                case DOUBLE_CLICK: //+9 amount
+                    amount = 9;
+                    both = true;
                     break;
-                case RIGHT: //-1%
-                    loot.setProbability(loot.getProbability() - 1);
+                case RIGHT: //-1 amount
+                    amount = -1;
+                    both = true;
                     break;
-                case SHIFT_LEFT: //Toggle autoEnchant/fromConsole
-                    if (loot instanceof Item) {
-                        ((Item) loot).autoEnchant = !((Item) loot).autoEnchant;
-                    } else if (loot instanceof CommandLoot) {
-                        ((CommandLoot) loot).fromConsole = !((CommandLoot) loot).fromConsole;
-                    }
+                case SHIFT_LEFT: //+1 upper amount
+                    amount = 1;
+                    both = false;
                     break;
-                case SHIFT_RIGHT: //Toggle generateName/tempOP
-                    if (loot instanceof Item) {
-                        ((Item) loot).generateName = !((Item) loot).generateName;
-                    } else if (loot instanceof CommandLoot) {
-                        ((CommandLoot) loot).tempOP = !((CommandLoot) loot).tempOP;
-                    }
+                case SHIFT_RIGHT: //-1 upper amount
+                    amount = -1;
+                    both = false;
                     break;
-                case MIDDLE: //Toggle tieredName/breakAndRespawn/autoLoot/global
-                    if (loot instanceof Item) {
-                        ((Item) loot).tieredName = !((Item) loot).tieredName;
-                    }
+                case MIDDLE: //Set amount to 0
+                    amount = 0;
                     break;
                 default:
                     return;
                 }
-                while (loot.getProbability() < 0) {
-                    loot.setProbability(loot.getProbability() + 100);
-                }
-                while (loot.getProbability() > 100) {
-                    loot.setProbability(loot.getProbability() - 100);
-                }
-                refreshPage(player, inv, lootList);
-            } else if (inv.getTitle().endsWith("Loot Tables")) {
+            }
+
+            if (inv.getTitle().endsWith("Loot Tables")) { //Default View
                 ItemStack infoStack;
-                ItemMeta info;
+                ItemMeta info = Bukkit.getItemFactory().getItemMeta(Material.STONE); //Block type doesn't really matter
                 List<String> details = new ArrayList();
 
                 switch (slot) {
-                case SIZE - 5:
+                case SIZE - 5: //Toggle Break and Respawn
+                    if (tool == Tool.MODIFY_AMOUNT) {
+                        return;
+                    }
                     phatLoot.breakAndRespawn = !phatLoot.breakAndRespawn;
 
                     //Show the break and respawn status
                     infoStack = new ItemStack(phatLoot.breakAndRespawn ? Material.MOB_SPAWNER : Material.CHEST);
-                    info = Bukkit.getItemFactory().getItemMeta(infoStack.getType());
                     info.setDisplayName("§4Break and Respawn: §6" + phatLoot.breakAndRespawn);
                     if (phatLoot.breakAndRespawn) {
                         details.add("§6This chest will break after it is looted");
@@ -374,26 +330,39 @@ public class PhatLootInfoListener implements Listener {
                         details.add("§6This chest will always be present");
                         details.add("§6even after it is looted.");
                     }
-                    info.setLore(details);
-                    infoStack.setItemMeta(info);
                     break;
 
-                case SIZE - 4:
+                case SIZE - 4: //Toggle AutoLoot
+                    if (tool == Tool.MODIFY_AMOUNT) {
+                        return;
+                    }
                     phatLoot.autoLoot = !phatLoot.autoLoot;
 
                     //Show the autoloot status
                     infoStack = new ItemStack(phatLoot.autoLoot ? Material.REDSTONE_TORCH_ON : Material.REDSTONE_TORCH_OFF);
-                    info = Bukkit.getItemFactory().getItemMeta(infoStack.getType());
                     info.setDisplayName("§4AutoLoot: §6" + phatLoot.autoLoot);
-                    infoStack.setItemMeta(info);
                     break;
 
-                case SIZE - 3:
-                    phatLoot.global = !phatLoot.global;
+                case SIZE - 3: //Toggle Global/Round or Modify Reset Time
+                    if (tool == Tool.MODIFY_AMOUNT) {
+                        if (amount == 0) {
+                            phatLoot.days = 0;
+                            phatLoot.hours = 0;
+                            phatLoot.minutes = 0;
+                            phatLoot.seconds = 0;
+                        } else if (both) {
+                            phatLoot.hours += amount;
+                        } else {
+                            phatLoot.minutes += amount;
+                        }
+                    } else if (event.getClick() == ClickType.LEFT) {
+                        phatLoot.global = !phatLoot.global;
+                    } else {
+                        phatLoot.round = !phatLoot.round;
+                    }
 
                     //Show the Reset Time
                     infoStack = new ItemStack(Material.WATCH);
-                    info = Bukkit.getItemFactory().getItemMeta(infoStack.getType());
                     info.setDisplayName("§2Reset Time");
                     details.add("§4Days: §6" + phatLoot.days);
                     details.add("§4Hours: §6" + phatLoot.hours);
@@ -403,16 +372,173 @@ public class PhatLootInfoListener implements Listener {
                     if (phatLoot.round) {
                         details.add("§6Time is rounded down");
                     }
-                    info.setLore(details);
-                    infoStack.setItemMeta(info);
+                    break;
+
+                case SIZE - 2: //Modify Experience
+                    if (tool == Tool.MODIFY_PROBABILITY_AND_TOGGLE) {
+                        return;
+                    }
+                    if (amount == 0) {
+                        phatLoot.expLower = 0;
+                        phatLoot.expUpper = 0;
+                    } else {
+                        if (both) {
+                            phatLoot.expLower += amount;
+                        }
+                        phatLoot.expUpper += amount;
+                    }
+
+                    //Show the experience Range
+                    infoStack = new ItemStack(Material.EXP_BOTTLE);
+                    String exp = String.valueOf(phatLoot.expLower);
+                    if (phatLoot.expUpper != phatLoot.expLower) {
+                        exp += '-' + String.valueOf(phatLoot.expUpper);
+                    }
+                    info.setDisplayName("§6" + exp + " exp");
+                    break;
+
+                case SIZE - 1: //Modify Money
+                    if (tool == Tool.MODIFY_PROBABILITY_AND_TOGGLE) {
+                        return;
+                    }
+                    if (amount == 0) {
+                        phatLoot.moneyLower = 0;
+                        phatLoot.moneyUpper = 0;
+                    } else {
+                        if (both) {
+                            phatLoot.moneyLower += amount;
+                        }
+                        phatLoot.moneyUpper += amount;
+                    }
+
+                    //Show the money Range
+                    infoStack = new ItemStack(Material.GOLD_NUGGET);
+                    String money = String.valueOf(phatLoot.moneyLower);
+                    if (phatLoot.moneyUpper != phatLoot.moneyLower) {
+                        money += '-' + String.valueOf(phatLoot.moneyUpper);
+                    }
+
+                    info.setDisplayName(PhatLoots.econ == null
+                                        ? "§6No Economy plugin detected!"
+                                        : "§6" + money + ' ' + PhatLoots.econ.currencyNamePlural());
                     break;
 
                 default:
                     return;
                 }
 
-                inv.setItem(slot, infoStack);
+                info.setLore(details);
+                infoStack.setItemMeta(info);
+                event.setCurrentItem(infoStack);
             }
+            return;
+        }
+
+        /** Action determined based on the Tool **/
+        switch (tool) {
+        case NAVIGATE_AND_MOVE:
+            switch (event.getClick()) {
+            case LEFT: //Move Loot or Enter a Collection
+                switch (stack.getType()) {
+                case ENDER_CHEST: //Clicked a LootCollection
+                    ItemMeta meta = stack.getItemMeta();
+                    if (meta.hasDisplayName()) {
+                        //Get the collection name from the item's display name
+                        String name = stack.getItemMeta().getDisplayName();
+                        if (name.endsWith(" (Collection)")) {
+                            name = name.substring(2, name.length() - 13);
+                            if (holding.containsKey(playerName)) { //Place Loot in Collection
+                                Loot l = holding.remove(playerName);
+                                phatLoot.findCollection(name).addLoot(l);
+                                event.setCursor(null);
+                            } else { //Enter LootCollection
+                                viewCollection(player, name);
+                            }
+                        }
+                    }
+                    break;
+                default: //Clicked some other Loot
+                    if (holding.containsKey(playerName)) { //Swap Loot
+                        Loot l = holding.remove(playerName);
+                        holding.put(playerName, lootList.get(slot));
+                        lootList.set(slot, l);
+                        event.setCurrentItem(event.getCursor()); //Put down Loot
+                        event.setCursor(stack); //Pick up new Loot
+                    } else { //Pick up Loot
+                        holding.put(playerName, lootList.remove(slot));
+                        event.setCursor(stack);
+                        if (slot != lootList.size() - 1) {
+                            refreshPage(player, inv, lootList); //Shifts remaining loot down
+                        }
+                    }
+                    break;
+                }
+                break;
+            case RIGHT: //Go back a page
+                up(player);
+                break;
+            case SHIFT_LEFT: //Move Loot left
+                if (loot != null && slot > 0) {
+                    lootList.set(slot, lootList.get(slot - 1));
+                    lootList.set(slot - 1, loot);
+                    refreshPage(player, inv, lootList);
+                }
+                break;
+            case SHIFT_RIGHT: //Move Loot right
+                if (slot < lootList.size() + 1) {
+                    lootList.set(slot, lootList.get(slot + 1));
+                    lootList.set(slot + 1, loot);
+                    refreshPage(player, inv, lootList);
+                }
+                break;
+            case MIDDLE: //Remove Loot
+                lootList.remove(slot);
+                if (slot != lootList.size() - 1) {
+                    refreshPage(player, inv, lootList); //Shifts remaining loot down
+                }
+            }
+            break;
+
+        case MODIFY_PROBABILITY_AND_TOGGLE:
+            switch (event.getClick()) {
+            case DOUBLE_CLICK: //+9%
+                loot.setProbability(loot.getProbability() + 8);
+                //Fall through
+            case LEFT: //+1%
+                loot.setProbability(loot.getProbability() + 1);
+                while (loot.getProbability() > 100) {
+                    loot.setProbability(loot.getProbability() - 100);
+                }
+                break;
+            case RIGHT: //-1%
+                loot.setProbability(loot.getProbability() - 1);
+                while (loot.getProbability() < 0) {
+                    loot.setProbability(loot.getProbability() + 100);
+                }
+                break;
+            case SHIFT_LEFT: //Toggle autoEnchant/fromConsole
+                if (loot instanceof Item) {
+                    ((Item) loot).autoEnchant = !((Item) loot).autoEnchant;
+                } else if (loot instanceof CommandLoot) {
+                    ((CommandLoot) loot).fromConsole = !((CommandLoot) loot).fromConsole;
+                }
+                break;
+            case SHIFT_RIGHT: //Toggle generateName/tempOP
+                if (loot instanceof Item) {
+                    ((Item) loot).generateName = !((Item) loot).generateName;
+                } else if (loot instanceof CommandLoot) {
+                    ((CommandLoot) loot).tempOP = !((CommandLoot) loot).tempOP;
+                }
+                break;
+            case MIDDLE: //Toggle tieredName/breakAndRespawn/autoLoot/global
+                if (loot instanceof Item) {
+                    ((Item) loot).tieredName = !((Item) loot).tieredName;
+                }
+                break;
+            default:
+                return;
+            }
+            event.setCurrentItem(loot.getInfoStack());
             break;
 
         case MODIFY_AMOUNT:
@@ -423,7 +549,7 @@ public class PhatLootInfoListener implements Listener {
                 amount = 1;
                 both = true;
                 break;
-            case DOUBLE_CLICK: //+8 amount
+            case DOUBLE_CLICK: //+9 amount
                 amount = 9;
                 both = true;
                 break;
@@ -449,142 +575,27 @@ public class PhatLootInfoListener implements Listener {
                 } else {
                     break;
                 }
-                refreshPage(player, inv, lootList);
+                event.setCurrentItem(loot.getInfoStack());
                 return;
             default:
                 return;
             }
-            if (loot != null) {
-                if (loot instanceof Item) {
-                    if (both) {
-                        ((Item) loot).item.setAmount(((Item) loot).item.getAmount() + amount);
-                    } else {
-                        ((Item) loot).amountBonus += amount;
-                    }
-                } else if (loot instanceof LootCollection) {
-                    if (both) {
-                        ((LootCollection) loot).lowerNumberOfLoots += amount;
-                    }
-                    ((LootCollection) loot).upperNumberOfLoots += amount;
+
+            if (loot instanceof Item) {
+                if (both) {
+                    ((Item) loot).item.setAmount(((Item) loot).item.getAmount() + amount);
+                } else {
+                    ((Item) loot).amountBonus += amount;
                 }
-                refreshPage(player, inv, lootList);
-            } else if (inv.getTitle().endsWith("Loot Tables")) {
-                ItemStack infoStack;
-                ItemMeta info;
-                List<String> details = new ArrayList();
-
-                switch (slot) {
-                case SIZE - 3:
-                    if (amount == 0) {
-                        phatLoot.days = 0;
-                        phatLoot.hours = 0;
-                        phatLoot.minutes = 0;
-                        phatLoot.seconds = 0;
-                    } else if (both) {
-                        phatLoot.hours += amount;
-                    } else {
-                        phatLoot.minutes += amount;
-                    }
-
-                    //Show the Reset Time
-                    infoStack = new ItemStack(Material.WATCH);
-                    info = Bukkit.getItemFactory().getItemMeta(infoStack.getType());
-                    info.setDisplayName("§2Reset Time");
-                    details.add("§4Days: §6" + phatLoot.days);
-                    details.add("§4Hours: §6" + phatLoot.hours);
-                    details.add("§4Minutes: §6" + phatLoot.minutes);
-                    details.add("§4Seconds: §6" + phatLoot.seconds);
-                    details.add("§4Reset Type: §6" + (phatLoot.global ? "Global" : "Individual"));
-                    if (phatLoot.round) {
-                        details.add("§6Time is rounded down");
-                    }
-                    info.setLore(details);
-                    infoStack.setItemMeta(info);
-                    break;
-
-                case SIZE - 2:
-                    if (amount == 0) {
-                        phatLoot.expLower = 0;
-                        phatLoot.expUpper = 0;
-                    } else {
-                        if (both) {
-                            phatLoot.expLower += amount;
-                        }
-                        phatLoot.expUpper += amount;
-                    }
-
-                    //Show the experience Range
-                    infoStack = new ItemStack(Material.EXP_BOTTLE);
-                    info = Bukkit.getItemFactory().getItemMeta(infoStack.getType());
-                    String exp = String.valueOf(phatLoot.expLower);
-                    if (phatLoot.expUpper != phatLoot.expLower) {
-                        exp += '-' + String.valueOf(phatLoot.expUpper);
-                    }
-                    info.setDisplayName("§6" + exp + " exp");
-                    infoStack.setItemMeta(info);
-                    break;
-
-                case SIZE - 1:
-                    if (PhatLoots.econ == null) {
-                        return;
-                    }
-
-                    if (amount == 0) {
-                        phatLoot.moneyLower = 0;
-                        phatLoot.moneyUpper = 0;
-                    } else {
-                        if (both) {
-                            phatLoot.moneyLower += amount;
-                        }
-                        phatLoot.moneyUpper += amount;
-                    }
-
-                    //Show the money Range
-                    infoStack = new ItemStack(Material.GOLD_NUGGET);
-                    info = Bukkit.getItemFactory().getItemMeta(infoStack.getType());
-                    String money = String.valueOf(phatLoot.moneyLower);
-                    if (phatLoot.moneyUpper != phatLoot.moneyLower) {
-                        money += '-' + String.valueOf(phatLoot.moneyUpper);
-                    }
-                    info.setDisplayName("§6" + money + ' ' + PhatLoots.econ.currencyNamePlural());
-                    infoStack.setItemMeta(info);
-                    break;
-
-                default:
-                    return;
+            } else if (loot instanceof LootCollection) {
+                if (both) {
+                    ((LootCollection) loot).lowerNumberOfLoots += amount;
                 }
-
-                inv.setItem(slot, infoStack);
+                ((LootCollection) loot).upperNumberOfLoots += amount;
             }
+            event.setCurrentItem(loot.getInfoStack());
             break;
         }
-    }
-
-    private List<Loot> getLootList(PhatLoot phatLoot, Inventory inv) {
-        LootCollection coll = null;
-        String invName = inv.getName();
-        if (invName.endsWith(" (Collection)")) {
-            coll = phatLoot.findCollection(invName.substring(0, invName.length() - 13));
-        }
-        return coll == null ? phatLoot.lootList : coll.getLootList();
-    }
-
-    private void refreshPage(Player player, Inventory inv, List<Loot> lootList) {
-        //Populate the inventory
-        int index = 0;
-        for (Loot loot : lootList) {
-            inv.setItem(index, loot.getInfoStack());
-            index++;
-            if (index >= TOOL_SLOT) {
-                player.sendMessage("§4Not all items could fit within the inventory view.");
-                break;
-            }
-        }
-        while (index < TOOL_SLOT) {
-            inv.clear(index);
-            index++;
-        }
-        player.updateInventory();
     }
 
     @EventHandler (ignoreCancelled = true)
@@ -619,29 +630,35 @@ public class PhatLootInfoListener implements Listener {
         }
     }
 
+    /** END LISTENERS **/
+    /** INVENTORY VIEWS **/
+
     /**
      * Opens an Inventory GUI for the given PhatLoot to the given Player
      *
      * @param player The given Player
      * @param phatLoot The given PhatLoot
      */
-    public static void viewPhatLoot(final Player player, final PhatLoot phatLoot, final ItemStack hand) {
-        //Create the Inventory
-        String invName = phatLoot.name + " Loot Tables";
-        if (invName.length() > 32) {
+    public static void viewPhatLoot(Player player, PhatLoot phatLoot) {
+        //Get the Inventory title
+        String invName;
+        if (phatLoot.name.length() <= 20) {
+            invName = phatLoot.name + " Loot Tables";
+        } else if (phatLoot.name.length() <= 32) {
             invName = phatLoot.name;
-            if (invName.length() > 32) {
-                invName = phatLoot.name.substring(0, 32);
-            }
+        } else {
+            invName = phatLoot.name.substring(0, 32);
         }
-        final Inventory inv = Bukkit.createInventory(player, SIZE, invName);
+
+        //Create the Inventory view
+        Inventory inv = Bukkit.createInventory(null, SIZE, invName);
 
         int index = SIZE;
         ItemStack infoStack;
         ItemMeta info;
         String amount;
 
-        //Show the money Range
+        //Display the money Range
         if (PhatLoots.econ != null) {
             infoStack = new ItemStack(Material.GOLD_NUGGET);
             info = Bukkit.getItemFactory().getItemMeta(infoStack.getType());
@@ -655,7 +672,7 @@ public class PhatLootInfoListener implements Listener {
             inv.setItem(index, infoStack);
         }
 
-        //Show the experience Range
+        //Display the experience Range
         infoStack = new ItemStack(Material.EXP_BOTTLE);
         info = Bukkit.getItemFactory().getItemMeta(infoStack.getType());
         amount = String.valueOf(phatLoot.expLower);
@@ -667,7 +684,7 @@ public class PhatLootInfoListener implements Listener {
         index--;
         inv.setItem(index, infoStack);
 
-        //Show the Reset Time
+        //Display the Reset Time
         infoStack = new ItemStack(Material.WATCH);
         info = Bukkit.getItemFactory().getItemMeta(infoStack.getType());
         info.setDisplayName("§2Reset Time");
@@ -685,7 +702,7 @@ public class PhatLootInfoListener implements Listener {
         index--;
         inv.setItem(index, infoStack);
 
-        //Show the autoloot status
+        //Display the autoloot status
         infoStack = new ItemStack(phatLoot.autoLoot ? Material.REDSTONE_TORCH_ON : Material.REDSTONE_TORCH_OFF);
         info = Bukkit.getItemFactory().getItemMeta(infoStack.getType());
         info.setDisplayName("§4AutoLoot: §6" + phatLoot.autoLoot);
@@ -693,7 +710,7 @@ public class PhatLootInfoListener implements Listener {
         index--;
         inv.setItem(index, infoStack);
 
-        //Show the break and respawn status
+        //Display the break and respawn status
         infoStack = new ItemStack(phatLoot.breakAndRespawn ? Material.MOB_SPAWNER : Material.CHEST);
         info = Bukkit.getItemFactory().getItemMeta(infoStack.getType());
         info.setDisplayName("§4Break and Respawn: §6" + phatLoot.breakAndRespawn);
@@ -710,43 +727,11 @@ public class PhatLootInfoListener implements Listener {
         index--;
         inv.setItem(index, infoStack);
 
-        //Set Tool
-        inv.setItem(TOOL_SLOT, Tool.NAVIGATE_AND_MOVE.getItem());
+        //Store the current view in the Player's stack
+        pageStacks.put(player.getName(), new Stack<Inventory>());
 
-        //Show the Add Collection Tool
-        infoStack = new ItemStack(Material.ENDER_CHEST);
-        info = Bukkit.getItemFactory().getItemMeta(infoStack.getType());
-        info.setDisplayName("§2Add new collection...");
-        infoStack.setItemMeta(info);
-        inv.setItem(TOOL_SLOT + 1, infoStack);
-
-        //Populate the inventory
-        index = 0;
-        for (Loot loot : phatLoot.lootList) {
-            inv.setItem(index, loot.getInfoStack());
-            index++;
-            if (index >= TOOL_SLOT) {
-                player.sendMessage("§4Not all items could fit within the inventory view.");
-                break;
-            }
-        }
-
-        //Open the Inventory in 2 ticks to avoid Bukkit glitches
-        final String playerName = player.getName();
-        pageStacks.put(playerName, new Stack<Inventory>());
-        switchingPages.put(playerName, true);
-        Loot loot = holding.get(playerName);
-        player.closeInventory();
-        if (loot != null) {
-            holding.put(playerName, loot);
-        }
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-                infoViewers.put(playerName, phatLoot);
-                player.openInventory(inv).setCursor(hand);
-            }
-        }.runTaskLater(PhatLoots.plugin, 2);
+        infoViewers.put(player.getName(), phatLoot);
+        switchView(player, inv);
     }
 
     /**
@@ -755,95 +740,119 @@ public class PhatLootInfoListener implements Listener {
      * @param player The given Player
      * @param name The name of the LootCollection to open
      */
-    public static void viewCollection(final Player player, String name, final ItemStack hand) {
-        //Create the Inventory
-        final PhatLoot phatLoot = infoViewers.get(player.getName());
-        LootCollection coll = phatLoot.findCollection(name);
-        String invName = name + " (Collection)";
-        if (invName.length() > 32) {
+    public static void viewCollection(Player player, String name) {
+        //Get the Inventory title
+        String invName;
+        if (name.length() < 20) {
+            invName = name + " (Collection)";
+        } else if (name.length() <= 32) {
             invName = name;
-            if (invName.length() > 32) {
-                invName = name.substring(0, 32);
-            }
-        }
-        final Inventory inv = Bukkit.createInventory(player, SIZE, invName);
-
-        //Populate the inventory
-        int index = 0;
-        for (Loot loot : coll.getLootList()) {
-            inv.setItem(index, loot.getInfoStack());
-            index++;
-            if (index >= SIZE - 9) {
-                player.sendMessage("§4Not all items could fit within the inventory view.");
-                break;
-            }
+        } else {
+            invName = name.substring(0, 32);
         }
 
-        //Create back buttons
+        //Create the Inventory view
+        Inventory inv = Bukkit.createInventory(null, SIZE, invName);
+
+        //Create the Back to top button
         ItemStack item = new ItemStack(Material.LADDER);
         ItemMeta info = Bukkit.getItemFactory().getItemMeta(item.getType());
         info.setDisplayName("§2Back to top...");
         item.setItemMeta(info);
         inv.setItem(SIZE - 2, item);
 
+        //Create the Up button
         item = new ItemStack(Material.LADDER);
         info = Bukkit.getItemFactory().getItemMeta(item.getType());
         info.setDisplayName("§2Up to...");
         List<String> details = new ArrayList();
-
-        final String playerName = player.getName();
-        switchingPages.put(playerName, true);
-        Loot loot = holding.get(playerName);
-        player.closeInventory();
-        if (loot != null) {
-            holding.put(playerName, loot);
-        }
-        details.add("§6" + pageStacks.get(playerName).peek().getTitle());
+        details.add("§6" + pageStacks.get(player.getName()).peek().getTitle());
         info.setLore(details);
         item.setItemMeta(info);
         inv.setItem(SIZE - 1, item);
 
+        switchView(player, inv);
+    }
+
+    /**
+     * Opens the top Inventory in the given Player's Stack
+     *
+     * @param player The given Player
+     */
+    public static void up(Player player) {
+        switchView(player, pageStacks.get(player.getName()).pop());
+    }
+
+    /**
+     * Switches the Player to viewing the given Inventory
+     *
+     * @param player The Player to open the Inventory
+     * @param inv The Inventory to open
+     */
+    public static void switchView(final Player player, final Inventory inv) {
+        String playerName = player.getName();
+        switchingPages.put(playerName, false);
+
+        //Get the Loot that the Player is holding
+        final ItemStack hand = player.getItemOnCursor();
+        Loot loot = holding.get(playerName);
+
+        //Close the old InventoryView
+        player.closeInventory();
+
+        //Re-add the Loot if there was any (it is removed onInventoryClose)
+        if (loot != null) {
+            holding.put(playerName, loot);
+        }
+
+        //Display the default Tool
         inv.setItem(TOOL_SLOT, Tool.NAVIGATE_AND_MOVE.getItem());
 
-        //Show the Add Collection Tool
-        item = new ItemStack(Material.ENDER_CHEST);
-        info = Bukkit.getItemFactory().getItemMeta(item.getType());
+        //Create the Add Collection button
+        ItemStack item = new ItemStack(Material.ENDER_CHEST);
+        ItemMeta info = Bukkit.getItemFactory().getItemMeta(item.getType());
         info.setDisplayName("§2Add new collection...");
         item.setItemMeta(info);
         inv.setItem(TOOL_SLOT + 1, item);
 
+        //Populate the inventory
+        refreshPage(player, inv, getLootList(infoViewers.get(player.getName()), inv));
+
         //Open the Inventory in 2 ticks to avoid Bukkit glitches
         new BukkitRunnable() {
             @Override
             public void run() {
+                //Open the Inventory and place the ItemStack on the cursor
                 player.openInventory(inv).setCursor(hand);
             }
         }.runTaskLater(PhatLoots.plugin, 2);
-
     }
 
     /**
-     * Opens the top Inventory in the given Players Stack
+     * Refreshes each InfoView within the Inventory
      *
-     * @param player The given Player
+     * @param player The Player viewing the Inventory
+     * @param inv The Inventory being viewed
+     * @param lootList The list of loot to display
      */
-    public static void up(final Player player, final ItemStack hand) {
-        //Pop the inventory off of the Stack
-        final String playerName = player.getName();
-        final Stack<Inventory> stack = pageStacks.get(playerName);
-
-        //Open the Inventory in 2 ticks to avoid Bukkit glitches
-        switchingPages.put(playerName, false);
-        Loot loot = holding.get(playerName);
-        player.closeInventory();
-        if (loot != null) {
-            holding.put(playerName, loot);
-        }
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-                player.openInventory(stack.pop()).setCursor(hand);
+    private static void refreshPage(Player player, Inventory inv, List<Loot> lootList) {
+        //Populate the inventory with the Loot items
+        int index = 0;
+        for (Loot loot : lootList) {
+            inv.setItem(index, loot.getInfoStack());
+            index++;
+            if (index >= TOOL_SLOT) {
+                player.sendMessage("§4Not all items could fit within the inventory view.");
+                break;
             }
-        }.runTaskLater(PhatLoots.plugin, 2);
+        }
+        //Clear the rest of the Loot slots
+        while (index < TOOL_SLOT) {
+            inv.clear(index);
+            index++;
+        }
+        player.updateInventory();
     }
+
+    /** END INVENTORY VIEWS **/
 }

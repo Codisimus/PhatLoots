@@ -522,7 +522,7 @@ public class LootCommand {
         permission = "phatloots.info"
     )
     public boolean info(Player player, PhatLoot phatLoot) {
-        PhatLootInfoListener.viewPhatLoot(player, phatLoot, null);
+        PhatLootInfoListener.viewPhatLoot(player, phatLoot);
         return true;
     }
     @CodCommand(command = "info", weight = 140.1)
