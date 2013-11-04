@@ -780,7 +780,9 @@ public class PhatLootInfoListener implements Listener {
      * @param player The given Player
      */
     public static void up(Player player) {
-        switchView(player, pageStacks.get(player.getName()).pop());
+        if (!pageStacks.isEmpty()) {
+            switchView(player, pageStacks.get(player.getName()).pop());
+        }
     }
 
     /**
