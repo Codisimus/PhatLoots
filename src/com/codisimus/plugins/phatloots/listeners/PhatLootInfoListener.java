@@ -6,7 +6,10 @@ import com.codisimus.plugins.phatloots.loot.CommandLoot;
 import com.codisimus.plugins.phatloots.loot.Item;
 import com.codisimus.plugins.phatloots.loot.Loot;
 import com.codisimus.plugins.phatloots.loot.LootCollection;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Stack;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.HumanEntity;
@@ -187,25 +190,33 @@ public class PhatLootInfoListener implements Listener {
         ItemStack stack = event.getCurrentItem();
         List<Loot> lootList = getLootList(phatLoot, inv);
         int slot = event.getRawSlot();
-        Loot loot = lootList.size() > slot ? lootList.get(slot) : null;
+        Loot loot = slot >= 0 && lootList.size() > slot ? lootList.get(slot) : null;
 
         //Check if the Player is holding a Loot
         if (holding.containsKey(playerName)) {
-            if (slot > 44) { //Minecraft crash avoidance
-                return;
-            }
             switch (event.getClick()) {
             case LEFT: //Allow
                 if (loot == null) {
-                    if (lootList.size() == slot) {
+                    if (slot == lootList.size()) { //Put down Loot
                         lootList.add(holding.remove(playerName));
-                        event.setCurrentItem(event.getCursor()); //Put down Loot
+                        event.setCurrentItem(event.getCursor());
+                    } else if (slot > lootList.size() && slot < TOOL_SLOT) { //Support adding the Loot to any slot
+                        lootList.add(holding.remove(playerName));
+                        inv.setItem(lootList.size() - 1, event.getCursor());
+                        player.updateInventory();
+                    } else if (slot == -999) { //Remove Loot
+                        holding.remove(playerName);
+                    } else {
+                        break;
                     }
+                    event.setCursor(null);
                     return;
                 }
                 break;
             case RIGHT: //Go back a page
-                up(player);
+                if (slot < 45) { //Minecraft crash avoidance
+                    up(player);
+                }
                 return;
             default: //Deny all other actions
                 return;
@@ -213,7 +224,7 @@ public class PhatLootInfoListener implements Listener {
         }
 
         /** Switch Tools **/
-        if (event.getSlot() == -999 || event.getSlot() == TOOL_SLOT) {
+        if (slot == -999 || slot == TOOL_SLOT) {
             switch (event.getClick()) {
             case LEFT: //Previous Tool
                 //Deny switching toos while holding Loot
@@ -241,7 +252,7 @@ public class PhatLootInfoListener implements Listener {
                     up(player);
                     return;
                 } else if (name.equals("§2Back to top...")) { //Back to first view
-                    viewPhatLoot(player, infoViewers.get(playerName));
+                    viewPhatLoot(player, phatLoot);
                     return;
                 }
             }
@@ -263,6 +274,27 @@ public class PhatLootInfoListener implements Listener {
         if (loot == null) {
             if (tool == Tool.NAVIGATE_AND_MOVE) {
                 switch (event.getClick()) {
+                case LEFT: //Pickup or put down an Item
+                    if (slot >= SIZE) {
+                        //Remove Loot (if holding)
+                        Loot l = holding.remove(playerName);
+                        if (stack != null) {
+                            //Only pick up AIR if they are not setting an Item down
+                            if (stack.getType() != Material.AIR || l == null) { //Pick up Item (Add loot)
+                                loot = new Item(stack, 0);
+                                holding.put(playerName, loot);
+                                event.setCursor(loot.getInfoStack());
+                                event.setCurrentItem(null);
+                            } else { //Pick up nothing
+                                event.setCursor(null);
+                            }
+                        }
+                        if (l != null && l instanceof Item) { //Put down Item
+                            event.setCurrentItem(((Item) l).getItem());
+                        }
+                        break;
+                    }
+                    break;
                 case RIGHT: //Go back a page
                     up(player);
                     break;
@@ -439,13 +471,12 @@ public class PhatLootInfoListener implements Listener {
         case NAVIGATE_AND_MOVE:
             switch (event.getClick()) {
             case LEFT: //Move Loot or Enter a Collection
-                switch (stack.getType()) {
-                case ENDER_CHEST: //Clicked a LootCollection
+                if (stack.getType() == Material.ENDER_CHEST) {
                     ItemMeta meta = stack.getItemMeta();
                     if (meta.hasDisplayName()) {
                         //Get the collection name from the item's display name
                         String name = stack.getItemMeta().getDisplayName();
-                        if (name.endsWith(" (Collection)")) {
+                        if (name.endsWith(" (Collection)")) { //Clicked a LootCollection
                             name = name.substring(2, name.length() - 13);
                             if (holding.containsKey(playerName)) { //Place Loot in Collection
                                 Loot l = holding.remove(playerName);
@@ -454,24 +485,22 @@ public class PhatLootInfoListener implements Listener {
                             } else { //Enter LootCollection
                                 viewCollection(player, name);
                             }
+                            return;
                         }
                     }
-                    break;
-                default: //Clicked some other Loot
-                    if (holding.containsKey(playerName)) { //Swap Loot
-                        Loot l = holding.remove(playerName);
-                        holding.put(playerName, lootList.get(slot));
-                        lootList.set(slot, l);
-                        event.setCurrentItem(event.getCursor()); //Put down Loot
-                        event.setCursor(stack); //Pick up new Loot
-                    } else { //Pick up Loot
-                        holding.put(playerName, lootList.remove(slot));
-                        event.setCursor(stack);
-                        if (slot != lootList.size() - 1) {
-                            refreshPage(player, inv, lootList); //Shifts remaining loot down
-                        }
-                    }
-                    break;
+                }
+
+                //Clicked some other Loot
+                if (holding.containsKey(playerName)) { //Swap Loot
+                    Loot l = holding.remove(playerName);
+                    holding.put(playerName, lootList.get(slot));
+                    lootList.set(slot, l);
+                    event.setCurrentItem(event.getCursor()); //Put down Loot
+                    event.setCursor(stack); //Pick up new Loot
+                } else { //Pick up Loot
+                    holding.put(playerName, lootList.remove(slot));
+                    event.setCursor(stack);
+                    refreshPage(player, inv, lootList); //Shifts remaining loot down
                 }
                 break;
             case RIGHT: //Go back a page
@@ -493,9 +522,7 @@ public class PhatLootInfoListener implements Listener {
                 break;
             case MIDDLE: //Remove Loot
                 lootList.remove(slot);
-                if (slot != lootList.size() - 1) {
-                    refreshPage(player, inv, lootList); //Shifts remaining loot down
-                }
+                refreshPage(player, inv, lootList); //Shifts remaining loot down
             }
             break;
 
@@ -530,7 +557,7 @@ public class PhatLootInfoListener implements Listener {
                     ((CommandLoot) loot).tempOP = !((CommandLoot) loot).tempOP;
                 }
                 break;
-            case MIDDLE: //Toggle tieredName/breakAndRespawn/autoLoot/global
+            case MIDDLE: //Toggle tieredName
                 if (loot instanceof Item) {
                     ((Item) loot).tieredName = !((Item) loot).tieredName;
                 }
@@ -740,7 +767,10 @@ public class PhatLootInfoListener implements Listener {
      * @param player The given Player
      * @param name The name of the LootCollection to open
      */
-    public static void viewCollection(Player player, String name) {
+    private static void viewCollection(Player player, String name) {
+        //Store the current view in the Player's stack
+        pageStacks.get(player.getName()).add(player.getOpenInventory().getTopInventory());
+
         //Get the Inventory title
         String invName;
         if (name.length() < 20) {
@@ -779,7 +809,7 @@ public class PhatLootInfoListener implements Listener {
      *
      * @param player The given Player
      */
-    public static void up(Player player) {
+    private static void up(Player player) {
         if (!pageStacks.isEmpty()) {
             switchView(player, pageStacks.get(player.getName()).pop());
         }
@@ -791,7 +821,7 @@ public class PhatLootInfoListener implements Listener {
      * @param player The Player to open the Inventory
      * @param inv The Inventory to open
      */
-    public static void switchView(final Player player, final Inventory inv) {
+    private static void switchView(final Player player, final Inventory inv) {
         String playerName = player.getName();
         switchingPages.put(playerName, false);
 
