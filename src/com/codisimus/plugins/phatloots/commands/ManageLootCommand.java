@@ -47,7 +47,7 @@ public class ManageLootCommand {
         permission = "phatloots.manage"
     )
     public boolean addHand(Player player, String[] args) {
-        setItem(player, true, player.getItemInHand(), args);
+        setItem(player, true, player.getItemInHand().clone(), args);
         return true;
     }
 
