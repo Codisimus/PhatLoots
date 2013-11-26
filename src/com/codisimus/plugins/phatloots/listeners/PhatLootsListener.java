@@ -57,15 +57,19 @@ public class PhatLootsListener implements Listener {
             String pName = map.containsKey(world)
                            ? map.get(world)
                            : map.get("all");
-            PhatLoot phatLoot = PhatLoots.getPhatLoot(pName);
-            if (phatLoot == null) {
-                PhatLoots.logger.warning("PhatLoot " + pName + " does not exist.");
-                PhatLoots.logger.warning("Please adjust your config or create the PhatLoot");
-            }
+            if (pName != null) {
+                PhatLoot phatLoot = PhatLoots.getPhatLoot(pName);
+                if (phatLoot == null) {
+                    PhatLoots.logger.warning("PhatLoot " + pName + " does not exist.");
+                    PhatLoots.logger.warning("Please adjust your config or create the PhatLoot");
+                }
 
-            phatLoots = new LinkedList<PhatLoot>();
-            phatLoots.add(phatLoot);
-        } else {
+                phatLoots = new LinkedList<PhatLoot>();
+                phatLoots.add(phatLoot);
+            }
+        }
+
+        if (phatLoots == null) {
             Block block = event.getClickedBlock();
             if (!PhatLootChest.isPhatLootChest(block)) {
                 return;
