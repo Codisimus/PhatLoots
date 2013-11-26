@@ -11,6 +11,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.configuration.serialization.SerializableAs;
 import org.bukkit.entity.Player;
+import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
@@ -137,6 +138,43 @@ public class CommandLoot extends Loot {
         info.setLore(details);
         infoStack.setItemMeta(info);
         return infoStack;
+    }
+
+    /**
+     * Toggles a Loot setting depending on the type of Click
+     *
+     * @param click The type of Click (Only SHIFT_LEFT and SHIFT_RIGHT are used)
+     * @return true if the Loot InfoStack should be refreshed
+     */
+    @Override
+    public boolean onToggle(ClickType click) {
+        switch (click) {
+        case SHIFT_LEFT:
+            fromConsole = !fromConsole;
+            break;
+        case SHIFT_RIGHT:
+            tempOP = !tempOP;
+            break;
+        default:
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * @return false because this type of Loot has no amount
+     */
+    @Override
+    public boolean modifyAmount(int amount, boolean both) {
+        return false;
+    }
+
+    /**
+     * @return false because this type of Loot has no amount
+     */
+    @Override
+    public boolean resetAmount() {
+        return false;
     }
 
     @Override

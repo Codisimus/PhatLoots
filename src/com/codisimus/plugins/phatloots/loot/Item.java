@@ -12,6 +12,7 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.serialization.SerializableAs;
 import org.bukkit.enchantments.Enchantment;
+import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
@@ -238,6 +239,67 @@ public class Item extends Loot {
         info.setLore(details);
         infoStack.setItemMeta(info);
         return infoStack;
+    }
+
+    /**
+     * Toggles a Loot setting depending on the type of Click
+     *
+     * @param click The type of Click (Only SHIFT_LEFT, SHIFT_RIGHT, and MIDDLE are used)
+     * @return true if the Loot InfoStack should be refreshed
+     */
+    @Override
+    public boolean onToggle(ClickType click) {
+        switch (click) {
+        case SHIFT_LEFT:
+            autoEnchant = !autoEnchant;
+            break;
+        case SHIFT_RIGHT:
+            generateName = !generateName;
+            break;
+        case MIDDLE:
+            tieredName = !tieredName;
+            break;
+        default:
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Modifies the amount associated with the Loot
+     *
+     * @param amount The amount to modify by (may be negative)
+     * @param both true if both lower and upper ranges should be modified, false for only the upper range
+     * @return true if the Loot InfoStack should be refreshed
+     */
+    @Override
+    public boolean modifyAmount(int amount, boolean both) {
+        if (both) {
+            item.setAmount(item.getAmount() + amount);
+            //Loop negative amount back to the Max Stack Size
+            if (item.getAmount() < 0) {
+                item.setAmount(item.getMaxStackSize());
+            }
+        } else {
+            amountBonus += amount;
+            //Loop negative amount back to 50
+            if (amountBonus < 0) {
+                amountBonus = 50;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Resets the amount of Loot to 1
+     *
+     * @return true if the Loot InfoStack should be refreshed
+     */
+    @Override
+    public boolean resetAmount() {
+        item.setAmount(1);
+        amountBonus = 0;
+        return true;
     }
 
     /**

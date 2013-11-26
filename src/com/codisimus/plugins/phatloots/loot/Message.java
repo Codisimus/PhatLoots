@@ -12,6 +12,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.configuration.serialization.SerializableAs;
 import org.bukkit.entity.Player;
+import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
@@ -81,6 +82,30 @@ public class Message extends Loot {
         //Construct the ItemStack and return it
         infoStack.setItemMeta(info);
         return infoStack;
+    }
+
+    /**
+     * @return false because this type of Loot has no toggleable settings
+     */
+    @Override
+    public boolean onToggle(ClickType click) {
+        return false;
+    }
+
+    /**
+     * @return false because this type of Loot has no amount
+     */
+    @Override
+    public boolean modifyAmount(int amount, boolean both) {
+        return false;
+    }
+
+    /**
+     * @return false because this type of Loot has no amount
+     */
+    @Override
+    public boolean resetAmount() {
+        return false;
     }
 
     @Override

@@ -1,4 +1,4 @@
-package com.codisimus.plugins.phatloots.listeners;
+package com.codisimus.plugins.phatloots.gui;
 
 import com.codisimus.plugins.phatloots.PhatLoot;
 import com.codisimus.plugins.phatloots.PhatLoots;
@@ -30,122 +30,22 @@ import org.bukkit.scheduler.BukkitRunnable;
  *
  * @author Cody
  */
-public class PhatLootInfoListener implements Listener {
+public class InventoryListener implements Listener {
     private final static int SIZE = 54;
-    private final static int TOOL_SLOT = SIZE - 9;
+    final static int TOOL_SLOT = SIZE - 9;
     private static HashMap<String, Boolean> switchingPages = new HashMap<String, Boolean>(); //Player name -> Going deeper (true) or back (false)
     private static HashMap<String, PhatLoot> infoViewers = new HashMap<String, PhatLoot>(); //Player name -> PhatLoot they are viewing
     private static HashMap<String, Stack<Inventory>> pageStacks = new HashMap<String, Stack<Inventory>>(); //Player name -> Page history
     private static HashMap<String, Loot> holding = new HashMap<String, Loot>();
-    private static enum Tool {
-        NAVIGATE_AND_MOVE(0, Material.LEASH),
-        MODIFY_PROBABILITY_AND_TOGGLE(1, Material.NAME_TAG),
-        MODIFY_AMOUNT(2, Material.GOLD_NUGGET);
+    private static HashMap<Integer, Button> buttons = new HashMap<Integer, Button>();
 
-        private int id;
-        private Material mat;
-
-        private Tool(int id, Material mat) {
-            this.id = id;
-            this.mat = mat;
-        }
-
-        int getID() {
-            return id;
-        }
-
-        ItemStack getItem() {
-            ItemStack item = new ItemStack(mat);
-            ItemMeta meta = Bukkit.getItemFactory().getItemMeta(mat);
-            List<String> lore = new ArrayList<String>();
-
-            switch (this) {
-            case NAVIGATE_AND_MOVE:
-                meta.setDisplayName("§2Navigate/Move (Click to change Tool)");
-                lore.add("§4LEFT CLICK:");
-                lore.add("§6 Enter a Collection");
-                lore.add("§4RIGHT CLICK:");
-                lore.add("§6 Leave a Collection");
-                lore.add("§4SHIFT + LEFT CLICK:");
-                lore.add("§6 Shift a Loot to the Left");
-                lore.add("§4SHIFT + RIGHT CLICK:");
-                lore.add("§6 Shift a Loot to the Right");
-                lore.add("§4SCROLL CLICK:");
-                lore.add("§6 Remove a Loot/Add an Item (from inventory)");
-                break;
-            case MODIFY_PROBABILITY_AND_TOGGLE:
-                meta.setDisplayName("§2Modify Probability/Toggle (Click to change Tool)");
-                lore.add("§4LEFT CLICK:");
-                lore.add("§6 +1 Probability");
-                lore.add("§4DOUBLE LEFT CLICK:");
-                lore.add("§6 +10 Probability");
-                lore.add("§4RIGHT CLICK:");
-                lore.add("§6 -1 Probability");
-                lore.add("§4SHIFT + LEFT CLICK:");
-                lore.add("§6 Toggle AutoEnchant/FromConsole");
-                lore.add("§4SHIFT + RIGHT CLICK:");
-                lore.add("§6 Toggle GenerateName/TempOP");
-                lore.add("§4SCROLL CLICK:");
-                lore.add("§6 Toggle TieredName and Loot table settings");
-                break;
-            case MODIFY_AMOUNT:
-                meta.setDisplayName("§2Modify Amount (Click to change Tool)");
-                lore.add("§4LEFT CLICK:");
-                lore.add("§6 +1 Amount");
-                lore.add("§4DOUBLE LEFT CLICK:");
-                lore.add("§6 +10 Amount");
-                lore.add("§4RIGHT CLICK:");
-                lore.add("§6 -1 Amount");
-                lore.add("§4SHIFT + LEFT CLICK:");
-                lore.add("§6 +1 Amount (Upper Range)");
-                lore.add("§4SHIFT + RIGHT CLICK:");
-                lore.add("§6 -1 Amount (Upper Range)");
-                lore.add("§4SCROLL CLICK:");
-                lore.add("§6 Set Amount to 1 and Clear time/exp/money");
-                break;
-            default:
-                break;
-            }
-
-            meta.setLore(lore);
-            item.setItemMeta(meta);
-            return item;
-        }
-
-        Tool prevTool() {
-            int toolID = id - 1;
-            if (toolID < 0) {
-                toolID = Tool.values().length - 1;
-            }
-            return getToolByID(toolID);
-        }
-
-        Tool nextTool() {
-            int toolID = id + 1;
-            if (toolID >= Tool.values().length) {
-                toolID = 0;
-            }
-            return getToolByID(toolID);
-        }
-
-        static Tool getToolByID(int id) {
-            for (Tool tool : Tool.values()) {
-                if (tool.id == id) {
-                    return tool;
-                }
-            }
-            return null;
-        }
-
-        static Tool getTool(ItemStack item) {
-            Material mat = item.getType();
-            for (Tool tool : Tool.values()) {
-                if (tool.mat == mat) {
-                    return tool;
-                }
-            }
-            return null;
-        }
+    /**
+     * Registers a Button to be added to GUI pages
+     *
+     * @param button The Button to register
+     */
+    public static void registerButton(Button button) {
+        buttons.put(button.getSlot(), button);
     }
 
     /**
@@ -258,15 +158,11 @@ public class PhatLootInfoListener implements Listener {
             }
         }
 
-        /** Create a new LootCollection **/
-        if (slot == TOOL_SLOT + 1) {
-            //Find a unique collection name for the PhatLoot
-            int i = 1;
-            while (phatLoot.findCollection(String.valueOf(i)) != null) {
-                i++;
+        /** Check if a Button was Clicked **/
+        if (buttons.containsKey(slot)) {
+            if (buttons.get(slot).onClick(inv, phatLoot, lootList)) {
+                refreshPage(player, inv, lootList);
             }
-            lootList.add(new LootCollection(String.valueOf(i)));
-            refreshPage(player, inv, lootList);
             return;
         }
 
@@ -543,34 +439,19 @@ public class PhatLootInfoListener implements Listener {
                     loot.setProbability(loot.getProbability() + 100);
                 }
                 break;
-            case SHIFT_LEFT: //Toggle autoEnchant/fromConsole
-                if (loot instanceof Item) {
-                    ((Item) loot).autoEnchant = !((Item) loot).autoEnchant;
-                } else if (loot instanceof CommandLoot) {
-                    ((CommandLoot) loot).fromConsole = !((CommandLoot) loot).fromConsole;
-                }
-                break;
-            case SHIFT_RIGHT: //Toggle generateName/tempOP
-                if (loot instanceof Item) {
-                    ((Item) loot).generateName = !((Item) loot).generateName;
-                } else if (loot instanceof CommandLoot) {
-                    ((CommandLoot) loot).tempOP = !((CommandLoot) loot).tempOP;
-                }
-                break;
-            case MIDDLE: //Toggle tieredName
-                if (loot instanceof Item) {
-                    ((Item) loot).tieredName = !((Item) loot).tieredName;
-                }
-                break;
             default:
-                return;
+                if (loot.onToggle(event.getClick())) {
+                    break;
+                } else {
+                    return;
+                }
             }
             event.setCurrentItem(loot.getInfoStack());
             break;
 
         case MODIFY_AMOUNT:
-            int amount = 0;
-            boolean both = false;
+            int amount;
+            boolean both;
             switch (event.getClick()) {
             case LEFT: //+1 amount
                 amount = 1;
@@ -593,50 +474,17 @@ public class PhatLootInfoListener implements Listener {
                 both = false;
                 break;
             case MIDDLE: //Set amount to 1
-                if (loot instanceof Item) {
-                    ((Item) loot).item.setAmount(1);
-                    ((Item) loot).amountBonus = 0;
-                } else if (loot instanceof LootCollection) {
-                    ((LootCollection) loot).lowerNumberOfLoots = 1;
-                    ((LootCollection) loot).upperNumberOfLoots = 1;
-                } else {
-                    break;
+                if (loot.resetAmount()) {
+                    event.setCurrentItem(loot.getInfoStack());
                 }
-                event.setCurrentItem(loot.getInfoStack());
                 return;
             default:
                 return;
             }
 
-            if (loot instanceof Item) {
-                if (both) {
-                    ((Item) loot).item.setAmount(((Item) loot).item.getAmount() + amount);
-                    //Loop negative amount back to the Max Stack Size
-                    if (((Item) loot).item.getAmount() < 0) {
-                        ((Item) loot).item.setAmount(((Item) loot).item.getMaxStackSize());
-                    }
-                } else {
-                    ((Item) loot).amountBonus += amount;
-                    //Loop negative amount back to 50
-                    if (((Item) loot).amountBonus < 0) {
-                        ((Item) loot).amountBonus = 50;
-                    }
-                }
-            } else if (loot instanceof LootCollection) {
-                if (both) {
-                    ((LootCollection) loot).lowerNumberOfLoots += amount;
-                    //Do not allow negative amounts
-                    if (((LootCollection) loot).lowerNumberOfLoots < 0) {
-                        ((LootCollection) loot).lowerNumberOfLoots = 0;
-                    }
-                }
-                ((LootCollection) loot).upperNumberOfLoots += amount;
-                //Do not allow negative amounts
-                if (((LootCollection) loot).upperNumberOfLoots < ((LootCollection) loot).lowerNumberOfLoots) {
-                    ((LootCollection) loot).upperNumberOfLoots = ((LootCollection) loot).lowerNumberOfLoots;
-                }
+            if (loot.modifyAmount(amount, both)) {
+                event.setCurrentItem(loot.getInfoStack());
             }
-            event.setCurrentItem(loot.getInfoStack());
             break;
         }
     }
@@ -856,12 +704,10 @@ public class PhatLootInfoListener implements Listener {
         //Display the default Tool
         inv.setItem(TOOL_SLOT, Tool.NAVIGATE_AND_MOVE.getItem());
 
-        //Create the Add Collection button
-        ItemStack item = new ItemStack(Material.ENDER_CHEST);
-        ItemMeta info = Bukkit.getItemFactory().getItemMeta(item.getType());
-        info.setDisplayName("§2Add new collection...");
-        item.setItemMeta(info);
-        inv.setItem(TOOL_SLOT + 1, item);
+        //Add Buttons to view
+        for (int i = 1; i < buttons.size(); i++) {
+            inv.setItem(TOOL_SLOT + i, buttons.get(i).getItem());
+        }
 
         //Populate the inventory
         refreshPage(player, inv, getLootList(infoViewers.get(player.getName()), inv));

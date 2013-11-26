@@ -2,6 +2,7 @@ package com.codisimus.plugins.phatloots.loot;
 
 import com.codisimus.plugins.phatloots.PhatLoots;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
+import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.ItemStack;
 
 /**
@@ -27,6 +28,30 @@ public abstract class Loot implements Comparable, ConfigurationSerializable {
      * @return An ItemStack representation of the Loot
      */
     public abstract ItemStack getInfoStack();
+
+    /**
+     * Toggles a Loot setting depending on the type of Click
+     *
+     * @param click The type of Click (Only SHIFT_LEFT, SHIFT_RIGHT, and MIDDLE are used)
+     * @return true if the Loot InfoStack should be refreshed
+     */
+    public abstract boolean onToggle(ClickType click);
+
+    /**
+     * Modifies the amount associated with the Loot
+     *
+     * @param amount The amount to modify by (may be negative)
+     * @param both true if both lower and upper ranges should be modified, false for only the upper range
+     * @return true if the Loot InfoStack should be refreshed
+     */
+    public abstract boolean modifyAmount(int amount, boolean both);
+
+    /**
+     * Resets the amount of Loot to 1
+     *
+     * @return true if the Loot InfoStack should be refreshed
+     */
+    public abstract boolean resetAmount();
 
     /**
      * Returns the chance of looting

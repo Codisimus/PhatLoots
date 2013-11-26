@@ -6,7 +6,7 @@ import com.codisimus.plugins.phatloots.PhatLoot;
 import com.codisimus.plugins.phatloots.PhatLoots;
 import com.codisimus.plugins.phatloots.PhatLootsConfig;
 import com.codisimus.plugins.phatloots.commands.CommandHandler.CodCommand;
-import com.codisimus.plugins.phatloots.listeners.PhatLootInfoListener;
+import com.codisimus.plugins.phatloots.gui.InventoryListener;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -522,7 +522,7 @@ public class LootCommand {
         permission = "phatloots.info"
     )
     public boolean info(Player player, PhatLoot phatLoot) {
-        PhatLootInfoListener.viewPhatLoot(player, phatLoot);
+        InventoryListener.viewPhatLoot(player, phatLoot);
         return true;
     }
     @CodCommand(command = "info", weight = 140.1)

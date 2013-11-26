@@ -3,10 +3,14 @@ package com.codisimus.plugins.phatloots.loot;
 import com.codisimus.plugins.phatloots.PhatLoot;
 import com.codisimus.plugins.phatloots.PhatLoots;
 import com.codisimus.plugins.phatloots.PhatLootsConfig;
+import com.codisimus.plugins.phatloots.gui.Button;
+import com.codisimus.plugins.phatloots.gui.InventoryListener;
 import java.util.*;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.configuration.serialization.SerializableAs;
+import org.bukkit.event.inventory.ClickType;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
@@ -23,8 +27,36 @@ public class LootCollection extends Loot {
     public int upperNumberOfLoots;
     private LinkedList<Loot> lootList;
 
+    private static class AddCollectionButton extends Button {
+        private AddCollectionButton(ItemStack item) {
+            super(item);
+        }
+
+        @Override
+        public boolean onClick(Inventory inv, PhatLoot phatLoot, List<Loot> lootList) {
+            //Find a unique collection name for the PhatLoot
+            int i = 1;
+            while (phatLoot.findCollection(String.valueOf(i)) != null) {
+                i++;
+            }
+            //Add a new Collection
+            lootList.add(new LootCollection(String.valueOf(i)));
+            return true;
+        }
+    }
+
+    static {
+        //Register the Add Collection Button
+        ItemStack item = new ItemStack(Material.ENDER_CHEST);
+        ItemMeta info = Bukkit.getItemFactory().getItemMeta(item.getType());
+        info.setDisplayName("§2Add new collection...");
+        item.setItemMeta(info);
+
+        InventoryListener.registerButton(new AddCollectionButton(item));
+    }
+
     /**
-     * Contructs a new LootCollection with the given name
+     * Constructs a new LootCollection with the given name
      *
      * @param name The given name
      */
@@ -36,7 +68,7 @@ public class LootCollection extends Loot {
     }
 
     /**
-     * Contructs a new LootCollection with the given name and range
+     * Constructs a new LootCollection with the given name and range
      *
      * @param name The given name
      * @param lowerNumberOfLoots The lower bound of the range
@@ -167,6 +199,50 @@ public class LootCollection extends Loot {
         info.setLore(details);
         infoStack.setItemMeta(info);
         return infoStack;
+    }
+
+    /**
+     * @return false because this type of Loot has no toggleable settings
+     */
+    @Override
+    public boolean onToggle(ClickType click) {
+        return false;
+    }
+
+    /**
+     * Modifies the amount associated with the Loot
+     *
+     * @param amount The amount to modify by (may be negative)
+     * @param both true if both lower and upper ranges should be modified, false for only the upper range
+     * @return true if the Loot InfoStack should be refreshed
+     */
+    @Override
+    public boolean modifyAmount(int amount, boolean both) {
+        if (both) {
+            lowerNumberOfLoots += amount;
+            //Do not allow negative amounts
+            if (lowerNumberOfLoots < 0) {
+                lowerNumberOfLoots = 0;
+            }
+        }
+        upperNumberOfLoots += amount;
+        //Do not allow negative amounts
+        if (upperNumberOfLoots < lowerNumberOfLoots) {
+            upperNumberOfLoots = lowerNumberOfLoots;
+        }
+        return true;
+    }
+
+    /**
+     * Resets the amount of Loot to 1
+     *
+     * @return true if the Loot InfoStack should be refreshed
+     */
+    @Override
+    public boolean resetAmount() {
+        lowerNumberOfLoots = 1;
+        upperNumberOfLoots = 1;
+        return true;
     }
 
     /**

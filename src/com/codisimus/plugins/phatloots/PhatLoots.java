@@ -1,5 +1,6 @@
 package com.codisimus.plugins.phatloots;
 
+import com.codisimus.plugins.phatloots.gui.InventoryListener;
 import com.codisimus.plugins.phatloots.commands.CommandHandler;
 import com.codisimus.plugins.phatloots.commands.LootCommand;
 import com.codisimus.plugins.phatloots.commands.ManageLootCommand;
@@ -135,7 +136,7 @@ public class PhatLoots extends JavaPlugin {
         /* Register Events */
         PluginManager pm = Bukkit.getPluginManager();
         pm.registerEvents(new PhatLootsListener(), this);
-        pm.registerEvents(new PhatLootInfoListener(), this);
+        pm.registerEvents(new InventoryListener(), this);
         if (pm.isPluginEnabled("Citizens")) {
             logger.info("Listening for Citizens NPC deaths");
             pm.registerEvents(new CitizensListener(), this);
