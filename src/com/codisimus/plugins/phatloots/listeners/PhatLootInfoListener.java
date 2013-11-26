@@ -611,14 +611,30 @@ public class PhatLootInfoListener implements Listener {
             if (loot instanceof Item) {
                 if (both) {
                     ((Item) loot).item.setAmount(((Item) loot).item.getAmount() + amount);
+                    //Loop negative amount back to the Max Stack Size
+                    if (((Item) loot).item.getAmount() < 0) {
+                        ((Item) loot).item.setAmount(((Item) loot).item.getMaxStackSize());
+                    }
                 } else {
                     ((Item) loot).amountBonus += amount;
+                    //Loop negative amount back to 50
+                    if (((Item) loot).amountBonus < 0) {
+                        ((Item) loot).amountBonus = 50;
+                    }
                 }
             } else if (loot instanceof LootCollection) {
                 if (both) {
                     ((LootCollection) loot).lowerNumberOfLoots += amount;
+                    //Do not allow negative amounts
+                    if (((LootCollection) loot).lowerNumberOfLoots < 0) {
+                        ((LootCollection) loot).lowerNumberOfLoots = 0;
+                    }
                 }
                 ((LootCollection) loot).upperNumberOfLoots += amount;
+                //Do not allow negative amounts
+                if (((LootCollection) loot).upperNumberOfLoots < ((LootCollection) loot).lowerNumberOfLoots) {
+                    ((LootCollection) loot).upperNumberOfLoots = ((LootCollection) loot).lowerNumberOfLoots;
+                }
             }
             event.setCurrentItem(loot.getInfoStack());
             break;
