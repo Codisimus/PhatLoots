@@ -55,7 +55,7 @@ public class PhatLoots extends JavaPlugin {
         }
 
         //Respawn all chests
-        for (PhatLootChest chest : PhatLootChest.chestsToRespawn) {
+        for (PhatLootChest chest : (Collection<PhatLootChest>) PhatLootChest.chestsToRespawn.clone()) {
             chest.respawn(RespawnReason.PLUGIN_DISABLED);
         }
     }
