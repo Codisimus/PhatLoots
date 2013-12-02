@@ -206,7 +206,7 @@ public class PhatLootChest {
             state.update(true);
         }
         Block block = getBlock();
-        block.setTypeId(0);
+        block.setType(Material.AIR);
 
         //Set the new Block
         x = target.getX();
@@ -246,7 +246,7 @@ public class PhatLootChest {
         }
 
         //Set the Block to AIR
-        block.setTypeId(0);
+        block.setType(Material.AIR);
 
         //Schedule the chest to respawn
         if (event.getRespawnTime() > 0) {
@@ -275,6 +275,7 @@ public class PhatLootChest {
                 return;
             }
 
+            Bukkit.broadcastMessage(event.getRespawnTime() + "");
             if (event.getRespawnTime() > 0) {
                 new BukkitRunnable() {
                     @Override
@@ -284,6 +285,15 @@ public class PhatLootChest {
                 }.runTaskLater(PhatLoots.plugin, event.getRespawnTime());
             } else {
                 state.update(true);
+                //Hack to fix a Bukkit bug of Skulls not updating properly
+                if (state instanceof Skull) {
+                    Skull oldState = (Skull) state;
+                    Skull newState = (Skull) state.getBlock().getState();
+                    newState.setSkullType(oldState.getSkullType());
+                    newState.setRotation(oldState.getRotation());
+                    newState.setOwner(oldState.getOwner());
+                    newState.update();
+                }
                 state = null;
                 chestsToRespawn.remove(this);
             }
