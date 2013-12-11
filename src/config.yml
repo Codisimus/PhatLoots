@@ -83,6 +83,7 @@ ReplaceMobLoot: true
 
 ##If set to true then Mobs will not drop any items/exp unless they are killed by a Player
 OnlyDropLootWhenKilledByPlayer: false
+OnlyDropExpWhenKilledByPlayer: false
 
 
 ##If Mobs spawn with items through this plugin, this is the chance that the item will be dropped (0 - 100)

@@ -32,7 +32,8 @@ import org.bukkit.inventory.ItemStack;
 public class PhatLoot implements ConfigurationSerializable {
     public static String current; //The currently loadeding PhatLoot (used for debugging)
     public static String last; //The last successfully loaded PhatLoot (used for debugging)
-    static boolean onlyDropOnPlayerKill; //True if mobs should drop loot when dying of natural causes
+    static boolean onlyDropLootOnPlayerKill; //True if mobs should drop loot when dying of natural causes
+    static boolean onlyDropExpOnPlayerKill; //True if mobs should drop experience when dying of natural causes
     static boolean replaceMobLoot; //False if default mob loot should still be present
     static float chanceOfDrop; //The chance of mobs dropping their loot armor
     public static double lootingBonusPerLvl;
@@ -425,8 +426,10 @@ public class PhatLoot implements ConfigurationSerializable {
      * @return The amount of experience that the mob should drop
      */
     public int rollForMobDrops(LivingEntity mob, Player player, List<ItemStack> drops) {
-        if (onlyDropOnPlayerKill && player == null) {
+        if (onlyDropLootOnPlayerKill && player == null) {
             drops.clear(); //Drop no items
+        }
+        if (onlyDropExpOnPlayerKill && player == null) {
             return 0; //Drop no experience
         }
 
