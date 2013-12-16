@@ -64,6 +64,20 @@ public class LootCommand {
     }
 
     @CodCommand(
+        command = "rename",
+        weight = 21,
+        usage = {
+            "§2<command> <Name> <NewName>§b Rename a PhatLoot collection"
+        },
+        permission = "phatloots.make"
+    )
+    public boolean rename(CommandSender sender, PhatLoot phatLoot, String coll, String name) {
+        phatLoot.findCollection(coll).name = name;
+        sender.sendMessage("§5Collection renamed to §6" + name);
+        return true;
+    }
+
+    @CodCommand(
         command = "link",
         subcommand = "hand",
         weight = 30,
@@ -513,7 +527,8 @@ public class LootCommand {
     }
 
     @CodCommand(
-        command = "info",
+        command = "gui",
+        aliases = {"info"},
         weight = 140,
         usage = {
             "§2<command> [Name]§b Open info GUI of PhatLoot",
