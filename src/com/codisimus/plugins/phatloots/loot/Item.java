@@ -23,6 +23,11 @@ import org.bukkit.inventory.meta.ItemMeta;
  */
 @SerializableAs("Item")
 public class Item extends Loot {
+    /* SECTIONS */
+    private static final String BASE_VALUES = "BaseValues";
+    private static final String ENCHANTMENT_VALUES = "EnchantmentValues";
+    private static final String TIERS = "TIERS";
+    private static final String DIVIDER = ".";
     /* TAGS */
     private static final String ARMOR = "ARMOR";
     private static final String SWORD = "SWORD";
@@ -108,7 +113,7 @@ public class Item extends Loot {
     );
     public static int tierNotify;
     public static FileConfiguration loreConfig;
-    public static ConfigurationSection tiersConfig;
+    public static FileConfiguration tiersConfig;
     public static FileConfiguration enchantmentConfig;
     public static boolean damageTags;
     public static String damageString;
@@ -787,59 +792,11 @@ public class Item extends Loot {
      * @param nameBuilder The StringBuilder that will be changed to the new name
      */
     private void getTieredName(ItemStack item, StringBuilder nameBuilder) {
-        Material mat = item.getType();
+        int tier = tiersConfig.getInt(BASE_VALUES + DIVIDER + item.getType().name());
+
         Map<Enchantment, Integer> enchantments = item.getEnchantments();
-
-        //Tier starts at 0 and is incremented by 5 for each enchantment level
-        int tier = 0;
-        for (Integer i : enchantments.values()) {
-            tier += i.intValue();
-        }
-        tier *= 5;
-
-        //Increase the tier based on the metal type of the item
-        switch (mat) {
-        case DIAMOND_SWORD:
-        case DIAMOND_AXE:
-        case DIAMOND_HELMET:
-        case DIAMOND_CHESTPLATE:
-        case DIAMOND_LEGGINGS:
-        case DIAMOND_BOOTS:
-            tier += 30;
-            break;
-
-        case IRON_SWORD:
-        case IRON_AXE:
-        case IRON_HELMET:
-        case IRON_CHESTPLATE:
-        case IRON_LEGGINGS:
-        case IRON_BOOTS:
-            tier += 20;
-            break;
-
-        case GOLD_SWORD:
-        case GOLD_AXE:
-        case GOLD_HELMET:
-        case GOLD_CHESTPLATE:
-        case GOLD_LEGGINGS:
-        case GOLD_BOOTS:
-            tier += 20;
-            break;
-
-        case STONE_SWORD:
-        case STONE_AXE:
-        case CHAINMAIL_HELMET:
-        case CHAINMAIL_CHESTPLATE:
-        case CHAINMAIL_LEGGINGS:
-        case CHAINMAIL_BOOTS:
-            tier += 10;
-            break;
-
-        case BOW:
-            tier = tier * 3;
-            break;
-
-        default: break;
+        for (Enchantment e : enchantments.keySet()) {
+            tier += tiersConfig.getInt(ENCHANTMENT_VALUES + DIVIDER + e.getName() + DIVIDER + enchantments.get(e));
         }
 
         //Add the suffix and prefix for the given tier

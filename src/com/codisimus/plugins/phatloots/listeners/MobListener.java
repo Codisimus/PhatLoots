@@ -206,7 +206,10 @@ public abstract class MobListener implements Listener {
         return PhatLoots.getPhatLoot(type);
     }
 
-    private static String toCamelCase(Enum type){
+    private static String toCamelCase(Enum type) {
+        if (type == null) {
+            return "Normal";
+        }
         String s = type.name();
         String[] parts = s.split("_");
         String camelCaseString = "";

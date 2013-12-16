@@ -208,7 +208,7 @@ public class PhatLootsConfig {
                 PhatLoots.plugin.saveResource(fileName, true);
             }
 
-            Item.tiersConfig = YamlConfiguration.loadConfiguration(file).getConfigurationSection("TIERS");
+            Item.tiersConfig = YamlConfiguration.loadConfiguration(file);
         } catch (Exception ex) {
             PhatLoots.logger.log(Level.SEVERE, "Failed to load " + fileName, ex);
         }
