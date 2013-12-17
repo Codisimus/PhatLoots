@@ -78,6 +78,7 @@ public class LootCommand {
             return false;
         }
         coll.name = newName;
+        phatLoot.save();
         sender.sendMessage("§5Collection renamed to §6" + name);
         return true;
     }
