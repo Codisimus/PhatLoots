@@ -7,6 +7,7 @@ import com.codisimus.plugins.phatloots.PhatLoots;
 import com.codisimus.plugins.phatloots.PhatLootsConfig;
 import com.codisimus.plugins.phatloots.commands.CommandHandler.CodCommand;
 import com.codisimus.plugins.phatloots.gui.InventoryListener;
+import com.codisimus.plugins.phatloots.loot.LootCollection;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -71,8 +72,12 @@ public class LootCommand {
         },
         permission = "phatloots.make"
     )
-    public boolean rename(CommandSender sender, PhatLoot phatLoot, String coll, String name) {
-        phatLoot.findCollection(coll).name = name;
+    public boolean rename(CommandSender sender, PhatLoot phatLoot, String name, String newName) {
+        LootCollection coll = phatLoot.findCollection(name);
+        if (coll == null) {
+            return false;
+        }
+        coll.name = newName;
         sender.sendMessage("§5Collection renamed to §6" + name);
         return true;
     }
