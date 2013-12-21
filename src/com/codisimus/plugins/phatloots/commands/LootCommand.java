@@ -542,12 +542,12 @@ public class LootCommand {
         },
         permission = "phatloots.info"
     )
-    public boolean info(Player player, PhatLoot phatLoot) {
+    public boolean gui(Player player, PhatLoot phatLoot) {
         InventoryListener.viewPhatLoot(player, phatLoot);
         return true;
     }
-    @CodCommand(command = "info", weight = 140.1)
-    public boolean info(CommandSender sender, PhatLoot phatLoot) {
+    @CodCommand(command = "gui", weight = 140.1)
+    public boolean gui(CommandSender sender, PhatLoot phatLoot) {
         sender.sendMessage("§2Name:§b " + phatLoot.name
                 + " §2Global Reset:§b " + phatLoot.global
                 + " §2Round Down:§b " + phatLoot.round);
@@ -560,14 +560,14 @@ public class LootCommand {
                 + phatLoot.expLower + "-" + phatLoot.expUpper);
         return true;
     }
-    @CodCommand(command = "info", weight = 140.2)
-    public boolean info(Player player) {
+    @CodCommand(command = "gui", weight = 140.2)
+    public boolean gui(Player player) {
         LinkedList<PhatLoot> phatLoots = getPhatLoots(player);
         switch (phatLoots.size()) {
         case 0:
             return false;
         case 1:
-            info(player, phatLoots.getFirst());
+            gui(player, phatLoots.getFirst());
             break;
         default:
             String list = "§5Linked PhatLoots: §6";
