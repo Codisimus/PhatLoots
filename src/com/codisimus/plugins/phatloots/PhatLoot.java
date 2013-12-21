@@ -12,6 +12,7 @@ import net.milkbowl.vault.economy.EconomyResponse;
 import org.apache.commons.lang.time.DateUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
+import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
@@ -22,6 +23,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.PotionMeta;
 
 /**
  * A PhatLoot is a reward made up of money and items
@@ -565,9 +567,8 @@ public class PhatLoot implements ConfigurationSerializable {
         //Roll for all loot
         List<ItemStack> loot = rollForLoot(preEvent.getLootingBonus()).getItemList();
         //Ensure there are 5 items (even if some are air)
-        if (loot.size() != 5) {
-            //Try to organize the loot
-            PhatLoots.logger.warning("Cannot add loot to " + entity.getType().getName() + " because the amount of loot was not equal to 5");
+        if (loot.size() != 5 && loot.size() != 6) {
+            PhatLoots.logger.warning("Cannot add loot to " + entity.getType().getName() + " because the amount of loot was not equal to 5 (or 6 if including a Potion)");
             return;
         }
 
@@ -588,10 +589,27 @@ public class PhatLoot implements ConfigurationSerializable {
         eqp.setLeggingsDropChance(chanceOfDrop);
         eqp.setBootsDropChance(chanceOfDrop);
 
-        MobEquipEvent event = new MobEquipEvent(entity);
+        //Potion is the sixth item if present
+        PotionMeta potion = null;
+        if (loot.size() > 0) {
+            ItemStack item = loot.remove(0);
+            if (item.getType() != Material.POTION) {
+                PhatLoots.logger.warning("Extra Equipment for " + entity.getType().getName() + " is not a Potion");
+            } else {
+                potion = (PotionMeta) item.getItemMeta();
+            }
+        }
+
+        MobEquipEvent event = new MobEquipEvent(entity, potion);
         Bukkit.getPluginManager().callEvent(event);
         if (event.isCancelled()) {
             eqp.clear();
+        } else {
+            //Apply all Potion effects if any
+            potion = event.getPotionMeta();
+            if (potion != null) {
+                entity.addPotionEffects(potion.getCustomEffects());
+            }
         }
 
         /*

@@ -3,23 +3,26 @@ package com.codisimus.plugins.phatloots.events;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.event.HandlerList;
 import org.bukkit.inventory.EntityEquipment;
+import org.bukkit.inventory.meta.PotionMeta;
 
 /**
- * Called when a mob is spawned and given a weapon/armor
+ * Called when a mob is spawned and given a weapon/armor/potion effect
  *
  * @author Cody
  */
 public class MobEquipEvent extends PhatLootsEvent {
     private static final HandlerList handlers = new HandlerList();
     private LivingEntity mob;
+    private PotionMeta potion;
 
     /**
      * Creates a new event with the given data
      *
      * @param mob The mob whose equipment was modified
      */
-    public MobEquipEvent(LivingEntity mob) {
+    public MobEquipEvent(LivingEntity mob, PotionMeta potion) {
         this.mob = mob;
+        this.potion = potion;
     }
 
     @Override
@@ -63,8 +66,26 @@ public class MobEquipEvent extends PhatLootsEvent {
      *
      * @param name The new name for the mob
      */
-    public void getCustomName(String name) {
+    public void setCustomName(String name) {
         mob.setCustomName(name);
-        mob.setCustomNameVisible(true);
+        mob.setCustomNameVisible(name != null);
+    }
+
+    /**
+     * Returns the Potion effects that will be applied to the mob
+     *
+     * @return The PotionMeta or null if there is none
+     */
+    public PotionMeta getPotionMeta() {
+        return potion;
+    }
+
+    /**
+     * Set the PotionMeta to be applied to the mob
+     *
+     * @param name The new PotionMeta for the mob
+     */
+    public void setPotionMeta(PotionMeta potion) {
+        this.potion = potion;
     }
 }
