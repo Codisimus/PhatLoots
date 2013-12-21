@@ -2,10 +2,8 @@ package com.codisimus.plugins.phatloots.listeners;
 
 import com.codisimus.plugins.phatloots.PhatLoot;
 import com.codisimus.plugins.phatloots.PhatLoots;
-import com.codisimus.plugins.regionown.Region;
-import com.codisimus.plugins.regionown.RegionOwn;
-import com.sk89q.worldguard.bukkit.WGBukkit;
-import com.sk89q.worldguard.protection.regions.ProtectedRegion;
+import com.codisimus.plugins.regiontools.Region;
+import com.codisimus.plugins.regiontools.RegionTools;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Horse.Variant;
@@ -20,7 +18,9 @@ import org.bukkit.event.Listener;
 public abstract class MobListener implements Listener {
     public static boolean mobTypes;
     public static boolean namedMobs;
-    public static boolean regionOwn = Bukkit.getPluginManager().isPluginEnabled("RegionOwn");
+    public static Region parentRegion = Bukkit.getPluginManager().isPluginEnabled("RegionTools")
+                                        ? RegionTools.findRegion("MobRegions", false)
+                                        : null;
     public boolean mobWorlds;
     public boolean mobRegions;
 
@@ -134,12 +134,10 @@ public abstract class MobListener implements Listener {
         //Check if the mob is within a region
         Location location = entity.getLocation();
         String regionName = null;
-        if (mobRegions && regionOwn) {
-            for (Region region : RegionOwn.mobRegions.values()) {
-                if (region.contains(location)) {
-                    regionName = '@' + region.name;
-                    break;
-                }
+        if (mobRegions && parentRegion != null) {
+            Region region = parentRegion.findRegion(location);
+            if (region != null) {
+                regionName = '@' + region.getName();
             }
         }
 
@@ -151,20 +149,20 @@ public abstract class MobListener implements Listener {
         PhatLoot phatLoot;
         if (mobTypes && specificType != null) {
             if (mobRegions && regionName != null) {
-                if (regionOwn) {
-                    phatLoot = PhatLoots.getPhatLoot(specificType + type + regionName);
-                    if (phatLoot != null) {
-                        return phatLoot;
-                    }
-                } else { //WorldGuard support
-                    for (ProtectedRegion region : WGBukkit.getRegionManager(location.getWorld()).getApplicableRegions(location)) {
-                        //System.out.println("Searching for PhatLoot: " + specificType + type + '@' + region.getId());
-                        phatLoot = PhatLoots.getPhatLoot(specificType + type + '@' + region.getId());
-                        if (phatLoot != null) {
-                            return phatLoot;
-                        }
-                    }
+                phatLoot = PhatLoots.getPhatLoot(specificType + type + regionName);
+                if (phatLoot != null) {
+                    return phatLoot;
                 }
+                //if (regionOwn) {
+                //} else { //WorldGuard support
+                //    for (ProtectedRegion region : WGBukkit.getRegionManager(location.getWorld()).getApplicableRegions(location)) {
+                //        //System.out.println("Searching for PhatLoot: " + specificType + type + '@' + region.getId());
+                //        phatLoot = PhatLoots.getPhatLoot(specificType + type + '@' + region.getId());
+                //        if (phatLoot != null) {
+                //            return phatLoot;
+                //        }
+                //    }
+                //}
             }
             if (mobWorlds) {
                 phatLoot = PhatLoots.getPhatLoot(specificType + type + worldName);
@@ -175,19 +173,19 @@ public abstract class MobListener implements Listener {
         }
 
         if (mobRegions && regionName != null) {
-            if (regionOwn) {
-                phatLoot = PhatLoots.getPhatLoot(type + regionName);
-                if (phatLoot != null) {
-                    return phatLoot;
-                }
-            } else { //WorldGuard support
-                for (ProtectedRegion region : WGBukkit.getRegionManager(location.getWorld()).getApplicableRegions(location)) {
-                    phatLoot = PhatLoots.getPhatLoot(type + '@' + region.getId());
-                    if (phatLoot != null) {
-                        return phatLoot;
-                    }
-                }
+            phatLoot = PhatLoots.getPhatLoot(type + regionName);
+            if (phatLoot != null) {
+                return phatLoot;
             }
+            //if (regionOwn) {
+            //} else { //WorldGuard support
+            //    for (ProtectedRegion region : WGBukkit.getRegionManager(location.getWorld()).getApplicableRegions(location)) {
+            //        phatLoot = PhatLoots.getPhatLoot(type + '@' + region.getId());
+            //        if (phatLoot != null) {
+            //            return phatLoot;
+            //        }
+            //    }
+            //}
         }
         if (mobWorlds) {
             phatLoot = PhatLoots.getPhatLoot(type + worldName);
