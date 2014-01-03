@@ -21,8 +21,12 @@ public class VoteListener implements Listener {
         //Player should always be online because votes are not triggered until the user logs on
         Player player = Bukkit.getPlayerExact(vote.getUsername());
         if (player != null) {
-            //Check if the Vote PhatLoot has been created
-            PhatLoot phatLoot = PhatLoots.getPhatLoot("Vote");
+            //Check for a World specific Vote PhatLoot first
+            PhatLoot phatLoot = PhatLoots.getPhatLoot("Vote@" + player.getWorld().getName());
+            if (phatLoot == null) {
+                //Check if the default Vote PhatLoot has been created
+                phatLoot = PhatLoots.getPhatLoot("Vote");
+            }
             if (phatLoot == null) {
                 PhatLoots.logger.severe("§4PhatLoot §6Vote§4 does not exist");
             } else {
