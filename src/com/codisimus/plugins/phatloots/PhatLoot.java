@@ -888,6 +888,12 @@ public class PhatLoot implements ConfigurationSerializable {
             return;
         }
 
+        //Check if the reset time is never
+        if (days < 0 || hours < 0 || minutes < 0 || seconds < 0) {
+            //Don't reset the PhatLoot because there is no cool down
+            return;
+        }
+
         Set<String> keys; //The Set of all keys to check
 
         if (block == null) { //Add all keys

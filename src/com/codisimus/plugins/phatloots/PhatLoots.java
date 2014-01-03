@@ -1,11 +1,11 @@
 package com.codisimus.plugins.phatloots;
 
-import com.codisimus.plugins.phatloots.gui.InventoryListener;
 import com.codisimus.plugins.phatloots.commands.CommandHandler;
 import com.codisimus.plugins.phatloots.commands.LootCommand;
 import com.codisimus.plugins.phatloots.commands.ManageLootCommand;
 import com.codisimus.plugins.phatloots.commands.VariableLootCommand;
 import com.codisimus.plugins.phatloots.events.ChestRespawnEvent.RespawnReason;
+import com.codisimus.plugins.phatloots.gui.InventoryListener;
 import com.codisimus.plugins.phatloots.listeners.*;
 import com.codisimus.plugins.phatloots.loot.CommandLoot;
 import com.codisimus.plugins.phatloots.loot.Item;
@@ -47,12 +47,7 @@ public class PhatLoots extends JavaPlugin {
 
     @Override
     public void onDisable() {
-        //Save the Loot times for each PhatLoot
-        for (PhatLoot phatLoot : getPhatLoots()) {
-            //Clean up the loot times before writing to file
-            phatLoot.clean(null);
-            phatLoot.saveLootTimes();
-        }
+        saveLootTimes();
 
         //Respawn all chests
         for (PhatLootChest chest : (Collection<PhatLootChest>) PhatLootChest.chestsToRespawn.clone()) {
@@ -409,6 +404,17 @@ public class PhatLoots extends JavaPlugin {
     }
 
     /**
+     * Saves Loot times of each PhatLoot to file
+     */
+    public static void saveLootTimes() {
+        for (PhatLoot phatLoot : getPhatLoots()) {
+            //Clean up the loot times before writing to file
+            phatLoot.clean(null);
+            phatLoot.saveLootTimes();
+        }
+    }
+
+    /**
      * Reloads PhatLoot data
      */
     public static void rl() {
@@ -421,6 +427,8 @@ public class PhatLoots extends JavaPlugin {
      * @param sender The CommandSender reloading the plugin
      */
     public static void rl(CommandSender sender) {
+        saveLootTimes();
+
         phatLoots.clear();
         plugin.reloadConfig();
         load();
