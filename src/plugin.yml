@@ -5,7 +5,7 @@ author: Codisimus
 website: www.codisimus.com
 description: Chests with randomly generated money/items
 load: postworld
-softdepend: [Vault, EpicBossRecoded, RegionTools, Econ, Votifier]
+softdepend: [Vault, EpicBossRecoded, RegionTools, Econ, Votifier, Multiverse-Core]
 commands:
   loot:
     description: Used to setup PhatLoot Chests and rewards

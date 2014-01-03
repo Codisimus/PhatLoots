@@ -135,7 +135,7 @@ public abstract class MobListener implements Listener {
         Location location = entity.getLocation();
         String regionName = null;
         if (mobRegions && parentRegion != null) {
-            Region region = parentRegion.findRegion(location);
+            Region region = parentRegion.getChild(location);
             if (region != null) {
                 regionName = '@' + region.getName();
             }
