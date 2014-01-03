@@ -500,13 +500,15 @@ public class PhatLootChest {
                     //Play for each Player in the World
                     for (Player p: player.getWorld().getPlayers()) {
                         p.playSound(loc, Sound.CHEST_OPEN, 0.75F, 0.95F);
-                        p.playNote(loc, (byte) 1, (byte) 1); //Open animation
+                        //Minecraft changed their protocol which broke the open animation
+                        //p.playNote(loc, (byte) 1, (byte) 1); //Open animation
                     }
                 }
             } else {
                 //Play for only the individual Player
                 player.playSound(loc, Sound.CHEST_OPEN, 0.75F, 0.95F);
-                player.playNote(loc, (byte) 1, (byte) 1); //Open animation
+                //Minecraft changed their protocol which broke the open animation
+                //player.playNote(loc, (byte) 1, (byte) 1); //Open animation
             }
             break;
         default: break;
@@ -545,7 +547,8 @@ public class PhatLootChest {
                         case TRAPPED_CHEST:
                         case ENDER_CHEST:
                             p.playSound(loc, Sound.CHEST_CLOSE, 0.75F, 0.95F);
-                            p.playNote(loc, (byte) 1, (byte) 0); //Close animation
+                            //Minecraft changed their protocol which broke the close animation
+                            //p.playNote(loc, (byte) 1, (byte) 0); //Close animation
                             break;
                         default:
                             break;
@@ -578,7 +581,8 @@ public class PhatLootChest {
                 case ENDER_CHEST:
                     //Play for only the individual Player
                     player.playSound(loc, Sound.CHEST_CLOSE, 0.75F, 0.95F);
-                    player.playNote(loc, (byte) 1, (byte) 0); //Close animation
+                    //Minecraft changed their protocol which broke the close animation
+                    //player.playNote(loc, (byte) 1, (byte) 0); //Close animation
                     break;
                 default:
                     break;
