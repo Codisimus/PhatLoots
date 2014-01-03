@@ -68,7 +68,7 @@ public class LootCommand {
         command = "rename",
         weight = 21,
         usage = {
-            "§2<command> <Name> <NewName>§b Rename a PhatLoot collection"
+            "§2<command> <PhatLoot> <Collection> <NewName>§b Rename a PhatLoot collection"
         },
         permission = "phatloots.make"
     )
