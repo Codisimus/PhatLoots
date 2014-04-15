@@ -143,17 +143,18 @@ public class LootCommand {
             }
             //Fall through
         case ENDER_CHEST:
-            //Make the Chest unlockable if ChestLock is enabled
-            if (setUnlockable && Bukkit.getPluginManager().isPluginEnabled("ChestLock")) {
-                Safe safe = ChestLock.findSafe(block);
-                if (safe == null) {
-                    safe = new Safe(player.getName(), block);
-                    safe.lockable = false;
-                    safe.locked = false;
-
-                    ChestLock.addSafe(safe);
-                }
-            }
+            //Removed pending ChestLock supporting UUIDs
+            ////Make the Chest unlockable if ChestLock is enabled
+            //if (setUnlockable && Bukkit.getPluginManager().isPluginEnabled("ChestLock")) {
+            //    Safe safe = ChestLock.findSafe(block);
+            //    if (safe == null) {
+            //        safe = new Safe(player.getName(), block);
+            //        safe.lockable = false;
+            //        safe.locked = false;
+            //
+            //        ChestLock.addSafe(safe);
+            //    }
+            //}
             break;
 
         default:
