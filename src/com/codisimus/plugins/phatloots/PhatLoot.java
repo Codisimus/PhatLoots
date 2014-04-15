@@ -564,7 +564,7 @@ public class PhatLoot implements ConfigurationSerializable {
         List<ItemStack> loot = rollForLoot(preEvent.getLootingBonus()).getItemList();
         //Ensure there are 5 items (even if some are air)
         if (loot.size() != 5 && loot.size() != 6) {
-            PhatLoots.logger.warning("Cannot add loot to " + entity.getType().getName() + " because the amount of loot was not equal to 5 (or 6 if including a Potion)");
+            PhatLoots.logger.warning("Cannot add loot to " + entity.getType().toString() + " because the amount of loot was not equal to 5 (or 6 if including a Potion)");
             return;
         }
 
@@ -590,7 +590,7 @@ public class PhatLoot implements ConfigurationSerializable {
         if (loot.size() > 0) {
             ItemStack item = loot.remove(0);
             if (item.getType() != Material.POTION) {
-                PhatLoots.logger.warning("Extra Equipment for " + entity.getType().getName() + " is not a Potion");
+                PhatLoots.logger.warning("Extra Equipment for " + entity.getType().toString() + " is not a Potion");
             } else {
                 potion = (PotionMeta) item.getItemMeta();
             }
@@ -706,7 +706,7 @@ public class PhatLoot implements ConfigurationSerializable {
     private String getUser(Player player) {
         return global || player == null
                ? "global"
-               : player.getName();
+               : player.getUniqueId().toString();
     }
 
     /**
@@ -853,9 +853,9 @@ public class PhatLoot implements ConfigurationSerializable {
      * @param player The Player whose loot times are to be reset
      */
     public void resetForPlayer(Player player) {
-        String playerName = player.getName();
+        UUID playerUUID = player.getUniqueId();
         for (PhatLootChest chest : chests) {
-            String key = chest.toString() + "'" + playerName;
+            String key = chest.toString() + "'" + playerUUID;
             lootTimes.remove(key);
         }
     }
@@ -966,6 +966,20 @@ public class PhatLoot implements ConfigurationSerializable {
                 } catch (IOException ex) {
                 }
             }
+        }
+        //Update Legacy Files
+        clean(null);
+        LinkedList<String> keysToRemove = new LinkedList<String>();
+        for (String key : lootTimes.stringPropertyNames()) {
+            String[] split = key.split("'");
+            if (split.length < 2 || Bukkit.getPlayerExact(split[1]) == null) {
+                continue;
+            }
+            lootTimes.setProperty(split[0] + "'" + Bukkit.getPlayerExact(split[1]).getUniqueId(), lootTimes.getProperty(key));
+            keysToRemove.add(key);
+        }
+        for (String key : keysToRemove) {
+            lootTimes.remove(key);
         }
     }
 

@@ -9,12 +9,10 @@ import org.bukkit.block.*;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.TNTPrimed;
-import org.bukkit.event.block.BlockRedstoneEvent;
 import org.bukkit.inventory.DoubleChestInventory;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
-import org.bukkit.scheduler.BukkitTask;
 
 /**
  * A PhatLootChest is a Block location and a Map of Users with times attached to them
@@ -35,7 +33,7 @@ public class PhatLootChest {
     );
     private static HashMap<String, PhatLootChest> chests = new HashMap<String, PhatLootChest>(); //Chest Location -> PhatLootChest
     static HashSet<PhatLootChest> chestsToRespawn = new HashSet<PhatLootChest>();
-    public static HashMap<OfflinePlayer, PhatLootChest> openPhatLootChests = new HashMap<OfflinePlayer, PhatLootChest>(); //Player -> Open PhatLootChest
+    public static HashMap<UUID, PhatLootChest> openPhatLootChests = new HashMap<UUID, PhatLootChest>(); //Player -> Open PhatLootChest
     static boolean useBreakAndRepawn;
     static boolean soundOnBreak;
     static boolean shuffleLoot;
@@ -481,7 +479,7 @@ public class PhatLootChest {
             return;
         }
 
-        openPhatLootChests.put(player, this);
+        openPhatLootChests.put(player.getUniqueId(), this);
         player.openInventory(inv);
 
         switch (getBlock().getType()) {
@@ -523,7 +521,7 @@ public class PhatLootChest {
      * @param global Whether the animation should be sent to everyone (true) or just the Player (false)
      */
     public void closeInventory(Player player, Inventory inv, boolean global) {
-        openPhatLootChests.remove(player);
+        openPhatLootChests.remove(player.getUniqueId());
         player.closeInventory();
 
         switch (getBlock().getType()) {
