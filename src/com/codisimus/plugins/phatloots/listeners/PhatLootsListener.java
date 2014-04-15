@@ -1,10 +1,6 @@
 package com.codisimus.plugins.phatloots.listeners;
 
-import com.codisimus.plugins.phatloots.ForgettableInventory;
-import com.codisimus.plugins.phatloots.PhatLoot;
-import com.codisimus.plugins.phatloots.PhatLootChest;
-import com.codisimus.plugins.phatloots.PhatLoots;
-import com.codisimus.plugins.phatloots.PhatLootsConfig;
+import com.codisimus.plugins.phatloots.*;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -166,7 +162,7 @@ public class PhatLootsListener implements Listener {
     public void onBlockBreak(BlockBreakEvent event) {
         //Return if the Material of the Block is not a linkable type
         Block block = event.getBlock();
-        if (!PhatLoots.isLinkableType(block)) {
+        if (!PhatLootsUtil.isLinkableType(block)) {
             return;
         }
 

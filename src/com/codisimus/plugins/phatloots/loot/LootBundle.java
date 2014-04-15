@@ -96,6 +96,15 @@ public class LootBundle {
     }
 
     /**
+     * Adds to the total amount of money in the bundle of loot
+     *
+     * @param money The additional amount of money to be looted
+     */
+    public void addMoney(double money) {
+        this.money += money;
+    }
+
+    /**
      * Sets the amount of money in the bundle of loot
      *
      * @param money The new amount of money to be looted
@@ -114,9 +123,18 @@ public class LootBundle {
     }
 
     /**
+     * Adds to the total amount of experience in the bundle of loot
+     *
+     * @param exp The additional amount of experience to be looted
+     */
+    public void addExp(int exp) {
+        this.exp += exp;
+    }
+
+    /**
      * Sets the amount of experience in the bundle of loot
      *
-     * @param money The new amount of experience to be looted
+     * @param exp The new amount of experience to be looted
      */
     public void setExp(int exp) {
         this.exp = exp;

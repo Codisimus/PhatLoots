@@ -275,7 +275,6 @@ public class PhatLootChest {
                 return;
             }
 
-            Bukkit.broadcastMessage(event.getRespawnTime() + "");
             if (event.getRespawnTime() > 0) {
                 new BukkitRunnable() {
                     @Override
@@ -460,7 +459,7 @@ public class PhatLootChest {
         Block block = getBlock();
         block.getWorld().dropItemNaturally(block.getLocation(), item);
         if (player != null && PhatLootsConfig.overflow != null) {
-            String msg = PhatLootsConfig.overflow.replace("<item>", PhatLoots.getItemName(item));
+            String msg = PhatLootsConfig.overflow.replace("<item>", PhatLootsUtil.getItemName(item));
             int amount = item.getAmount();
             msg = amount > 1
                   ? msg.replace("<amount>", String.valueOf(item.getAmount()))

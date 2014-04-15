@@ -12,23 +12,83 @@ import org.bukkit.inventory.meta.ItemMeta;
  *
  * @author Cody
  */
-public enum Tool {
-    NAVIGATE_AND_MOVE(0, Material.LEASH),
-    MODIFY_PROBABILITY_AND_TOGGLE(1, Material.NAME_TAG),
-    MODIFY_AMOUNT(2, Material.GOLD_NUGGET);
-
+public class Tool {
+    private static ArrayList<Tool> tools = new ArrayList<Tool>();
     private int id;
-    private Material mat;
+    private String name;
+    private ItemStack item;
+
+    static {
+        ItemStack item = new ItemStack(Material.LEASH);
+        ItemMeta meta = Bukkit.getItemFactory().getItemMeta(item.getType());
+        List<String> lore = new ArrayList<String>();
+        meta.setDisplayName("§2Navigate/Move (Click to change Tool)");
+        lore.add("§4LEFT CLICK:");
+        lore.add("§6 Enter a Collection");
+        lore.add("§4RIGHT CLICK:");
+        lore.add("§6 Leave a Collection");
+        lore.add("§4SHIFT + LEFT CLICK:");
+        lore.add("§6 Shift a Loot to the Left");
+        lore.add("§4SHIFT + RIGHT CLICK:");
+        lore.add("§6 Shift a Loot to the Right");
+        lore.add("§4SCROLL CLICK:");
+        lore.add("§6 Remove a Loot/Add an Item (from inventory)");
+        meta.setLore(lore);
+        item.setItemMeta(meta);
+        new Tool("NAVIGATE_AND_MOVE", item);
+
+        item = new ItemStack(Material.NAME_TAG);
+        meta = Bukkit.getItemFactory().getItemMeta(item.getType());
+        lore.clear();
+        meta.setDisplayName("§2Modify Probability/Toggle (Click to change Tool)");
+        lore.add("§4LEFT CLICK:");
+        lore.add("§6 +1 Probability");
+        lore.add("§4DOUBLE LEFT CLICK:");
+        lore.add("§6 +10 Probability");
+        lore.add("§4RIGHT CLICK:");
+        lore.add("§6 -1 Probability");
+        lore.add("§4SHIFT + LEFT CLICK:");
+        lore.add("§6 Toggle AutoEnchant/FromConsole");
+        lore.add("§4SHIFT + RIGHT CLICK:");
+        lore.add("§6 Toggle GenerateName/TempOP");
+        lore.add("§4SCROLL CLICK:");
+        lore.add("§6 Toggle TieredName and Loot table settings");
+        meta.setLore(lore);
+        item.setItemMeta(meta);
+        new Tool("MODIFY_PROBABILITY_AND_TOGGLE", item);
+
+        item = new ItemStack(Material.GOLD_NUGGET);
+        meta = Bukkit.getItemFactory().getItemMeta(item.getType());
+        lore.clear();
+        meta.setDisplayName("§2Modify Amount (Click to change Tool)");
+        lore.add("§4LEFT CLICK:");
+        lore.add("§6 +1 Amount");
+        lore.add("§4DOUBLE LEFT CLICK:");
+        lore.add("§6 +10 Amount");
+        lore.add("§4RIGHT CLICK:");
+        lore.add("§6 -1 Amount");
+        lore.add("§4SHIFT + LEFT CLICK:");
+        lore.add("§6 +1 Amount (Upper Range)");
+        lore.add("§4SHIFT + RIGHT CLICK:");
+        lore.add("§6 -1 Amount (Upper Range)");
+        lore.add("§4SCROLL CLICK:");
+        lore.add("§6 Set Amount to 1 and Clear time/exp/money");
+        meta.setLore(lore);
+        item.setItemMeta(meta);
+        new Tool("MODIFY_AMOUNT", item);
+    }
 
     /**
      * Constructs a new Tool
      *
-     * @param id The id of the Tool
-     * @param mat The Material that represents the Tool
+     * @param name The unique name of the tool
+     * @param item The ItemStack that represents the Tool
      */
-    private Tool(int id, Material mat) {
-        this.id = id;
-        this.mat = mat;
+    public Tool(String name, ItemStack item) {
+        id = tools.size();
+        this.name = name;
+        this.item = item;
+        registerTool();
     }
 
     /**
@@ -41,65 +101,20 @@ public enum Tool {
     }
 
     /**
+     * Returns the name of the Tool
+     *
+     * @return The name of the Tool
+     */
+    public String getName() {
+        return name;
+    }
+
+    /**
      * Returns the ItemStack which displays the Tool information
      *
      * @return The Tool's ItemStack
      */
     public ItemStack getItem() {
-        ItemStack item = new ItemStack(mat);
-        ItemMeta meta = Bukkit.getItemFactory().getItemMeta(mat);
-        List<String> lore = new ArrayList<String>();
-
-        switch (this) {
-        case NAVIGATE_AND_MOVE:
-            meta.setDisplayName("§2Navigate/Move (Click to change Tool)");
-            lore.add("§4LEFT CLICK:");
-            lore.add("§6 Enter a Collection");
-            lore.add("§4RIGHT CLICK:");
-            lore.add("§6 Leave a Collection");
-            lore.add("§4SHIFT + LEFT CLICK:");
-            lore.add("§6 Shift a Loot to the Left");
-            lore.add("§4SHIFT + RIGHT CLICK:");
-            lore.add("§6 Shift a Loot to the Right");
-            lore.add("§4SCROLL CLICK:");
-            lore.add("§6 Remove a Loot/Add an Item (from inventory)");
-            break;
-        case MODIFY_PROBABILITY_AND_TOGGLE:
-            meta.setDisplayName("§2Modify Probability/Toggle (Click to change Tool)");
-            lore.add("§4LEFT CLICK:");
-            lore.add("§6 +1 Probability");
-            lore.add("§4DOUBLE LEFT CLICK:");
-            lore.add("§6 +10 Probability");
-            lore.add("§4RIGHT CLICK:");
-            lore.add("§6 -1 Probability");
-            lore.add("§4SHIFT + LEFT CLICK:");
-            lore.add("§6 Toggle AutoEnchant/FromConsole");
-            lore.add("§4SHIFT + RIGHT CLICK:");
-            lore.add("§6 Toggle GenerateName/TempOP");
-            lore.add("§4SCROLL CLICK:");
-            lore.add("§6 Toggle TieredName and Loot table settings");
-            break;
-        case MODIFY_AMOUNT:
-            meta.setDisplayName("§2Modify Amount (Click to change Tool)");
-            lore.add("§4LEFT CLICK:");
-            lore.add("§6 +1 Amount");
-            lore.add("§4DOUBLE LEFT CLICK:");
-            lore.add("§6 +10 Amount");
-            lore.add("§4RIGHT CLICK:");
-            lore.add("§6 -1 Amount");
-            lore.add("§4SHIFT + LEFT CLICK:");
-            lore.add("§6 +1 Amount (Upper Range)");
-            lore.add("§4SHIFT + RIGHT CLICK:");
-            lore.add("§6 -1 Amount (Upper Range)");
-            lore.add("§4SCROLL CLICK:");
-            lore.add("§6 Set Amount to 1 and Clear time/exp/money");
-            break;
-        default:
-            break;
-        }
-
-        meta.setLore(lore);
-        item.setItemMeta(meta);
         return item;
     }
 
@@ -111,7 +126,7 @@ public enum Tool {
     public Tool prevTool() {
         int toolID = id - 1;
         if (toolID < 0) {
-            toolID = Tool.values().length - 1;
+            toolID = tools.size() - 1;
         }
         return getToolByID(toolID);
     }
@@ -123,10 +138,17 @@ public enum Tool {
      */
     public Tool nextTool() {
         int toolID = id + 1;
-        if (toolID >= Tool.values().length) {
+        if (toolID >= tools.size()) {
             toolID = 0;
         }
         return getToolByID(toolID);
+    }
+
+    /**
+     * Adds this Tool to the static list of registered tools
+     */
+    private void registerTool() {
+        tools.add(this);
     }
 
     /**
@@ -136,8 +158,18 @@ public enum Tool {
      * @return The Tool with the given id or null if there is no Tool with that id
      */
     public static Tool getToolByID(int id) {
-        for (Tool tool : Tool.values()) {
-            if (tool.id == id) {
+        return id >= tools.size() ? null : tools.get(id);
+    }
+
+    /**
+     * Returns the Tool with the given name
+     *
+     * @param name The given Tool name
+     * @return The Tool with the given name or null if there is no Tool with that id
+     */
+    public static Tool getToolByName(String name) {
+        for (Tool tool : tools) {
+            if (tool.name.equals(name)) {
                 return tool;
             }
         }
@@ -152,8 +184,8 @@ public enum Tool {
      */
     public static Tool getTool(ItemStack item) {
         Material mat = item.getType();
-        for (Tool tool : Tool.values()) {
-            if (tool.mat == mat) {
+        for (Tool tool : tools) {
+            if (tool.item.getType() == mat) {
                 return tool;
             }
         }

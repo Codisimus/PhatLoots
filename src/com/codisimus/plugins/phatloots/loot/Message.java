@@ -17,7 +17,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
 /**
- * A CommandLoot is a Command which may be executed from the player or the console
+ * A Message is an in game message which is shown to the looter
  *
  * @author Cody
  */
@@ -66,20 +66,26 @@ public class Message extends Loot {
     }
 
     /**
-     * Returns the information of the CommandLoot in the form of an ItemStack
+     * Returns the information of the Message in the form of an ItemStack
      *
      * @return An ItemStack representation of the Loot
      */
     @Override
     public ItemStack getInfoStack() {
-        //A CommandLoot is represented by a Command Block
+        //A Message is represented by a Map item
         ItemStack infoStack = new ItemStack(Material.MAP);
 
-        //Set the display name to the command
+        //Set the display name of the item
         ItemMeta info = Bukkit.getItemFactory().getItemMeta(infoStack.getType());
         info.setDisplayName("§2Message");
 
+        //Add more specific details of the message
+        List<String> details = new ArrayList();
+        details.add("§4Probability: §6" + probability);
+        details.add("§4Message: §6" + msg);
+
         //Construct the ItemStack and return it
+        info.setLore(details);
         infoStack.setItemMeta(info);
         return infoStack;
     }

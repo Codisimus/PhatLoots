@@ -3,6 +3,7 @@ package com.codisimus.plugins.phatloots.loot;
 import com.codisimus.plugins.phatloots.PhatLoot;
 import com.codisimus.plugins.phatloots.PhatLoots;
 import com.codisimus.plugins.phatloots.PhatLootsConfig;
+import com.codisimus.plugins.phatloots.PhatLootsUtil;
 import com.codisimus.plugins.phatloots.gui.Button;
 import com.codisimus.plugins.phatloots.gui.InventoryListener;
 import java.util.*;
@@ -45,7 +46,7 @@ public class LootCollection extends Loot {
         }
     }
 
-    static {
+    public static void registerButton() {
         //Register the Add Collection Button
         ItemStack item = new ItemStack(Material.ENDER_CHEST);
         ItemMeta info = Bukkit.getItemFactory().getItemMeta(item.getType());
@@ -124,7 +125,7 @@ public class LootCollection extends Loot {
             //Roll for the amount of loots
             int numberOfLoots = lowerNumberOfLoots == upperNumberOfLoots
                                 ? lowerNumberOfLoots
-                                : PhatLoots.rollForInt(lowerNumberOfLoots, upperNumberOfLoots);
+                                : PhatLootsUtil.rollForInt(lowerNumberOfLoots, upperNumberOfLoots);
             //Make sure there are items that will be looted before entering the loop
             if (!lootList.isEmpty()) {
                 //Sort the loot from lowest probability to highest
@@ -139,7 +140,7 @@ public class LootCollection extends Loot {
                     }
                     //Roll a number between 0 and total and then subtract the looting bonus
                     //We subtract because a lower roll is better in this case
-                    double roll = PhatLoots.rollForDouble(total) - lootingBonus;
+                    double roll = PhatLootsUtil.rollForDouble(total) - lootingBonus;
                     for (Loot loot : lootList) {
                         //Subtract the probability of each Loot from the roll until we drop below 0
                         roll -= loot.getProbability();

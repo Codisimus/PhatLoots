@@ -3,6 +3,7 @@ package com.codisimus.plugins.phatloots.listeners;
 import com.codisimus.plugins.phatloots.PhatLoot;
 import com.codisimus.plugins.phatloots.PhatLootChest;
 import com.codisimus.plugins.phatloots.PhatLoots;
+import com.codisimus.plugins.phatloots.PhatLootsUtil;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -51,7 +52,7 @@ public class DispenserListener implements Listener {
         //Roll for linked loot
         PhatLootChest plChest = PhatLootChest.getChest(block);
         for (PhatLoot phatLoot : PhatLoots.getPhatLoots(block, player)) {
-            if (PhatLoots.canLoot(player, phatLoot)) {
+            if (PhatLootsUtil.canLoot(player, phatLoot)) {
                 phatLoot.rollForChestLoot(player, plChest);
             }
         }
@@ -64,7 +65,7 @@ public class DispenserListener implements Listener {
      * @param location The given Location
      * @return the closest Player
      */
-    private Player getNearestPlayer(Location location) {
+    private static Player getNearestPlayer(Location location) {
         Player nearestPlayer = null;
         double shortestDistance = 2500;
         for (Player player: location.getWorld().getPlayers()) {

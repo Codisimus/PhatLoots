@@ -1,6 +1,7 @@
 package com.codisimus.plugins.phatloots.loot;
 
-import com.codisimus.plugins.phatloots.PhatLoots;
+import com.codisimus.plugins.phatloots.PhatLootsUtil;
+import com.codisimus.plugins.phatloots.gui.Tool;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.ItemStack;
@@ -54,6 +55,17 @@ public abstract class Loot implements Comparable, ConfigurationSerializable {
     public abstract boolean resetAmount();
 
     /**
+     * Manages clicking on Loot with a custom Tool
+     *
+     * @param tool The Tool that was used to click
+     * @param click The type of Click (Only LEFT, RIGHT, MIDDLE, SHIFT_LEFT, SHIFT_RIGHT, and DOUBLE_CLICK are used)
+     * @return true if the Loot InfoStack should be refreshed
+     */
+    public boolean onToolClick(Tool tool, ClickType click) {
+        return false;
+    }
+
+    /**
      * Returns the chance of looting
      *
      * @return The chance of looting
@@ -87,7 +99,7 @@ public abstract class Loot implements Comparable, ConfigurationSerializable {
      * @return The number that was rolled
      */
     public static double roll() {
-        return PhatLoots.rollForDouble(100);
+        return PhatLootsUtil.rollForDouble(100);
     }
 
     /**

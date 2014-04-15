@@ -199,9 +199,12 @@ Defaults:
 
 ##Players need permission to use restricted PhatLoots
 ##'phatloots.loot.Epic' or 'phatloots.loot.*' would be needed to loot Epic if it is restricted
-##In order to set this feature you must remove the empty square brackets []
+##You can add as many PhatLoots to this list as you want, just be sure to use spaces instead of tabs
 RestrictAll: false
-RestrictedPhatLoots: []
+RestrictedPhatLoots:
+    - 'PhatLoot1'
+    - 'PhatLoot2'
+    - 'PhatLoot3'
 #    - 'Rare'
 #    - 'Epic'
 #    - 'Donator'

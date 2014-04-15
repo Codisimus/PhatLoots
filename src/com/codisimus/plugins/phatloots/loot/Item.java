@@ -2,6 +2,7 @@ package com.codisimus.plugins.phatloots.loot;
 
 import com.codisimus.plugins.phatloots.PhatLoot;
 import com.codisimus.plugins.phatloots.PhatLoots;
+import com.codisimus.plugins.phatloots.PhatLootsUtil;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -383,12 +384,12 @@ public class Item extends Loot {
 
         if (amountBonus > 0) {
             //Roll the stack size of the item
-            clone.setAmount(clone.getAmount() + PhatLoots.rollForInt(amountBonus));
+            clone.setAmount(clone.getAmount() + PhatLootsUtil.rollForInt(amountBonus));
         }
 
         if (durabilityBonus > 0) {
             //Roll for the durability of the item
-            clone.setDurability((short) (clone.getDurability() + PhatLoots.rollForInt(durabilityBonus)));
+            clone.setDurability((short) (clone.getDurability() + PhatLootsUtil.rollForInt(durabilityBonus)));
         }
 
         ItemMeta meta = clone.hasItemMeta()
@@ -403,7 +404,7 @@ public class Item extends Loot {
                 if (dir.exists()) {
                     //Choose a random file
                     File[] files = dir.listFiles();
-                    File file = files[PhatLoots.rollForInt(files.length)];
+                    File file = files[PhatLootsUtil.rollForInt(files.length)];
 
                     if (file.exists()) {
                         FileReader fReader = null;
@@ -442,7 +443,7 @@ public class Item extends Loot {
                     PhatLoots.logger.severe("You are attempting to use an undocumented feature (Random Lore), please contact Codisimus if you actually want to know how to use this.");
                 }
             } else {
-                nameBuilder.append(PhatLoots.getItemName(clone));
+                nameBuilder.append(PhatLootsUtil.getItemName(clone));
             }
 
             if (generateName) {
@@ -892,7 +893,7 @@ public class Item extends Loot {
         if (tieredName) {
             sb.append("tiered ");
         }
-        sb.append(PhatLoots.getItemName(item));
+        sb.append(PhatLootsUtil.getItemName(item));
 
         sb.append(" @ ");
         //Only display the decimal values if the probability is not a whole number

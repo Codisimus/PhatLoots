@@ -1,11 +1,11 @@
 name: PhatLoots
 main: com.codisimus.plugins.phatloots.PhatLoots
-version: 3.7.4
+version: 3.8.0
 author: Codisimus
 website: www.codisimus.com
 description: Chests with randomly generated money/items
 load: postworld
-softdepend: [Vault, EpicBossRecoded, RegionTools, Econ, Votifier, Multiverse-Core]
+softdepend: [Vault, MythicDrops, RegionTools, Econ, Votifier, Multiverse-Core]
 commands:
   loot:
     description: Used to setup PhatLoot Chests and rewards

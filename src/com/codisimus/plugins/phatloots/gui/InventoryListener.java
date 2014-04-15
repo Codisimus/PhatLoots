@@ -2,14 +2,10 @@ package com.codisimus.plugins.phatloots.gui;
 
 import com.codisimus.plugins.phatloots.PhatLoot;
 import com.codisimus.plugins.phatloots.PhatLoots;
-import com.codisimus.plugins.phatloots.loot.CommandLoot;
 import com.codisimus.plugins.phatloots.loot.Item;
 import com.codisimus.plugins.phatloots.loot.Loot;
 import com.codisimus.plugins.phatloots.loot.LootCollection;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Stack;
+import java.util.*;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.HumanEntity;
@@ -31,13 +27,24 @@ import org.bukkit.scheduler.BukkitRunnable;
  * @author Cody
  */
 public class InventoryListener implements Listener {
+    private static final int NAVIGATE_AND_MOVE = 0;
+    private static final int MODIFY_PROBABILITY_AND_TOGGLE = 1;
+    private static final int MODIFY_AMOUNT = 2;
     private final static int SIZE = 54;
     final static int TOOL_SLOT = SIZE - 9;
-    private static HashMap<String, Boolean> switchingPages = new HashMap<String, Boolean>(); //Player name -> Going deeper (true) or back (false)
-    private static HashMap<String, PhatLoot> infoViewers = new HashMap<String, PhatLoot>(); //Player name -> PhatLoot they are viewing
-    private static HashMap<String, Stack<Inventory>> pageStacks = new HashMap<String, Stack<Inventory>>(); //Player name -> Page history
-    private static HashMap<String, Loot> holding = new HashMap<String, Loot>();
+    private static HashMap<UUID, Boolean> switchingPages = new HashMap<UUID, Boolean>(); //Player -> Going deeper (true) or back (false)
+    private static HashMap<UUID, PhatLoot> infoViewers = new HashMap<UUID, PhatLoot>(); //Player -> PhatLoot they are viewing
+    private static HashMap<UUID, Stack<Inventory>> pageStacks = new HashMap<UUID, Stack<Inventory>>(); //Player -> Page history
+    private static HashMap<UUID, Loot> holding = new HashMap<UUID, Loot>(); //Player -> Loot on cursor
     private static HashMap<Integer, Button> buttons = new HashMap<Integer, Button>();
+
+    static {
+        if (NAVIGATE_AND_MOVE != Tool.getToolByName("NAVIGATE_AND_MOVE").getID()
+                || MODIFY_PROBABILITY_AND_TOGGLE != Tool.getToolByName("MODIFY_PROBABILITY_AND_TOGGLE").getID()
+                || MODIFY_AMOUNT != Tool.getToolByName("MODIFY_AMOUNT").getID()) {
+            PhatLoots.logger.severe("Tool IDs do not match their expected values, Please notify Codisimus!");
+        }
+    }
 
     /**
      * Registers a Button to be added to GUI pages
@@ -74,8 +81,8 @@ public class InventoryListener implements Listener {
         }
         //Return if the Player is not viewing a PhatLoot's info
         Player player = (Player) human;
-        String playerName = player.getName();
-        if (!infoViewers.containsKey(playerName)) {
+        UUID playerUUID = player.getUniqueId();
+        if (!infoViewers.containsKey(playerUUID)) {
             return;
         }
 
@@ -84,7 +91,7 @@ public class InventoryListener implements Listener {
         player.updateInventory();
 
         //Store popularly accessed variables
-        PhatLoot phatLoot = infoViewers.get(playerName);
+        PhatLoot phatLoot = infoViewers.get(playerUUID);
         Inventory inv = event.getInventory();
         Tool tool = Tool.getTool(inv.getItem(TOOL_SLOT));
         ItemStack stack = event.getCurrentItem();
@@ -93,19 +100,19 @@ public class InventoryListener implements Listener {
         Loot loot = slot >= 0 && lootList.size() > slot ? lootList.get(slot) : null;
 
         //Check if the Player is holding a Loot
-        if (holding.containsKey(playerName)) {
+        if (holding.containsKey(playerUUID)) {
             switch (event.getClick()) {
             case LEFT: //Allow
                 if (loot == null) {
                     if (slot == lootList.size()) { //Put down Loot
-                        lootList.add(holding.remove(playerName));
+                        lootList.add(holding.remove(playerUUID));
                         event.setCurrentItem(event.getCursor());
                     } else if (slot > lootList.size() && slot < TOOL_SLOT) { //Support adding the Loot to any slot
-                        lootList.add(holding.remove(playerName));
+                        lootList.add(holding.remove(playerUUID));
                         inv.setItem(lootList.size() - 1, event.getCursor());
                         player.updateInventory();
                     } else if (slot == -999) { //Remove Loot
-                        holding.remove(playerName);
+                        holding.remove(playerUUID);
                     } else {
                         break;
                     }
@@ -128,7 +135,7 @@ public class InventoryListener implements Listener {
             switch (event.getClick()) {
             case LEFT: //Previous Tool
                 //Deny switching toos while holding Loot
-                if (!holding.containsKey(playerName)) {
+                if (!holding.containsKey(playerUUID)) {
                     inv.setItem(TOOL_SLOT, tool.prevTool().getItem());
                     player.updateInventory();
                 }
@@ -168,17 +175,17 @@ public class InventoryListener implements Listener {
 
         /** No Loot was Clicked **/
         if (loot == null) {
-            if (tool == Tool.NAVIGATE_AND_MOVE) {
+            if (tool.getID() == NAVIGATE_AND_MOVE) {
                 switch (event.getClick()) {
                 case LEFT: //Pickup or put down an Item
                     if (slot >= SIZE) {
                         //Remove Loot (if holding)
-                        Loot l = holding.remove(playerName);
+                        Loot l = holding.remove(playerUUID);
                         if (stack != null) {
                             //Only pick up AIR if they are not setting an Item down
                             if (stack.getType() != Material.AIR || l == null) { //Pick up Item (Add loot)
                                 loot = new Item(stack, 0);
-                                holding.put(playerName, loot);
+                                holding.put(playerUUID, loot);
                                 event.setCursor(loot.getInfoStack());
                                 event.setCurrentItem(null);
                             } else { //Pick up nothing
@@ -206,7 +213,7 @@ public class InventoryListener implements Listener {
 
             int amount = 0;
             boolean both = false;
-            if (tool == Tool.MODIFY_AMOUNT) {
+            if (tool.getID() == MODIFY_AMOUNT) {
                 switch (event.getClick()) {
                 case LEFT: //+1 amount
                     amount = 1;
@@ -242,8 +249,8 @@ public class InventoryListener implements Listener {
                 List<String> details = new ArrayList();
 
                 switch (slot) {
-                case SIZE - 5: //Toggle Break and Respawn
-                    if (tool == Tool.MODIFY_AMOUNT) {
+                case SIZE - 3: //Toggle Break and Respawn
+                    if (tool.getID() == MODIFY_AMOUNT) {
                         return;
                     }
                     phatLoot.breakAndRespawn = !phatLoot.breakAndRespawn;
@@ -260,8 +267,8 @@ public class InventoryListener implements Listener {
                     }
                     break;
 
-                case SIZE - 4: //Toggle AutoLoot
-                    if (tool == Tool.MODIFY_AMOUNT) {
+                case SIZE - 2: //Toggle AutoLoot
+                    if (tool.getID() == MODIFY_AMOUNT) {
                         return;
                     }
                     phatLoot.autoLoot = !phatLoot.autoLoot;
@@ -271,8 +278,8 @@ public class InventoryListener implements Listener {
                     info.setDisplayName("§4AutoLoot: §6" + phatLoot.autoLoot);
                     break;
 
-                case SIZE - 3: //Toggle Global/Round or Modify Reset Time
-                    if (tool == Tool.MODIFY_AMOUNT) {
+                case SIZE - 1: //Toggle Global/Round or Modify Reset Time
+                    if (tool.getID() == MODIFY_AMOUNT) {
                         if (amount == 0) {
                             phatLoot.days = 0;
                             phatLoot.hours = 0;
@@ -302,55 +309,6 @@ public class InventoryListener implements Listener {
                     }
                     break;
 
-                case SIZE - 2: //Modify Experience
-                    if (tool == Tool.MODIFY_PROBABILITY_AND_TOGGLE) {
-                        return;
-                    }
-                    if (amount == 0) {
-                        phatLoot.expLower = 0;
-                        phatLoot.expUpper = 0;
-                    } else {
-                        if (both) {
-                            phatLoot.expLower += amount;
-                        }
-                        phatLoot.expUpper += amount;
-                    }
-
-                    //Show the experience Range
-                    infoStack = new ItemStack(Material.EXP_BOTTLE);
-                    String exp = String.valueOf(phatLoot.expLower);
-                    if (phatLoot.expUpper != phatLoot.expLower) {
-                        exp += '-' + String.valueOf(phatLoot.expUpper);
-                    }
-                    info.setDisplayName("§6" + exp + " exp");
-                    break;
-
-                case SIZE - 1: //Modify Money
-                    if (tool == Tool.MODIFY_PROBABILITY_AND_TOGGLE) {
-                        return;
-                    }
-                    if (amount == 0) {
-                        phatLoot.moneyLower = 0;
-                        phatLoot.moneyUpper = 0;
-                    } else {
-                        if (both) {
-                            phatLoot.moneyLower += amount;
-                        }
-                        phatLoot.moneyUpper += amount;
-                    }
-
-                    //Show the money Range
-                    infoStack = new ItemStack(Material.GOLD_NUGGET);
-                    String money = String.valueOf(phatLoot.moneyLower);
-                    if (phatLoot.moneyUpper != phatLoot.moneyLower) {
-                        money += '-' + String.valueOf(phatLoot.moneyUpper);
-                    }
-
-                    info.setDisplayName(PhatLoots.econ == null
-                                        ? "§6No Economy plugin detected!"
-                                        : "§6" + money + ' ' + PhatLoots.econ.currencyNamePlural());
-                    break;
-
                 default:
                     return;
                 }
@@ -363,7 +321,7 @@ public class InventoryListener implements Listener {
         }
 
         /** Action determined based on the Tool **/
-        switch (tool) {
+        switch (tool.getID()) {
         case NAVIGATE_AND_MOVE:
             switch (event.getClick()) {
             case LEFT: //Move Loot or Enter a Collection
@@ -374,8 +332,8 @@ public class InventoryListener implements Listener {
                         String name = stack.getItemMeta().getDisplayName();
                         if (name.endsWith(" (Collection)")) { //Clicked a LootCollection
                             name = name.substring(2, name.length() - 13);
-                            if (holding.containsKey(playerName)) { //Place Loot in Collection
-                                Loot l = holding.remove(playerName);
+                            if (holding.containsKey(playerUUID)) { //Place Loot in Collection
+                                Loot l = holding.remove(playerUUID);
                                 phatLoot.findCollection(name).addLoot(l);
                                 event.setCursor(null);
                             } else { //Enter LootCollection
@@ -387,14 +345,14 @@ public class InventoryListener implements Listener {
                 }
 
                 //Clicked some other Loot
-                if (holding.containsKey(playerName)) { //Swap Loot
-                    Loot l = holding.remove(playerName);
-                    holding.put(playerName, lootList.get(slot));
+                if (holding.containsKey(playerUUID)) { //Swap Loot
+                    Loot l = holding.remove(playerUUID);
+                    holding.put(playerUUID, lootList.get(slot));
                     lootList.set(slot, l);
                     event.setCurrentItem(event.getCursor()); //Put down Loot
                     event.setCursor(stack); //Pick up new Loot
                 } else { //Pick up Loot
-                    holding.put(playerName, lootList.remove(slot));
+                    holding.put(playerUUID, lootList.remove(slot));
                     event.setCursor(stack);
                     refreshPage(player, inv, lootList); //Shifts remaining loot down
                 }
@@ -486,6 +444,12 @@ public class InventoryListener implements Listener {
                 event.setCurrentItem(loot.getInfoStack());
             }
             break;
+
+        default:
+            if (loot.onToolClick(tool, event.getClick())) {
+                refreshPage(player, inv, lootList);
+            }
+            break;
         }
     }
 
@@ -497,26 +461,26 @@ public class InventoryListener implements Listener {
         }
         //Return if the Player is not viewing a PhatLoot's info
         Player player = (Player) human;
-        String playerName = player.getName();
-        if (!infoViewers.containsKey(playerName)) {
+        UUID playerUUID = player.getUniqueId();
+        if (!infoViewers.containsKey(playerUUID)) {
             return;
         }
 
-        if (switchingPages.containsKey(playerName)) { //Switching pages
-            if (switchingPages.get(playerName)) { //Going deeper
-                pageStacks.get(playerName).add(event.getInventory());
+        if (switchingPages.containsKey(playerUUID)) { //Switching pages
+            if (switchingPages.get(playerUUID)) { //Going deeper
+                pageStacks.get(playerUUID).add(event.getInventory());
             }
             //The Player has finished switching pages
-            switchingPages.remove(playerName);
+            switchingPages.remove(playerUUID);
         } else { //Closing info view
-            infoViewers.remove(playerName).save(); //Save the PhatLoot in case it has been modified
-            pageStacks.get(playerName).empty();
-            pageStacks.remove(playerName);
+            infoViewers.remove(playerUUID).save(); //Save the PhatLoot in case it has been modified
+            pageStacks.get(playerUUID).empty();
+            pageStacks.remove(playerUUID);
         }
 
         //Don't drop items
-        if (holding.containsKey(playerName)) {
-            holding.remove(playerName);
+        if (holding.containsKey(playerUUID)) {
+            holding.remove(playerUUID);
             event.getView().setCursor(null);
         }
     }
@@ -547,33 +511,6 @@ public class InventoryListener implements Listener {
         int index = SIZE;
         ItemStack infoStack;
         ItemMeta info;
-        String amount;
-
-        //Display the money Range
-        if (PhatLoots.econ != null) {
-            infoStack = new ItemStack(Material.GOLD_NUGGET);
-            info = Bukkit.getItemFactory().getItemMeta(infoStack.getType());
-            amount = String.valueOf(phatLoot.moneyLower);
-            if (phatLoot.moneyUpper != phatLoot.moneyLower) {
-                amount += '-' + String.valueOf(phatLoot.moneyUpper);
-            }
-            info.setDisplayName("§6" + amount + ' ' + PhatLoots.econ.currencyNamePlural());
-            infoStack.setItemMeta(info);
-            index--;
-            inv.setItem(index, infoStack);
-        }
-
-        //Display the experience Range
-        infoStack = new ItemStack(Material.EXP_BOTTLE);
-        info = Bukkit.getItemFactory().getItemMeta(infoStack.getType());
-        amount = String.valueOf(phatLoot.expLower);
-        if (phatLoot.expUpper != phatLoot.expLower) {
-            amount += '-' + String.valueOf(phatLoot.expUpper);
-        }
-        info.setDisplayName("§6" + amount + " exp");
-        infoStack.setItemMeta(info);
-        index--;
-        inv.setItem(index, infoStack);
 
         //Display the Reset Time
         infoStack = new ItemStack(Material.WATCH);
@@ -619,9 +556,9 @@ public class InventoryListener implements Listener {
         inv.setItem(index, infoStack);
 
         //Store the current view in the Player's stack
-        pageStacks.put(player.getName(), new Stack<Inventory>());
+        pageStacks.put(player.getUniqueId(), new Stack<Inventory>());
 
-        infoViewers.put(player.getName(), phatLoot);
+        infoViewers.put(player.getUniqueId(), phatLoot);
         switchView(player, inv);
     }
 
@@ -686,27 +623,28 @@ public class InventoryListener implements Listener {
      * @param inv The Inventory to open
      */
     private static void switchView(final Player player, final Inventory inv) {
-        String playerName = player.getName();
-        switchingPages.put(playerName, false);
+        UUID playerUUID = player.getUniqueId();
+        switchingPages.put(playerUUID, false);
 
         //Get the Loot that the Player is holding
         final ItemStack hand = player.getItemOnCursor();
-        Loot loot = holding.get(playerName);
+        Loot loot = holding.get(playerUUID);
 
         //Close the old InventoryView
         player.closeInventory();
 
         //Re-add the Loot if there was any (it is removed onInventoryClose)
         if (loot != null) {
-            holding.put(playerName, loot);
+            holding.put(playerUUID, loot);
         }
 
         //Display the default Tool
-        inv.setItem(TOOL_SLOT, Tool.NAVIGATE_AND_MOVE.getItem());
+        inv.setItem(TOOL_SLOT, Tool.getToolByID(0).getItem());
 
         //Add Buttons to view
-        for (int i = 1; i < buttons.size(); i++) {
-            inv.setItem(TOOL_SLOT + i, buttons.get(i).getItem());
+        for (int i = 1; i <= buttons.size(); i++) {
+            int slot = TOOL_SLOT + i;
+            inv.setItem(slot, buttons.get(slot).getItem());
         }
 
         //Populate the inventory

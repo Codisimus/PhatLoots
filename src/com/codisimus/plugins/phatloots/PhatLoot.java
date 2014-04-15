@@ -1,10 +1,7 @@
 package com.codisimus.plugins.phatloots;
 
 import com.codisimus.plugins.phatloots.events.*;
-import com.codisimus.plugins.phatloots.loot.CommandLoot;
-import com.codisimus.plugins.phatloots.loot.Loot;
-import com.codisimus.plugins.phatloots.loot.LootBundle;
-import com.codisimus.plugins.phatloots.loot.LootCollection;
+import com.codisimus.plugins.phatloots.loot.*;
 import java.io.*;
 import java.util.*;
 import java.util.logging.Level;
@@ -26,7 +23,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.PotionMeta;
 
 /**
- * A PhatLoot is a reward made up of money and items
+ * A PhatLoot is a reward made up of money, items, and more
  *
  * @author Cody
  */
@@ -45,10 +42,6 @@ public class PhatLoot implements ConfigurationSerializable {
     static boolean commandCooldown;
 
     public String name; //A unique name for the PhatLoot
-    public int moneyLower; //Range of money that may be given
-    public int moneyUpper;
-    public int expLower; //Range of experience gained when looting
-    public int expUpper;
     public ArrayList<Loot> lootList; //List of Loot
 
     public int days; //Reset time (will never reset if any are negative)
@@ -343,7 +336,7 @@ public class PhatLoot implements ConfigurationSerializable {
             if (PhatLootsConfig.autoLoot != null) {
                 int i = 0;
                 for (ItemStack item : itemList) {
-                    String msg = PhatLootsConfig.autoLoot.replace("<item>", PhatLoots.getItemName(item));
+                    String msg = PhatLootsConfig.autoLoot.replace("<item>", PhatLootsUtil.getItemName(item));
                     int amount = item.getAmount();
                     if (leftovers.containsKey(i)) {
                         amount -= leftovers.get(i).getAmount();
@@ -371,7 +364,7 @@ public class PhatLoot implements ConfigurationSerializable {
                         for (ItemStack stack : leftOvers) {
                             player.getWorld().dropItemNaturally(player.getLocation(), stack);
                             if (PhatLootsConfig.overflow != null) {
-                                String msg = PhatLootsConfig.overflow.replace("<item>", PhatLoots.getItemName(stack));
+                                String msg = PhatLootsConfig.overflow.replace("<item>", PhatLootsUtil.getItemName(stack));
                                 int amount = stack.getAmount();
                                 msg = amount > 1
                                       ? msg.replace("<amount>", String.valueOf(stack.getAmount()))
@@ -490,6 +483,9 @@ public class PhatLoot implements ConfigurationSerializable {
         //Do money transactions
         if (player != null) {
             double money = lootBundle.getMoney();
+            if (decimals) {
+                money /= 100;
+            }
             if (money > 0) { //Reward
                 if (PhatLoots.econ != null) {
                     EconomyResponse r = PhatLoots.econ.depositPlayer(player.getName(), money);
@@ -533,7 +529,7 @@ public class PhatLoot implements ConfigurationSerializable {
         //Send a message for each item looted
         if (player != null && PhatLootsConfig.mobDroppedItem != null) {
             for (ItemStack item : drops) {
-                String msg = PhatLootsConfig.mobDroppedItem.replace("<item>", PhatLoots.getItemName(item));
+                String msg = PhatLootsConfig.mobDroppedItem.replace("<item>", PhatLootsUtil.getItemName(item));
                 int amount = item.getAmount();
                 msg = amount > 1
                       ? msg.replace("<amount>", String.valueOf(amount))
@@ -679,36 +675,12 @@ public class PhatLoot implements ConfigurationSerializable {
      * @return The Loot that has been rolled for
      */
     public LootBundle rollForLoot(LootBundle lootBundle, double lootingBonus) {
-        lootBundle.setMoney(rollForMoney());
-        lootBundle.setExp(rollForExp());
         for (Loot loot : lootList) {
             if (loot.rollForLoot(lootingBonus)) {
                 loot.getLoot(lootBundle, lootingBonus);
             }
         }
         return lootBundle;
-    }
-
-    /**
-     * Rolls for the amount of money
-     *
-     * @return The amount of money rolled for
-     */
-    public double rollForMoney() {
-        double money = PhatLoots.rollForInt(moneyLower, moneyUpper);
-        if (decimals) {
-            money /= 100;
-        }
-        return money;
-    }
-
-    /**
-     * Rolls for the amount of experience
-     *
-     * @return The amount of experience rolled for
-     */
-    public int rollForExp() {
-        return PhatLoots.rollForInt(expLower, expUpper);
     }
 
     /**
@@ -856,7 +828,7 @@ public class PhatLoot implements ConfigurationSerializable {
 
     /**
      * Resets the user times for all PhatLootChests of this PhatLoot.
-     * If a Block is given then only reset that PhatLootChest
+     * If a Block is given, reset only that PhatLootChest
      *
      * @param block The given Block
      */
@@ -866,12 +838,25 @@ public class PhatLoot implements ConfigurationSerializable {
             lootTimes.clear();
         } else {
             //Find the PhatLootChest of the given Block and reset it
-            String chest = block.getWorld().getName() + "'" + block.getX() + "'" + block.getY() + "'" + block.getZ() + "'";
+            String chest = PhatLootChest.getChest(block).toString();
             for (String key : lootTimes.stringPropertyNames()) {
                 if (key.startsWith(chest)) {
                     lootTimes.remove(key);
                 }
             }
+        }
+    }
+
+    /**
+     * Resets the player loot times for all PhatLootChests of this PhatLoot.
+     *
+     * @param player The Player whose loot times are to be reset
+     */
+    public void resetForPlayer(Player player) {
+        String playerName = player.getName();
+        for (PhatLootChest chest : chests) {
+            String key = chest.toString() + "'" + playerName;
+            lootTimes.remove(key);
         }
     }
 
@@ -900,7 +885,7 @@ public class PhatLoot implements ConfigurationSerializable {
             keys = lootTimes.stringPropertyNames();
         } else { //Add each key that starts with the chest location
             keys = new HashSet();
-            String chest = block.getWorld().getName() + "'" + block.getX() + "'" + block.getY() + "'" + block.getZ() + "'";
+            String chest = PhatLootChest.getChest(block).toString();
             for (String key : lootTimes.stringPropertyNames()) {
                 if (key.startsWith(chest)) {
                     keys.add(key);
@@ -1099,16 +1084,6 @@ public class PhatLoot implements ConfigurationSerializable {
         map.put("AutoLoot", autoLoot);
         map.put("BreakAndRespawn", breakAndRespawn);
 
-        nestedMap = new HashMap();
-        nestedMap.put("Upper", moneyUpper);
-        nestedMap.put("Lower", moneyLower);
-        map.put("Money", nestedMap);
-
-        nestedMap = new HashMap();
-        nestedMap.put("Upper", expUpper);
-        nestedMap.put("Lower", expLower);
-        map.put("Exp", nestedMap);
-
         map.put("LootList", lootList);
         return map;
     }
@@ -1136,19 +1111,26 @@ public class PhatLoot implements ConfigurationSerializable {
                 breakAndRespawn = (Boolean) map.get(currentLine = "BreakAndRespawn");
             }
 
-            nestedMap = (Map) map.get(currentLine = "Money");
-            moneyUpper = (Integer) nestedMap.get(currentLine = "Upper");
-            moneyLower = (Integer) nestedMap.get(currentLine = "Lower");
-
-            nestedMap = (Map) map.get(currentLine = "Exp");
-            expUpper = (Integer) nestedMap.get(currentLine = "Upper");
-            expLower = (Integer) nestedMap.get(currentLine = "Lower");
-
             //Check which version the file is
             if (map.containsKey(currentLine = "LootList")) { //3.1+
                 lootList = (ArrayList) map.get(currentLine = "LootList");
             } else { //pre-3.1
                 PhatLoots.logger.warning("Your save files are outdated, please use version 3.1-3.2 to update them");
+            }
+
+            //Updated Legacy money/experience data
+            if (map.containsKey("Money")) {
+                nestedMap = (Map) map.get(currentLine = "Money");
+                int moneyLower = (Integer) nestedMap.get(currentLine = "Lower");
+                int moneyUpper = (Integer) nestedMap.get(currentLine = "Upper");
+                lootList.add(new Money(moneyLower, moneyUpper));
+            }
+
+            if (map.containsKey("Exp")) {
+                nestedMap = (Map) map.get(currentLine = "Exp");
+                int expLower = (Integer) nestedMap.get(currentLine = "Lower");
+                int expUpper = (Integer) nestedMap.get(currentLine = "Upper");
+                lootList.add(new Money(expLower, expUpper));
             }
         } catch (Exception ex) {
             //Print debug messages

@@ -5,10 +5,15 @@ import com.codisimus.plugins.chestlock.Safe;
 import com.codisimus.plugins.phatloots.PhatLoot;
 import com.codisimus.plugins.phatloots.PhatLoots;
 import com.codisimus.plugins.phatloots.PhatLootsConfig;
+import com.codisimus.plugins.phatloots.PhatLootsUtil;
 import com.codisimus.plugins.phatloots.commands.CommandHandler.CodCommand;
 import com.codisimus.plugins.phatloots.gui.InventoryListener;
+import com.codisimus.plugins.phatloots.loot.Experience;
+import com.codisimus.plugins.phatloots.loot.Loot;
 import com.codisimus.plugins.phatloots.loot.LootCollection;
+import com.codisimus.plugins.phatloots.loot.Money;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import org.bukkit.Bukkit;
@@ -105,7 +110,7 @@ public class LootCommand {
         meta.setLore(lore);
         item.setItemMeta(meta);
 
-        player.sendMessage("§6" + PhatLoots.getItemName(item) + "§5 has been linked to PhatLoot §6" + phatLoot.name);
+        player.sendMessage("§6" + PhatLootsUtil.getItemName(item) + "§5 has been linked to PhatLoot §6" + phatLoot.name);
         return true;
     }
 
@@ -121,7 +126,7 @@ public class LootCommand {
         //Cancel if the player is not targeting a correct Block
         Block block  = player.getTargetBlock(null, 10);
         String blockName = block.getType().toString();
-        if (!PhatLoots.isLinkableType(block)) {
+        if (!PhatLootsUtil.isLinkableType(block)) {
             player.sendMessage("§6" + blockName + "§4 is not a linkable type.");
             return true;
         }
@@ -356,8 +361,13 @@ public class LootCommand {
         permission = "phatloots.money"
     )
     public boolean money(CommandSender sender, PhatLoot phatLoot, int lower, int upper) {
-        phatLoot.moneyLower = lower;
-        phatLoot.moneyUpper = upper;
+        Iterator<Loot> itr = phatLoot.lootList.iterator();
+        while (itr.hasNext()) {
+            if (itr.next() instanceof Money) {
+                itr.remove();
+            }
+        }
+        phatLoot.addLoot(new Money(lower, upper));
         sender.sendMessage("§5Money for PhatLoot §6"
                 + phatLoot.name + "§5 set to "
                 + (lower == upper
@@ -484,8 +494,13 @@ public class LootCommand {
         permission = "phatloots.exp"
     )
     public boolean exp(CommandSender sender, PhatLoot phatLoot, int lower, int upper) {
-        phatLoot.expLower = lower;
-        phatLoot.expUpper = upper;
+        Iterator<Loot> itr = phatLoot.lootList.iterator();
+        while (itr.hasNext()) {
+            if (itr.next() instanceof Experience) {
+                itr.remove();
+            }
+        }
+        phatLoot.addLoot(new Experience(lower, upper));
         sender.sendMessage("§5Experience for PhatLoot §6"
                 + phatLoot.name + "§5 set to "
                 + (lower == upper
@@ -555,9 +570,6 @@ public class LootCommand {
                 + " days, " + phatLoot.hours + " hours, "
                 + phatLoot.minutes + " minutes, and "
                 + phatLoot.seconds + " seconds.");
-        sender.sendMessage("§2Money§b: " + phatLoot.moneyLower + "-"
-                + phatLoot.moneyUpper + " §2Experience§b: "
-                + phatLoot.expLower + "-" + phatLoot.expUpper);
         return true;
     }
     @CodCommand(command = "gui", weight = 140.2)
@@ -704,7 +716,7 @@ public class LootCommand {
         //Cancel if the sender is not targeting a correct Block
         Block block = player.getTargetBlock(null, 10);
         String blockName = block.getType().toString();
-        if (!PhatLoots.isLinkableType(block)) {
+        if (!PhatLootsUtil.isLinkableType(block)) {
             player.sendMessage("§6" + blockName + "§4 is not a linkable type.");
             return phatLoots;
         }

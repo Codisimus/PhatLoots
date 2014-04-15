@@ -121,7 +121,7 @@ public class CommandLoot extends Loot {
         //A CommandLoot is represented by a Command Block
         ItemStack infoStack = new ItemStack(Material.COMMAND);
 
-        //Set the display name to the command
+        //Set the display name of the item
         ItemMeta info = Bukkit.getItemFactory().getItemMeta(infoStack.getType());
         info.setDisplayName("§2Command");
 

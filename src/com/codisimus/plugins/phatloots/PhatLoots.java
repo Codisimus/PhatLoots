@@ -1,16 +1,10 @@
 package com.codisimus.plugins.phatloots;
 
-import com.codisimus.plugins.phatloots.commands.CommandHandler;
-import com.codisimus.plugins.phatloots.commands.LootCommand;
-import com.codisimus.plugins.phatloots.commands.ManageLootCommand;
-import com.codisimus.plugins.phatloots.commands.VariableLootCommand;
+import com.codisimus.plugins.phatloots.commands.*;
 import com.codisimus.plugins.phatloots.events.ChestRespawnEvent.RespawnReason;
 import com.codisimus.plugins.phatloots.gui.InventoryListener;
 import com.codisimus.plugins.phatloots.listeners.*;
-import com.codisimus.plugins.phatloots.loot.CommandLoot;
-import com.codisimus.plugins.phatloots.loot.Item;
-import com.codisimus.plugins.phatloots.loot.LootCollection;
-import com.codisimus.plugins.phatloots.loot.Message;
+import com.codisimus.plugins.phatloots.loot.*;
 import com.google.common.io.Files;
 import java.io.*;
 import java.nio.ByteBuffer;
@@ -42,7 +36,8 @@ public class PhatLoots extends JavaPlugin {
     public static Logger logger;
     public static Economy econ = null;
     public static String dataFolder;
-    private static Random random = new Random();
+    public static boolean mythicDropsSupport;
+    private static CommandHandler handler;
     private static HashMap<String, PhatLoot> phatLoots = new HashMap<String, PhatLoot>(); //PhatLoot Name -> PhatLoot
 
     @Override
@@ -57,8 +52,7 @@ public class PhatLoots extends JavaPlugin {
 
     @Override
     public void onEnable () {
-        //Metrics hook
-        try { new Metrics(this).start(); } catch (IOException e) {}
+        mythicDropsSupport = Bukkit.getPluginManager().isPluginEnabled("MythicDrops");
 
         //Register ConfigurationSerializable classes
         ConfigurationSerialization.registerClass(PhatLoot.class, "PhatLoot");
@@ -66,6 +60,11 @@ public class PhatLoots extends JavaPlugin {
         ConfigurationSerialization.registerClass(Item.class, "Item");
         ConfigurationSerialization.registerClass(CommandLoot.class, "Command");
         ConfigurationSerialization.registerClass(Message.class, "Message");
+        ConfigurationSerialization.registerClass(Experience.class, "Experience");
+        ConfigurationSerialization.registerClass(Money.class, "Money");
+        if (mythicDropsSupport) {
+            ConfigurationSerialization.registerClass(MythicDropsItem.class, "MythicDropsItem");
+        }
 
         logger = getLogger();
         plugin = this;
@@ -194,10 +193,26 @@ public class PhatLoots extends JavaPlugin {
         /* Register the command found in the plugin.yml */
         //PhatLootsCommand.command = (String) getDescription().getCommands().keySet().toArray()[0];
         //getCommand(PhatLootsCommand.command).setExecutor(new PhatLootsCommand());
-        CommandHandler handler = new CommandHandler(this, (String) getDescription().getCommands().keySet().toArray()[0]);
+        handler = new CommandHandler(this, (String) getDescription().getCommands().keySet().toArray()[0]);
         handler.registerCommands(LootCommand.class);
         handler.registerCommands(ManageLootCommand.class);
         handler.registerCommands(VariableLootCommand.class);
+        if (PhatLoots.econ != null) {
+            handler.registerCommands(ManageMoneyLootCommand.class);
+        }
+        if (mythicDropsSupport) {
+            handler.registerCommands(ManageMythicDropsLootCommand.class);
+        }
+
+        /* Register Buttons */
+        LootCollection.registerButton();
+        Experience.registerButton();
+        if (PhatLoots.econ != null) {
+            Money.registerButton();
+        }
+        if (mythicDropsSupport) {
+            MythicDropsItem.registerButtonAndTool();
+        }
 
         Properties version = new Properties();
         try {
@@ -226,24 +241,6 @@ public class PhatLoots extends JavaPlugin {
         PhatLootsConfig.load();
 
         setupEconomy();
-    }
-
-    /**
-     * Returns true if the given player is allowed to loot the specified PhatLoot
-     *
-     * @param player The Player who is being checked for permission
-     * @param phatLoot The PhatLoot in question
-     * @return true if the player is allowed to loot the PhatLoot
-     */
-    public static boolean canLoot(Player player, PhatLoot phatLoot) {
-        //Check if the PhatLoot is restricted
-        if (PhatLootsConfig.restrictAll || PhatLootsConfig.restricted.contains(phatLoot.name)) {
-            return player.hasPermission("phatloots.loot.*") //Check for the loot all permission
-                   ? true
-                   : player.hasPermission("phatloots.loot." + phatLoot.name); //Check if the Player has the specific loot permission
-        } else {
-            return true;
-        }
     }
 
     /**
@@ -357,16 +354,6 @@ public class PhatLoots extends JavaPlugin {
     }
 
     /**
-     * Returns true if the given Block is a type that is able to be linked
-     *
-     * @param block the given Block
-     * @return true if the given Block is able to be linked
-     */
-    public static boolean isLinkableType(Block block) {
-        return PhatLootsListener.types.containsKey(block.getType());
-    }
-
-    /**
      * Iterates through every PhatLoot to find PhatLoots linked with the given Block.
      * PhatLoots are only added to the List if the Player has permission to loot them
      *
@@ -378,11 +365,20 @@ public class PhatLoots extends JavaPlugin {
         LinkedList<PhatLoot> phatLootList = new LinkedList<PhatLoot>();
         PhatLootChest chest = PhatLootChest.getChest(block);
         for (PhatLoot phatLoot : phatLoots.values()) {
-            if (phatLoot.containsChest(chest) && canLoot(player, phatLoot)) {
+            if (phatLoot.containsChest(chest) && PhatLootsUtil.canLoot(player, phatLoot)) {
                 phatLootList.add(phatLoot);
             }
         }
         return phatLootList;
+    }
+
+    /**
+     * Returns the CommandHandler used to execute the /loot command
+     *
+     * @return The CommandHandler of PhatLoots
+     */
+    public static CommandHandler getCommandHandler() {
+        return handler;
     }
 
     /**
@@ -437,66 +433,6 @@ public class PhatLoots extends JavaPlugin {
         if (sender instanceof Player) {
             sender.sendMessage("§5PhatLoots reloaded");
         }
-    }
-
-    /**
-     * Returns a random int between 0 (inclusive) and y (inclusive)
-     *
-     * @param upper y
-     * @return a random int between 0 and y
-     */
-    public static int rollForInt(int upper) {
-        return random.nextInt(upper + 1); //+1 is needed to make it inclusive
-    }
-
-    /**
-     * Returns a random int between x (inclusive) and y (inclusive)
-     *
-     * @param lower x
-     * @param upper y
-     * @return a random int between x and y
-     */
-    public static int rollForInt(int lower, int upper) {
-        return random.nextInt(upper + 1 - lower) + lower;
-    }
-
-    /**
-     * Returns a random double between 0 (inclusive) and y (exclusive)
-     *
-     * @param upper y
-     * @return a random double between 0 and y
-     */
-    public static double rollForDouble(double upper) {
-        return random.nextDouble() * upper;
-    }
-
-    /**
-     * Returns a random double between x (inclusive) and y (exclusive)
-     *
-     * @param lower x
-     * @param upper y
-     * @return a random double between x and y
-     */
-    public static double rollForDouble(int lower, int upper) {
-        return random.nextInt(upper + 1 - lower) + lower;
-    }
-
-    /**
-     * Returns a user friendly String of the given ItemStack's name
-     *
-     * @param item The given ItemStack
-     * @return The name of the item
-     */
-    public static String getItemName(ItemStack item) {
-        //Return the Display name of the item if there is one
-        if (item.hasItemMeta()) {
-            String name = item.getItemMeta().getDisplayName();
-            if (name != null && !name.isEmpty()) {
-                return name;
-            }
-        }
-        //A display name was not found so use a cleaned up version of the Material name
-        return WordUtils.capitalizeFully(item.getType().toString().replace("_", " "));
     }
 
     /**
