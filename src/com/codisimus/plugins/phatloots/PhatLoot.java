@@ -1144,7 +1144,7 @@ public class PhatLoot implements ConfigurationSerializable {
                 nestedMap = (Map) map.get(currentLine = "Exp");
                 int expLower = (Integer) nestedMap.get(currentLine = "Lower");
                 int expUpper = (Integer) nestedMap.get(currentLine = "Upper");
-                lootList.add(new Money(expLower, expUpper));
+                lootList.add(new Experience(expLower, expUpper));
             }
         } catch (Exception ex) {
             //Print debug messages

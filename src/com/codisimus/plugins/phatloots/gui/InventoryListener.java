@@ -570,7 +570,7 @@ public class InventoryListener implements Listener {
      */
     private static void viewCollection(Player player, String name) {
         //Store the current view in the Player's stack
-        pageStacks.get(player.getName()).add(player.getOpenInventory().getTopInventory());
+        pageStacks.get(player.getUniqueId()).add(player.getOpenInventory().getTopInventory());
 
         //Get the Inventory title
         String invName;
@@ -597,7 +597,7 @@ public class InventoryListener implements Listener {
         info = Bukkit.getItemFactory().getItemMeta(item.getType());
         info.setDisplayName("§2Up to...");
         List<String> details = new ArrayList();
-        details.add("§6" + pageStacks.get(player.getName()).peek().getTitle());
+        details.add("§6" + pageStacks.get(player.getUniqueId()).peek().getTitle());
         info.setLore(details);
         item.setItemMeta(info);
         inv.setItem(SIZE - 1, item);
@@ -612,7 +612,7 @@ public class InventoryListener implements Listener {
      */
     private static void up(Player player) {
         if (!pageStacks.isEmpty()) {
-            switchView(player, pageStacks.get(player.getName()).pop());
+            switchView(player, pageStacks.get(player.getUniqueId()).pop());
         }
     }
 
@@ -648,7 +648,7 @@ public class InventoryListener implements Listener {
         }
 
         //Populate the inventory
-        refreshPage(player, inv, getLootList(infoViewers.get(player.getName()), inv));
+        refreshPage(player, inv, getLootList(infoViewers.get(player.getUniqueId()), inv));
 
         //Open the Inventory in 2 ticks to avoid Bukkit glitches
         new BukkitRunnable() {
