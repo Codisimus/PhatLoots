@@ -235,8 +235,8 @@ UseBreakAndRespawn: true
 ShuffleLoot: false
 
 
-#If set to true, Collections whic gives more than 1 item have a chance to spawn a specific item more than once
-AllowDuplicateItemsFromCollections: false
+#If set to true, Collections which give more than 1 item have a chance to spawn a specific item more than once
+AllowDuplicateItemsFromCollections: true
 
 
 ##This is how long (in seconds) each inventory will be kept in memory
