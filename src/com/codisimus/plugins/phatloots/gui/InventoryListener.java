@@ -274,7 +274,7 @@ public class InventoryListener implements Listener {
                     phatLoot.autoLoot = !phatLoot.autoLoot;
 
                     //Show the autoloot status
-                    infoStack = new ItemStack(phatLoot.autoLoot ? Material.REDSTONE_TORCH_ON : Material.REDSTONE_TORCH_OFF);
+                    infoStack = new ItemStack(phatLoot.autoLoot ? Material.REDSTONE_TORCH_ON : Material.LEVER);
                     info.setDisplayName("§4AutoLoot: §6" + phatLoot.autoLoot);
                     break;
 
@@ -531,7 +531,7 @@ public class InventoryListener implements Listener {
         inv.setItem(index, infoStack);
 
         //Display the autoloot status
-        infoStack = new ItemStack(phatLoot.autoLoot ? Material.REDSTONE_TORCH_ON : Material.REDSTONE_TORCH_OFF);
+        infoStack = new ItemStack(phatLoot.autoLoot ? Material.REDSTONE_TORCH_ON : Material.LEVER);
         info = Bukkit.getItemFactory().getItemMeta(infoStack.getType());
         info.setDisplayName("§4AutoLoot: §6" + phatLoot.autoLoot);
         infoStack.setItemMeta(info);
