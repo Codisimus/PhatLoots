@@ -612,7 +612,10 @@ public class InventoryListener implements Listener {
      */
     private static void up(Player player) {
         if (!pageStacks.isEmpty()) {
-            switchView(player, pageStacks.get(player.getUniqueId()).pop());
+            Stack<Inventory> history = pageStacks.get(player.getUniqueId());
+            if (!history.empty()) {
+                switchView(player, history.pop());
+            }
         }
     }
 
