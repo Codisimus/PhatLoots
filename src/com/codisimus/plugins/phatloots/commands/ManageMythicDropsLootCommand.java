@@ -14,7 +14,7 @@ public class ManageMythicDropsLootCommand {
     @CodCommand(
         command = "add",
         subcommand = "md",
-        weight = 194.1,
+        weight = 193.1,
         aliases = {"+"},
         usage = {
             "§e     PhatLoots Manage Loot Help Page:",
@@ -41,7 +41,7 @@ public class ManageMythicDropsLootCommand {
     @CodCommand(
         command = "remove",
         subcommand = "md",
-        weight = 199.1,
+        weight = 198.1,
         aliases = {"-"},
         usage = {
             "§e     PhatLoots Manage Loot Help Page:",

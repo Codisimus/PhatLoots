@@ -31,6 +31,13 @@ public class CommandHandler implements CommandExecutor {
         }
     }
 
+    private static final Comparator<CodCommand> COMPARATOR = new Comparator() {
+        @Override
+        public int compare(Object o1, Object o2) {
+            return ((Double) ((CodCommand) o1).weight()).compareTo(((CodCommand) o2).weight());
+        }
+    };
+
     @Target(ElementType.METHOD)
     @Retention(RetentionPolicy.RUNTIME)
     public @interface CodCommand {
@@ -120,6 +127,7 @@ public class CommandHandler implements CommandExecutor {
                 meta = annotation;
                 //This is the first (possibly only) method of the command
                 metas.add(meta);
+                Collections.sort(metas, COMPARATOR); //Temporary fix to sort commands
                 methods.put(meta, new LinkedList<Method>());
             }
             methods.get(meta).add(method);

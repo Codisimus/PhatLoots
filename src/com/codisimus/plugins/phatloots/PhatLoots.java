@@ -192,14 +192,14 @@ public class PhatLoots extends JavaPlugin {
         //PhatLootsCommand.command = (String) getDescription().getCommands().keySet().toArray()[0];
         //getCommand(PhatLootsCommand.command).setExecutor(new PhatLootsCommand());
         handler = new CommandHandler(this, (String) getDescription().getCommands().keySet().toArray()[0]);
+        if (mythicDropsSupport) {
+            handler.registerCommands(ManageMythicDropsLootCommand.class);
+        }
         handler.registerCommands(LootCommand.class);
         handler.registerCommands(ManageLootCommand.class);
         handler.registerCommands(VariableLootCommand.class);
         if (PhatLoots.econ != null) {
             handler.registerCommands(ManageMoneyLootCommand.class);
-        }
-        if (mythicDropsSupport) {
-            handler.registerCommands(ManageMythicDropsLootCommand.class);
         }
 
         /* Register Buttons */
