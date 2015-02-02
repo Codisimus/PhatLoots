@@ -106,22 +106,12 @@ public abstract class Loot implements Comparable, ConfigurationSerializable {
      * Compares Loot objects to order them by their probability (lowest first)
      *
      * @param object An object which may not be an instance of Loot
-     * @return 0 if the object is equal to this, 1 if the objects probability is lower, and -1 otherwise
+     * @return 0 if the object is equal to this, 1 if the object's probability is lower, and -1 otherwise
      */
     @Override
     public int compareTo(Object object) {
-        if ((object instanceof Loot)) {
-            Loot loot = (Loot) object;
-            if (loot.probability < probability) {
-                return 1;
-            }
-            if (loot.probability > probability) {
-                return -1;
-            }
-            if (equals(loot)) {
-                return 0;
-            }
-        }
-        return -1;
+        return object instanceof Loot
+               ? Double.compare(probability, ((Loot) object).probability)
+               : -1;
     }
 }
