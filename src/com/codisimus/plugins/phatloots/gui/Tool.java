@@ -28,6 +28,7 @@ public class Tool {
         lore.add("§4RIGHT CLICK:");
         lore.add("§6 Leave a Collection");
         lore.add("§4SHIFT + LEFT CLICK:");
+        lore.add("§6 Picks up a Collection");
         lore.add("§6 Shift a Loot to the Left");
         lore.add("§4SHIFT + RIGHT CLICK:");
         lore.add("§6 Shift a Loot to the Right");

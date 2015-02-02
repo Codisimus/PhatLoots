@@ -250,3 +250,9 @@ UnlinkGlobalChestsThatNeverReset: false
 
 ##Set to true if '/loot give' and '/loot <PhatLoot>' should have cooldowns
 ApplyCooldownToCommandLoot: false
+
+
+##This is how often (in minutes) the plugin will automatically save the loot times
+##If set to 0, Loot times will only be saved when the server is shut down
+##This only needs to be set if you worry about losing data in the case of a server crash
+AutoSavePeriod: 1440

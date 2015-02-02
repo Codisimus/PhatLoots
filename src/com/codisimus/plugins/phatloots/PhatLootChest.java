@@ -179,6 +179,15 @@ public class PhatLootChest {
     }
 
     /**
+     * Returns true if the Chest is in the given World
+     *
+     * @return true if the Chest is in the given World
+     */
+    public boolean isInWorld(World w) {
+        return w.getName().equals(world);
+    }
+
+    /**
      * Returns all PhatLoots that are linked this PhatLootChest
      *
      * @return a list of PhatLoots linked to the chest

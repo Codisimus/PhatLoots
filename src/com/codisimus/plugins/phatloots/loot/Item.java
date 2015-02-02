@@ -803,7 +803,12 @@ public class Item extends Loot {
         //Add the suffix and prefix for the given tier
         for (String string : tiersConfig.getConfigurationSection(TIERS).getKeys(false)) {
             if (tier > Integer.parseInt(string)) {
-                nameBuilder.insert(0, tiersConfig.getString(TIERS + DIVIDER + string + ".Prefix"));
+                //Hack to fix encoding issues
+                String prefix = tiersConfig.getString(TIERS + DIVIDER + string + ".Prefix");
+                if (prefix.startsWith("Â")) {
+                    prefix = prefix.substring(1);
+                }
+                nameBuilder.insert(0, prefix);
                 nameBuilder.append(tiersConfig.getString(TIERS + DIVIDER + string + ".Suffix"));
                 break;
             }

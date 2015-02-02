@@ -10,6 +10,7 @@ import org.apache.commons.lang.time.DateUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
@@ -848,6 +849,19 @@ public class PhatLoot implements ConfigurationSerializable {
     }
 
     /**
+     * Resets the global loot times for all PhatLootChests of this PhatLoot within the given World.
+     *
+     * @param world The World whose loot times are to be reset
+     */
+    public void resetForWorld(World world) {
+        for (PhatLootChest chest : chests) {
+            if (chest.isInWorld(world)) {
+                lootTimes.remove(chest.toString() + "'" + global);
+            }
+        }
+    }
+
+    /**
      * Resets the player loot times for all PhatLootChests of this PhatLoot.
      *
      * @param player The Player whose loot times are to be reset
@@ -1151,7 +1165,7 @@ public class PhatLoot implements ConfigurationSerializable {
             PhatLoots.logger.severe("Failed to load line: " + currentLine);
             PhatLoots.logger.severe("of PhatLoot: " + (current == null ? "unknown" : current));
             if (current == null) {
-                PhatLoots.logger.severe("Last successfull load was...");
+                PhatLoots.logger.severe("Last successful load was...");
                 PhatLoots.logger.severe("PhatLoot: " + (last == null ? "unknown" : last));
             }
         }

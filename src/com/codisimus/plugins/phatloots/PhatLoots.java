@@ -20,9 +20,9 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.entity.Player;
-import org.bukkit.plugin.PluginManager;
-import org.bukkit.plugin.RegisteredServiceProvider;
+import org.bukkit.plugin.*;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitRunnable;
 
 /**
  * Loads Plugin and manages Data/Listeners/etc.
@@ -35,8 +35,13 @@ public class PhatLoots extends JavaPlugin {
     public static Economy econ = null;
     public static String dataFolder;
     public static boolean mythicDropsSupport;
-    private static CommandHandler handler;
+    public static long autoSavePeriod;
+    public static CommandHandler handler;
     private static HashMap<String, PhatLoot> phatLoots = new HashMap<String, PhatLoot>(); //PhatLoot Name -> PhatLoot
+
+    public static void main(String[] args) {
+        //Do Nothing - For debugging within NetBeans IDE
+    }
 
     @Override
     public void onDisable() {
@@ -90,14 +95,19 @@ public class PhatLoots extends JavaPlugin {
             dir.mkdir();
         }
 
+        dir = new File(dataFolder + File.separator + "Addons");
+        if (!dir.isDirectory()) {
+            dir.mkdir();
+        }
+
         //Save SampleLoot.yml if it does not exist
-        File file = new File(PhatLoots.dataFolder + File.separator + "LootTables/SampleLoot.yml");
+        File file = new File(PhatLoots.dataFolder + File.separator + "LootTables" + File.separator + "SampleLoot.yml");
         if (!file.exists()) {
             InputStream inputStream = this.getResource("SampleLoot.yml");
             OutputStream outputStream = null;
 
             try {
-                outputStream = new FileOutputStream(dataFolder + File.separator + "LootTables/SampleLoot.yml");
+                outputStream = new FileOutputStream(dataFolder + File.separator + "LootTables" + File.separator + "SampleLoot.yml");
 
                 int read = 0;
                 byte[] bytes = new byte[1024];
@@ -123,9 +133,86 @@ public class PhatLoots extends JavaPlugin {
             }
         }
 
+        /* Register Events */
+        registerEvents();
+
+        /* Register Buttons */
+        LootCollection.registerButton();
+        Experience.registerButton();
+        if (PhatLoots.econ != null) {
+            Money.registerButton();
+        }
+        if (mythicDropsSupport) {
+            MythicDropsItem.registerButtonAndTool();
+        }
+
+        /* Register the command found in the plugin.yml */
+        String command = (String) getDescription().getCommands().keySet().toArray()[0];
+        handler = new CommandHandler(this, command);
+        if (mythicDropsSupport) {
+            handler.registerCommands(ManageMythicDropsLootCommand.class);
+        }
+        handler.registerCommands(LootCommand.class);
+        handler.registerCommands(ManageLootCommand.class);
+        handler.registerCommands(VariableLootCommand.class);
+        if (PhatLoots.econ != null) {
+            handler.registerCommands(ManageMoneyLootCommand.class);
+        }
+
+        /* Load External PhatLoots Addons */
+        //Buttons, Tools, CodCommands, and ConfigurationSerializable classes should be registered from within the Addon
+        for (Plugin addon : Bukkit.getPluginManager().loadPlugins(dir)) {
+            Bukkit.getPluginManager().enablePlugin(addon);
+        }
+
+        /* Load PhatLoot/Chest data */
         load();
 
-        /* Register Events */
+        /* Start save repeating task */
+        if (autoSavePeriod > 0) {
+            new BukkitRunnable() {
+                @Override
+                public void run() {
+                    saveLootTimes();
+                }
+            }.runTaskTimer(this, autoSavePeriod, autoSavePeriod);
+        }
+
+        Properties version = new Properties();
+        try {
+            version.load(this.getResource("version.properties"));
+        } catch (Exception ex) {
+            logger.warning("version.properties file not found within jar");
+        }
+        logger.info("PhatLoots " + getDescription().getVersion() + " (Build "
+                    + version.getProperty("Build") + ") is enabled!");
+    }
+
+    /**
+     * Reloads the config from the config.yml file.
+     * Loads values from the newly loaded config.
+     * This method is automatically called when the plugin is enabled
+     */
+    @Override
+    public void reloadConfig() {
+        //Save the config file if it does not already exist
+        saveDefaultConfig();
+
+        //Reload the config as this method would normally do if not overriden
+        super.reloadConfig();
+
+        //Load values from the config now that it has been reloaded
+        PhatLootsConfig.load();
+
+        setupEconomy();
+    }
+
+    /**
+     * Registers all Event Listeners that PhatLoots uses
+     * Most of these Listeners may be turned of from the config
+     * Enabled Listeners are logged at the INFO level
+     */
+    private void registerEvents() {
         PluginManager pm = Bukkit.getPluginManager();
         pm.registerEvents(new PhatLootsListener(), this);
         pm.registerEvents(new InventoryListener(), this);
@@ -187,58 +274,6 @@ public class PhatLoots extends JavaPlugin {
             logger.info("Listening for Votifier votes");
             pm.registerEvents(new VoteListener(), this);
         }
-
-        /* Register the command found in the plugin.yml */
-        //PhatLootsCommand.command = (String) getDescription().getCommands().keySet().toArray()[0];
-        //getCommand(PhatLootsCommand.command).setExecutor(new PhatLootsCommand());
-        handler = new CommandHandler(this, (String) getDescription().getCommands().keySet().toArray()[0]);
-        if (mythicDropsSupport) {
-            handler.registerCommands(ManageMythicDropsLootCommand.class);
-        }
-        handler.registerCommands(LootCommand.class);
-        handler.registerCommands(ManageLootCommand.class);
-        handler.registerCommands(VariableLootCommand.class);
-        if (PhatLoots.econ != null) {
-            handler.registerCommands(ManageMoneyLootCommand.class);
-        }
-
-        /* Register Buttons */
-        LootCollection.registerButton();
-        Experience.registerButton();
-        if (PhatLoots.econ != null) {
-            Money.registerButton();
-        }
-        if (mythicDropsSupport) {
-            MythicDropsItem.registerButtonAndTool();
-        }
-
-        Properties version = new Properties();
-        try {
-            version.load(this.getResource("version.properties"));
-        } catch (Exception ex) {
-            logger.warning("version.properties file not found within jar");
-        }
-        logger.info("PhatLoots " + getDescription().getVersion() + " (Build "
-                    + version.getProperty("Build") + ") is enabled!");
-    }
-
-    /**
-     * Reloads the config from the config.yml file.
-     * Loads values from the newly loaded config.
-     * This method is automatically called when the plugin is enabled
-     */
-    @Override
-    public void reloadConfig() {
-        //Save the config file if it does not already exist
-        PhatLoots.plugin.saveDefaultConfig();
-
-        //Reload the config as this method would normally do if not overriden
-        super.reloadConfig();
-
-        //Load values from the config now that it has been reloaded
-        PhatLootsConfig.load();
-
-        setupEconomy();
     }
 
     /**
@@ -304,7 +339,7 @@ public class PhatLoots extends JavaPlugin {
     /**
      * Adds the given PhatLoot to the collection of PhatLoots
      *
-     * @param phatLoots The given PhatLoot
+     * @param phatLoot The given PhatLoot
      */
     public static void addPhatLoot(PhatLoot phatLoot) {
         phatLoots.put(phatLoot.name, phatLoot);
@@ -315,7 +350,7 @@ public class PhatLoots extends JavaPlugin {
      * Removes the given PhatLoot from the collection of PhatLoots.
      * PhatLoot files are also deleted
      *
-     * @param PhatLoot The given PhatLoot
+     * @param phatLoot The given PhatLoot
      */
     public static void removePhatLoot(PhatLoot phatLoot) {
         phatLoots.remove(phatLoot.name);
@@ -448,7 +483,7 @@ public class PhatLoots extends JavaPlugin {
                 fileConfiguration.load(file);
             }
         } catch (Exception ex) {
-            PhatLoots.logger.log(Level.SEVERE, "§4Could not load data from " + file, ex);
+            logger.log(Level.SEVERE, "§4Could not load data from " + file, ex);
         }
         return fileConfiguration;
     }

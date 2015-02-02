@@ -183,6 +183,7 @@ public class PhatLootsConfig {
         ForgettableInventory.delay = config.getInt("ForgetInventoryTime") * 20L;
         PhatLoot.unlink = config.getBoolean("UnlinkGlobalChestsThatNeverReset");
         PhatLoot.commandCooldown = config.getBoolean("ApplyCooldownToCommandLoot");
+        PhatLoots.autoSavePeriod = config.getInt("AutoSavePeriod") * 20L;
 
         /* LORES.YML */
 
