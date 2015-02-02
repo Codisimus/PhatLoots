@@ -84,6 +84,13 @@ public class InventoryListener implements Listener {
         UUID playerUUID = player.getUniqueId();
         if (!infoViewers.containsKey(playerUUID)) {
             return;
+        } else { //Fixes glitch of not detecting inventory close
+            if (!event.getInventory().getName().startsWith((infoViewers.get(playerUUID).name))) {
+                infoViewers.remove(playerUUID).save(); //Save the PhatLoot in case it has been modified
+                pageStacks.get(playerUUID).empty();
+                pageStacks.remove(playerUUID);
+                return;
+            }
         }
 
         //Don't allow any inventory clicking
@@ -325,23 +332,15 @@ public class InventoryListener implements Listener {
         case NAVIGATE_AND_MOVE:
             switch (event.getClick()) {
             case LEFT: //Move Loot or Enter a Collection
-                if (stack.getType() == Material.ENDER_CHEST) {
-                    ItemMeta meta = stack.getItemMeta();
-                    if (meta.hasDisplayName()) {
-                        //Get the collection name from the item's display name
-                        String name = stack.getItemMeta().getDisplayName();
-                        if (name.endsWith(" (Collection)")) { //Clicked a LootCollection
-                            name = name.substring(2, name.length() - 13);
-                            if (holding.containsKey(playerUUID)) { //Place Loot in Collection
-                                Loot l = holding.remove(playerUUID);
-                                phatLoot.findCollection(name).addLoot(l);
-                                event.setCursor(null);
-                            } else { //Enter LootCollection
-                                viewCollection(player, name);
-                            }
-                            return;
-                        }
+                if (loot instanceof LootCollection) { //Clicked a LootCollection
+                    if (holding.containsKey(playerUUID)) { //Place Loot in Collection
+                        Loot l = holding.remove(playerUUID);
+                        ((LootCollection) loot).addLoot(l);
+                        event.setCursor(null);
+                    } else { //Enter LootCollection
+                        viewCollection(player, ((LootCollection) loot).name);
                     }
+                    return;
                 }
 
                 //Clicked some other Loot
@@ -360,15 +359,29 @@ public class InventoryListener implements Listener {
             case RIGHT: //Go back a page
                 up(player);
                 break;
-            case SHIFT_LEFT: //Move Loot left
-                if (loot != null && slot > 0) {
-                    lootList.set(slot, lootList.get(slot - 1));
-                    lootList.set(slot - 1, loot);
-                    refreshPage(player, inv, lootList);
+            case SHIFT_LEFT: //Move Loot left or Pick up a Collection
+                if (loot != null) {
+                    if (loot instanceof LootCollection) { //Pick up the Collection
+                        if (holding.containsKey(playerUUID)) { //Swap Loot
+                            Loot l = holding.remove(playerUUID);
+                            holding.put(playerUUID, lootList.get(slot));
+                            lootList.set(slot, l);
+                            event.setCurrentItem(event.getCursor()); //Put down Loot
+                            event.setCursor(stack); //Pick up new Loot
+                        } else { //Pick up Loot
+                            holding.put(playerUUID, lootList.remove(slot));
+                            event.setCursor(stack);
+                            refreshPage(player, inv, lootList); //Shifts remaining loot down
+                        }
+                    } else if (slot > 0) { //Move Loot Left
+                        lootList.set(slot, lootList.get(slot - 1));
+                        lootList.set(slot - 1, loot);
+                        refreshPage(player, inv, lootList);
+                    }
                 }
                 break;
             case SHIFT_RIGHT: //Move Loot right
-                if (slot < lootList.size() + 1) {
+                if (slot < lootList.size() - 1) {
                     lootList.set(slot, lootList.get(slot + 1));
                     lootList.set(slot + 1, loot);
                     refreshPage(player, inv, lootList);
