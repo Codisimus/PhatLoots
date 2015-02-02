@@ -33,6 +33,10 @@ public class PhatLootsListener implements Listener {
      */
     @EventHandler (ignoreCancelled = true)
     public void onPlayerInteract(PlayerInteractEvent event) {
+        if (!event.hasBlock()) {
+            return;
+        }
+
         //Return if the Block is not a linkable type
         Material type = event.getClickedBlock().getType();
         if (!types.containsKey(type)) {
@@ -68,7 +72,25 @@ public class PhatLootsListener implements Listener {
         if (phatLoots == null) {
             Block block = event.getClickedBlock();
             if (!PhatLootChest.isPhatLootChest(block)) {
-                return;
+                switch (type) {
+                case TRAPPED_CHEST:
+                case CHEST:
+                    Chest chest = (Chest) block.getState();
+                    Inventory inventory = chest.getInventory();
+                    //We only care about the left side because that is the Block that would be linked
+                    if (inventory instanceof DoubleChestInventory) {
+                        chest = (Chest) ((DoubleChestInventory) inventory).getLeftSide().getHolder();
+                        block = chest.getBlock();
+                        phatLoots = PhatLoots.getPhatLoots(block, player);
+                        if (phatLoots.isEmpty()) {
+                            return;
+                        } else {
+                            break;
+                        }
+                    }
+                default:
+                    return;
+                }
             }
 
             switch (event.getAction()) {
@@ -91,25 +113,7 @@ public class PhatLootsListener implements Listener {
                     //Return if the Block is not a PhatLootChest
                     phatLoots = PhatLoots.getPhatLoots(block, player);
                     if (phatLoots.isEmpty()) {
-                        switch (type) {
-                        case TRAPPED_CHEST:
-                        case CHEST:
-                            Chest chest = (Chest) block.getState();
-                            Inventory inventory = chest.getInventory();
-                            //We only care about the left side because that is the Block that would be linked
-                            if (inventory instanceof DoubleChestInventory) {
-                                chest = (Chest) ((DoubleChestInventory) inventory).getLeftSide().getHolder();
-                                block = chest.getBlock();
-                                phatLoots = PhatLoots.getPhatLoots(block, player);
-                                if (phatLoots.isEmpty()) {
-                                    return;
-                                } else {
-                                    break;
-                                }
-                            }
-                        default:
-                            return;
-                        }
+                        return;
                     }
                 }
                 break;
@@ -138,15 +142,15 @@ public class PhatLootsListener implements Listener {
     /**
      * Listens for a Player closing a PhatLootChest
      *
-     * @param event The PlayerInteractEvent that occurred
+     * @param event The InventoryCloseEvent that occurred
      */
     @EventHandler (ignoreCancelled = true)
     public void onPlayerCloseChest(InventoryCloseEvent event) {
         HumanEntity human = event.getPlayer();
         if (human instanceof Player) {
             Player player = (Player) human;
-            if (PhatLootChest.openPhatLootChests.containsKey(player)) {
-                PhatLootChest chest = PhatLootChest.openPhatLootChests.get(player);
+            if (PhatLootChest.openPhatLootChests.containsKey(player.getUniqueId())) {
+                PhatLootChest chest = PhatLootChest.openPhatLootChests.get(player.getUniqueId());
                 boolean global = ForgettableInventory.has("global@" + chest.toString());
                 chest.closeInventory(player, event.getInventory(), global);
             }
