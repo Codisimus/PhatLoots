@@ -1,6 +1,5 @@
 package com.codisimus.plugins.phatloots;
 
-import com.codisimus.plugins.phatloots.listeners.PhatLootsListener;
 import java.util.Random;
 import org.apache.commons.lang.WordUtils;
 import org.bukkit.block.Block;
@@ -39,7 +38,7 @@ public class PhatLootsUtil {
      * @return true if the given Block is able to be linked
      */
     public static boolean isLinkableType(Block block) {
-        return PhatLootsListener.types.containsKey(block.getType());
+        return PhatLoots.types.containsKey(block.getType());
     }
 
     /**

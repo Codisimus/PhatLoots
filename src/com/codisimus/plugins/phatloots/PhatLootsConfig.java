@@ -2,7 +2,6 @@ package com.codisimus.plugins.phatloots;
 
 import com.codisimus.plugins.phatloots.commands.LootCommand;
 import com.codisimus.plugins.phatloots.listeners.MobListener;
-import com.codisimus.plugins.phatloots.listeners.PhatLootsListener;
 import com.codisimus.plugins.phatloots.loot.Item;
 import com.codisimus.plugins.phatloots.loot.LootCollection;
 import java.io.File;
@@ -65,7 +64,7 @@ public class PhatLootsConfig {
         for (String string : config.getStringList("Blocks")) {
             Material mat = Material.matchMaterial(string);
             if (mat != null) {
-                PhatLootsListener.types.put(mat, null);
+                PhatLoots.types.put(mat, null);
             }
         }
         ConfigurationSection section = config.getConfigurationSection("AutoLink");
@@ -75,10 +74,10 @@ public class PhatLootsConfig {
                 for (String string : worldSection.getKeys(false)) {
                     Material mat = Material.matchMaterial(string);
                     if (mat != null) {
-                        if (PhatLootsListener.types.get(mat) == null) {
-                            PhatLootsListener.types.put(mat, new HashMap());
+                        if (PhatLoots.types.get(mat) == null) {
+                            PhatLoots.types.put(mat, new HashMap());
                         }
-                        PhatLootsListener.types.get(mat).put(world, worldSection.getString(string));
+                        PhatLoots.types.get(mat).put(world, worldSection.getString(string));
                     }
                 }
             }
@@ -185,6 +184,7 @@ public class PhatLootsConfig {
         PhatLoot.commandCooldown = config.getBoolean("ApplyCooldownToCommandLoot");
         PhatLoots.autoSavePeriod = config.getInt("AutoSavePeriod") * 20L;
 
+        
         /* LORES.YML */
 
         String fileName = "lores.yml";

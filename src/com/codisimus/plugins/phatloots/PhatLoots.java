@@ -15,11 +15,15 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.block.Chest;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.DoubleChestInventory;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.plugin.*;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -37,6 +41,7 @@ public class PhatLoots extends JavaPlugin {
     public static boolean mythicDropsSupport;
     public static long autoSavePeriod;
     public static CommandHandler handler;
+    public static EnumMap<Material, HashMap<String, String>> types = new EnumMap(Material.class); //Material -> World Name -> PhatLoot Name
     private static HashMap<String, PhatLoot> phatLoots = new HashMap<String, PhatLoot>(); //PhatLoot Name -> PhatLoot
 
     public static void main(String[] args) {
@@ -370,38 +375,110 @@ public class PhatLoots extends JavaPlugin {
     }
 
     /**
-     * Iterates through every PhatLoot to find PhatLoots linked with the given Block
-     *
-     * @param block The given Block
-     * @return The LinkedList of PhatLoots
-     */
-    public static LinkedList<PhatLoot> getPhatLoots(Block block) {
-        LinkedList<PhatLoot> phatLootList = new LinkedList<PhatLoot>();
-        PhatLootChest chest = PhatLootChest.getChest(block);
-        for (PhatLoot phatLoot : phatLoots.values()) {
-            if (phatLoot.containsChest(chest)) {
-                phatLootList.add(phatLoot);
-            }
-        }
-        return phatLootList;
-    }
-
-    /**
-     * Iterates through every PhatLoot to find PhatLoots linked with the given Block.
-     * PhatLoots are only added to the List if the Player has permission to loot them
+     * Returns a List of all PhatLoots that are linked to the given Block
+     * PhatLoots which the given Player does not have permission to loot are not returned
      *
      * @param block The given Block
      * @param player The given Player
      * @return The LinkedList of PhatLoots
      */
     public static LinkedList<PhatLoot> getPhatLoots(Block block, Player player) {
-        LinkedList<PhatLoot> phatLootList = new LinkedList<PhatLoot>();
-        PhatLootChest chest = PhatLootChest.getChest(block);
-        for (PhatLoot phatLoot : phatLoots.values()) {
-            if (phatLoot.containsChest(chest) && PhatLootsUtil.canLoot(player, phatLoot)) {
-                phatLootList.add(phatLoot);
+        LinkedList<PhatLoot> phatLootList = getPhatLoots(block);
+        Iterator<PhatLoot> itr = phatLootList.iterator();
+        while (itr.hasNext()) {
+            PhatLoot phatLoot = itr.next();
+            if (!PhatLootsUtil.canLoot(player, phatLoot)) {
+                phatLootList.remove(phatLoot);
             }
         }
+        return phatLootList;
+    }
+
+    /**
+     * Returns a List of all PhatLoots that are linked to the given Block
+     * AutoLinking is first checked and then explicit linking if AutoLinking returns 0 results
+     *
+     * @param block The given Block
+     * @return The LinkedList of PhatLoots
+     */
+    public static LinkedList<PhatLoot> getPhatLoots(Block block) {
+        LinkedList<PhatLoot> phatLootList = getAutoLinkedPhatLoots(block);
+
+        if (phatLootList.isEmpty()) {
+            phatLootList = getExplicitlyLinkedPhatLoots(block);
+        }
+
+        return phatLootList;
+    }
+
+    /**
+     * Returns a List of all PhatLoots that are automatically linked to the given Block
+     *
+     * @param block The given Block
+     * @return The LinkedList of PhatLoots
+     */
+    public static LinkedList<PhatLoot> getAutoLinkedPhatLoots(Block block) {
+        LinkedList<PhatLoot> phatLootList = new LinkedList<PhatLoot>();
+
+        if (PhatLootsUtil.isLinkableType(block)) {
+            HashMap<String, String> map = types.get(block.getType());
+            if (map != null) {
+                String world = block.getWorld().getName();
+                String pNameList = map.containsKey(world)
+                                 ? map.get(world)
+                                 : map.get("all");
+                if (pNameList != null) {
+                    for (String pName : pNameList.split("; ")) {
+                        PhatLoot phatLoot = PhatLoots.getPhatLoot(pName);
+                        if (phatLoot == null) {
+                            PhatLoots.logger.warning("PhatLoot " + pName + " does not exist.");
+                            PhatLoots.logger.warning("Please adjust your config or create the PhatLoot");
+                        }
+
+                        phatLootList.add(phatLoot);
+                    }
+                }
+            }
+        }
+
+        return phatLootList;
+    }
+
+    /**
+     * Returns a List of all PhatLoots that are explicitly linked to the given Block
+     *
+     * @param block The given Block
+     * @return The LinkedList of PhatLoots
+     */
+    public static LinkedList<PhatLoot> getExplicitlyLinkedPhatLoots(Block block) {
+        LinkedList<PhatLoot> phatLootList = new LinkedList<PhatLoot>();
+
+        if (PhatLootsUtil.isLinkableType(block)) {
+            if (!PhatLootChest.isPhatLootChest(block)) {
+                switch (block.getType()) {
+                case TRAPPED_CHEST:
+                case CHEST:
+                    Chest chest = (Chest) block.getState();
+                    Inventory inventory = chest.getInventory();
+                    //We only care about the left side because that is the Block that would be linked
+                    if (inventory instanceof DoubleChestInventory) {
+                        chest = (Chest) ((DoubleChestInventory) inventory).getLeftSide().getHolder();
+                        block = chest.getBlock();
+                    }
+                    break;
+                default:
+                    break;
+                }
+            }
+
+            PhatLootChest chest = PhatLootChest.getChest(block);
+            for (PhatLoot phatLoot : phatLoots.values()) {
+                if (phatLoot.containsChest(chest)) {
+                    phatLootList.add(phatLoot);
+                }
+            }
+        }
+
         return phatLootList;
     }
 

@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
 import org.bukkit.block.Block;
+import org.bukkit.entity.Player;
 
 /**
  * API for the PhatLoots plugin
@@ -85,6 +86,36 @@ public class PhatLootsAPI {
             blockList.add(chest.getBlock());
         }
         return blockList;
+    }
+
+    /**
+     * Forces the given Player to Loot the given Block if it is a PhatLootChest
+     *
+     * @param block The Block which may be linked to a PhatLoot
+     * @param player The given Player
+     * @return true if the Block was linked and looted, false otherwise
+     */
+    public static boolean loot(Block block, Player player) {
+        LinkedList<PhatLoot> phatLoots = PhatLoots.getPhatLoots(block, player);
+        if (phatLoots.isEmpty()) {
+            return false;
+        }
+
+        PhatLootChest plChest = PhatLootChest.getChest(block);
+
+        //Roll for Loot of each linked PhatLoot
+        boolean flagToBreak = true;
+        for (PhatLoot phatLoot : phatLoots) {
+            if (!phatLoot.rollForChestLoot(player, plChest)) {
+                //Don't break the Chest if any PhatLoots return false
+                flagToBreak = false;
+            }
+        }
+
+        if (flagToBreak) {
+            plChest.breakChest(player, plChest.getResetTime(phatLoots));
+        }
+        return true;
     }
 
     /**
