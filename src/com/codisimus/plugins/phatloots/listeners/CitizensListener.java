@@ -18,6 +18,10 @@ public class CitizensListener implements Listener {
     @EventHandler (ignoreCancelled = true)
     public void onNPCSpawn(NPCSpawnEvent event) {
         PhatLoot phatLoot = PhatLoots.getPhatLoot("NPC" + event.getNPC().getName() + "Spawn");
+        if (phatLoot == null) {
+            phatLoot = PhatLoots.getPhatLoot("NPCSpawn");
+        }
+
         if (phatLoot != null) {
             Entity entity = event.getNPC().getEntity();
             if (entity instanceof LivingEntity) {
@@ -29,6 +33,10 @@ public class CitizensListener implements Listener {
     @EventHandler (ignoreCancelled = true)
     public void onNPCDeath(NPCDeathEvent event) {
         PhatLoot phatLoot = PhatLoots.getPhatLoot("NPC" + event.getNPC().getName());
+        if (phatLoot == null) {
+            phatLoot = PhatLoots.getPhatLoot("NPC");
+        }
+
         if (phatLoot != null) {
             Entity entity = event.getNPC().getEntity();
             if (entity instanceof LivingEntity) {
