@@ -88,16 +88,21 @@ public class CommandLoot extends Loot {
      * @param player The Player looting or null if no Player is involved
      */
     public void execute(Player player) {
-        String cmd;
+        String cmd  = command;
         if (player == null) {
-            //Return if the command is ment for a player
-            if (!fromConsole || command.contains("<player>")) {
+            if (!fromConsole || command.contains("<player>") || command.contains("<killer>")) {
                 return;
-            } else {
-                cmd = command;
             }
         } else {
-            cmd = command.replace("<player>", player.getName());
+            cmd = cmd.replace("<player>", player.getName());
+            if (command.contains("<killer>")) {
+                Player killer = player.getKiller();
+                if (killer == null) {
+                    return;
+                } else {
+                    cmd = cmd.replace("<killer>", killer.getName());
+                }
+            }
         }
         if (fromConsole) { //From console
             Bukkit.dispatchCommand(cs, cmd);
