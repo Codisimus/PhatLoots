@@ -3,6 +3,7 @@ package com.codisimus.plugins.phatloots.gui;
 import com.codisimus.plugins.phatloots.PhatLoot;
 import com.codisimus.plugins.phatloots.loot.Loot;
 import java.util.List;
+import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
@@ -20,12 +21,13 @@ public abstract class Button {
     /**
      * Completes the Button's action
      *
+     * @param click The type of click
      * @param inv The current GUI Inventory
      * @param phatLoot The PhatLoot Which is being modified
      * @param lootList The current List of Loot (may be a collection)
      * @return true if the page should be refreshed
      */
-    public abstract boolean onClick(Inventory inv, PhatLoot phatLoot, List<Loot> lootList);
+    public abstract boolean onClick(ClickType click, Inventory inv, PhatLoot phatLoot, List<Loot> lootList);
 
     /**
      * Constructs a new Button

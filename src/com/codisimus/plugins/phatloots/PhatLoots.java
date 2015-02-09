@@ -73,6 +73,7 @@ public class PhatLoots extends JavaPlugin {
         if (mythicDropsSupport) {
             ConfigurationSerialization.registerClass(MythicDropsItem.class, "MythicDropsItem");
             ConfigurationSerialization.registerClass(UnidentifiedItem.class, "UnidentifiedItem");
+            ConfigurationSerialization.registerClass(Gem.class, "Gem");
         }
 
         logger = getLogger();
@@ -150,7 +151,6 @@ public class PhatLoots extends JavaPlugin {
         }
         if (mythicDropsSupport) {
             MythicDropsItem.registerButtonAndTool();
-            UnidentifiedItem.registerButton();
         }
 
         /* Register the command found in the plugin.yml */

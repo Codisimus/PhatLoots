@@ -33,7 +33,7 @@ public class Money extends Loot {
         }
 
         @Override
-        public boolean onClick(Inventory inv, PhatLoot phatLoot, List<Loot> lootList) {
+        public boolean onClick(ClickType click, Inventory inv, PhatLoot phatLoot, List<Loot> lootList) {
             //Add a new Money loot
             lootList.add(new Money(0, 0));
             return true;

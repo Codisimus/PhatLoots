@@ -33,7 +33,7 @@ public class Experience extends Loot {
         }
 
         @Override
-        public boolean onClick(Inventory inv, PhatLoot phatLoot, List<Loot> lootList) {
+        public boolean onClick(ClickType click, Inventory inv, PhatLoot phatLoot, List<Loot> lootList) {
             //Add a new Experience loot
             lootList.add(new Experience(0, 0));
             return true;

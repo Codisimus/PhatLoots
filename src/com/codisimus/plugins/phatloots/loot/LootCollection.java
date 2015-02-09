@@ -34,7 +34,7 @@ public class LootCollection extends Loot {
         }
 
         @Override
-        public boolean onClick(Inventory inv, PhatLoot phatLoot, List<Loot> lootList) {
+        public boolean onClick(ClickType type, Inventory inv, PhatLoot phatLoot, List<Loot> lootList) {
             //Find a unique collection name for the PhatLoot
             int i = 1;
             while (phatLoot.findCollection(String.valueOf(i)) != null) {

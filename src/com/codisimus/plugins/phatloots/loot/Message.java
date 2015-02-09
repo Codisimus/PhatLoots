@@ -2,7 +2,6 @@ package com.codisimus.plugins.phatloots.loot;
 
 import com.codisimus.plugins.phatloots.PhatLoot;
 import com.codisimus.plugins.phatloots.PhatLoots;
-import com.codisimus.plugins.phatloots.PhatLootsCommandSender;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -11,7 +10,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.configuration.serialization.SerializableAs;
-import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
