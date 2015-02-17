@@ -118,6 +118,7 @@ Messages:
     AutoLoot: '&5You looted &6<item>&5 from the chest.'
     Overflow: '&5The Chest is overflowing with loot!'
     ChestTimeRemaining: '&4You must wait &6<time>&4 to receive more loot!'
+    EmptyChestTimeRemaining: '&4You must wait &6<time>&4 to receive more loot!'
     CommandTimeRemaining: '&4You must wait &6<time>&4 to receive more loot!'
     DispenserTimeRemaining: ''
     MobTimeRemaining: '&4You must wait &6<time>&4 to receive more loot!'

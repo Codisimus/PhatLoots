@@ -238,17 +238,26 @@ public class PhatLoot implements ConfigurationSerializable {
             if (chest == null) {
                 timeRemainingMsg = PhatLootsConfig.commandTimeRemaining;
             } else {
-                timeRemainingMsg = chest.isDispenser() ? PhatLootsConfig.dispenserTimeRemaining : PhatLootsConfig.chestTimeRemaining;
-            }
-            if (time > 0 && timeRemainingMsg != null) {
-                player.sendMessage(timeRemainingMsg.replace("<time>", timeToString(time)));
-            }
-            if (chest != null) {
                 //Open the Inventory if it is not already open
                 Inventory inv = chest.getInventory(getUser(player), title);
                 if (player.getOpenInventory().getTopInventory() != inv) {
                     chest.openInventory(player, inv, global);
                 }
+                if (chest.isDispenser()) {
+                    timeRemainingMsg = PhatLootsConfig.dispenserTimeRemaining;
+                } else {
+                    boolean empty = true;
+                    for (ItemStack item : inv.getContents()) {
+                        if (item != null && item.getType() != Material.AIR) {
+                            empty = false;
+                            break;
+                        }
+                    }
+                    timeRemainingMsg = empty ? PhatLootsConfig.emptyChestTimeRemaining : PhatLootsConfig.chestTimeRemaining;
+                }
+            }
+            if (time > 0 && timeRemainingMsg != null) {
+                player.sendMessage(timeRemainingMsg.replace("<time>", timeToString(time)));
             }
             return flagToBreak;
         }

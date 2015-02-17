@@ -40,6 +40,7 @@ public class PhatLootsConfig {
     public static String experienceLooted;
     public static String autoLoot;
     public static String chestTimeRemaining;
+    public static String emptyChestTimeRemaining;
     public static String commandTimeRemaining;
     public static String dispenserTimeRemaining;
     public static String overflow;
@@ -106,6 +107,7 @@ public class PhatLootsConfig {
         autoLoot = getString(section, "AutoLoot");
         overflow = getString(section, "Overflow");
         chestTimeRemaining = getString(section, "ChestTimeRemaining");
+        emptyChestTimeRemaining = getString(section, "EmptyChestTimeRemaining");
         commandTimeRemaining = getString(section, "CommandTimeRemaining");
         dispenserTimeRemaining = getString(section, "DispenserTimeRemaining");
         mobTimeRemaining = getString(section, "MobTimeRemaining");
