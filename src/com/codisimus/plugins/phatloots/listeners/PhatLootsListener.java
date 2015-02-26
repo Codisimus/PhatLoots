@@ -17,6 +17,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
  * @author Cody
  */
 public class PhatLootsListener implements Listener {
+    public static boolean autoBreakOnPunch;
 
     /**
      * Checks if a Player loots a PhatLootChest
@@ -29,20 +30,24 @@ public class PhatLootsListener implements Listener {
             return;
         }
 
+        boolean autoSpill = false;
         switch (event.getAction()) {
         case RIGHT_CLICK_BLOCK:
             break;
         case LEFT_CLICK_BLOCK:
-            if (event.getClickedBlock().getType() != Material.DISPENSER) {
-                return;
+            if (event.getClickedBlock().getType() == Material.DISPENSER) {
+                break;
+            } else if (autoBreakOnPunch) {
+                autoSpill = true;
+                break;
             }
-            break;
+            return;
         default:
             return;
         }
 
         Player player = event.getPlayer();
-        boolean looted = PhatLootsAPI.loot(event.getClickedBlock(), player);
+        boolean looted = PhatLootsAPI.loot(event.getClickedBlock(), player, autoSpill);
 
         if (looted) {
             event.setCancelled(true);

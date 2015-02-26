@@ -9,6 +9,7 @@ import net.milkbowl.vault.economy.EconomyResponse;
 import org.apache.commons.lang.time.DateUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
@@ -225,6 +226,19 @@ public class PhatLoot implements ConfigurationSerializable {
      * @return true if the PhatLootChest should be manually broken
      */
     public boolean rollForChestLoot(Player player, PhatLootChest chest, String title) {
+        return rollForChestLoot(player, chest, title, false);
+    }
+
+    /**
+     * Rolls for loot to place in the given PhatLootChest
+     *
+     * @param player The Player who is looting
+     * @param chest The PhatLootChest that is being looted
+     * @param title The title of the Inventory
+     * @param autoSpill true if the Chest should spill its loot rather than placing it in the chest
+     * @return true if the PhatLootChest should be manually broken
+     */
+    public boolean rollForChestLoot(Player player, PhatLootChest chest, String title, boolean autoSpill) {
         boolean flagToBreak = false;
 
         if (title == null) {
@@ -364,7 +378,13 @@ public class PhatLoot implements ConfigurationSerializable {
             itemList = leftovers.values();
         }
 
-        if (chest == null) {
+        if (global && autoSpill) {
+            for (ItemStack item : itemList) {
+                Location loc = chest == null ? player.getLocation() : chest.getBlock().getLocation().add(0.5, 0.5, 0.5);
+                player.getWorld().dropItemNaturally(loc, item);
+            }
+            flagToBreak = true;
+        } else if (chest == null) {
             if (!itemList.isEmpty()) {
                 //Add each item to the Inventory
                 for (ItemStack item : itemList) {
@@ -414,8 +434,10 @@ public class PhatLoot implements ConfigurationSerializable {
                                                 .replace("<phatloot>", name));
         }
 
-        //Solves some inventory issues
-        player.updateInventory();
+        if (!autoSpill) {
+            //Solves some inventory issues
+            player.updateInventory();
+        }
 
         //Update the time that the user looted
         setTime(player, chest);

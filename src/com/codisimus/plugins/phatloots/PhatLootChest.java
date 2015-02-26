@@ -42,6 +42,7 @@ public class PhatLootChest {
     private int x, y, z;
     private boolean isDispenser;
     private BlockState state;
+    private BlockState otherHalfState;
 
     /**
      * Constructs a new PhatLootChest with the given Block
@@ -94,6 +95,20 @@ public class PhatLootChest {
      * @return The found or created PhatLootChest
      */
     public static PhatLootChest getChest(Block block) {
+        switch (block.getType()) {
+        case TRAPPED_CHEST:
+        case CHEST:
+            Chest chest = (Chest) block.getState();
+            Inventory inventory = chest.getInventory();
+            //We only care about the left side because that is the Block that would be linked
+            if (inventory instanceof DoubleChestInventory) {
+                chest = (Chest) ((DoubleChestInventory) inventory).getLeftSide().getHolder();
+                block = chest.getBlock();
+            }
+            break;
+        default:
+            break;
+        }
         String key = block.getWorld().getName() + "'" + block.getX() + "'" + block.getY() + "'" + block.getZ();
         if (chests.containsKey(key)) {
             return chests.get(key);
@@ -114,13 +129,11 @@ public class PhatLootChest {
      * @return The found or created PhatLootChest
      */
     public static PhatLootChest getChest(String world, int x, int y, int z) {
-        String key = world + "'" + x + "'" + y + "'" + z;
-        if (chests.containsKey(key)) {
-            return chests.get(key);
+        World w = Bukkit.getWorld(world);
+        if (w == null) {
+            return null;
         } else {
-            PhatLootChest chest = new PhatLootChest(world, x, y, z);
-            chests.put(world + "'" + x + "'" + y + "'" + z, chest);
-            return chest;
+            return getChest(w.getBlockAt(x, y, z));
         }
     }
 
@@ -131,13 +144,10 @@ public class PhatLootChest {
      * @return The found or created PhatLootChest
      */
     public static PhatLootChest getChest(String[] data) {
-        String key = data[0] + "'" + data[1] + "'" + data[2] + "'" + data[3];
-        if (chests.containsKey(key)) {
-            return chests.get(key);
-        } else {
-            PhatLootChest chest = new PhatLootChest(data[0], Integer.parseInt(data[1]), Integer.parseInt(data[2]), Integer.parseInt(data[3]));
-            chests.put(chest.world + "'" + chest.x + "'" + chest.y + "'" + chest.z, chest);
-            return chest;
+        try {
+            return getChest(data[0], Integer.parseInt(data[1]), Integer.parseInt(data[2]), Integer.parseInt(data[3]));
+        } catch (Exception ex) {
+            return null;
         }
     }
 
@@ -157,6 +167,20 @@ public class PhatLootChest {
      * @return true if the given Block is linked to a PhatLoot
      */
     public static boolean isPhatLootChest(Block block) {
+        switch (block.getType()) {
+        case TRAPPED_CHEST:
+        case CHEST:
+            Chest chest = (Chest) block.getState();
+            Inventory inventory = chest.getInventory();
+            //We only care about the left side because that is the Block that would be linked
+            if (inventory instanceof DoubleChestInventory) {
+                chest = (Chest) ((DoubleChestInventory) inventory).getLeftSide().getHolder();
+                block = chest.getBlock();
+            }
+            break;
+        default:
+            break;
+        }
         return chests.containsKey(block.getWorld().getName() + "'" + block.getX() + "'" + block.getY() + "'" + block.getZ());
     }
 
@@ -210,10 +234,24 @@ public class PhatLootChest {
     public void moveTo(Block target) {
         //Remove the old Block
         if (state != null) {
-            state.update(true);
+            respawn(RespawnReason.OTHER);
         }
         Block block = getBlock();
         block.setType(Material.AIR);
+        switch (block.getType()) {
+        case TRAPPED_CHEST:
+        case CHEST:
+            Chest chest = (Chest) block.getState();
+            Inventory inventory = chest.getInventory();
+            //We only care about the left side because that is the Block that would be linked
+            if (inventory instanceof DoubleChestInventory) {
+                chest = (Chest) ((DoubleChestInventory) inventory).getLeftSide().getHolder();
+                chest.getBlock().setType(Material.AIR);
+            }
+            break;
+        default:
+            break;
+        }
 
         //Set the new Block
         x = target.getX();
@@ -245,7 +283,23 @@ public class PhatLootChest {
 
         //Save the BlockState
         Block block = getBlock();
+        Block otherHalfBlock = null;
         state = block.getState();
+        switch (block.getType()) {
+        case TRAPPED_CHEST:
+        case CHEST:
+            Chest chest = (Chest) block.getState();
+            Inventory inventory = chest.getInventory();
+            //We only care about the left side because that is the Block that would be linked
+            if (inventory instanceof DoubleChestInventory) {
+                chest = (Chest) ((DoubleChestInventory) inventory).getRightSide().getHolder();
+                otherHalfBlock = chest.getBlock();
+                otherHalfState = otherHalfBlock.getState();
+            }
+            break;
+        default:
+            break;
+        }
 
         //Don't break the chest if it will immediately come back
         if (event.getRespawnTime() == 0) {
@@ -254,6 +308,9 @@ public class PhatLootChest {
 
         //Set the Block to AIR
         block.setType(Material.AIR);
+        if (otherHalfBlock != null) {
+            otherHalfBlock.setType(Material.AIR);
+        }
 
         //Schedule the chest to respawn
         if (event.getRespawnTime() > 0) {
@@ -301,36 +358,22 @@ public class PhatLootChest {
                     newState.update();
                 }
                 state = null;
+                if (otherHalfState != null) {
+                    otherHalfState.update(true);
+                    //Hack to fix a Bukkit bug of Skulls not updating properly
+                    if (otherHalfState instanceof Skull) {
+                        Skull oldState = (Skull) otherHalfState;
+                        Skull newState = (Skull) otherHalfState.getBlock().getState();
+                        newState.setSkullType(oldState.getSkullType());
+                        newState.setRotation(oldState.getRotation());
+                        newState.setOwner(oldState.getOwner());
+                        newState.update();
+                    }
+                    otherHalfState = null;
+                }
                 chestsToRespawn.remove(this);
             }
         }
-    }
-
-    /**
-     * Returns true if the given Block is this PhatLootChest
-     *
-     * @param block The given Block
-     * @return True if the given Block is the same Dispenser or part of the double Chest
-     */
-    public boolean matchesBlock(Block block) {
-        if (block.getType() == Material.CHEST) {
-            Chest chest = (Chest) block.getState();
-            Inventory inventory = chest.getInventory();
-
-            //We only link the left side of a DoubleChest
-            if (inventory instanceof DoubleChestInventory) {
-                chest = (Chest) ((DoubleChestInventory) inventory).getLeftSide().getHolder();
-                block = chest.getBlock();
-            }
-        }
-
-        //Return false if any of the coordinates don't match
-        if (x != block.getX() || y != block.getY() || z != block.getZ()) {
-            return false;
-        }
-
-        //Return false if Blocks are not in the same World
-        return world.equals(block.getWorld().getName());
     }
 
     public Inventory getInventory(String user, String name) {

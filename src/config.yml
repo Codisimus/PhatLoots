@@ -257,3 +257,10 @@ ApplyCooldownToCommandLoot: false
 ##If set to 0, Loot times will only be saved when the server is shut down
 ##This only needs to be set if you worry about losing data in the case of a server crash
 AutoSavePeriod: 1440
+
+
+##This setting will only affect PhatLootChests which are set to GlobalReset and BreakAndRespawn
+##If set to true then a Player may punch a chest (single hit) to break it
+##The loot will spill all over the ground near the chests location
+##This will only apply if BreakAndRespawn=true, and GlobalReset=true
+AutoBreakOnPunch: false

@@ -2,6 +2,7 @@ package com.codisimus.plugins.phatloots;
 
 import com.codisimus.plugins.phatloots.commands.LootCommand;
 import com.codisimus.plugins.phatloots.listeners.MobListener;
+import com.codisimus.plugins.phatloots.listeners.PhatLootsListener;
 import com.codisimus.plugins.phatloots.loot.Item;
 import com.codisimus.plugins.phatloots.loot.LootCollection;
 import java.io.File;
@@ -185,6 +186,7 @@ public class PhatLootsConfig {
         PhatLoot.unlink = config.getBoolean("UnlinkGlobalChestsThatNeverReset");
         PhatLoot.commandCooldown = config.getBoolean("ApplyCooldownToCommandLoot");
         PhatLoots.autoSavePeriod = config.getInt("AutoSavePeriod") * 20L;
+        PhatLootsListener.autoBreakOnPunch = config.getBoolean("AutoBreakOnPunch");
 
         
         /* LORES.YML */
