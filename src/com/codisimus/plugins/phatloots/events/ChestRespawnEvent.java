@@ -7,13 +7,13 @@ import org.bukkit.event.HandlerList;
 /**
  * Called when a PhatLootChest respawns
  *
- * @author Cody
+ * @author Codisimus
  */
 public class ChestRespawnEvent extends PhatLootChestEvent {
     private static final HandlerList handlers = new HandlerList();
     public static enum RespawnReason { INITIAL, DELAYED, PLUGIN_DISABLED, OTHER }
     private long delay;
-    private RespawnReason reason;
+    private final RespawnReason reason;
 
     /**
      * Creates a new event with the given data

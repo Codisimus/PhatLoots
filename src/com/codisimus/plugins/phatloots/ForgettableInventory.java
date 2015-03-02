@@ -1,20 +1,20 @@
 package com.codisimus.plugins.phatloots;
 
 import java.util.HashMap;
-import org.bukkit.Bukkit;
 import org.bukkit.inventory.Inventory;
+import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 
 /**
  * A Forgettable Inventory is a virtual Inventory that will be removed from memory after the set delay
  *
- * @author Mtihc
+ * @author Mtihc, Codisimus
  */
 public class ForgettableInventory {
-    private static HashMap<String, ForgettableInventory> inventories = new HashMap<String, ForgettableInventory>(); //User+Chest Location -> Inventory
     static long delay;
-    private Inventory inventory;
-    private String key;
+    private static final HashMap<String, ForgettableInventory> inventories = new HashMap<String, ForgettableInventory>(); //User+Chest Location -> Inventory
+    private final Inventory inventory;
+    private final String key;
     private BukkitTask task;
 
     /**
@@ -36,12 +36,12 @@ public class ForgettableInventory {
         if (task != null) {
             task.cancel();
         }
-        task = Bukkit.getScheduler().runTaskLater(PhatLoots.plugin, new Runnable() {
-                @Override
-                public void run() {
-                    inventories.remove(key);
-                }
-            }, delay);
+        task = new BukkitRunnable() {
+            @Override
+            public void run() {
+                inventories.remove(key);
+            }
+        }.runTaskLater(PhatLoots.plugin, delay);
 
     }
 

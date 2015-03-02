@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.TreeMap;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.configuration.serialization.SerializableAs;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.Inventory;
@@ -20,13 +21,19 @@ import org.bukkit.inventory.meta.ItemMeta;
 /**
  * An Experience is a range of experience to be given to the looter
  *
- * @author Cody
+ * @author Codisimus
  */
 @SerializableAs("Experience")
 public class Experience extends Loot {
+    static {
+        ConfigurationSerialization.registerClass(Experience.class, "Experience");
+    }
     private int lowerAmount;
     private int upperAmount;
 
+    /**
+     * Adds Experience as Loot
+     */
     private static class AddExperienceButton extends Button {
         private AddExperienceButton(ItemStack item) {
             super(item);
@@ -40,8 +47,11 @@ public class Experience extends Loot {
         }
     }
 
+    /**
+     * Registers the AddExperienceButton in the PhatLoot GUI
+     */
     public static void registerButton() {
-        //Register the Add Expoerience Button
+        //Register the Add Experience Button
         ItemStack item = new ItemStack(Material.EXP_BOTTLE);
         ItemMeta info = Bukkit.getItemFactory().getItemMeta(item.getType());
         info.setDisplayName("§2Add experience...");

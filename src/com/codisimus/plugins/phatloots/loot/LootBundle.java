@@ -7,12 +7,12 @@ import org.bukkit.inventory.ItemStack;
 /**
  * A LootBundle is a collection of items, commands, money, and experience that has been rolled for
  *
- * @author Cody
+ * @author Codisimus
  */
 public class LootBundle {
-    private List<ItemStack> itemList;
-    private List<CommandLoot> commandList = new LinkedList<CommandLoot>();
-    private List<String> messageList = new LinkedList<String>();
+    private final List<ItemStack> itemList;
+    private final List<CommandLoot> commandList = new LinkedList<>();
+    private final List<String> messageList = new LinkedList<>();
     private double money = 0;
     private int exp = 0;
 
@@ -29,7 +29,7 @@ public class LootBundle {
      * Creates a new, empty LootBundle
      */
     public LootBundle() {
-        this.itemList = new LinkedList<ItemStack>();
+        this.itemList = new LinkedList<>();
     }
 
     /**

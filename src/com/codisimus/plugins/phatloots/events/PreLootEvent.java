@@ -3,7 +3,7 @@ package com.codisimus.plugins.phatloots.events;
 /**
  * Called when a PhatLoot is about to be looted
  *
- * @author Cody
+ * @author Codisimus
  */
 public abstract class PreLootEvent extends PhatLootsEvent {
     protected double lootingBonus;

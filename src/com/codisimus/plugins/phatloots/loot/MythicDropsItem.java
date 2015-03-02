@@ -15,6 +15,7 @@ import net.nunnerycode.bukkit.mythicdrops.utils.ItemStackUtil;
 import net.nunnerycode.bukkit.mythicdrops.utils.TierUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.configuration.serialization.SerializableAs;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.Inventory;
@@ -28,6 +29,9 @@ import org.bukkit.inventory.meta.ItemMeta;
  */
 @SerializableAs("MythicDropsItem")
 public class MythicDropsItem extends Loot {
+    static {
+        ConfigurationSerialization.registerClass(MythicDropsItem.class, "MythicDropsItem");
+    }
     private static ArrayList<String> tierList = null;
     public String tierName;
     public int amountLower = 1;
@@ -39,6 +43,9 @@ public class MythicDropsItem extends Loot {
         instantiateTierList();
     }
 
+    /**
+     * Adds a MythicDrops Item as Loot
+     */
     private static class AddMythicDropsItemButton extends Button {
         private AddMythicDropsItemButton(ItemStack item) {
             super(item);
@@ -71,7 +78,7 @@ public class MythicDropsItem extends Loot {
         //Register the Add Collection Button
         ItemStack item = new ItemStack(Material.ENCHANTMENT_TABLE);
         ItemMeta info = Bukkit.getItemFactory().getItemMeta(item.getType());
-        List<String> uses = new ArrayList<String>();
+        List<String> uses = new ArrayList<>();
         info.setDisplayName("§2Add new MythicDrops Item...");
         uses.add("§4LEFT CLICK:");
         uses.add("§6 Add new MythicDrops Item");
@@ -87,7 +94,7 @@ public class MythicDropsItem extends Loot {
 
         item = new ItemStack(Material.ENCHANTMENT_TABLE);
         ItemMeta meta = Bukkit.getItemFactory().getItemMeta(item.getType());
-        List<String> lore = new ArrayList<String>();
+        List<String> lore = new ArrayList<>();
         meta.setDisplayName("§2MythicDrops Toggle (Click to change Tool)");
         lore.add("§1Toggles through the names of Tiers and Gems");
         lore.add("§1Names toggle in alphabetical order");
@@ -105,7 +112,7 @@ public class MythicDropsItem extends Loot {
         lore.add("§6 Back to first Name");
         meta.setLore(lore);
         item.setItemMeta(meta);
-        new Tool("MYTHICDROPS", item);
+        new Tool("MYTHICDROPS", item).registerTool();
     }
 
     /**
@@ -289,7 +296,7 @@ public class MythicDropsItem extends Loot {
     private static void instantiateTierList() {
         if (tierList == null) {
             //Cache Tiers alphabetically
-            tierList = new ArrayList<String>();
+            tierList = new ArrayList<>();
             for (Tier tier : TierMap.getInstance().values()) {
                 tierList.add(tier.getName());
             }

@@ -12,7 +12,7 @@ import org.bukkit.event.Listener;
 /**
  * Listens for Votes triggered by Votifier and gives the Voter Loot
  *
- * @author Cody
+ * @author Codisimus
  */
 public class VoteListener implements Listener {
     @EventHandler

@@ -2,11 +2,10 @@ package com.codisimus.plugins.phatloots.commands;
 
 import com.codisimus.plugins.phatloots.commands.CommandHandler.CodCommand;
 import com.codisimus.plugins.phatloots.loot.Money;
-import com.codisimus.plugins.phatloots.loot.MythicDropsItem;
 import org.bukkit.command.CommandSender;
 
 /**
- * Executes Player Commands
+ * Executes Player Commands for configuring Loot Money
  *
  * @author Codisimus
  */
@@ -62,6 +61,13 @@ public class ManageMoneyLootCommand {
         return true;
     }
 
+    /**
+     * Generates the Loot Money and sets it on the PhatLoot(s)
+     *
+     * @param sender The CommandSender who is setting the Money
+     * @param add True if the Money should be added to the PhatLoot(s)
+     * @param args The arguments of the Loot Money
+     */
     private static void setMoney(CommandSender sender, boolean add, String[] args) {
         String phatLoot = null; //The name of the PhatLoot
         double percent = 100; //The chance of receiving the Loot (defaulted to 100)

@@ -8,20 +8,20 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
 /**
- * Tools used for modifying Loot in the GUI
+ * A Tool is used for modifying Loot in the GUI
  *
- * @author Cody
+ * @author Codisimus
  */
 public class Tool {
-    private static ArrayList<Tool> tools = new ArrayList<Tool>();
-    private int id;
-    private String name;
-    private ItemStack item;
+    private static final ArrayList<Tool> tools = new ArrayList<>();
+    private final int id;
+    private final String name;
+    private final ItemStack item;
 
     static {
         ItemStack item = new ItemStack(Material.LEASH);
         ItemMeta meta = Bukkit.getItemFactory().getItemMeta(item.getType());
-        List<String> lore = new ArrayList<String>();
+        List<String> lore = new ArrayList<>();
         meta.setDisplayName("§2Navigate/Move (Click to change Tool)");
         lore.add("§4LEFT CLICK:");
         lore.add("§6 Enter a Collection");
@@ -36,7 +36,7 @@ public class Tool {
         lore.add("§6 Remove a Loot/Add an Item (from inventory)");
         meta.setLore(lore);
         item.setItemMeta(meta);
-        new Tool("NAVIGATE_AND_MOVE", item);
+        new Tool("NAVIGATE_AND_MOVE", item).registerTool();
 
         item = new ItemStack(Material.NAME_TAG);
         meta = Bukkit.getItemFactory().getItemMeta(item.getType());
@@ -56,7 +56,7 @@ public class Tool {
         lore.add("§6 Toggle TieredName and Loot table settings");
         meta.setLore(lore);
         item.setItemMeta(meta);
-        new Tool("MODIFY_PROBABILITY_AND_TOGGLE", item);
+        new Tool("MODIFY_PROBABILITY_AND_TOGGLE", item).registerTool();
 
         item = new ItemStack(Material.GOLD_NUGGET);
         meta = Bukkit.getItemFactory().getItemMeta(item.getType());
@@ -76,7 +76,7 @@ public class Tool {
         lore.add("§6 Set Amount to 1 and Clear time/exp/money");
         meta.setLore(lore);
         item.setItemMeta(meta);
-        new Tool("MODIFY_AMOUNT", item);
+        new Tool("MODIFY_AMOUNT", item).registerTool();
     }
 
     /**
@@ -89,7 +89,6 @@ public class Tool {
         id = tools.size();
         this.name = name;
         this.item = item;
-        registerTool();
     }
 
     /**
@@ -148,7 +147,7 @@ public class Tool {
     /**
      * Adds this Tool to the static list of registered tools
      */
-    private void registerTool() {
+    public void registerTool() {
         tools.add(this);
     }
 

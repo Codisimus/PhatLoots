@@ -4,8 +4,6 @@ import com.codisimus.plugins.phatloots.PhatLoot;
 import com.codisimus.plugins.phatloots.PhatLootChest;
 import com.codisimus.plugins.phatloots.PhatLoots;
 import com.codisimus.plugins.phatloots.PhatLootsUtil;
-import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -15,7 +13,7 @@ import org.bukkit.event.block.BlockPhysicsEvent;
 /**
  * Listens for redstone activating PhatLoot Dispensers
  *
- * @author Cody
+ * @author Codisimus
  */
 public class DispenserListener implements Listener {
     /**
@@ -44,7 +42,7 @@ public class DispenserListener implements Listener {
         }
 
         //Return if there are not any player that are close enough
-        Player player = getNearestPlayer(block.getLocation());
+        Player player = PhatLootsUtil.getNearestPlayer(block.getLocation());
         if (player == null) {
             return;
         }
@@ -56,27 +54,5 @@ public class DispenserListener implements Listener {
                 phatLoot.rollForChestLoot(player, plChest);
             }
         }
-    }
-
-    /**
-     * Returns the Player that is closest to the given Location.
-     * Returns null if no Players are within 50 Blocks
-     *
-     * @param location The given Location
-     * @return the closest Player
-     */
-    private static Player getNearestPlayer(Location location) {
-        Player nearestPlayer = null;
-        double shortestDistance = 2500;
-        for (Player player: location.getWorld().getPlayers()) {
-            Location playerLocation = player.getLocation();
-            //Use the squared distance because is it much less resource intensive
-            double distanceToPlayer = location.distanceSquared(playerLocation);
-            if (distanceToPlayer < shortestDistance) {
-                nearestPlayer = player;
-                shortestDistance = distanceToPlayer;
-            }
-        }
-        return nearestPlayer;
     }
 }

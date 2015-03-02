@@ -17,13 +17,9 @@ import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
-import org.bukkit.block.Chest;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.DoubleChestInventory;
-import org.bukkit.inventory.Inventory;
 import org.bukkit.plugin.*;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -31,7 +27,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 /**
  * Loads Plugin and manages Data/Listeners/etc.
  *
- * @author Cody
+ * @author Codisimus
  */
 public class PhatLoots extends JavaPlugin {
     public static JavaPlugin plugin;
@@ -41,8 +37,8 @@ public class PhatLoots extends JavaPlugin {
     public static boolean mythicDropsSupport;
     public static long autoSavePeriod;
     public static CommandHandler handler;
-    public static EnumMap<Material, HashMap<String, String>> types = new EnumMap(Material.class); //Material -> World Name -> PhatLoot Name
-    private static HashMap<String, PhatLoot> phatLoots = new HashMap<String, PhatLoot>(); //PhatLoot Name -> PhatLoot
+    public static final EnumMap<Material, HashMap<String, String>> types = new EnumMap(Material.class); //Material -> World Name -> PhatLoot Name
+    private static final HashMap<String, PhatLoot> phatLoots = new HashMap<>(); //PhatLoot Name -> PhatLoot
 
     public static void main(String[] args) {
         //Do Nothing - For debugging within NetBeans IDE
@@ -62,20 +58,6 @@ public class PhatLoots extends JavaPlugin {
     public void onEnable () {
         mythicDropsSupport = Bukkit.getPluginManager().isPluginEnabled("MythicDrops");
 
-        //Register ConfigurationSerializable classes
-        ConfigurationSerialization.registerClass(PhatLoot.class, "PhatLoot");
-        ConfigurationSerialization.registerClass(LootCollection.class, "LootCollection");
-        ConfigurationSerialization.registerClass(Item.class, "Item");
-        ConfigurationSerialization.registerClass(CommandLoot.class, "Command");
-        ConfigurationSerialization.registerClass(Message.class, "Message");
-        ConfigurationSerialization.registerClass(Experience.class, "Experience");
-        ConfigurationSerialization.registerClass(Money.class, "Money");
-        if (mythicDropsSupport) {
-            ConfigurationSerialization.registerClass(MythicDropsItem.class, "MythicDropsItem");
-            ConfigurationSerialization.registerClass(UnidentifiedItem.class, "UnidentifiedItem");
-            ConfigurationSerialization.registerClass(Gem.class, "Gem");
-        }
-
         logger = getLogger();
         plugin = this;
 
@@ -87,56 +69,40 @@ public class PhatLoots extends JavaPlugin {
 
         dataFolder = dir.getPath();
 
-        dir = new File(dataFolder + File.separator + "LootTables");
+        dir = new File(dataFolder, "LootTables");
         if (!dir.isDirectory()) {
             dir.mkdir();
         }
 
-        dir = new File(dataFolder + File.separator + "Chests");
+        dir = new File(dataFolder, "Chests");
         if (!dir.isDirectory()) {
             dir.mkdir();
         }
 
-        dir = new File(dataFolder + File.separator + "LootTimes");
+        dir = new File(dataFolder, "LootTimes");
         if (!dir.isDirectory()) {
             dir.mkdir();
         }
 
-        dir = new File(dataFolder + File.separator + "Addons");
+        dir = new File(dataFolder, "Addons");
         if (!dir.isDirectory()) {
             dir.mkdir();
         }
 
         //Save SampleLoot.yml if it does not exist
-        File file = new File(PhatLoots.dataFolder + File.separator + "LootTables" + File.separator + "SampleLoot.yml");
+        File file = new File(dataFolder, "LootTables" + File.separator + "SampleLoot.yml");
         if (!file.exists()) {
-            InputStream inputStream = this.getResource("SampleLoot.yml");
-            OutputStream outputStream = null;
+            try (InputStream inputStream = this.getResource("SampleLoot.yml")) {
+                try (OutputStream outputStream = new FileOutputStream(file)) {
+                    int read;
+                    byte[] bytes = new byte[1024];
 
-            try {
-                outputStream = new FileOutputStream(dataFolder + File.separator + "LootTables" + File.separator + "SampleLoot.yml");
-
-                int read = 0;
-                byte[] bytes = new byte[1024];
-
-                while ((read = inputStream.read(bytes)) != -1) {
-                    outputStream.write(bytes, 0, read);
+                    while ((read = inputStream.read(bytes)) != -1) {
+                        outputStream.write(bytes, 0, read);
+                    }
                 }
             } catch (IOException ex) {
                 logger.log(Level.WARNING, "Could not save resource: SampleLoot.yml", ex);
-            } finally {
-                if (inputStream != null) {
-                    try {
-                        inputStream.close();
-                    } catch (IOException e) {
-                    }
-                }
-                if (outputStream != null) {
-                    try {
-                        outputStream.close();
-                    } catch (IOException e) {
-                    }
-                }
             }
         }
 
@@ -288,17 +254,11 @@ public class PhatLoots extends JavaPlugin {
      */
     public static void load() {
         //Load each YAML file in the LootTables folder
-        File dir = new File(dataFolder + File.separator + "LootTables");
-        File[] files = dir.listFiles(new FilenameFilter() {
-            @Override
-            public boolean accept(File dir, String name) {
-                return name.toLowerCase().endsWith(".yml");
-            }
-        });
-        for (File file : files) {
+        File dir = new File(dataFolder, "LootTables");
+        for (File file : dir.listFiles(PhatLootsUtil.YAML_FILTER)) {
             try {
                 String name = file.getName();
-                name = name.substring(0, name.length() - 4);
+                name = name.substring(0, name.length() - PhatLootsUtil.YAML_EXTENSION.length());
                 YamlConfiguration config = loadConfig(file);
 
                 //Ensure the PhatLoot name matches the file name
@@ -328,6 +288,7 @@ public class PhatLoots extends JavaPlugin {
     /**
      * Returns true if a PhatLoot by the given name exists
      *
+     * @param name The given name
      * @return true if a PhatLoot by the given name exists
      */
     public static boolean hasPhatLoot(String name) {
@@ -361,9 +322,9 @@ public class PhatLoots extends JavaPlugin {
      */
     public static void removePhatLoot(PhatLoot phatLoot) {
         phatLoots.remove(phatLoot.name);
-        new File(dataFolder + File.separator + "LootTables" + File.separator + phatLoot.name + ".yml").delete();
-        new File(dataFolder + File.separator + "Chests" + File.separator + phatLoot.name + ".txt").delete();
-        new File(dataFolder + File.separator + "LootTimes" + File.separator + phatLoot.name + ".properties").delete();
+        new File(dataFolder, "LootTables" + File.separator + phatLoot.name + PhatLootsUtil.YAML_EXTENSION).delete();
+        new File(dataFolder, "Chests" + File.separator + phatLoot.name + PhatLootsUtil.TEXT_EXTENSION).delete();
+        new File(dataFolder, "LootTimes" + File.separator + phatLoot.name + PhatLootsUtil.PROPERTIES_EXTENSION).delete();
     }
 
     /**
@@ -420,7 +381,7 @@ public class PhatLoots extends JavaPlugin {
      * @return The LinkedList of PhatLoots
      */
     public static LinkedList<PhatLoot> getAutoLinkedPhatLoots(Block block) {
-        LinkedList<PhatLoot> phatLootList = new LinkedList<PhatLoot>();
+        LinkedList<PhatLoot> phatLootList = new LinkedList<>();
 
         if (PhatLootsUtil.isLinkableType(block)) {
             HashMap<String, String> map = types.get(block.getType());
@@ -453,30 +414,16 @@ public class PhatLoots extends JavaPlugin {
      * @return The LinkedList of PhatLoots
      */
     public static LinkedList<PhatLoot> getExplicitlyLinkedPhatLoots(Block block) {
-        LinkedList<PhatLoot> phatLootList = new LinkedList<PhatLoot>();
+        LinkedList<PhatLoot> phatLootList = new LinkedList<>();
 
         if (PhatLootsUtil.isLinkableType(block)) {
-            if (!PhatLootChest.isPhatLootChest(block)) {
-                switch (block.getType()) {
-                case TRAPPED_CHEST:
-                case CHEST:
-                    Chest chest = (Chest) block.getState();
-                    Inventory inventory = chest.getInventory();
-                    //We only care about the left side because that is the Block that would be linked
-                    if (inventory instanceof DoubleChestInventory) {
-                        chest = (Chest) ((DoubleChestInventory) inventory).getLeftSide().getHolder();
-                        block = chest.getBlock();
+            block = PhatLootsUtil.getLeftSide(block);
+            if (PhatLootChest.isPhatLootChest(block)) {
+                PhatLootChest chest = PhatLootChest.getChest(block);
+                for (PhatLoot phatLoot : phatLoots.values()) {
+                    if (phatLoot.containsChest(chest)) {
+                        phatLootList.add(phatLoot);
                     }
-                    break;
-                default:
-                    break;
-                }
-            }
-
-            PhatLootChest chest = PhatLootChest.getChest(block);
-            for (PhatLoot phatLoot : phatLoots.values()) {
-                if (phatLoot.containsChest(chest)) {
-                    phatLootList.add(phatLoot);
                 }
             }
         }

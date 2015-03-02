@@ -14,7 +14,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
 /**
  * Listens for interactions with PhatLootChests
  *
- * @author Cody
+ * @author Codisimus
  */
 public class PhatLootsListener implements Listener {
     public static boolean autoBreakOnPunch;

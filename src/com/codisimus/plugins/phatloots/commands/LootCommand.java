@@ -1,7 +1,5 @@
 package com.codisimus.plugins.phatloots.commands;
 
-import com.codisimus.plugins.chestlock.ChestLock;
-import com.codisimus.plugins.chestlock.Safe;
 import com.codisimus.plugins.phatloots.PhatLoot;
 import com.codisimus.plugins.phatloots.PhatLoots;
 import com.codisimus.plugins.phatloots.PhatLootsConfig;
@@ -185,7 +183,7 @@ public class LootCommand {
     }
     @CodCommand(command = "unlink", weight = 40.1)
     public boolean unlink(Player player) {
-        for (PhatLoot phatLoot : getPhatLoots(player)) {
+        for (PhatLoot phatLoot : PhatLootsUtil.getPhatLoots(player)) {
             unlink(player, phatLoot);
         }
         return true;
@@ -215,7 +213,7 @@ public class LootCommand {
     }
     @CodCommand(command = "time", weight = 50.1)
     public boolean time(Player player, int days, int hours, int minutes, int seconds) {
-        for (PhatLoot phatLoot : getPhatLoots(player)) {
+        for (PhatLoot phatLoot : PhatLootsUtil.getPhatLoots(player)) {
             time(player, phatLoot, days, hours, minutes, seconds);
         }
         return true;
@@ -238,7 +236,7 @@ public class LootCommand {
     @CodCommand(command = "time", weight = 50.3)
     public boolean time(Player player, String string) {
         if (string.equals("never")) {
-            for (PhatLoot phatLoot : getPhatLoots(player)) {
+            for (PhatLoot phatLoot : PhatLootsUtil.getPhatLoots(player)) {
                 time(player, phatLoot, string);
             }
             return true;
@@ -266,7 +264,7 @@ public class LootCommand {
     }
     @CodCommand(command = "global", weight = 60.1)
     public boolean global(Player player, boolean global) {
-        for (PhatLoot phatLoot : getPhatLoots(player)) {
+        for (PhatLoot phatLoot : PhatLootsUtil.getPhatLoots(player)) {
             global(player, phatLoot, global);
         }
         return true;
@@ -290,7 +288,7 @@ public class LootCommand {
     }
     @CodCommand(command = "autoloot", weight = 70.1)
     public boolean autoloot(Player player, boolean autoLoot) {
-        for (PhatLoot phatLoot : getPhatLoots(player)) {
+        for (PhatLoot phatLoot : PhatLootsUtil.getPhatLoots(player)) {
             autoloot(player, phatLoot, autoLoot);
         }
         return true;
@@ -321,7 +319,7 @@ public class LootCommand {
     }
     @CodCommand(command = "break", weight = 80.1)
     public boolean breakAndRespawn(Player player, boolean breakAndRespawn) {
-        for (PhatLoot phatLoot : getPhatLoots(player)) {
+        for (PhatLoot phatLoot : PhatLootsUtil.getPhatLoots(player)) {
             breakAndRespawn(player, phatLoot, breakAndRespawn);
         }
         return true;
@@ -345,7 +343,7 @@ public class LootCommand {
     }
     @CodCommand(command = "round", weight = 90.1)
     public boolean round(Player player, boolean round) {
-        for (PhatLoot phatLoot : getPhatLoots(player)) {
+        for (PhatLoot phatLoot : PhatLootsUtil.getPhatLoots(player)) {
             round(player, phatLoot, round);
         }
         return true;
@@ -381,7 +379,7 @@ public class LootCommand {
 
     @CodCommand(command = "money", weight = 100.1)
     public boolean money(Player player, int lower, int upper) {
-        for (PhatLoot phatLoot : getPhatLoots(player)) {
+        for (PhatLoot phatLoot : PhatLootsUtil.getPhatLoots(player)) {
             money(player, phatLoot, lower, upper);
         }
         return true;
@@ -392,7 +390,7 @@ public class LootCommand {
     }
     @CodCommand(command = "money", weight = 100.3)
     public boolean money(Player player, int amount) {
-        for (PhatLoot phatLoot : getPhatLoots(player)) {
+        for (PhatLoot phatLoot : PhatLootsUtil.getPhatLoots(player)) {
             money(player, phatLoot, amount, amount);
         }
         return true;
@@ -419,7 +417,7 @@ public class LootCommand {
         } catch (Exception ex) {
             return false;
         }
-        for (PhatLoot phatLoot : getPhatLoots(player)) {
+        for (PhatLoot phatLoot : PhatLootsUtil.getPhatLoots(player)) {
             money(player, phatLoot, lower, upper);
         }
         return true;
@@ -440,7 +438,7 @@ public class LootCommand {
     }
     @CodCommand(command = "cost", weight = 110.1)
     public boolean cost(Player player, int lower, int upper) {
-        for (PhatLoot phatLoot : getPhatLoots(player)) {
+        for (PhatLoot phatLoot : PhatLootsUtil.getPhatLoots(player)) {
             money(player, phatLoot, -lower, -upper);
         }
         return true;
@@ -451,7 +449,7 @@ public class LootCommand {
     }
     @CodCommand(command = "cost", weight = 110.3)
     public boolean cost(Player player, int amount) {
-        for (PhatLoot phatLoot : getPhatLoots(player)) {
+        for (PhatLoot phatLoot : PhatLootsUtil.getPhatLoots(player)) {
             money(player, phatLoot, -amount, -amount);
         }
         return true;
@@ -478,7 +476,7 @@ public class LootCommand {
         } catch (Exception ex) {
             return false;
         }
-        for (PhatLoot phatLoot : getPhatLoots(player)) {
+        for (PhatLoot phatLoot : PhatLootsUtil.getPhatLoots(player)) {
             money(player, phatLoot, -lower, -upper);
         }
         return true;
@@ -513,7 +511,7 @@ public class LootCommand {
     }
     @CodCommand(command = "exp", weight = 120.1)
     public boolean exp(Player player, int lower, int upper) {
-        for (PhatLoot phatLoot : getPhatLoots(player)) {
+        for (PhatLoot phatLoot : PhatLootsUtil.getPhatLoots(player)) {
             exp(player, phatLoot, lower, upper);
         }
         return true;
@@ -524,7 +522,7 @@ public class LootCommand {
     }
     @CodCommand(command = "exp", weight = 120.3)
     public boolean exp(Player player, int amount) {
-        for (PhatLoot phatLoot : getPhatLoots(player)) {
+        for (PhatLoot phatLoot : PhatLootsUtil.getPhatLoots(player)) {
             exp(player, phatLoot, amount, amount);
         }
         return true;
@@ -575,7 +573,7 @@ public class LootCommand {
     }
     @CodCommand(command = "gui", weight = 140.2)
     public boolean gui(Player player) {
-        LinkedList<PhatLoot> phatLoots = getPhatLoots(player);
+        LinkedList<PhatLoot> phatLoots = PhatLootsUtil.getPhatLoots(player);
         switch (phatLoots.size()) {
         case 0:
             return false;
@@ -613,7 +611,7 @@ public class LootCommand {
     }
     @CodCommand(command = "give", weight = 150.2, minArgs = 1)
     public boolean give(CommandSender sender, Player player, PhatLoot phatLoot, String[] title) {
-        return give(sender, player, phatLoot, concatArgs(title));
+        return give(sender, player, phatLoot, PhatLootsUtil.concatArgs(title));
     }
 
     @CodCommand(
@@ -628,7 +626,7 @@ public class LootCommand {
     )
     public boolean reset(Player player) {
         Block block = player.getTargetBlock(null, 10);
-        for (PhatLoot phatLoot : getPhatLoots(player)) {
+        for (PhatLoot phatLoot : PhatLootsUtil.getPhatLoots(player)) {
             phatLoot.reset(block);
             player.sendMessage("§5Target §6" + block.getType().toString() + "§5 has been reset.");
         }
@@ -665,7 +663,7 @@ public class LootCommand {
     )
     public boolean clean(Player player) {
         Block block = player.getTargetBlock(null, 10);
-        for (PhatLoot phatLoot : getPhatLoots(player)) {
+        for (PhatLoot phatLoot : PhatLootsUtil.getPhatLoots(player)) {
             phatLoot.clean(block);
             player.sendMessage("§5Target §6" + block.getType().toString() + "§5 has been cleaned.");
         }
@@ -704,45 +702,5 @@ public class LootCommand {
     public boolean reload(CommandSender sender) {
         PhatLoots.rl(sender);
         return true;
-    }
-
-    /**
-     * Returns the a LinkedList of PhatLoots that are linked to the target Block
-     *
-     * @param player The Player targeting a Block
-     * @return The LinkedList of PhatLoots
-     */
-    public static LinkedList<PhatLoot> getPhatLoots(Player player) {
-        LinkedList<PhatLoot> phatLoots = new LinkedList<PhatLoot>();
-        //Cancel if the sender is not targeting a correct Block
-        Block block = player.getTargetBlock(null, 10);
-        String blockName = block.getType().toString();
-        if (!PhatLootsUtil.isLinkableType(block)) {
-            player.sendMessage("§6" + blockName + "§4 is not a linkable type.");
-            return phatLoots;
-        }
-
-        phatLoots = PhatLoots.getPhatLoots(block);
-
-        //Inform the sender if the Block is not linked to any PhatLoots
-        if (phatLoots.isEmpty()) {
-            player.sendMessage("§4Target §6" + blockName + "§4 is not linked to a PhatLoot");
-        }
-        return phatLoots;
-    }
-
-    /**
-     * Concats arguments together to create a sentence from words.
-     *
-     * @param args the arguments to concat
-     * @return The new String that was created
-     */
-    private static String concatArgs(String[] args) {
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i <= args.length - 1; i++) {
-            sb.append(" ");
-            sb.append(args[i]);
-        }
-        return sb.substring(1);
     }
 }

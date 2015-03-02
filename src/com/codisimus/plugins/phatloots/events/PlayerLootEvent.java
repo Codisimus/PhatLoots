@@ -9,13 +9,13 @@ import org.bukkit.event.HandlerList;
 /**
  * Called when a Player loots a PhatLoot
  *
- * @author Cody
+ * @author Codisimus
  */
 public class PlayerLootEvent extends LootEvent {
     private static final HandlerList handlers = new HandlerList();
-    private Player looter;
-    private PhatLoot phatLoot;
-    private PhatLootChest chest;
+    private final Player looter;
+    private final PhatLoot phatLoot;
+    private final PhatLootChest chest;
 
     /**
      * Creates a new event with the given data

@@ -1,5 +1,6 @@
 package com.codisimus.plugins.phatloots;
 
+import com.codisimus.plugins.phatloots.addon.chestanimations.ChestAnimations;
 import com.codisimus.plugins.phatloots.events.ChestBreakEvent;
 import com.codisimus.plugins.phatloots.events.ChestRespawnEvent;
 import com.codisimus.plugins.phatloots.events.ChestRespawnEvent.RespawnReason;
@@ -9,7 +10,6 @@ import org.bukkit.block.*;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.TNTPrimed;
-import org.bukkit.inventory.DoubleChestInventory;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -17,7 +17,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 /**
  * A PhatLootChest is a Block location and a Map of Users with times attached to them
  *
- * @author Cody
+ * @author Codisimus
  */
 public class PhatLootChest {
     private static EnumSet<Material> untriggeredRedstone = EnumSet.of(
@@ -31,9 +31,9 @@ public class PhatLootChest {
         Material.REDSTONE_LAMP_ON, Material.REDSTONE_TORCH_ON,
         Material.DIODE_BLOCK_ON, Material.PISTON_BASE
     );
-    private static HashMap<String, PhatLootChest> chests = new HashMap<String, PhatLootChest>(); //Chest Location -> PhatLootChest
-    static HashSet<PhatLootChest> chestsToRespawn = new HashSet<PhatLootChest>();
-    public static HashMap<UUID, PhatLootChest> openPhatLootChests = new HashMap<UUID, PhatLootChest>(); //Player -> Open PhatLootChest
+    private static HashMap<String, PhatLootChest> chests = new HashMap<>(); //Chest Location -> PhatLootChest
+    static HashSet<PhatLootChest> chestsToRespawn = new HashSet<>();
+    public static HashMap<UUID, PhatLootChest> openPhatLootChests = new HashMap<>(); //Player -> Open PhatLootChest
     static boolean useBreakAndRepawn;
     static boolean soundOnBreak;
     static boolean shuffleLoot;
@@ -95,26 +95,13 @@ public class PhatLootChest {
      * @return The found or created PhatLootChest
      */
     public static PhatLootChest getChest(Block block) {
-        switch (block.getType()) {
-        case TRAPPED_CHEST:
-        case CHEST:
-            Chest chest = (Chest) block.getState();
-            Inventory inventory = chest.getInventory();
-            //We only care about the left side because that is the Block that would be linked
-            if (inventory instanceof DoubleChestInventory) {
-                chest = (Chest) ((DoubleChestInventory) inventory).getLeftSide().getHolder();
-                block = chest.getBlock();
-            }
-            break;
-        default:
-            break;
-        }
-        String key = block.getWorld().getName() + "'" + block.getX() + "'" + block.getY() + "'" + block.getZ();
+        block = PhatLootsUtil.getLeftSide(block);
+        String key = toString(block);
         if (chests.containsKey(key)) {
             return chests.get(key);
         } else {
             PhatLootChest chest = new PhatLootChest(block);
-            chests.put(chest.world + "'" + chest.x + "'" + chest.y + "'" + chest.z, chest);
+            chests.put(key, chest);
             return chest;
         }
     }
@@ -167,21 +154,8 @@ public class PhatLootChest {
      * @return true if the given Block is linked to a PhatLoot
      */
     public static boolean isPhatLootChest(Block block) {
-        switch (block.getType()) {
-        case TRAPPED_CHEST:
-        case CHEST:
-            Chest chest = (Chest) block.getState();
-            Inventory inventory = chest.getInventory();
-            //We only care about the left side because that is the Block that would be linked
-            if (inventory instanceof DoubleChestInventory) {
-                chest = (Chest) ((DoubleChestInventory) inventory).getLeftSide().getHolder();
-                block = chest.getBlock();
-            }
-            break;
-        default:
-            break;
-        }
-        return chests.containsKey(block.getWorld().getName() + "'" + block.getX() + "'" + block.getY() + "'" + block.getZ());
+        String key = toString(PhatLootsUtil.getLeftSide(block));
+        return chests.containsKey(key);
     }
 
     /**
@@ -205,6 +179,7 @@ public class PhatLootChest {
     /**
      * Returns true if the Chest is in the given World
      *
+     * @param w The given World
      * @return true if the Chest is in the given World
      */
     public boolean isInWorld(World w) {
@@ -212,12 +187,12 @@ public class PhatLootChest {
     }
 
     /**
-     * Returns all PhatLoots that are linked this PhatLootChest
+     * Returns all PhatLoots that are linked to this PhatLootChest
      *
      * @return a list of PhatLoots linked to the chest
      */
     public LinkedList<PhatLoot> getLinkedPhatLoots() {
-        LinkedList<PhatLoot> phatLoots = new LinkedList<PhatLoot>();
+        LinkedList<PhatLoot> phatLoots = new LinkedList<>();
         for (PhatLoot phatLoot : PhatLoots.getPhatLoots()) {
             if (phatLoot.containsChest(this)) {
                 phatLoots.add(phatLoot);
@@ -234,24 +209,11 @@ public class PhatLootChest {
     public void moveTo(Block target) {
         //Remove the old Block
         if (state != null) {
-            respawn(RespawnReason.OTHER);
+            state.update(true);
         }
         Block block = getBlock();
         block.setType(Material.AIR);
-        switch (block.getType()) {
-        case TRAPPED_CHEST:
-        case CHEST:
-            Chest chest = (Chest) block.getState();
-            Inventory inventory = chest.getInventory();
-            //We only care about the left side because that is the Block that would be linked
-            if (inventory instanceof DoubleChestInventory) {
-                chest = (Chest) ((DoubleChestInventory) inventory).getLeftSide().getHolder();
-                chest.getBlock().setType(Material.AIR);
-            }
-            break;
-        default:
-            break;
-        }
+        block = PhatLootsUtil.getLeftSide(block);
 
         //Set the new Block
         x = target.getX();
@@ -269,6 +231,7 @@ public class PhatLootChest {
     /**
      * Breaks the PhatLootChest and schedules it to respawn in the given amount of time
      *
+     * @param lastLooter The last Player to loot the chest (used for ChestBreakEvent, may be null)
      * @param time How long (in ticks) until the chest should respawn
      */
     public void breakChest(Player lastLooter, long time) {
@@ -279,36 +242,22 @@ public class PhatLootChest {
             return;
         }
 
-        chestsToRespawn.add(this);
-
-        //Save the BlockState
-        Block block = getBlock();
-        Block otherHalfBlock = null;
-        state = block.getState();
-        switch (block.getType()) {
-        case TRAPPED_CHEST:
-        case CHEST:
-            Chest chest = (Chest) block.getState();
-            Inventory inventory = chest.getInventory();
-            //We only care about the left side because that is the Block that would be linked
-            if (inventory instanceof DoubleChestInventory) {
-                chest = (Chest) ((DoubleChestInventory) inventory).getRightSide().getHolder();
-                otherHalfBlock = chest.getBlock();
-                otherHalfState = otherHalfBlock.getState();
-            }
-            break;
-        default:
-            break;
-        }
-
         //Don't break the chest if it will immediately come back
         if (event.getRespawnTime() == 0) {
             return;
         }
 
-        //Set the Block to AIR
+        chestsToRespawn.add(this);
+
+        //Save the BlockState and remove the Block
+        Block block = getBlock();
+        state = block.getState();
         block.setType(Material.AIR);
-        if (otherHalfBlock != null) {
+
+        //Save the other half of the chest
+        Block otherHalfBlock = PhatLootsUtil.getLeftSide(block);
+        if (!otherHalfBlock.equals(block)) {
+            otherHalfState = otherHalfBlock.getState();
             otherHalfBlock.setType(Material.AIR);
         }
 
@@ -329,6 +278,8 @@ public class PhatLootChest {
 
     /**
      * Respawns the chest as it was before is was broken
+     *
+     * @param reason The RespawnReason
      */
     public void respawn(RespawnReason reason) {
         if (state != null) {
@@ -376,10 +327,25 @@ public class PhatLootChest {
         }
     }
 
+    /**
+     * Creates an Inventory for the specified user and this PhatLootChest
+     *
+     * @param user 'global' or the Player's uuid
+     * @param name The title of the Inventory
+     * @return The new Inventory that was created
+     */
     public Inventory getInventory(String user, String name) {
         return getInventory(user, name, this);
     }
 
+    /**
+     * Creates an Inventory for the specified user
+     *
+     * @param user 'global' or the Player's uuid
+     * @param name The title of the Inventory
+     * @param chest The PhatLootChest to create the Inventory for
+     * @return The new Inventory that was created
+     */
     public static Inventory getInventory(String user, String name, PhatLootChest chest) {
         if (chest != null && chest.isDispenser) {
             BlockState state = chest.getBlock().getState();
@@ -456,17 +422,17 @@ public class PhatLootChest {
      */
     public void addItem(ItemStack item, Player player, Inventory inventory) {
         /* Bukkit should be able to handle this */
-//        //Make sure loots do not exceed the stack size
-//        if (item.getAmount() > item.getMaxStackSize()) {
-//            int amount = item.getAmount();
-//            int maxStackSize = item.getMaxStackSize();
-//            while (amount > maxStackSize) {
-//                ItemStack fraction = item.clone();
-//                fraction.setAmount(maxStackSize);
-//                addItem(item, player, inventory);
-//                amount -= maxStackSize;
-//            }
-//        }
+        ////Make sure loots do not exceed the stack size
+        //if (item.getAmount() > item.getMaxStackSize()) {
+        //    int amount = item.getAmount();
+        //    int maxStackSize = item.getMaxStackSize();
+        //    while (amount > maxStackSize) {
+        //        ItemStack fraction = item.clone();
+        //        fraction.setAmount(maxStackSize);
+        //        addItem(item, player, inventory);
+        //        amount -= maxStackSize;
+        //    }
+        //}
 
         Collection<ItemStack> leftOvers = inventory.addItem(item).values();
         if (!leftOvers.isEmpty()) {
@@ -476,18 +442,18 @@ public class PhatLootChest {
         }
 
         if (isDispenser) {
-            BlockState state = getBlock().getState();
-            switch (state.getType()) {
+            BlockState blockState = getBlock().getState();
+            switch (blockState.getType()) {
             case DISPENSER:
                 //Dispense until the Dispenser is empty
-                Dispenser dispenser = (Dispenser) state;
+                Dispenser dispenser = (Dispenser) blockState;
                 while (inventory.firstEmpty() > 0) {
                     dispenser.dispense();
                 }
                 break;
             case DROPPER:
                 //Drop until the Dropper is empty
-                Dropper dropper = (Dropper) state;
+                Dropper dropper = (Dropper) blockState;
                 while (inventory.firstEmpty() > 0) {
                     dropper.drop();
                 }
@@ -549,15 +515,17 @@ public class PhatLootChest {
                     //Play for each Player in the World
                     for (Player p: player.getWorld().getPlayers()) {
                         p.playSound(loc, Sound.CHEST_OPEN, 0.75F, 0.95F);
-                        //Minecraft changed their protocol which broke the open animation
-                        //p.playNote(loc, (byte) 1, (byte) 1); //Open animation
+                        if (Bukkit.getPluginManager().isPluginEnabled("ChestAnimations")) {
+                            ChestAnimations.openChest(getBlock());
+                        }
                     }
                 }
             } else {
                 //Play for only the individual Player
                 player.playSound(loc, Sound.CHEST_OPEN, 0.75F, 0.95F);
-                //Minecraft changed their protocol which broke the open animation
-                //player.playNote(loc, (byte) 1, (byte) 1); //Open animation
+                if (Bukkit.getPluginManager().isPluginEnabled("ChestAnimations")) {
+                    ChestAnimations.openChest(player, getBlock());
+                }
             }
             break;
         default: break;
@@ -596,8 +564,9 @@ public class PhatLootChest {
                         case TRAPPED_CHEST:
                         case ENDER_CHEST:
                             p.playSound(loc, Sound.CHEST_CLOSE, 0.75F, 0.95F);
-                            //Minecraft changed their protocol which broke the close animation
-                            //p.playNote(loc, (byte) 1, (byte) 0); //Close animation
+                            if (Bukkit.getPluginManager().isPluginEnabled("ChestAnimations")) {
+                                ChestAnimations.openChest(getBlock());
+                            }
                             break;
                         default:
                             break;
@@ -630,8 +599,9 @@ public class PhatLootChest {
                 case ENDER_CHEST:
                     //Play for only the individual Player
                     player.playSound(loc, Sound.CHEST_CLOSE, 0.75F, 0.95F);
-                    //Minecraft changed their protocol which broke the close animation
-                    //player.playNote(loc, (byte) 1, (byte) 0); //Close animation
+                    if (Bukkit.getPluginManager().isPluginEnabled("ChestAnimations")) {
+                        ChestAnimations.openChest(player, getBlock());
+                    }
                     break;
                 default:
                     break;
@@ -688,7 +658,7 @@ public class PhatLootChest {
      */
     private static LinkedList<Block> findRedstone(Block block, boolean on) {
         EnumSet redstone = on ? triggeredRedstone : untriggeredRedstone;
-        LinkedList<Block> redstoneList = new LinkedList<Block>();
+        LinkedList<Block> redstoneList = new LinkedList<>();
         Block neighbor = block.getRelative(1, 0, 0);
         if (redstone.contains(neighbor.getType())) {
             redstoneList.add(neighbor);
@@ -826,6 +796,17 @@ public class PhatLootChest {
             break;
         default: break;
         }
+    }
+
+    /**
+     * Returns the String representation of the given Block.
+     * The format of the returned String is world'x'y'z
+     *
+     * @param block The given Block
+     * @return The String representation of the Block
+     */
+    public static String toString(Block block) {
+        return block.getWorld().getName() + "'" + block.getX() + "'" + block.getY() + "'" + block.getZ();
     }
 
     /**

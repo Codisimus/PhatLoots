@@ -7,11 +7,11 @@ import org.bukkit.inventory.EntityEquipment;
 /**
  * Called when a mob is spawned and given a weapon/armor
  *
- * @author Cody
+ * @author Codisimus
  */
 public class PreMobEquipEvent extends PreLootEvent {
     private static final HandlerList handlers = new HandlerList();
-    private LivingEntity mob;
+    private final LivingEntity mob;
 
     /**
      * Creates a new event with the given data

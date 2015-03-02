@@ -12,7 +12,7 @@ import org.bukkit.event.Listener;
 /**
  * Listens for NPC Spawns/Deaths and checks if there is a PhatLoot named after them
  *
- * @author Cody
+ * @author Codisimus
  */
 public class CitizensListener implements Listener {
     @EventHandler (ignoreCancelled = true)

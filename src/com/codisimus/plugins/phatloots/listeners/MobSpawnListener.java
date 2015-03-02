@@ -11,7 +11,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 /**
  * Listens for Mob spawning to equip them with armor and a weapon
  *
- * @author Cody
+ * @author Codisimus
  */
 public class MobSpawnListener extends MobListener {
     @EventHandler (ignoreCancelled = true, priority = EventPriority.MONITOR)

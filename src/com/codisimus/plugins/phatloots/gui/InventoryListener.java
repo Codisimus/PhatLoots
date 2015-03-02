@@ -32,11 +32,11 @@ public class InventoryListener implements Listener {
     private static final int MODIFY_AMOUNT = 2;
     private final static int SIZE = 54;
     final static int TOOL_SLOT = SIZE - 9;
-    private static HashMap<UUID, Boolean> switchingPages = new HashMap<UUID, Boolean>(); //Player -> Going deeper (true) or back (false)
-    private static HashMap<UUID, PhatLoot> infoViewers = new HashMap<UUID, PhatLoot>(); //Player -> PhatLoot they are viewing
-    private static HashMap<UUID, Stack<Inventory>> pageStacks = new HashMap<UUID, Stack<Inventory>>(); //Player -> Page history
-    private static HashMap<UUID, Loot> holding = new HashMap<UUID, Loot>(); //Player -> Loot on cursor
-    private static HashMap<Integer, Button> buttons = new HashMap<Integer, Button>();
+    private static final HashMap<UUID, Boolean> switchingPages = new HashMap<>(); //Player -> Going deeper (true) or back (false)
+    private static final HashMap<UUID, PhatLoot> infoViewers = new HashMap<>(); //Player -> PhatLoot they are viewing
+    private static final HashMap<UUID, Stack<Inventory>> pageStacks = new HashMap<>(); //Player -> Page history
+    private static final HashMap<UUID, Loot> holding = new HashMap<>(); //Player -> Loot on cursor
+    private static final HashMap<Integer, Button> buttons = new HashMap<>();
 
     static {
         if (NAVIGATE_AND_MOVE != Tool.getToolByName("NAVIGATE_AND_MOVE").getID()
@@ -73,6 +73,11 @@ public class InventoryListener implements Listener {
 
     /** LISTENERS **/
 
+    /**
+     * Processes Players clicking within the PhatLoot GUI
+     *
+     * @param event The InventoryClickEvent which occurred
+     */
     @EventHandler (ignoreCancelled = true)
     public void onPlayerInvClick(InventoryClickEvent event) {
         HumanEntity human = event.getWhoClicked();
@@ -85,12 +90,12 @@ public class InventoryListener implements Listener {
         if (!infoViewers.containsKey(playerUUID)) {
             return;
         } else { //Fixes glitch of not detecting inventory close
-//            if (!event.getInventory().getTitle().startsWith((infoViewers.get(playerUUID).name))) {
-//                infoViewers.remove(playerUUID).save(); //Save the PhatLoot in case it has been modified
-//                pageStacks.get(playerUUID).empty();
-//                pageStacks.remove(playerUUID);
-//                return;
-//            }
+            //if (!event.getInventory().getTitle().startsWith((infoViewers.get(playerUUID).name))) {
+            //    infoViewers.remove(playerUUID).save(); //Save the PhatLoot in case it has been modified
+            //    pageStacks.get(playerUUID).empty();
+            //    pageStacks.remove(playerUUID);
+            //    return;
+            //}
         }
 
         //Don't allow any inventory clicking
@@ -162,12 +167,17 @@ public class InventoryListener implements Listener {
             ItemMeta details = stack.getItemMeta();
             if (details.hasDisplayName()) {
                 String name = stack.getItemMeta().getDisplayName();
-                if (name.equals("§2Up to...")) { //Back one view
+                switch (name) {
+                case "§2Up to...":
+                    //Back one view
                     up(player);
                     return;
-                } else if (name.equals("§2Back to top...")) { //Back to first view
+                case "§2Back to top...":
+                    //Back to first view
                     viewPhatLoot(player, phatLoot);
                     return;
+                default:
+                    break;
                 }
             }
         }
@@ -188,16 +198,14 @@ public class InventoryListener implements Listener {
                     if (slot >= SIZE) {
                         //Remove Loot (if holding)
                         Loot l = holding.remove(playerUUID);
-                        if (stack != null) {
-                            //Only pick up AIR if they are not setting an Item down
-                            if (stack.getType() != Material.AIR || l == null) { //Pick up Item (Add loot)
-                                loot = new Item(stack, 0);
-                                holding.put(playerUUID, loot);
-                                event.setCursor(loot.getInfoStack());
-                                event.setCurrentItem(null);
-                            } else { //Pick up nothing
-                                event.setCursor(null);
-                            }
+                        //Only pick up AIR if they are not setting an Item down
+                        if (stack.getType() != Material.AIR || l == null) { //Pick up Item (Add loot)
+                            loot = new Item(stack, 0);
+                            holding.put(playerUUID, loot);
+                            event.setCursor(loot.getInfoStack());
+                            event.setCurrentItem(null);
+                        } else { //Pick up nothing
+                            event.setCursor(null);
                         }
                         if (l != null && l instanceof Item) { //Put down Item
                             event.setCurrentItem(((Item) l).getItem());
@@ -210,7 +218,7 @@ public class InventoryListener implements Listener {
                     break;
                 case MIDDLE: //Add an Item as Loot
                     if (slot > SIZE) {
-                        ItemStack item = stack == null ? new ItemStack(Material.AIR) : stack.clone();
+                        ItemStack item = stack.clone();
                         lootList.add(new Item(item, 0));
                         refreshPage(player, inv, lootList);
                     }
@@ -360,24 +368,22 @@ public class InventoryListener implements Listener {
                 up(player);
                 break;
             case SHIFT_LEFT: //Move Loot left or Pick up a Collection
-                if (loot != null) {
-                    if (loot instanceof LootCollection) { //Pick up the Collection
-                        if (holding.containsKey(playerUUID)) { //Swap Loot
-                            Loot l = holding.remove(playerUUID);
-                            holding.put(playerUUID, lootList.get(slot));
-                            lootList.set(slot, l);
-                            event.setCurrentItem(event.getCursor()); //Put down Loot
-                            event.setCursor(stack); //Pick up new Loot
-                        } else { //Pick up Loot
-                            holding.put(playerUUID, lootList.remove(slot));
-                            event.setCursor(stack);
-                            refreshPage(player, inv, lootList); //Shifts remaining loot down
-                        }
-                    } else if (slot > 0) { //Move Loot Left
-                        lootList.set(slot, lootList.get(slot - 1));
-                        lootList.set(slot - 1, loot);
-                        refreshPage(player, inv, lootList);
+                if (loot instanceof LootCollection) { //Pick up the Collection
+                    if (holding.containsKey(playerUUID)) { //Swap Loot
+                        Loot l = holding.remove(playerUUID);
+                        holding.put(playerUUID, lootList.get(slot));
+                        lootList.set(slot, l);
+                        event.setCurrentItem(event.getCursor()); //Put down Loot
+                        event.setCursor(stack); //Pick up new Loot
+                    } else { //Pick up Loot
+                        holding.put(playerUUID, lootList.remove(slot));
+                        event.setCursor(stack);
+                        refreshPage(player, inv, lootList); //Shifts remaining loot down
                     }
+                } else if (slot > 0) { //Move Loot Left
+                    lootList.set(slot, lootList.get(slot - 1));
+                    lootList.set(slot - 1, loot);
+                    refreshPage(player, inv, lootList);
                 }
                 break;
             case SHIFT_RIGHT: //Move Loot right

@@ -7,7 +7,7 @@ import com.codisimus.plugins.phatloots.loot.UnidentifiedItem;
 import org.bukkit.command.CommandSender;
 
 /**
- * Executes Player Commands
+ * Executes Player Commands for configuring MythicDrops Loot
  *
  * @author Codisimus
  */
@@ -67,6 +67,14 @@ public class ManageMythicDropsLootCommand {
         return true;
     }
 
+    /**
+     * Generates the MythicDrops Item and sets it on the PhatLoot(s)
+     *
+     * @param sender The CommandSender who is setting the MythicDrops Item
+     * @param add True if the MythicDrops Item should be added to the PhatLoot(s)
+     * @param tier The name of the MythicDrops Tier to apply
+     * @param args The arguments of the MythicDrops Item
+     */
     private static void setMythicDropsItem(CommandSender sender, boolean add, String tier, String[] args) {
         String phatLoot = null; //The name of the PhatLoot
         double percent = 100; //The chance of receiving the Loot (defaulted to 100)
@@ -185,6 +193,14 @@ public class ManageMythicDropsLootCommand {
         return true;
     }
 
+    /**
+     * Generates the Unidentified Item and sets it on the PhatLoot(s)
+     *
+     * @param sender The CommandSender who is setting the Unidentified Item
+     * @param add True if the Unidentified Item should be added to the PhatLoot(s)
+     * @param tier The name of the MythicDrops Tier to apply
+     * @param args The arguments of the Unidentified Item
+     */
     private static void setUnidentifiedItem(CommandSender sender, boolean add, String tier, String[] args) {
         String phatLoot = null; //The name of the PhatLoot
         double percent = 100; //The chance of receiving the Loot (defaulted to 100)
@@ -301,6 +317,14 @@ public class ManageMythicDropsLootCommand {
         return true;
     }
 
+    /**
+     * Generates the Loot Gem and sets it on the PhatLoot(s)
+     *
+     * @param sender The CommandSender who is setting the Loot Gem
+     * @param add True if the Loot Gem should be added to the PhatLoot(s)
+     * @param tier The name of the MythicDrops Tier to apply
+     * @param args The arguments of the Loot Gem
+     */
     private static void setGem(CommandSender sender, boolean add, String tier, String[] args) {
         String phatLoot = null; //The name of the PhatLoot
         double percent = 100; //The chance of receiving the Loot (defaulted to 100)

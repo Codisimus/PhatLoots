@@ -12,6 +12,7 @@ import net.nunnerycode.bukkit.mythicdrops.utils.ItemUtil;
 import net.nunnerycode.bukkit.mythicdrops.utils.TierUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.configuration.serialization.SerializableAs;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.ItemStack;
@@ -24,9 +25,12 @@ import org.bukkit.inventory.meta.ItemMeta;
  */
 @SerializableAs("UnidentifiedItem")
 public class UnidentifiedItem extends Loot {
+    static {
+        ConfigurationSerialization.registerClass(UnidentifiedItem.class, "UnidentifiedItem");
+    }
     private static final String RANDOM_TIER = "RANDOM";
     private static ArrayList<String> tierList = null;
-    public String tierName = RANDOM_TIER;
+    public String tierName;
     public int amountLower = 1;
     public int amountUpper = 1;
     public int durabilityLower = 0;
@@ -40,6 +44,7 @@ public class UnidentifiedItem extends Loot {
      * Constructs a new Loot with a RANDOM tier
      */
     public UnidentifiedItem() {
+        tierName = RANDOM_TIER;
     }
 
     /**
@@ -226,7 +231,7 @@ public class UnidentifiedItem extends Loot {
     private static void instantiateTierList() {
         if (tierList == null) {
             //Cache Tiers alphabetically
-            tierList = new ArrayList<String>();
+            tierList = new ArrayList<>();
             for (Tier tier : TierMap.getInstance().values()) {
                 tierList.add(tier.getName());
             }

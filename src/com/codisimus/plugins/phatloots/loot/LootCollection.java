@@ -9,6 +9,7 @@ import com.codisimus.plugins.phatloots.gui.InventoryListener;
 import java.util.*;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.configuration.serialization.SerializableAs;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.Inventory;
@@ -18,16 +19,22 @@ import org.bukkit.inventory.meta.ItemMeta;
 /**
  * A Collection is a list of Loots which has a unique name
  *
- * @author Cody
+ * @author Codisimus
  */
 @SerializableAs("LootCollection")
 public class LootCollection extends Loot {
+    static {
+        ConfigurationSerialization.registerClass(LootCollection.class, "LootCollection");
+    }
     public static boolean allowDuplicates;
     public String name;
     public int lowerNumberOfLoots;
     public int upperNumberOfLoots;
     private LinkedList<Loot> lootList;
 
+    /**
+     * Adds A LootCollection as Loot
+     */
     private static class AddCollectionButton extends Button {
         private AddCollectionButton(ItemStack item) {
             super(item);
@@ -46,6 +53,9 @@ public class LootCollection extends Loot {
         }
     }
 
+    /**
+     * Registers the AddCollectionButton in the PhatLoot GUI
+     */
     public static void registerButton() {
         //Register the Add Collection Button
         ItemStack item = new ItemStack(Material.ENDER_CHEST);
@@ -65,7 +75,7 @@ public class LootCollection extends Loot {
         this.name = name;
         lowerNumberOfLoots = PhatLootsConfig.defaultLowerNumberOfLoots;
         upperNumberOfLoots = PhatLootsConfig.defaultUpperNumberOfLoots;
-        lootList = new LinkedList<Loot>();
+        lootList = new LinkedList<>();
     }
 
     /**
@@ -79,7 +89,7 @@ public class LootCollection extends Loot {
         this.name = name;
         this.lowerNumberOfLoots = lowerNumberOfLoots;
         this.upperNumberOfLoots = upperNumberOfLoots;
-        lootList = new LinkedList<Loot>();
+        lootList = new LinkedList<>();
     }
 
     /**
@@ -131,7 +141,7 @@ public class LootCollection extends Loot {
                 //Sort the loot from lowest probability to highest
                 Collections.sort(lootList);
                 int numberLooted = 0;
-                LinkedList<Loot> removed = new LinkedList<Loot>();
+                LinkedList<Loot> removed = new LinkedList<>();
                 while (numberLooted < numberOfLoots) {
                     //Calculate the total probability to determine the maximum amount that can be rolled
                     double total = 0;

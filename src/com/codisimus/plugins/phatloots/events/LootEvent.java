@@ -7,7 +7,7 @@ import org.bukkit.inventory.ItemStack;
 /**
  * Called when a PhatLoot is lootedThe LootingBonus which may be positive of negative
  *
- * @author Cody
+ * @author Codisimus
  */
 public abstract class LootEvent extends PhatLootsEvent {
     protected LootBundle lootBundle;
@@ -60,7 +60,7 @@ public abstract class LootEvent extends PhatLootsEvent {
     /**
      * Sets the amount of experience to be looted
      *
-     * @param money The amount of experience to be looted
+     * @param exp The amount of experience to be looted
      */
     public void setExp(int exp) {
         lootBundle.setExp(exp);

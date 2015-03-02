@@ -10,7 +10,7 @@ import org.bukkit.entity.Player;
 /**
  * API for the PhatLoots plugin
  *
- * @author Cody
+ * @author Codisimus
  */
 public class PhatLootsAPI {
     /**
@@ -81,7 +81,7 @@ public class PhatLootsAPI {
      * @return a List of Blocks that are PhatLootChests
      */
     public static ArrayList<Block> getAllPhatLootChestBlocks() {
-        ArrayList<Block> blockList = new ArrayList<Block>();
+        ArrayList<Block> blockList = new ArrayList<>();
         for (PhatLootChest chest : getAllPhatLootChests()) {
             blockList.add(chest.getBlock());
         }

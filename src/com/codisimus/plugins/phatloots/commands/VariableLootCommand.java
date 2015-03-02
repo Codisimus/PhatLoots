@@ -5,7 +5,7 @@ import com.codisimus.plugins.phatloots.commands.CommandHandler.CodCommand;
 import org.bukkit.entity.Player;
 
 /**
- * Executes Player Commands
+ * Executes Player Commands for virtually looting a PhatLoot
  *
  * @author Codisimus
  */

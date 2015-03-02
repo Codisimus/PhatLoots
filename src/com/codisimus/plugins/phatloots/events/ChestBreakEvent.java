@@ -7,11 +7,11 @@ import org.bukkit.event.HandlerList;
 /**
  * Called when a PhatLootChest breaks
  *
- * @author Cody
+ * @author Codisimus
  */
 public class ChestBreakEvent extends PhatLootChestEvent {
     private static final HandlerList handlers = new HandlerList();
-    private Player lastLooter;
+    private final Player lastLooter;
     private long respawnTime;
 
     /**

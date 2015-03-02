@@ -5,7 +5,7 @@ import com.codisimus.plugins.phatloots.PhatLootChest;
 /**
  * The basis of a PhatLootChest Event
  *
- * @author Cody
+ * @author Codisimus
  */
 public abstract class PhatLootChestEvent extends PhatLootsEvent {
     protected PhatLootChest chest;

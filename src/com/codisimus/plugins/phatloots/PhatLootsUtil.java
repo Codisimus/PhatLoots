@@ -1,17 +1,34 @@
 package com.codisimus.plugins.phatloots;
 
+import java.io.File;
+import java.io.FilenameFilter;
+import java.util.LinkedList;
 import java.util.Random;
 import org.apache.commons.lang.WordUtils;
+import org.bukkit.Location;
 import org.bukkit.block.Block;
+import org.bukkit.block.Chest;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.DoubleChestInventory;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
 /**
+ * Utility Variables/Methods commonly used by PhatLoots and its add-ons
  *
- * @author Cody
+ * @author Codisimus
  */
 public class PhatLootsUtil {
     private static Random random = new Random();
+    public static final String PROPERTIES_EXTENSION = ".properties";
+    public static final String TEXT_EXTENSION = ".txt";
+    public static final String YAML_EXTENSION = ".yml";
+    public static final FilenameFilter YAML_FILTER = new FilenameFilter() {
+        @Override
+        public boolean accept(File dir, String name) {
+            return name.toLowerCase().endsWith(YAML_EXTENSION);
+        }
+    };
 
     /**
      * Returns true if the given player is allowed to loot the specified PhatLoot
@@ -99,5 +116,91 @@ public class PhatLootsUtil {
         }
         //A display name was not found so use a cleaned up version of the Material name
         return WordUtils.capitalizeFully(item.getType().toString().replace("_", " "));
+    }
+
+    /**
+     * Returns the left side of a Chest block
+     *
+     * @param block The Block which may or may not be a Chest
+     * @return The left side of the chest if applicable
+     */
+    public static Block getLeftSide(Block block) {
+        switch (block.getType()) {
+        case TRAPPED_CHEST:
+        case CHEST:
+            Chest chest = (Chest) block.getState();
+            Inventory inventory = chest.getInventory();
+            //We only care about the left side because that is the Block that would be linked
+            if (inventory instanceof DoubleChestInventory) {
+                chest = (Chest) ((DoubleChestInventory) inventory).getLeftSide().getHolder();
+                block = chest.getBlock();
+            }
+            break;
+        default:
+            break;
+        }
+        return block;
+    }
+
+    /**
+     * Returns the Player that is closest to the given Location.
+     * Returns null if no Players are within 50 Blocks
+     *
+     * @param location The given Location
+     * @return the closest Player
+     */
+    public static Player getNearestPlayer(Location location) {
+        Player nearestPlayer = null;
+        double shortestDistance = 2500;
+        for (Player player: location.getWorld().getPlayers()) {
+            Location playerLocation = player.getLocation();
+            //Use the squared distance because is it much less resource intensive
+            double distanceToPlayer = location.distanceSquared(playerLocation);
+            if (distanceToPlayer < shortestDistance) {
+                nearestPlayer = player;
+                shortestDistance = distanceToPlayer;
+            }
+        }
+        return nearestPlayer;
+    }
+
+    /**
+     * Returns a LinkedList of PhatLoots that are linked to the target Block
+     *
+     * @param player The Player targeting a Block
+     * @return The LinkedList of PhatLoots
+     */
+    public static LinkedList<PhatLoot> getPhatLoots(Player player) {
+        LinkedList<PhatLoot> phatLoots = new LinkedList<>();
+        //Cancel if the sender is not targeting a correct Block
+        Block block = player.getTargetBlock(null, 10);
+        String blockName = block.getType().toString();
+        if (!PhatLootsUtil.isLinkableType(block)) {
+            player.sendMessage("§6" + blockName + "§4 is not a linkable type.");
+            return phatLoots;
+        }
+
+        phatLoots = PhatLoots.getPhatLoots(block);
+
+        //Inform the sender if the Block is not linked to any PhatLoots
+        if (phatLoots.isEmpty()) {
+            player.sendMessage("§4Target §6" + blockName + "§4 is not linked to a PhatLoot");
+        }
+        return phatLoots;
+    }
+
+    /**
+     * Concats arguments together to create a sentence from words.
+     *
+     * @param args the arguments to concat
+     * @return The new String that was created
+     */
+    public static String concatArgs(String[] args) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i <= args.length - 1; i++) {
+            sb.append(" ");
+            sb.append(args[i]);
+        }
+        return sb.substring(1);
     }
 }

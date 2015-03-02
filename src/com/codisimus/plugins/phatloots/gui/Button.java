@@ -11,12 +11,12 @@ import org.bukkit.inventory.ItemStack;
  * Buttons execute actions on click
  * Actions are typically adding new Loot
  *
- * @author Cody
+ * @author Codisimus
  */
 public abstract class Button {
     private static int currentSlot = InventoryListener.TOOL_SLOT + 1;
-    private int slot;
-    private ItemStack item;
+    private final int slot;
+    private final ItemStack item;
 
     /**
      * Completes the Button's action

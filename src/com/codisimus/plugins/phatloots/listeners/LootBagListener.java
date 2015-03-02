@@ -4,6 +4,7 @@ import com.codisimus.plugins.phatloots.PhatLoot;
 import com.codisimus.plugins.phatloots.PhatLoots;
 import com.codisimus.plugins.phatloots.PhatLootsConfig;
 import java.util.List;
+import org.bukkit.Material;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerInteractEvent;
@@ -13,7 +14,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 /**
  * Listens for interactions with Loot bags
  *
- * @author Cody
+ * @author Codisimus
  */
 public class LootBagListener implements Listener {
     @EventHandler
@@ -39,7 +40,7 @@ public class LootBagListener implements Listener {
                                     if (hand.getAmount() > 1) {
                                         hand.setAmount(hand.getAmount() - 1);
                                     } else {
-                                        event.getPlayer().setItemInHand(new ItemStack(0));
+                                        event.getPlayer().setItemInHand(new ItemStack(Material.AIR));
                                     }
                                     //Give loot to the player
                                     phatLoot.rollForLoot(event.getPlayer());

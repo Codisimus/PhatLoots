@@ -8,12 +8,12 @@ import org.bukkit.event.HandlerList;
 /**
  * Called when a mob is killed and drops custom loot
  *
- * @author Cody
+ * @author Codisimus
  */
 public class MobDropLootEvent extends LootEvent {
     private static final HandlerList handlers = new HandlerList();
-    private LivingEntity mob;
-    private Player killer;
+    private final LivingEntity mob;
+    private final Player killer;
 
     /**
      * Creates a new event with the given data

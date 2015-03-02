@@ -11,7 +11,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
 /**
- * Executes Player Commands
+ * Executes Player Commands for configuring Loot
  *
  * @author Codisimus
  */
@@ -344,6 +344,14 @@ public class ManageLootCommand {
         return true;
     }
 
+    /**
+     * Generates the Loot Item and sets it on the PhatLoot(s)
+     *
+     * @param sender The CommandSender who is setting the Item
+     * @param add True if the Item should be added to the PhatLoot(s)
+     * @param item The ItemStack which is the base of the Loot Item
+     * @param args The arguments of the Loot Item
+     */
     private static void setItem(CommandSender sender, boolean add, ItemStack item, String[] args) {
         String phatLoot = null; //The name of the PhatLoot
         double percent = 100; //The chance of receiving the Loot (defaulted to 100)
@@ -440,6 +448,14 @@ public class ManageLootCommand {
         LootCommandUtil.setLoot(sender, phatLoot, add, coll, loot);
     }
 
+    /**
+     * Generates the Loot Collection and sets it on the PhatLoot(s)
+     *
+     * @param sender The CommandSender who is setting the Collection
+     * @param add True if the Collection should be added to the PhatLoot(s)
+     * @param name The name of the Collection
+     * @param args The arguments of the Loot Collection
+     */
     private static void setColl(CommandSender sender, boolean add, String name, String[] args) {
         String phatLoot = null; //The name of the PhatLoot
         double percent = 100; //The chance of receiving the Loot (defaulted to 100)
@@ -493,6 +509,13 @@ public class ManageLootCommand {
         LootCommandUtil.setLoot(sender, phatLoot, add, coll, loot);
     }
 
+    /**
+     * Generates the Loot Experience and sets it on the PhatLoot(s)
+     *
+     * @param sender The CommandSender who is setting the Experience
+     * @param add True if the Experience should be added to the PhatLoot(s)
+     * @param args The arguments of the Loot Experience
+     */
     private static void setExp(CommandSender sender, boolean add, String[] args) {
         String phatLoot = null; //The name of the PhatLoot
         double percent = 100; //The chance of receiving the Loot (defaulted to 100)
@@ -546,6 +569,13 @@ public class ManageLootCommand {
         LootCommandUtil.setLoot(sender, phatLoot, add, coll, loot);
     }
 
+    /**
+     * Generates the Loot Command and sets it on the PhatLoot(s)
+     *
+     * @param sender The CommandSender who is setting the Command
+     * @param add True if the Command should be added to the PhatLoot(s)
+     * @param args The arguments of the Loot Command
+     */
     private static void setCmd(CommandSender sender, boolean add, String[] args) {
         String cmd = null; //The command to be added/removed
         String phatLoot = null; //The name of the PhatLoot
@@ -598,6 +628,13 @@ public class ManageLootCommand {
         LootCommandUtil.setLoot(sender, phatLoot, add, coll, loot);
     }
 
+    /**
+     * Generates the Loot Message and sets it on the PhatLoot(s)
+     *
+     * @param sender The CommandSender who is setting the Message
+     * @param add True if the Message should be added to the PhatLoot(s)
+     * @param args The arguments of the Loot Message
+     */
     private static void setMsg(CommandSender sender, boolean add, String[] args) {
         String msg = null; //The message to be added/removed
         String phatLoot = null; //The name of the PhatLoot

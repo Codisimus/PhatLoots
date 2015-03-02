@@ -2,6 +2,7 @@ package com.codisimus.plugins.phatloots.commands;
 
 import com.codisimus.plugins.phatloots.PhatLoot;
 import com.codisimus.plugins.phatloots.PhatLoots;
+import com.codisimus.plugins.phatloots.PhatLootsUtil;
 import com.codisimus.plugins.phatloots.loot.Loot;
 import com.codisimus.plugins.phatloots.loot.LootCollection;
 import java.util.HashMap;
@@ -12,8 +13,9 @@ import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 
 /**
+ * Utility methods commonly used in the LootCommand class
  *
- * @author Cody
+ * @author Codisimus
  */
 public class LootCommandUtil {
 
@@ -117,7 +119,7 @@ public class LootCommandUtil {
         } else {
             //Cancel is the sender is console
             if (sender instanceof Player) {
-                phatLoots = LootCommand.getPhatLoots((Player) sender);
+                phatLoots = PhatLootsUtil.getPhatLoots((Player) sender);
             } else {
                 sender.sendMessage("§4You cannot do this from the console!");
             }
@@ -127,10 +129,10 @@ public class LootCommandUtil {
     }
 
     /**
-     * Retrieves an int value from the given string
+     * Retrieves the first int value from the given string
      *
-     * @param sender The CommandSender that will receive error messages
      * @param string The String that contains the amount
+     * @return The int value of -1 if no int was found
      */
     public static int getLowerBound(String string) {
         if (string.contains("-")) {
@@ -145,10 +147,10 @@ public class LootCommandUtil {
     }
 
     /**
-     * Retrieves an int value from the given string
+     * Retrieves the last int value from the given string
      *
-     * @param sender The CommandSender that will receive error messages
      * @param string The String that contains the amount
+     * @return The int value of -1 if no int was found
      */
     public static int getUpperBound(String string) {
         if (string.contains("-")) {
@@ -169,7 +171,7 @@ public class LootCommandUtil {
      * @return The Enchantments of the item
      */
     public static Map<Enchantment, Integer> getEnchantments(String string) {
-        Map<Enchantment, Integer> enchantments = new HashMap<Enchantment, Integer>();
+        Map<Enchantment, Integer> enchantments = new HashMap<>();
         try {
             for (String split: string.split("&")) {
                 Enchantment enchantment = null;
@@ -202,8 +204,8 @@ public class LootCommandUtil {
     /**
      * Retrieves a short value from the given string
      *
-     * @param sender The CommandSender that will receive error messages
-     * @param string The String that contains the item
+     * @param string The String that contains the number
+     * @return The short or -1 if the String was not a short
      */
     public static short getData(String string) {
         short data;
@@ -220,6 +222,7 @@ public class LootCommandUtil {
      *
      * @param sender The CommandSender that will receive error messages
      * @param string The String that contains the percent
+     * @return The double value or -1 if the percent was invalid
      */
     public static double getPercent(CommandSender sender, String string) {
         double percent;

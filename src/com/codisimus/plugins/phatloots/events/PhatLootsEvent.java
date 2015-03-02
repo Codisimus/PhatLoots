@@ -2,12 +2,11 @@ package com.codisimus.plugins.phatloots.events;
 
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.Event;
-import org.bukkit.event.HandlerList;
 
 /**
  * The basis of a PhatLoots Event
  *
- * @author Cody
+ * @author Codisimus
  */
 public abstract class PhatLootsEvent extends Event implements Cancellable {
     private boolean cancelled;

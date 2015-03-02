@@ -13,7 +13,7 @@ import org.bukkit.event.Listener;
 /**
  * Listens for Mob events that trigger loots
  *
- * @author Cody
+ * @author Codisimus
  */
 public abstract class MobListener implements Listener {
     public static boolean mobTypes;

@@ -15,6 +15,7 @@ import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
+import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.configuration.serialization.SerializableAs;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.LivingEntity;
@@ -27,12 +28,16 @@ import org.bukkit.inventory.meta.PotionMeta;
 /**
  * A PhatLoot is a reward made up of money, items, and more
  *
- * @author Cody
+ * @author Codisimus
  */
 @SerializableAs("PhatLoot")
-public class PhatLoot implements ConfigurationSerializable {
-    public static String current; //The currently loadeding PhatLoot (used for debugging)
+public final class PhatLoot implements ConfigurationSerializable {
+    static {
+        ConfigurationSerialization.registerClass(PhatLoot.class, "PhatLoot");
+    }
+    public static String current; //The currently loading PhatLoot (used for debugging)
     public static String last; //The last successfully loaded PhatLoot (used for debugging)
+
     static boolean onlyDropLootOnPlayerKill; //True if mobs should drop loot when dying of natural causes
     static boolean onlyDropExpOnPlayerKill; //True if mobs should drop experience when dying of natural causes
     static boolean replaceMobLoot; //False if default mob loot should still be present
@@ -54,7 +59,7 @@ public class PhatLoot implements ConfigurationSerializable {
     public boolean round;
     public boolean autoLoot;
     public boolean breakAndRespawn;
-    private HashSet<PhatLootChest> chests = new HashSet<PhatLootChest>(); //Set of Chests linked to this PhatLoot
+    private HashSet<PhatLootChest> chests = new HashSet<>(); //Set of Chests linked to this PhatLoot
     private Properties lootTimes = new Properties(); //PhatLootChest'PlayerName=Year'Day'Hour'Minute'Second
 
     /**
@@ -64,7 +69,7 @@ public class PhatLoot implements ConfigurationSerializable {
      */
     public PhatLoot(String name) {
         this.name = name;
-        lootList = new ArrayList<Loot>();
+        lootList = new ArrayList<>();
         days = PhatLootsConfig.defaultDays;
         hours = PhatLootsConfig.defaultHours;
         minutes = PhatLootsConfig.defaultMinutes;
@@ -379,10 +384,16 @@ public class PhatLoot implements ConfigurationSerializable {
         }
 
         if (global && autoSpill) {
+            Location loc = chest == null ? player.getLocation() : chest.getBlock().getLocation().add(0.5, 0.5, 0.5);
             for (ItemStack item : itemList) {
-                Location loc = chest == null ? player.getLocation() : chest.getBlock().getLocation().add(0.5, 0.5, 0.5);
                 player.getWorld().dropItemNaturally(loc, item);
             }
+            for (ItemStack item : inv.getContents()) {
+                if (item != null && item.getType() != Material.AIR) {
+                    player.getWorld().dropItemNaturally(loc, item);
+                }
+            }
+            inv.clear();
             flagToBreak = true;
         } else if (chest == null) {
             if (!itemList.isEmpty()) {
@@ -596,7 +607,8 @@ public class PhatLoot implements ConfigurationSerializable {
         List<ItemStack> loot = rollForLoot(preEvent.getLootingBonus()).getItemList();
         //Ensure there are 5 items (even if some are air)
         if (loot.size() != 5 && loot.size() != 6) {
-            PhatLoots.logger.warning("Cannot add loot to " + entity.getType().toString() + " because the amount of loot was not equal to 5 (or 6 if including a Potion)");
+            PhatLoots.logger.warning("Cannot add loot to " + entity.getType().toString()
+                    + " because the amount of loot was not equal to 5 (or 6 if including a Potion)");
             return;
         }
 
@@ -622,7 +634,8 @@ public class PhatLoot implements ConfigurationSerializable {
         if (loot.size() > 0) {
             ItemStack item = loot.remove(0);
             if (item.getType() != Material.POTION) {
-                PhatLoots.logger.warning("Extra Equipment for " + entity.getType().toString() + " is not a Potion");
+                PhatLoots.logger.warning("Extra Equipment for "
+                        + entity.getType().toString() + " is not a Potion");
             } else {
                 potion = (PotionMeta) item.getItemMeta();
             }
@@ -974,19 +987,11 @@ public class PhatLoot implements ConfigurationSerializable {
             return;
         }
 
-        FileOutputStream fos = null;
-        try {
-            fos = new FileOutputStream(PhatLoots.dataFolder + File.separator + "LootTimes" + File.separator + name + ".properties");
+        File file = new File(PhatLoots.dataFolder, "LootTimes" + File.separator + name + ".properties");
+        try (FileOutputStream fos = new FileOutputStream(file)) {
             lootTimes.store(fos, null);
         } catch (IOException ex) {
             PhatLoots.logger.log(Level.SEVERE, "Save Failed!", ex);
-        } finally { //Close stream (this would be replaced with 'try with resources' in a perfect world)
-            if (fos != null) {
-                try {
-                    fos.close();
-                } catch (IOException ex) {
-                }
-            }
         }
     }
 
@@ -994,38 +999,16 @@ public class PhatLoot implements ConfigurationSerializable {
      * Reads Loot times of the PhatLoot from file
      */
     public void loadLootTimes() {
-        FileInputStream fis = null;
-        try {
-            File file = new File(PhatLoots.dataFolder + File.separator + "LootTimes" + File.separator + name + ".properties");
-            if (!file.exists()) {
-                return;
-            }
-            fis = new FileInputStream(file);
+        File file = new File(PhatLoots.dataFolder, "LootTimes" + File.separator + name + ".properties");
+        if (!file.exists()) {
+            return;
+        }
+        try (FileInputStream fis = new FileInputStream(file)) {
             lootTimes.load(fis);
         } catch (IOException ex) {
             PhatLoots.logger.log(Level.SEVERE, "Load Failed!", ex);
-        } finally { //Close stream (this would be replaced with 'try with resources' in a perfect world)
-            if (fis != null) {
-                try {
-                    fis.close();
-                } catch (IOException ex) {
-                }
-            }
         }
-        //Update Legacy Files
         clean(null);
-        LinkedList<String> keysToRemove = new LinkedList<String>();
-        for (String key : lootTimes.stringPropertyNames()) {
-            String[] split = key.split("'");
-            if (split.length < 2 || Bukkit.getPlayerExact(split[1]) == null) {
-                continue;
-            }
-            lootTimes.setProperty(split[0] + "'" + Bukkit.getPlayerExact(split[1]).getUniqueId(), lootTimes.getProperty(key));
-            keysToRemove.add(key);
-        }
-        for (String key : keysToRemove) {
-            lootTimes.remove(key);
-        }
     }
 
     /**
@@ -1033,7 +1016,7 @@ public class PhatLoot implements ConfigurationSerializable {
      * If there is an old file it is over written
      */
     public void saveChests() {
-        File file = new File(PhatLoots.dataFolder + File.separator + "Chests" + File.separator + name + ".txt");
+        File file = new File(PhatLoots.dataFolder, "Chests" + File.separator + name + ".txt");
 
         //Don't save an empty file
         if (chests.isEmpty()) {
@@ -1044,42 +1027,27 @@ public class PhatLoot implements ConfigurationSerializable {
             return;
         }
 
-        FileWriter fWriter = null;
-        PrintWriter pWriter = null;
-        try {
-            fWriter = new FileWriter(file);
-            pWriter = new PrintWriter(fWriter);
-            for (PhatLootChest chest : getChests()) {
-                pWriter.println(chest.toString());
+        try (FileWriter fWriter = new FileWriter(file)) {
+            try (PrintWriter pWriter = new PrintWriter(fWriter)) {
+                for (PhatLootChest chest : getChests()) {
+                    pWriter.println(chest.toString());
+                }
             }
         } catch (IOException ex) {
             PhatLoots.logger.log(Level.SEVERE, "Save Failed!", ex);
-        } finally { //Close writers (this would be replaced with 'try with resources' in a perfect world)
-            try {
-                if (fWriter != null) {
-                    fWriter.close();
-                }
-                if (pWriter != null) {
-                    pWriter.close();
-                }
-            } catch (IOException ex) {
-            }
         }
     }
 
     /**
      * Reads Chest Locations of the PhatLoot from file
      */
-    public void loadChests() {
-        Scanner scanner = null;
-        try {
-            File file = new File(PhatLoots.dataFolder + File.separator + "Chests" + File.separator + name + ".txt");
-            if (!file.exists()) {
-                return;
-            }
-
+    public final void loadChests() {
+        File file = new File(PhatLoots.dataFolder, "Chests" + File.separator + name + ".txt");
+        if (!file.exists()) {
+            return;
+        }
+        try (Scanner scanner = new Scanner(file)) {
             //Each line of the file is a new PhatLootChest
-            scanner = new Scanner(file);
             while (scanner.hasNextLine()) {
                 String line = scanner.nextLine();
                 String[] split = line.split("'");
@@ -1092,10 +1060,6 @@ public class PhatLoot implements ConfigurationSerializable {
             }
         } catch (IOException ex) {
             PhatLoots.logger.log(Level.SEVERE, "Load Failed!", ex);
-        } finally { //Close scanner (this would be replaced with 'try with resources' in a perfect world)
-            if (scanner != null) {
-                scanner.close();
-            }
         }
     }
 
@@ -1104,25 +1068,18 @@ public class PhatLoot implements ConfigurationSerializable {
      * If there is an old file it is over written
      */
     public void save() {
-        OutputStreamWriter out = null;
-        try {
-            //Create a new config and populate it with this PhatLoot's information
-            YamlConfiguration config = new YamlConfiguration();
-            config.set(name, this);
+        //Create a new config and populate it with this PhatLoot's information
+        YamlConfiguration config = new YamlConfiguration();
+        config.set(name, this);
 
-            //Save the config with UTF-8 encoding
-            File file = new File(PhatLoots.dataFolder + File.separator + "LootTables" + File.separator + name + ".yml");
-            String data = config.saveToString();
-            out = new OutputStreamWriter(new FileOutputStream(file), "UTF-8");
+        //Save the config with UTF-8 encoding
+        File file = new File(PhatLoots.dataFolder, "LootTables" + File.separator + name + ".yml");
+        String data = config.saveToString();
+        try (OutputStreamWriter out = new OutputStreamWriter(new FileOutputStream(file), "UTF-8")) {
             out.write(data, 0, data.length());
+            out.flush();
         } catch (IOException ex) {
             PhatLoots.logger.log(Level.SEVERE, "Could not save PhatLoot " + name, ex);
-        } finally {
-            try {
-                out.flush();
-                out.close();
-            } catch (Exception e) {
-            }
         }
     }
 

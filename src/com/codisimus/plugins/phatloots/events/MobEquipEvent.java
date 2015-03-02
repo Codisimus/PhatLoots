@@ -12,13 +12,14 @@ import org.bukkit.inventory.meta.PotionMeta;
  */
 public class MobEquipEvent extends PhatLootsEvent {
     private static final HandlerList handlers = new HandlerList();
-    private LivingEntity mob;
+    private final LivingEntity mob;
     private PotionMeta potion;
 
     /**
      * Creates a new event with the given data
      *
      * @param mob The mob whose equipment was modified
+     * @param potion The PotionMeta that is to be applied to the mob
      */
     public MobEquipEvent(LivingEntity mob, PotionMeta potion) {
         this.mob = mob;
@@ -83,7 +84,7 @@ public class MobEquipEvent extends PhatLootsEvent {
     /**
      * Set the PotionMeta to be applied to the mob
      *
-     * @param name The new PotionMeta for the mob
+     * @param potion The new PotionMeta for the mob
      */
     public void setPotionMeta(PotionMeta potion) {
         this.potion = potion;

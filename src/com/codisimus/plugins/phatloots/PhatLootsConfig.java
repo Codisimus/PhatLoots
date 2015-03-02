@@ -18,7 +18,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
 /**
  * Loads Config settings for the PhatLoots plugin
  *
- * @author Cody
+ * @author Codisimus
  */
 public class PhatLootsConfig {
     static int defaultDays; //Default cooldown time
@@ -193,7 +193,7 @@ public class PhatLootsConfig {
 
         String fileName = "lores.yml";
         try {
-            File file = new File(PhatLoots.dataFolder + File.separator + fileName);
+            File file = new File(PhatLoots.dataFolder, fileName);
             if (!file.exists()) {
                 PhatLoots.plugin.saveResource(fileName, true);
             }
@@ -208,7 +208,7 @@ public class PhatLootsConfig {
 
         fileName = "tiers.yml";
         try {
-            File file = new File(PhatLoots.dataFolder + File.separator + fileName);
+            File file = new File(PhatLoots.dataFolder, fileName);
             if (!file.exists()) {
                 PhatLoots.plugin.saveResource(fileName, true);
             }
@@ -223,7 +223,7 @@ public class PhatLootsConfig {
 
         fileName = "enchantments.yml";
         try {
-            File file = new File(PhatLoots.dataFolder + File.separator + fileName);
+            File file = new File(PhatLoots.dataFolder, fileName);
             if (!file.exists()) {
                 PhatLoots.plugin.saveResource(fileName, true);
             }

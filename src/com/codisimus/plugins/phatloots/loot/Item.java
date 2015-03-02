@@ -11,6 +11,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.configuration.serialization.SerializableAs;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.event.inventory.ClickType;
@@ -20,10 +21,13 @@ import org.bukkit.inventory.meta.ItemMeta;
 /**
  * An Item is the Loot representation of an ItemStack
  *
- * @author Cody
+ * @author Codisimus
  */
 @SerializableAs("Item")
 public class Item extends Loot {
+    static {
+        ConfigurationSerialization.registerClass(Item.class, "Item");
+    }
     /* SECTIONS */
     private static final String BASE_VALUES = "BaseValues";
     private static final String ENCHANTMENT_VALUES = "EnchantmentValues";
@@ -205,16 +209,16 @@ public class Item extends Loot {
     @Override
     public ItemStack getInfoStack() {
         ItemStack infoStack = item.clone();
-        boolean air = infoStack.getTypeId() == 0;
+        boolean air = infoStack.getType() == Material.AIR;
         if (air) {
-            infoStack.setType(Material.LOCKED_CHEST);
+            infoStack.setType(Material.GLASS_BOTTLE);
         }
         ItemMeta info = infoStack.hasItemMeta() ? infoStack.getItemMeta() : Bukkit.getItemFactory().getItemMeta(infoStack.getType());
         if (air) {
             info.setDisplayName("AIR");
         }
 
-        //Add more specific details of the command
+        //Add more specific details of the Item
         List<String> details;
         if (info.hasLore()) {
             details = info.getLore();
@@ -400,41 +404,33 @@ public class Item extends Loot {
             StringBuilder nameBuilder = new StringBuilder();
             if (randomLore) {
                 String folder = clone.getType() + clone.getEnchantments().toString();
-                File dir = new File(PhatLoots.dataFolder + File.separator + "Item Descriptions" + File.separator + folder);
+                File dir = new File(PhatLoots.dataFolder, "Item Descriptions" + File.separator + folder);
                 if (dir.exists()) {
                     //Choose a random file
                     File[] files = dir.listFiles();
                     File file = files[PhatLootsUtil.rollForInt(files.length)];
 
                     if (file.exists()) {
-                        FileReader fReader = null;
-                        BufferedReader bReader = null;
-                        try {
-                            fReader = new FileReader(file);
-                            bReader = new BufferedReader(fReader);
+                        try (FileReader fReader = new FileReader(file)) {
+                            try (BufferedReader bReader = new BufferedReader(fReader)) {
+                                String line = bReader.readLine();
+                                if (line != null) {
+                                    if (line.charAt(0) == '&') {
+                                        line = line.replace('&', '§');
+                                    }
 
-                            String line = bReader.readLine();
-                            if (line != null) {
-                                if (line.charAt(0) == '&') {
-                                    line = line.replace('&', '§');
+                                    nameBuilder.append(line);
+
+                                    List lore = new LinkedList();
+                                    while ((line = bReader.readLine()) != null) {
+                                        line = line.replace('&', '§');
+                                        lore.add(line);
+                                    }
+                                    meta.setLore(lore);
                                 }
-
-                                nameBuilder.append(line);
-
-                                List lore = new LinkedList();
-                                while ((line = bReader.readLine()) != null) {
-                                    line = line.replace('&', '§');
-                                    lore.add(line);
-                                }
-                                meta.setLore(lore);
                             }
                         } catch (Exception ex) {
-                        } finally {
-                            try {
-                                fReader.close();
-                                bReader.close();
-                            } catch (Exception ex) {
-                            }
+                            //Do nothing
                         }
                     } else {
                         PhatLoots.logger.severe("The Item Description " + file.getName() + " cannot be read");
@@ -467,14 +463,16 @@ public class Item extends Loot {
                 while (itr.hasNext()) {
                     String string = itr.next();
                     //Calculate protection based on the enchantments
-                    if (string.equals(THORNS)) {
+                    switch (string) {
+                    case THORNS:
                         if (clone.containsEnchantment(Enchantment.THORNS)) {
                             int lvl = clone.getEnchantments().get(Enchantment.THORNS);
                             itr.set(thornsString.replace("<chance>", String.valueOf(15 * lvl)));
                         } else {
                             itr.remove();
                         }
-                    } else if (string.equals(DEFENSE)) {
+                        break;
+                    case DEFENSE:
                         int amount = getBaseArmor(clone.getType());
                         if (clone.containsEnchantment(Enchantment.PROTECTION_ENVIRONMENTAL)) {
                             int lvl = clone.getEnchantments().get(Enchantment.PROTECTION_ENVIRONMENTAL);
@@ -485,7 +483,8 @@ public class Item extends Loot {
                         } else {
                             itr.set(defenseString.replace("<amount>", String.valueOf(amount)));
                         }
-                    } else if (string.equals(FIRE_DEFENSE)) {
+                        break;
+                    case FIRE_DEFENSE:
                         if (clone.containsEnchantment(Enchantment.PROTECTION_FIRE)) {
                             int lvl = clone.getEnchantments().get(Enchantment.PROTECTION_FIRE);
                             int epf = (int) Math.floor((6 + lvl * lvl) * 1.25 / 3);
@@ -495,7 +494,8 @@ public class Item extends Loot {
                         } else {
                             itr.remove();
                         }
-                    } else if (string.equals(RANGE_DEFENSE)) {
+                        break;
+                    case RANGE_DEFENSE:
                         if (clone.containsEnchantment(Enchantment.PROTECTION_PROJECTILE)) {
                             int lvl = clone.getEnchantments().get(Enchantment.PROTECTION_PROJECTILE);
                             int epf = (int) Math.floor((6 + lvl * lvl) * 1.5 / 3);
@@ -505,7 +505,8 @@ public class Item extends Loot {
                         } else {
                             itr.remove();
                         }
-                    } else if (string.equals(BLAST_DEFENSE)) {
+                        break;
+                    case BLAST_DEFENSE:
                         if (clone.containsEnchantment(Enchantment.PROTECTION_EXPLOSIONS)) {
                             int lvl = clone.getEnchantments().get(Enchantment.PROTECTION_EXPLOSIONS);
                             int epf = (int) Math.floor((6 + lvl * lvl) * 1.5 / 3);
@@ -515,7 +516,8 @@ public class Item extends Loot {
                         } else {
                             itr.remove();
                         }
-                    } else if (string.equals(FALL_DEFENSE)) {
+                        break;
+                    case FALL_DEFENSE:
                         if (clone.containsEnchantment(Enchantment.PROTECTION_FALL)) {
                             int lvl = clone.getEnchantments().get(Enchantment.PROTECTION_FALL);
                             int epf = (int) Math.floor((6 + lvl * lvl) * 2.5 / 3);
@@ -525,20 +527,24 @@ public class Item extends Loot {
                         } else {
                             itr.remove();
                         }
+                        break;
+                    default:
+                        break;
                     }
                 }
             } else if (mat == Material.BOW) {
                 while (itr.hasNext()) {
                     String string = itr.next();
                     //Calculate damages based on the enchantments
-                    if (string.equals(DAMAGE)) {
+                    switch (string) {
+                    case DAMAGE:
                         int baseLow = 1;
                         int baseHigh = 10;
                         if (clone.containsEnchantment(Enchantment.DAMAGE_ALL)) {
                             int lvl = clone.getEnchantments().get(Enchantment.ARROW_DAMAGE);
                             double bonus = lvl == 0
-                                           ? 0
-                                           : 0.25;
+                                    ? 0
+                                    : 0.25;
                             bonus += (0.25 * lvl);
                             int low = baseLow + (int) (baseLow * bonus);
                             int high = baseHigh + (int) (baseHigh * bonus);
@@ -546,19 +552,24 @@ public class Item extends Loot {
                         } else {
                             itr.set(damageString.replace("<amount>", baseLow + "-" + baseHigh));
                         }
-                    } else if (string.equals(FIRE)) {
+                        break;
+                    case FIRE:
                         if (clone.containsEnchantment(Enchantment.ARROW_FIRE)) {
                             itr.set(fireString.replace("<amount>", "4"));
                         } else {
                             itr.remove();
                         }
+                        break;
+                    default:
+                        break;
                     }
                 }
             } else {
                 while (itr.hasNext()) {
                     String string = itr.next();
                     //Calculate damages based on the enchantments
-                    if (string.equals(DAMAGE)) {
+                    switch (string) {
+                    case DAMAGE:
                         int baseLow = getBaseDamage(clone.getType());
                         int baseHigh = (int) (baseLow * 1.5D) + 2;
                         if (clone.containsEnchantment(Enchantment.DAMAGE_ALL)) {
@@ -569,7 +580,8 @@ public class Item extends Loot {
                         } else {
                             itr.set(damageString.replace("<amount>", baseLow + "-" + baseHigh));
                         }
-                    } else if (string.equals(HOLY)) {
+                        break;
+                    case HOLY:
                         if (clone.containsEnchantment(Enchantment.DAMAGE_UNDEAD)) {
                             int lvl = clone.getEnchantments().get(Enchantment.DAMAGE_UNDEAD);
                             int low = lvl;
@@ -578,7 +590,8 @@ public class Item extends Loot {
                         } else {
                             itr.remove();
                         }
-                    } else if (string.equals(BUG)) {
+                        break;
+                    case BUG:
                         if (clone.containsEnchantment(Enchantment.DAMAGE_ARTHROPODS)) {
                             int lvl = clone.getEnchantments().get(Enchantment.DAMAGE_ARTHROPODS);
                             int low = lvl;
@@ -587,7 +600,8 @@ public class Item extends Loot {
                         } else {
                             itr.remove();
                         }
-                    } else if (string.equals(FIRE)) {
+                        break;
+                    case FIRE:
                         if (clone.containsEnchantment(Enchantment.FIRE_ASPECT)) {
                             int lvl = clone.getEnchantments().get(Enchantment.FIRE_ASPECT);
                             int amount = 4 * lvl;
@@ -595,6 +609,9 @@ public class Item extends Loot {
                         } else {
                             itr.remove();
                         }
+                        break;
+                    default:
+                        break;
                     }
                 }
             }
@@ -608,7 +625,7 @@ public class Item extends Loot {
     }
 
     /**
-     * Generates a custom name for the given item based on it's enchantments
+     * Generates a custom name for the given item based on its enchantments
      *
      * @param item The given ItemStack
      * @param nameBuilder The StringBuilder that will be changed to the new name
@@ -787,7 +804,7 @@ public class Item extends Loot {
     }
 
     /**
-     * Modifys the name of the given item to add a tier based on it's enchantments and material
+     * Modifys the name of the given item to add a tier based on its enchantments and material
      *
      * @param item The given ItemStack
      * @param nameBuilder The StringBuilder that will be changed to the new name
