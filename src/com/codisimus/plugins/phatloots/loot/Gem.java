@@ -12,7 +12,6 @@ import net.nunnerycode.bukkit.mythicdrops.socketting.SocketItem;
 import net.nunnerycode.bukkit.mythicdrops.utils.SocketGemUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
-import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.configuration.serialization.SerializableAs;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.ItemStack;
@@ -25,9 +24,6 @@ import org.bukkit.inventory.meta.ItemMeta;
  */
 @SerializableAs("Gem")
 public class Gem extends Loot {
-    static {
-        ConfigurationSerialization.registerClass(Gem.class, "Gem");
-    }
     private static final String RANDOM_GEM = "RANDOM";
     private static EnumMap<GemType, ArrayList<String>> gemLists = null;
     public GemType gemType = GemType.ANY;

@@ -11,7 +11,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.configuration.serialization.SerializableAs;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.event.inventory.ClickType;
@@ -25,9 +24,6 @@ import org.bukkit.inventory.meta.ItemMeta;
  */
 @SerializableAs("Item")
 public class Item extends Loot {
-    static {
-        ConfigurationSerialization.registerClass(Item.class, "Item");
-    }
     /* SECTIONS */
     private static final String BASE_VALUES = "BaseValues";
     private static final String ENCHANTMENT_VALUES = "EnchantmentValues";

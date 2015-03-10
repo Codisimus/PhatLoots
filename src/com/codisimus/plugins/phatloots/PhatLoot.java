@@ -15,7 +15,6 @@ import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
-import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.configuration.serialization.SerializableAs;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.LivingEntity;
@@ -32,9 +31,6 @@ import org.bukkit.inventory.meta.PotionMeta;
  */
 @SerializableAs("PhatLoot")
 public final class PhatLoot implements ConfigurationSerializable {
-    static {
-        ConfigurationSerialization.registerClass(PhatLoot.class, "PhatLoot");
-    }
     public static String current; //The currently loading PhatLoot (used for debugging)
     public static String last; //The last successfully loaded PhatLoot (used for debugging)
 

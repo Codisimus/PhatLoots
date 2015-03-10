@@ -11,7 +11,6 @@ import java.util.Map;
 import java.util.TreeMap;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
-import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.configuration.serialization.SerializableAs;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.Inventory;
@@ -25,9 +24,6 @@ import org.bukkit.inventory.meta.ItemMeta;
  */
 @SerializableAs("Experience")
 public class Experience extends Loot {
-    static {
-        ConfigurationSerialization.registerClass(Experience.class, "Experience");
-    }
     private int lowerAmount;
     private int upperAmount;
 

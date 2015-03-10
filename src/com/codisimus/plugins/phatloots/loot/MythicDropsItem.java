@@ -15,7 +15,6 @@ import net.nunnerycode.bukkit.mythicdrops.utils.ItemStackUtil;
 import net.nunnerycode.bukkit.mythicdrops.utils.TierUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
-import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.configuration.serialization.SerializableAs;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.Inventory;
@@ -29,9 +28,6 @@ import org.bukkit.inventory.meta.ItemMeta;
  */
 @SerializableAs("MythicDropsItem")
 public class MythicDropsItem extends Loot {
-    static {
-        ConfigurationSerialization.registerClass(MythicDropsItem.class, "MythicDropsItem");
-    }
     private static ArrayList<String> tierList = null;
     public String tierName;
     public int amountLower = 1;

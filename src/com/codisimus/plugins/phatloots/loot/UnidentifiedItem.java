@@ -12,7 +12,6 @@ import net.nunnerycode.bukkit.mythicdrops.utils.ItemUtil;
 import net.nunnerycode.bukkit.mythicdrops.utils.TierUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
-import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.configuration.serialization.SerializableAs;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.ItemStack;
@@ -25,9 +24,6 @@ import org.bukkit.inventory.meta.ItemMeta;
  */
 @SerializableAs("UnidentifiedItem")
 public class UnidentifiedItem extends Loot {
-    static {
-        ConfigurationSerialization.registerClass(UnidentifiedItem.class, "UnidentifiedItem");
-    }
     private static final String RANDOM_TIER = "RANDOM";
     private static ArrayList<String> tierList = null;
     public String tierName;

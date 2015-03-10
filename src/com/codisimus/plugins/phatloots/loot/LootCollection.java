@@ -9,7 +9,6 @@ import com.codisimus.plugins.phatloots.gui.InventoryListener;
 import java.util.*;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
-import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.configuration.serialization.SerializableAs;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.Inventory;
@@ -23,9 +22,6 @@ import org.bukkit.inventory.meta.ItemMeta;
  */
 @SerializableAs("LootCollection")
 public class LootCollection extends Loot {
-    static {
-        ConfigurationSerialization.registerClass(LootCollection.class, "LootCollection");
-    }
     public static boolean allowDuplicates;
     public String name;
     public int lowerNumberOfLoots;

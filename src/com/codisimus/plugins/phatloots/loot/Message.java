@@ -9,7 +9,6 @@ import java.util.TreeMap;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
-import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.configuration.serialization.SerializableAs;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.ItemStack;
@@ -22,9 +21,6 @@ import org.bukkit.inventory.meta.ItemMeta;
  */
 @SerializableAs("Message")
 public class Message extends Loot {
-    static {
-        ConfigurationSerialization.registerClass(Message.class, "Message");
-    }
     private String msg;
 
     /**

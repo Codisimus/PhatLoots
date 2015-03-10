@@ -19,6 +19,7 @@ import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.*;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -130,6 +131,20 @@ public class PhatLoots extends JavaPlugin {
         handler.registerCommands(VariableLootCommand.class);
         if (PhatLoots.econ != null) {
             handler.registerCommands(ManageMoneyLootCommand.class);
+        }
+
+        /* Register ConfigurationSerializable classes */
+        ConfigurationSerialization.registerClass(PhatLoot.class, "PhatLoot");
+        ConfigurationSerialization.registerClass(LootCollection.class, "LootCollection");
+        ConfigurationSerialization.registerClass(Item.class, "Item");
+        ConfigurationSerialization.registerClass(CommandLoot.class, "Command");
+        ConfigurationSerialization.registerClass(Message.class, "Message");
+        ConfigurationSerialization.registerClass(Experience.class, "Experience");
+        ConfigurationSerialization.registerClass(Money.class, "Money");
+        if (mythicDropsSupport) {
+            ConfigurationSerialization.registerClass(MythicDropsItem.class, "MythicDropsItem");
+            ConfigurationSerialization.registerClass(UnidentifiedItem.class, "UnidentifiedItem");
+            ConfigurationSerialization.registerClass(Gem.class, "Gem");
         }
 
         /* Load External PhatLoots Addons */
