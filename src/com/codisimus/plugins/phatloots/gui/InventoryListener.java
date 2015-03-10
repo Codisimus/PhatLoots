@@ -90,12 +90,13 @@ public class InventoryListener implements Listener {
         if (!infoViewers.containsKey(playerUUID)) {
             return;
         } else { //Fixes glitch of not detecting inventory close
-            //if (!event.getInventory().getTitle().startsWith((infoViewers.get(playerUUID).name))) {
-            //    infoViewers.remove(playerUUID).save(); //Save the PhatLoot in case it has been modified
-            //    pageStacks.get(playerUUID).empty();
-            //    pageStacks.remove(playerUUID);
-            //    return;
-            //}
+            if (!event.getInventory().getTitle().contains("Loot")
+                    && !event.getInventory().getTitle().contains("Collection")) {
+                infoViewers.remove(playerUUID).save(); //Save the PhatLoot in case it has been modified
+                pageStacks.get(playerUUID).empty();
+                pageStacks.remove(playerUUID);
+                return;
+            }
         }
 
         //Don't allow any inventory clicking
