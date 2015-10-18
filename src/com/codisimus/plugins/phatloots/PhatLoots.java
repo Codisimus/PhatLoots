@@ -5,12 +5,16 @@ import com.codisimus.plugins.phatloots.events.ChestRespawnEvent.RespawnReason;
 import com.codisimus.plugins.phatloots.gui.InventoryListener;
 import com.codisimus.plugins.phatloots.listeners.*;
 import com.codisimus.plugins.phatloots.loot.*;
+import com.codisimus.plugins.phatloots.regions.RegionHook;
+import com.codisimus.plugins.phatloots.regions.RegionToolsRegionHook;
+import com.codisimus.plugins.phatloots.regions.WorldGuardRegionHook;
 import com.google.common.io.Files;
 import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.Charset;
 import java.util.*;
+import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import net.milkbowl.vault.economy.Economy;
@@ -38,6 +42,7 @@ public class PhatLoots extends JavaPlugin {
     public static boolean mythicDropsSupport;
     public static long autoSavePeriod;
     public static CommandHandler handler;
+    public static final HashMap<String, RegionHook> regionHooks = new HashMap<>(); //Plugin Name -> RegionHook
     public static final EnumMap<Material, HashMap<String, String>> types = new EnumMap(Material.class); //Material -> World Name -> PhatLoot Name
     private static final HashMap<String, PhatLoot> phatLoots = new HashMap<>(); //PhatLoot Name -> PhatLoot
 
@@ -107,9 +112,6 @@ public class PhatLoots extends JavaPlugin {
             }
         }
 
-        /* Register Events */
-        registerEvents();
-
         /* Register Buttons */
         LootCollection.registerButton();
         Experience.registerButton();
@@ -133,6 +135,10 @@ public class PhatLoots extends JavaPlugin {
             handler.registerCommands(ManageMoneyLootCommand.class);
         }
 
+        /* Register RegionHooks */
+        registerRegionHook("RegionTools", new RegionToolsRegionHook());
+        registerRegionHook("WorldGuard", new WorldGuardRegionHook());
+
         /* Register ConfigurationSerializable classes */
         ConfigurationSerialization.registerClass(PhatLoot.class, "PhatLoot");
         ConfigurationSerialization.registerClass(LootCollection.class, "LootCollection");
@@ -148,10 +154,13 @@ public class PhatLoots extends JavaPlugin {
         }
 
         /* Load External PhatLoots Addons */
-        //Buttons, Tools, CodCommands, and ConfigurationSerializable classes should be registered from within the Addon
+        //Buttons, Tools, CodCommands, RegionHooks, and ConfigurationSerializable classes should be registered from within the Addon
         for (Plugin addon : Bukkit.getPluginManager().loadPlugins(dir)) {
             Bukkit.getPluginManager().enablePlugin(addon);
         }
+
+        /* Register Events */
+        registerEvents();
 
         /* Load PhatLoot/Chest data */
         load();
@@ -216,20 +225,34 @@ public class PhatLoots extends JavaPlugin {
             logger.info("Listening for Dispensers");
             pm.registerEvents(new DispenserListener(), this);
         }
+
+        //Find and set the RegionHook
+        String regionPlugin = getConfig().getString("RegionPlugin");
+        if (regionPlugin.equals("auto")) {
+            for (Entry<String, RegionHook> entry : regionHooks.entrySet()) {
+                regionPlugin = entry.getKey();
+                if (Bukkit.getPluginManager().isPluginEnabled(regionPlugin)) {
+                    MobListener.regionHook = entry.getValue();
+                    break;
+                }
+            }
+        } else if (Bukkit.getPluginManager().isPluginEnabled(regionPlugin)) {
+            MobListener.regionHook = regionHooks.get(regionPlugin);
+        }
+
         if (getConfig().getBoolean("MobDropLoot")) {
             StringBuilder sb = new StringBuilder();
             sb.append("Listening for Mob deaths");
             MobDeathListener listener = new MobDeathListener();
             listener.mobWorlds = getConfig().getBoolean("WorldMobDropLoot");
             listener.mobRegions = getConfig().getBoolean("RegionMobDropLoot")
-                                  && (pm.isPluginEnabled("RegionOwn")
-                                      || pm.isPluginEnabled("WorldGuard"));
+                                  && MobListener.regionHook != null;
             if (listener.mobWorlds) {
                 sb.append(" w/ MultiWorld support");
             }
             if (listener.mobRegions) {
                 sb.append(listener.mobWorlds ? " and " : " w/ ");
-                sb.append(pm.isPluginEnabled("RegionOwn") ? "RegionOwn" : "WorldGuard");
+                sb.append(regionPlugin);
                 sb.append(" Regions");
             }
             logger.info(sb.toString());
@@ -241,19 +264,19 @@ public class PhatLoots extends JavaPlugin {
             MobSpawnListener listener = new MobSpawnListener();
             listener.mobWorlds = getConfig().getBoolean("WorldMobSpawnLoot");
             listener.mobRegions = getConfig().getBoolean("RegionMobSpawnLoot")
-                                  && (pm.isPluginEnabled("RegionOwn")
-                                      || pm.isPluginEnabled("WorldGuard"));
+                                  && MobListener.regionHook != null;
             if (listener.mobWorlds) {
                 sb.append(" w/ MultiWorld support");
             }
             if (listener.mobRegions) {
                 sb.append(listener.mobWorlds ? " and " : " w/ ");
-                sb.append(pm.isPluginEnabled("RegionOwn") ? "RegionOwn" : "WorldGuard");
-                sb.append(" support");
+                sb.append(regionPlugin);
+                sb.append(" Regions");
             }
             logger.info(sb.toString());
             pm.registerEvents(listener, this);
         }
+
         if (getConfig().getBoolean("FishingLoot")) {
             logger.info("Listening for Players fishing");
             pm.registerEvents(new FishingListener(), this);
@@ -262,6 +285,16 @@ public class PhatLoots extends JavaPlugin {
             logger.info("Listening for Votifier votes");
             pm.registerEvents(new VoteListener(), this);
         }
+    }
+
+    /**
+     * Registers a RegionHook to be loaded by PhatLoots
+     *
+     * @param pluginName The name of the Plugin that the hook is used for
+     * @param regionHook The RegionHook to register
+     */
+    public static void registerRegionHook(String pluginName, RegionHook regionHook) {
+        regionHooks.put(pluginName, regionHook);
     }
 
     /**

@@ -883,6 +883,7 @@ public final class PhatLoot implements ConfigurationSerializable {
             for (String key : lootTimes.stringPropertyNames()) {
                 if (key.startsWith(chest)) {
                     lootTimes.remove(key);
+                    break;
                 }
             }
         }
@@ -894,11 +895,7 @@ public final class PhatLoot implements ConfigurationSerializable {
      * @param world The World whose loot times are to be reset
      */
     public void resetForWorld(World world) {
-        for (PhatLootChest chest : chests) {
-            if (chest.isInWorld(world)) {
-                lootTimes.remove(chest.toString() + "'" + global);
-            }
-        }
+        removeLootTimes(world.getName());
     }
 
     /**
@@ -907,9 +904,22 @@ public final class PhatLoot implements ConfigurationSerializable {
      * @param player The Player whose loot times are to be reset
      */
     public void resetForPlayer(Player player) {
-        UUID playerUUID = player.getUniqueId();
-        for (PhatLootChest chest : chests) {
-            String key = chest.toString() + "'" + playerUUID;
+        removeLootTimes(player.getUniqueId().toString());
+    }
+
+    /**
+     * Removes keys with a specific prefix from the loot times
+     *
+     * @param prefix The first word of the key (such as the Player or World)
+     */
+    private void removeLootTimes(String prefix) {
+        LinkedList<String> keysToRemove = new LinkedList<>();
+        for (String key : lootTimes.stringPropertyNames()) {
+            if (key.startsWith(prefix + "'")) {
+                keysToRemove.add(key);
+            }
+        }
+        for (String key : keysToRemove) {
             lootTimes.remove(key);
         }
     }

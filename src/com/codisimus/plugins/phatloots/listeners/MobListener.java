@@ -2,9 +2,9 @@ package com.codisimus.plugins.phatloots.listeners;
 
 import com.codisimus.plugins.phatloots.PhatLoot;
 import com.codisimus.plugins.phatloots.PhatLoots;
-import com.codisimus.plugins.regiontools.Region;
-import com.codisimus.plugins.regiontools.RegionTools;
-import org.bukkit.Bukkit;
+import com.codisimus.plugins.phatloots.regions.RegionHook;
+import java.util.ArrayList;
+import java.util.List;
 import org.bukkit.Location;
 import org.bukkit.entity.Horse.Variant;
 import org.bukkit.entity.*;
@@ -18,9 +18,7 @@ import org.bukkit.event.Listener;
 public abstract class MobListener implements Listener {
     public static boolean mobTypes;
     public static boolean namedMobs;
-    public static Region parentRegion = Bukkit.getPluginManager().isPluginEnabled("RegionTools")
-                                        ? RegionTools.findRegion("MobRegions", false)
-                                        : null;
+    public static RegionHook regionHook;
     public boolean mobWorlds;
     public boolean mobRegions;
 
@@ -133,12 +131,9 @@ public abstract class MobListener implements Listener {
 
         //Check if the mob is within a region
         Location location = entity.getLocation();
-        String regionName = null;
-        if (mobRegions && parentRegion != null) {
-            Region region = parentRegion.getChild(location);
-            if (region != null) {
-                regionName = '@' + region.getName();
-            }
+        List<String> regionNames = new ArrayList<>();
+        if (mobRegions && regionHook != null) {
+            regionNames = regionHook.getRegionNames(location);
         }
 
         //Get the loot type and the name of the world for constructing the PhatLoot name
@@ -148,21 +143,13 @@ public abstract class MobListener implements Listener {
         //The order of priority for finding the correct PhatLoot may be found in the documentation of this method
         PhatLoot phatLoot;
         if (mobTypes && specificType != null) {
-            if (mobRegions && regionName != null) {
-                phatLoot = PhatLoots.getPhatLoot(specificType + type + regionName);
-                if (phatLoot != null) {
-                    return phatLoot;
+            if (mobRegions) {
+                for (String regionName : regionNames) {
+                    phatLoot = PhatLoots.getPhatLoot(specificType + type + '@' + regionName);
+                    if (phatLoot != null) {
+                        return phatLoot;
+                    }
                 }
-                //if (regionOwn) {
-                //} else { //WorldGuard support
-                //    for (ProtectedRegion region : WGBukkit.getRegionManager(location.getWorld()).getApplicableRegions(location)) {
-                //        //System.out.println("Searching for PhatLoot: " + specificType + type + '@' + region.getId());
-                //        phatLoot = PhatLoots.getPhatLoot(specificType + type + '@' + region.getId());
-                //        if (phatLoot != null) {
-                //            return phatLoot;
-                //        }
-                //    }
-                //}
             }
             if (mobWorlds) {
                 phatLoot = PhatLoots.getPhatLoot(specificType + type + worldName);
@@ -172,20 +159,13 @@ public abstract class MobListener implements Listener {
             }
         }
 
-        if (mobRegions && regionName != null) {
-            phatLoot = PhatLoots.getPhatLoot(type + regionName);
-            if (phatLoot != null) {
-                return phatLoot;
+        if (mobRegions) {
+            for (String regionName : regionNames) {
+                phatLoot = PhatLoots.getPhatLoot(type + '@' + regionName);
+                if (phatLoot != null) {
+                    return phatLoot;
+                }
             }
-            //if (regionOwn) {
-            //} else { //WorldGuard support
-            //    for (ProtectedRegion region : WGBukkit.getRegionManager(location.getWorld()).getApplicableRegions(location)) {
-            //        phatLoot = PhatLoots.getPhatLoot(type + '@' + region.getId());
-            //        if (phatLoot != null) {
-            //            return phatLoot;
-            //        }
-            //    }
-            //}
         }
         if (mobWorlds) {
             phatLoot = PhatLoots.getPhatLoot(type + worldName);

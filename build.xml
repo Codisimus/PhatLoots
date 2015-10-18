@@ -79,7 +79,7 @@
 
     <target name="-post-jar">
         <copy failonerror="true" file="${dist.jar}" todir="..\Libraries"/>
-        <copy failonerror="false" file="${dist.jar}" todir="F:\Minecraft\Test Server\plugins"/>
+        <copy failonerror="false" file="${dist.jar}" todir="F:\Minecraft\PhatLoots Debug\plugins"/>
 
         <delete dir="${build.dir}"/>
     </target>

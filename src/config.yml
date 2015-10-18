@@ -99,6 +99,13 @@ MobLootDropPercentage: 20
 ##     50% + (5% x 4 levels)
 LootingBonusPerLevel: 5
 
+##Supported Region plugins include WorldGuard and RegionTools
+##If set to auto, the first compatible plugin will be used
+##You only need to change this setting if you have multiple Region plugins installed
+RegionPlugin: auto
+##This setting is only used for plugins which allow grouped Regions (Such as RegionTools)
+RegionGroup:
+
 
 
 ################## MESSAGES ##################
