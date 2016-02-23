@@ -5,11 +5,11 @@ import com.codisimus.plugins.phatloots.PhatLoots;
 import com.codisimus.plugins.phatloots.PhatLootsUtil;
 import com.codisimus.plugins.phatloots.gui.Tool;
 import java.util.*;
-import net.nunnerycode.bukkit.mythicdrops.api.tiers.Tier;
-import net.nunnerycode.bukkit.mythicdrops.tiers.TierMap;
-import net.nunnerycode.bukkit.mythicdrops.utils.ItemStackUtil;
-import net.nunnerycode.bukkit.mythicdrops.utils.ItemUtil;
-import net.nunnerycode.bukkit.mythicdrops.utils.TierUtil;
+import com.tealcube.minecraft.bukkit.mythicdrops.api.tiers.Tier;
+import com.tealcube.minecraft.bukkit.mythicdrops.tiers.TierMap;
+import com.tealcube.minecraft.bukkit.mythicdrops.utils.ItemStackUtil;
+import com.tealcube.minecraft.bukkit.mythicdrops.utils.ItemUtil;
+import com.tealcube.minecraft.bukkit.mythicdrops.utils.TierUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.configuration.serialization.SerializableAs;
@@ -118,7 +118,7 @@ public class UnidentifiedItem extends Loot {
             if (tier != null) {
                 Collection<Material> materials = ItemUtil.getMaterialsFromTier(tier);
                 Material material = ItemUtil.getRandomMaterialFromCollection(materials);
-                ItemStack mis = new net.nunnerycode.bukkit.mythicdrops.identification.UnidentifiedItem(material);
+                ItemStack mis = new com.tealcube.minecraft.bukkit.mythicdrops.identification.UnidentifiedItem(material);
                 if (durabilityLower > 0 || durabilityUpper > 0) {
                     mis.setDurability(ItemStackUtil.getDurabilityForMaterial(mis.getType(), durabilityLower, durabilityUpper));
                 }
