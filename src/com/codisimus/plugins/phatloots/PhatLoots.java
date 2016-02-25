@@ -63,6 +63,11 @@ public class PhatLoots extends JavaPlugin {
     @Override
     public void onEnable () {
         mythicDropsSupport = Bukkit.getPluginManager().isPluginEnabled("MythicDrops");
+        if (mythicDropsSupport) {
+            logger.info("Enabling MythicDrops support");
+        } else if (isDebug()) {
+            debug("Plugin MythicDrops could not be found, support has been turned off.");
+        }
 
         logger = getLogger();
         plugin = this;
@@ -216,28 +221,51 @@ public class PhatLoots extends JavaPlugin {
         if (pm.isPluginEnabled("Citizens")) {
             logger.info("Listening for Citizens NPC deaths");
             pm.registerEvents(new CitizensListener(), this);
+        } else if (isDebug()) {
+            debug("Plugin Citizens could not be found, support has been turned off.");
         }
         if (getConfig().getBoolean("LootBags")) {
             logger.info("Listening for Loot bags");
             pm.registerEvents(new LootBagListener(), this);
+        } else if (isDebug()) {
+            debug("LootBags have been turned off.");
         }
         if (getConfig().getBoolean("DispenserLoot")) {
             logger.info("Listening for Dispensers");
             pm.registerEvents(new DispenserListener(), this);
+        } else if (isDebug()) {
+            debug("DispenserLoot has been turned off.");
         }
 
         //Find and set the RegionHook
         String regionPlugin = getConfig().getString("RegionPlugin");
+        if (isDebug()) {
+            debug("RegionPlugin is set to " + regionPlugin);
+            debug("Registered Region plugins are " + regionHooks.keySet());
+        }
         if (regionPlugin.equals("auto")) {
             for (Entry<String, RegionHook> entry : regionHooks.entrySet()) {
                 regionPlugin = entry.getKey();
                 if (Bukkit.getPluginManager().isPluginEnabled(regionPlugin)) {
+                    if (isDebug()) {
+                        debug("Plugin " + regionPlugin + " has been found, applying associated RegionHook.");
+                    }
                     MobListener.regionHook = entry.getValue();
                     break;
+                } else if (isDebug()) {
+                    debug("Plugin " + regionPlugin + " could not be found, moving on...");
                 }
             }
+            if (isDebug()) {
+                debug("No compatiable plugins could be found, region support has been turned off");
+            }
         } else if (Bukkit.getPluginManager().isPluginEnabled(regionPlugin)) {
+            if (isDebug()) {
+                debug("Plugin " + regionPlugin + " has been found, applying associated RegionHook.");
+            }
             MobListener.regionHook = regionHooks.get(regionPlugin);
+        } else if (isDebug()) {
+            debug("Plugin " + regionPlugin + " could not be found, moving on...");
         }
 
         if (getConfig().getBoolean("MobDropLoot")) {
@@ -249,6 +277,8 @@ public class PhatLoots extends JavaPlugin {
                                   && MobListener.regionHook != null;
             if (listener.mobWorlds) {
                 sb.append(" w/ MultiWorld support");
+            } else if (isDebug()) {
+                debug("MultiWorld support has been turned off for Mob loot.");
             }
             if (listener.mobRegions) {
                 sb.append(listener.mobWorlds ? " and " : " w/ ");
@@ -257,6 +287,8 @@ public class PhatLoots extends JavaPlugin {
             }
             logger.info(sb.toString());
             pm.registerEvents(listener, this);
+        } else if (isDebug()) {
+            debug("Mob loot has been turned off.");
         }
         if (getConfig().getBoolean("MobSpawnLoot")) {
             StringBuilder sb = new StringBuilder();
@@ -267,6 +299,8 @@ public class PhatLoots extends JavaPlugin {
                                   && MobListener.regionHook != null;
             if (listener.mobWorlds) {
                 sb.append(" w/ MultiWorld support");
+            } else if (isDebug()) {
+                debug("MultiWorld support has been turned off for Mob armor/weapon spawning.");
             }
             if (listener.mobRegions) {
                 sb.append(listener.mobWorlds ? " and " : " w/ ");
@@ -275,15 +309,21 @@ public class PhatLoots extends JavaPlugin {
             }
             logger.info(sb.toString());
             pm.registerEvents(listener, this);
+        } else if (isDebug()) {
+            debug("Mob armor/weapon spawning has been turned off.");
         }
 
         if (getConfig().getBoolean("FishingLoot")) {
             logger.info("Listening for Players fishing");
             pm.registerEvents(new FishingListener(), this);
+        } else if (isDebug()) {
+            debug("Fishing loot has been turned off.");
         }
         if (getConfig().getBoolean("VotifierLoot")) {
             logger.info("Listening for Votifier votes");
             pm.registerEvents(new VoteListener(), this);
+        } else if (isDebug()) {
+            debug("Votifier loot has been turned off.");
         }
     }
 
@@ -295,6 +335,9 @@ public class PhatLoots extends JavaPlugin {
      */
     public static void registerRegionHook(String pluginName, RegionHook regionHook) {
         regionHooks.put(pluginName, regionHook);
+        if (isDebug()) {
+            debug("A RegionHook has been registered for " + pluginName);
+        }
     }
 
     /**
@@ -303,6 +346,9 @@ public class PhatLoots extends JavaPlugin {
     public static void load() {
         //Load each YAML file in the LootTables folder
         File dir = new File(dataFolder, "LootTables");
+        if (isDebug()) {
+            debug(dir.listFiles(PhatLootsUtil.YAML_FILTER).length + " loot table(s) have been found in " + dir.getPath());
+        }
         for (File file : dir.listFiles(PhatLootsUtil.YAML_FILTER)) {
             try {
                 String name = file.getName();
@@ -314,6 +360,9 @@ public class PhatLoots extends JavaPlugin {
                                                           ? name
                                                           : config.getKeys(false).iterator().next());
                 if (!phatLoot.name.equals(name)) {
+                    if (isDebug()) {
+                        debug("PhatLoot name (" + phatLoot.name + ") does not match file name (" + name + "), renaming PhatLoot to " + name);
+                    }
                     phatLoot.name = name;
                 }
                 phatLoots.put(name, phatLoot);
@@ -321,6 +370,9 @@ public class PhatLoots extends JavaPlugin {
             } catch (Exception ex) {
                 logger.log(Level.SEVERE, "Failed to load " + file.getName(), ex);
             }
+        }
+        if (isDebug()) {
+            debug(phatLoots.size() + " loot tables were succesfully loaded.");
         }
     }
 
@@ -575,5 +627,13 @@ public class PhatLoots extends JavaPlugin {
         } catch (CharacterCodingException e) {
             return false;
         }
+    }
+
+    public static boolean isDebug() {
+        return PhatLootsConfig.debug;
+    }
+
+    public static void debug(String msg) {
+        logger.info("DEBUG: " + msg);
     }
 }

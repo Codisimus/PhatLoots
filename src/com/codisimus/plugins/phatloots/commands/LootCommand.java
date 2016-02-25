@@ -11,11 +11,13 @@ import com.codisimus.plugins.phatloots.loot.Loot;
 import com.codisimus.plugins.phatloots.loot.LootCollection;
 import com.codisimus.plugins.phatloots.loot.Money;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
 import org.bukkit.command.CommandSender;
@@ -122,7 +124,7 @@ public class LootCommand {
     )
     public boolean link(Player player, PhatLoot phatLoot) {
         //Cancel if the player is not targeting a correct Block
-        Block block  = player.getTargetBlock(null, 10);
+        Block block  = player.getTargetBlock(EnumSet.noneOf(Material.class), 10);
         String blockName = block.getType().toString();
         if (!PhatLootsUtil.isLinkableType(block)) {
             player.sendMessage("§6" + blockName + "§4 is not a linkable type.");
@@ -175,7 +177,7 @@ public class LootCommand {
         permission = "phatloots.unlink"
     )
     public boolean unlink(Player player, PhatLoot phatLoot) {
-        Block block = player.getTargetBlock(null, 10);
+        Block block = player.getTargetBlock(EnumSet.noneOf(Material.class), 10);
         phatLoot.removeChest(block);
         player.sendMessage("§5Target §6" + block.getType().toString() + "§5 has been unlinked from PhatLoot §6" + phatLoot.name);
         phatLoot.saveChests();
@@ -625,7 +627,7 @@ public class LootCommand {
         permission = "phatloots.reset"
     )
     public boolean reset(Player player) {
-        Block block = player.getTargetBlock(null, 10);
+        Block block = player.getTargetBlock(EnumSet.noneOf(Material.class), 10);
         for (PhatLoot phatLoot : PhatLootsUtil.getPhatLoots(player)) {
             phatLoot.reset(block);
             player.sendMessage("§5Target §6" + block.getType().toString() + "§5 has been reset.");
@@ -662,7 +664,7 @@ public class LootCommand {
         permission = "phatloots.clean"
     )
     public boolean clean(Player player) {
-        Block block = player.getTargetBlock(null, 10);
+        Block block = player.getTargetBlock(EnumSet.noneOf(Material.class), 10);
         for (PhatLoot phatLoot : PhatLootsUtil.getPhatLoots(player)) {
             phatLoot.clean(block);
             player.sendMessage("§5Target §6" + block.getType().toString() + "§5 has been cleaned.");

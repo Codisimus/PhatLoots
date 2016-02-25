@@ -2,10 +2,12 @@ package com.codisimus.plugins.phatloots;
 
 import java.io.File;
 import java.io.FilenameFilter;
+import java.util.EnumSet;
 import java.util.LinkedList;
 import java.util.Random;
 import org.apache.commons.lang.WordUtils;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
 import org.bukkit.entity.Player;
@@ -173,7 +175,7 @@ public class PhatLootsUtil {
     public static LinkedList<PhatLoot> getPhatLoots(Player player) {
         LinkedList<PhatLoot> phatLoots = new LinkedList<>();
         //Cancel if the sender is not targeting a correct Block
-        Block block = player.getTargetBlock(null, 10);
+        Block block = player.getTargetBlock(EnumSet.noneOf(Material.class), 10);
         String blockName = block.getType().toString();
         if (!PhatLootsUtil.isLinkableType(block)) {
             player.sendMessage("§6" + blockName + "§4 is not a linkable type.");
