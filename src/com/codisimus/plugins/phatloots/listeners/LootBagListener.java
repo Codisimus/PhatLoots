@@ -9,6 +9,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.ItemMeta;
 
 /**
@@ -40,7 +41,15 @@ public class LootBagListener implements Listener {
                                     if (hand.getAmount() > 1) {
                                         hand.setAmount(hand.getAmount() - 1);
                                     } else {
-                                        event.getPlayer().getInventory().setItemInMainHand(new ItemStack(Material.AIR));
+                                        PlayerInventory inv = event.getPlayer().getInventory();
+                                        if (inv.getItemInMainHand().equals(hand)) {
+                                            inv.setItemInMainHand(new ItemStack(Material.AIR));
+                                        } else if (inv.getItemInOffHand().equals(hand)) {
+                                            inv.setItemInOffHand(new ItemStack(Material.AIR));
+                                        } else {
+                                            PhatLoots.logger.warning("Player attempted to use LootBag with an unexpected hand.");
+                                            return;
+                                        }
                                     }
                                     //Give loot to the player
                                     phatLoot.rollForLoot(event.getPlayer());
