@@ -104,7 +104,7 @@ public class LootCommandUtil {
      * @return The a LinkedList of PhatLoots
      */
     public static LinkedList<PhatLoot> getPhatLoots(CommandSender sender, String name) {
-        LinkedList<PhatLoot> phatLoots = new LinkedList<PhatLoot>();
+        LinkedList<PhatLoot> phatLoots = new LinkedList<>();
 
         if (name != null) {
             //Find the PhatLoot using the given name
@@ -187,6 +187,10 @@ public class LootCommandUtil {
                     if (enchant.getName().equalsIgnoreCase(split)) {
                         enchantment = enchant;
                     }
+                }
+
+                if (enchantment == null) {
+                    continue;
                 }
 
                 if (level < enchantment.getStartLevel()) {

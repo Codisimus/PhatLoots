@@ -8,6 +8,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.util.*;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -222,23 +223,23 @@ public class Item extends Loot {
         } else {
             details = new ArrayList();
         }
-        details.add("§1Probability: §6" + probability);
+        details.add(ChatColor.DARK_BLUE + "Probability: " + ChatColor.GOLD + probability);
         if (amountBonus == 0) {
-            details.add("§1Amount: §6" + item.getAmount());
+            details.add(ChatColor.DARK_BLUE + "Amount: " + ChatColor.GOLD + item.getAmount());
         } else {
-            details.add("§1Amount: §6" + item.getAmount() + '-' + (item.getAmount() + amountBonus));
+            details.add(ChatColor.DARK_BLUE + "Amount: " + ChatColor.GOLD + item.getAmount() + '-' + (item.getAmount() + amountBonus));
         }
         if (autoEnchant) {
-            details.add("§6Auto Enchanted");
+            details.add(ChatColor.GOLD + "Auto Enchanted");
         }
         if (generateName) {
-            details.add("§6Generated Name");
+            details.add(ChatColor.GOLD + "Generated Name");
         }
         if (randomLore) {
-            details.add("§6Random Lore");
+            details.add(ChatColor.GOLD + "Random Lore");
         }
         if (tieredName) {
-            details.add("§6Tiered Name");
+            details.add(ChatColor.GOLD + "Tiered Name");
         }
 
         //Construct the ItemStack and return it
@@ -412,14 +413,14 @@ public class Item extends Loot {
                                 String line = bReader.readLine();
                                 if (line != null) {
                                     if (line.charAt(0) == '&') {
-                                        line = line.replace('&', '§');
+                                        line = line.replace('&', ChatColor.COLOR_CHAR);
                                     }
 
                                     nameBuilder.append(line);
 
                                     List lore = new LinkedList();
                                     while ((line = bReader.readLine()) != null) {
-                                        line = line.replace('&', '§');
+                                        line = line.replace('&', ChatColor.COLOR_CHAR);
                                         lore.add(line);
                                     }
                                     meta.setLore(lore);

@@ -99,8 +99,8 @@ public class LootCommand {
     )
     public boolean linkHand(Player player, PhatLoot phatLoot) {
         //Cancel if the player is not holding an item
-        ItemStack item = player.getItemInHand();
-        if (item == null || item.getTypeId() == 0) {
+        ItemStack item = player.getInventory().getItemInMainHand();
+        if (item == null || item.getType() == Material.AIR) {
             return false;
         }
 
@@ -124,7 +124,7 @@ public class LootCommand {
     )
     public boolean link(Player player, PhatLoot phatLoot) {
         //Cancel if the player is not targeting a correct Block
-        Block block  = player.getTargetBlock(EnumSet.noneOf(Material.class), 10);
+        Block block  = player.getTargetBlock(EnumSet.of(Material.AIR), 10);
         String blockName = block.getType().toString();
         if (!PhatLootsUtil.isLinkableType(block)) {
             player.sendMessage("§6" + blockName + "§4 is not a linkable type.");
@@ -177,7 +177,7 @@ public class LootCommand {
         permission = "phatloots.unlink"
     )
     public boolean unlink(Player player, PhatLoot phatLoot) {
-        Block block = player.getTargetBlock(EnumSet.noneOf(Material.class), 10);
+        Block block = player.getTargetBlock(EnumSet.of(Material.AIR), 10);
         phatLoot.removeChest(block);
         player.sendMessage("§5Target §6" + block.getType().toString() + "§5 has been unlinked from PhatLoot §6" + phatLoot.name);
         phatLoot.saveChests();

@@ -175,7 +175,7 @@ public class PhatLootsUtil {
     public static LinkedList<PhatLoot> getPhatLoots(Player player) {
         LinkedList<PhatLoot> phatLoots = new LinkedList<>();
         //Cancel if the sender is not targeting a correct Block
-        Block block = player.getTargetBlock(EnumSet.noneOf(Material.class), 10);
+        Block block = player.getTargetBlock(EnumSet.of(Material.AIR), 10);
         String blockName = block.getType().toString();
         if (!PhatLootsUtil.isLinkableType(block)) {
             player.sendMessage("§6" + blockName + "§4 is not a linkable type.");

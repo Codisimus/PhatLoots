@@ -1,6 +1,5 @@
 package com.codisimus.plugins.phatloots;
 
-import com.codisimus.plugins.phatloots.addon.chestanimations.ChestAnimations;
 import com.codisimus.plugins.phatloots.events.ChestBreakEvent;
 import com.codisimus.plugins.phatloots.events.ChestRespawnEvent;
 import com.codisimus.plugins.phatloots.events.ChestRespawnEvent.RespawnReason;
@@ -515,17 +514,13 @@ public class PhatLootChest {
                     //Play for each Player in the World
                     for (Player p: player.getWorld().getPlayers()) {
                         p.playSound(loc, Sound.BLOCK_CHEST_OPEN, 0.75F, 0.95F);
-                        if (Bukkit.getPluginManager().isPluginEnabled("ChestAnimations")) {
-                            ChestAnimations.openChest(getBlock());
-                        }
+                        ChestAnimations.openChest(getBlock());
                     }
                 }
             } else {
                 //Play for only the individual Player
                 player.playSound(loc, Sound.BLOCK_CHEST_OPEN, 0.75F, 0.95F);
-                if (Bukkit.getPluginManager().isPluginEnabled("ChestAnimations")) {
-                    ChestAnimations.openChest(player, getBlock());
-                }
+                ChestAnimations.openChest(player, getBlock());
             }
             break;
         default: break;
@@ -564,9 +559,7 @@ public class PhatLootChest {
                         case TRAPPED_CHEST:
                         case ENDER_CHEST:
                             p.playSound(loc, Sound.BLOCK_CHEST_CLOSE, 0.75F, 0.95F);
-                            if (Bukkit.getPluginManager().isPluginEnabled("ChestAnimations")) {
-                                ChestAnimations.openChest(getBlock());
-                            }
+                            ChestAnimations.closeChest(getBlock());
                             break;
                         default:
                             break;
@@ -599,9 +592,7 @@ public class PhatLootChest {
                 case ENDER_CHEST:
                     //Play for only the individual Player
                     player.playSound(loc, Sound.BLOCK_CHEST_CLOSE, 0.75F, 0.95F);
-                    if (Bukkit.getPluginManager().isPluginEnabled("ChestAnimations")) {
-                        ChestAnimations.openChest(player, getBlock());
-                    }
+                    ChestAnimations.closeChest(player, getBlock());
                     break;
                 default:
                     break;

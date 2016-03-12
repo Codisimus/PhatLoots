@@ -298,7 +298,7 @@ public final class PhatLoot implements ConfigurationSerializable {
         double money = lootBundle.getMoney();
         if (money > 0) { //Reward
             if (PhatLoots.econ != null) {
-                EconomyResponse r = PhatLoots.econ.depositPlayer(player.getName(), money);
+                EconomyResponse r = PhatLoots.econ.depositPlayer(player, money);
                 if (r.transactionSuccess() && PhatLootsConfig.moneyLooted != null) {
                     String amount = PhatLoots.econ.format(money).replace(".00", "");
                     player.sendMessage(PhatLootsConfig.moneyLooted.replace("<amount>", amount));
@@ -309,7 +309,7 @@ public final class PhatLoot implements ConfigurationSerializable {
         } else if (money < 0) { //Cost
             money *= -1;
             if (PhatLoots.econ != null) {
-                EconomyResponse r = PhatLoots.econ.withdrawPlayer(player.getName(), money);
+                EconomyResponse r = PhatLoots.econ.withdrawPlayer(player, money);
                 String amount = PhatLoots.econ.format(money).replace(".00", "");
                 if (r.transactionSuccess()) {
                     if (PhatLootsConfig.moneyCharged != null) {
@@ -490,7 +490,7 @@ public final class PhatLoot implements ConfigurationSerializable {
         }
 
         //Get the weapon that caused the final blow
-        ItemStack weapon = player == null ? null : player.getItemInHand();
+        ItemStack weapon = player == null ? null : player.getInventory().getItemInMainHand();
         //The looting bonus is determined by the LOOT_BONUS_MOBS enchantment on the weapon
         double lootingBonus = weapon == null
                               ? 0
@@ -527,7 +527,7 @@ public final class PhatLoot implements ConfigurationSerializable {
             }
             if (money > 0) { //Reward
                 if (PhatLoots.econ != null) {
-                    EconomyResponse r = PhatLoots.econ.depositPlayer(player.getName(), money);
+                    EconomyResponse r = PhatLoots.econ.depositPlayer(player, money);
                     if (r.transactionSuccess() && PhatLootsConfig.moneyLooted != null) {
                         String amount = PhatLoots.econ.format(money).replace(".00", "");
                         player.sendMessage(PhatLootsConfig.mobDroppedMoney.replace("<amount>", amount));
@@ -538,7 +538,7 @@ public final class PhatLoot implements ConfigurationSerializable {
             } else if (money < 0) { //Cost
                 money *= -1;
                 if (PhatLoots.econ != null) {
-                    EconomyResponse r = PhatLoots.econ.withdrawPlayer(player.getName(), money);
+                    EconomyResponse r = PhatLoots.econ.withdrawPlayer(player, money);
                     String amount = PhatLoots.econ.format(money).replace(".00", "");
                     if (r.transactionSuccess()) {
                         if (PhatLootsConfig.moneyCharged != null) {
@@ -612,14 +612,14 @@ public final class PhatLoot implements ConfigurationSerializable {
         //Remove Minecraft spawned armor
         eqp.clear();
         //The order of equipment should be Hand, Head, Body, Legs, Feet
-        eqp.setItemInHand(loot.remove(0));
+        eqp.setItemInMainHand(loot.remove(0));
         eqp.setHelmet(loot.remove(0));
         eqp.setChestplate(loot.remove(0));
         eqp.setLeggings(loot.remove(0));
         eqp.setBoots(loot.remove(0));
 
         //Set the drop chance of each item
-        eqp.setItemInHandDropChance(chanceOfDrop);
+        eqp.setItemInMainHandDropChance(chanceOfDrop);
         eqp.setHelmetDropChance(chanceOfDrop);
         eqp.setChestplateDropChance(chanceOfDrop);
         eqp.setLeggingsDropChance(chanceOfDrop);

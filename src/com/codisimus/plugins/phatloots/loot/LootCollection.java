@@ -100,7 +100,7 @@ public class LootCollection extends Loot {
             name = (String) map.get(currentLine = "Name");
             lowerNumberOfLoots = (Integer) map.get(currentLine = "LowerNumberOfLoots");
             upperNumberOfLoots = (Integer) map.get(currentLine = "UpperNumberOfLoots");
-            lootList = new LinkedList<Loot>((List) map.get(currentLine = "LootList"));
+            lootList = new LinkedList<>((List) map.get(currentLine = "LootList"));
         } catch (Exception ex) {
             //Print debug messages
             PhatLoots.logger.severe("Failed to load LootCollection line: " + currentLine);

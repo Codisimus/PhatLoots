@@ -40,7 +40,7 @@ public class LootBagListener implements Listener {
                                     if (hand.getAmount() > 1) {
                                         hand.setAmount(hand.getAmount() - 1);
                                     } else {
-                                        event.getPlayer().setItemInHand(new ItemStack(Material.AIR));
+                                        event.getPlayer().getInventory().setItemInMainHand(new ItemStack(Material.AIR));
                                     }
                                     //Give loot to the player
                                     phatLoot.rollForLoot(event.getPlayer());
