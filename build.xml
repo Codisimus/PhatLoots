@@ -12,7 +12,7 @@
         <mkdir dir="${download.lib.dir}" />
 
         <get dest="${download.lib.dir}/spigot-api.jar">
-            <url url="https://hub.spigotmc.org/nexus/service/local/artifact/maven/redirect?r=snapshots&amp;g=org.spigotmc&amp;a=spigot-api&amp;v=LATEST&amp;c=shaded"/>
+            <url url="https://hub.spigotmc.org/nexus/service/local/artifact/maven/redirect?r=snapshots&amp;g=org.spigotmc&amp;a=spigot-api&amp;v=1.9-SNAPSHOT&amp;c=shaded"/>
         </get>
         <get dest="${download.lib.dir}">
             <url url="http://dev.bukkit.org/media/files/894/359/Vault.jar"/>
