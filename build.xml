@@ -23,7 +23,7 @@
         </get>
     </target>
 
-    <target name="compile-test" depends="download-dependencies">
+    <target name="compile-test" depends="-pre-pre-compile,download-dependencies">
         <property name="lib.dir" location="lib" />
         <path id="build.classpath">
             <fileset dir="${lib.dir}">
