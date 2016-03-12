@@ -26,7 +26,7 @@
         <property name="lib.dir" location="lib" />
         <path id="build.classpath">
             <fileset dir="${lib.dir}">
-                <include name="**/*.jar"/>
+                <include name="*.jar"/>
             </fileset>
         </path>
 
