@@ -12,20 +12,18 @@ after_success:
   - git push --quiet origin $GIT_TAG
 
 deploy:
-  provider: releases
-  prerelease: true
-  api_key: $AUTH_TOKEN
-  file: "dist/PhatLoots.jar"
-  skip_cleanup: true
-  on:
-    branch: master
-    tags: false
-
-deploy:
-  provider: releases
-  prerelease: false
-  api_key: $AUTH_TOKEN
-  file: "dist/PhatLoots.jar"
-  skip_cleanup: true
-  on:
-    tags: true
+  - provider: releases
+    prerelease: true
+    api_key: $AUTH_TOKEN
+    file: "dist/PhatLoots.jar"
+    skip_cleanup: true
+    on:
+      branch: master
+      tags: false
+  - provider: releases
+    prerelease: false
+    api_key: $AUTH_TOKEN
+    file: "dist/PhatLoots.jar"
+    skip_cleanup: true
+    on:
+      tags: true
