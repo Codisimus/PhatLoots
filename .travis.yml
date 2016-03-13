@@ -11,6 +11,7 @@ after_success:
   - export GIT_TAG=dev-build-$TRAVIS_BUILD_NUMBER
   - git tag $GIT_TAG -a -m "Generated tag from TravisCI build $TRAVIS_BUILD_NUMBER on $(date -u "+%Y-%m-%d-%H-%M-%S")"
   - git push --quiet origin $GIT_TAG
+  - push-javadoc-to-gh-pages.sh
 
 deploy:
   - provider: releases
