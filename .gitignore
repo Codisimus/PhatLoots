@@ -1,4 +1,7 @@
 /build/
 /build
 /lib/download/
-/nbproject/
+/nbproject/configs/
+/nbproject/project.xml
+/nbproject/project.properties
+/nbproject/genfiles.properties
