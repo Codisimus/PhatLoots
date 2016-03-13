@@ -32,7 +32,7 @@ before_deploy:
   - git config --global user.name "Travis CI"
   - export GIT_TAG=dev-build-$TRAVIS_BUILD_NUMBER
   - git tag $GIT_TAG -a -m "Generated tag from TravisCI build $TRAVIS_BUILD_NUMBER on $(date -u "+%Y-%m-%d-%H-%M-%S")"
-  - git push --quiet origin $GIT_TAG
+  - git push --quiet https://$AUTH_TOKEN@github.com/Codisimus/PhatLoots $GIT_TAG
 
 deploy:
   - provider: releases
