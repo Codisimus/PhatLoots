@@ -62,13 +62,6 @@ public class PhatLoots extends JavaPlugin {
 
     @Override
     public void onEnable () {
-        mythicDropsSupport = Bukkit.getPluginManager().isPluginEnabled("MythicDrops");
-        if (mythicDropsSupport) {
-            logger.info("Enabling MythicDrops support");
-        } else if (isDebug()) {
-            debug("Plugin MythicDrops could not be found, support has been turned off.");
-        }
-
         logger = getLogger();
         plugin = this;
 
@@ -115,6 +108,13 @@ public class PhatLoots extends JavaPlugin {
             } catch (IOException ex) {
                 logger.log(Level.WARNING, "Could not save resource: SampleLoot.yml", ex);
             }
+        }
+
+        mythicDropsSupport = Bukkit.getPluginManager().isPluginEnabled("MythicDrops");
+        if (mythicDropsSupport) {
+            logger.info("Enabling MythicDrops support");
+        } else if (isDebug()) {
+            debug("Plugin MythicDrops could not be found, support has been turned off.");
         }
 
         /* Register Buttons */
