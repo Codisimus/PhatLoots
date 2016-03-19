@@ -130,7 +130,7 @@ public class UnidentifiedItem extends Loot {
                               : Bukkit.getItemFactory().getItemMeta(material);
                 List<String> lore = meta.hasLore()
                                   ? meta.getLore()
-                                  : new ArrayList<>();
+                                  : new ArrayList<String>();
                 lore.add(ChatColor.BLACK + tierName);
                 meta.setLore(lore);
                 mis.setItemMeta(meta);
