@@ -125,8 +125,12 @@ public class UnidentifiedItem extends Loot {
                 }
 
                 //Place the tier name as the last line of lore
-                ItemMeta meta = Bukkit.getItemFactory().getItemMeta(material);
-                List<String> lore = new ArrayList<>();
+                ItemMeta meta = mis.hasItemMeta()
+                              ? mis.getItemMeta()
+                              : Bukkit.getItemFactory().getItemMeta(material);
+                List<String> lore = meta.hasLore()
+                                  ? meta.getLore()
+                                  : new ArrayList<>();
                 lore.add(ChatColor.BLACK + tierName);
                 meta.setLore(lore);
                 mis.setItemMeta(meta);
