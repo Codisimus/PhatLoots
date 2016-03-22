@@ -8,9 +8,8 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
-import org.bukkit.plugin.java.JavaPlugin;
 
-public class ChestAnimations extends JavaPlugin {
+public class ChestAnimations {
     private static final String VERSION = Bukkit.getServer().getClass().getPackage().getName().split("\\.")[3];
     private static final String NMS_PACKAGE = "net.minecraft.server." + VERSION + ".";
     private static final String CRAFTBUKKIT_PACKAGE = "org.bukkit.craftbukkit." + VERSION + ".";
@@ -29,6 +28,22 @@ public class ChestAnimations extends JavaPlugin {
 
     public static void closeChest(Player player, Block block) {
         playChestAction(player, block, false);
+    }
+    
+    public static void playChestActionNoReflection(Player player, Block block, boolean open) {
+        //Location location = block.getLocation();
+        //BlockPosition blockPosition = new BlockPosition(location.getX(), location.getY(), location.getZ());
+        //int openCode = open ? 1 : 0;
+
+        //if (player != null) {
+        //    net.minecraft.server.v1_9_R1.Block nmsBlock = CraftMagicNumbers.getBlock(block);
+        //    PacketPlayOutBlockAction packet = new PacketPlayOutBlockAction(blockPosition, nmsBlock, openCode, block.getTypeId());
+        //    ((CraftPlayer) player).getHandle().playerConnection.sendPacket(packet);
+        //} else {
+        //    World world = ((CraftWorld) location.getWorld()).getHandle();
+        //    TileEntityChest tileChest = (TileEntityChest) world.getTileEntity(blockPosition);
+        //    world.playBlockAction(blockPosition, tileChest.getBlock(), 1, openCode);
+        //}
     }
 
     public static void playChestAction(Player player, Block block, boolean open) {
