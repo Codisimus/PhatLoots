@@ -10,7 +10,6 @@ import com.tealcube.minecraft.bukkit.mythicdrops.tiers.TierMap;
 import com.tealcube.minecraft.bukkit.mythicdrops.utils.ItemStackUtil;
 import com.tealcube.minecraft.bukkit.mythicdrops.utils.ItemUtil;
 import com.tealcube.minecraft.bukkit.mythicdrops.utils.TierUtil;
-import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.configuration.serialization.SerializableAs;
@@ -27,6 +26,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 public class UnidentifiedItem extends Loot {
     private static final String RANDOM_TIER = "RANDOM";
     private static ArrayList<String> tierList = null;
+    public static String tierPrefix;
     public String tierName;
     public int amountLower = 1;
     public int amountUpper = 1;
@@ -131,7 +131,7 @@ public class UnidentifiedItem extends Loot {
                 List<String> lore = meta.hasLore()
                                   ? meta.getLore()
                                   : new ArrayList<String>();
-                lore.add(ChatColor.BLACK + tierName);
+                lore.add(tierPrefix + tierName);
                 meta.setLore(lore);
                 mis.setItemMeta(meta);
 

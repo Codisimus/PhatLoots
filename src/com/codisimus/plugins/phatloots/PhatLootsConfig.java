@@ -5,6 +5,7 @@ import com.codisimus.plugins.phatloots.listeners.MobListener;
 import com.codisimus.plugins.phatloots.listeners.PhatLootsListener;
 import com.codisimus.plugins.phatloots.loot.Item;
 import com.codisimus.plugins.phatloots.loot.LootCollection;
+import com.codisimus.plugins.phatloots.loot.UnidentifiedItem;
 import java.io.File;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -57,7 +58,7 @@ public class PhatLootsConfig {
         FileConfiguration config = PhatLoots.plugin.getConfig();
 
         //Check for an outdated config.yml file
-        if (config.get("Debug", null) == null) {
+        if (config.get("MythicDropsTierColor", null) == null) {
             PhatLoots.logger.warning("Your config.yml file is outdated! To get the most out of this plugin please (re)move the old file so a new one can be generated.");
         }
 
@@ -123,6 +124,8 @@ public class PhatLootsConfig {
         lootBroadcast = getString(section, "LootBroadcast");
 
         PhatLootChest.chestName = getString(config, "ChestName");
+
+        UnidentifiedItem.tierPrefix = getString(config, "MythicDropsTierColor");
 
 
         /* TAGS */

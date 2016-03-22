@@ -153,6 +153,12 @@ UseDamageTags: true
 <blastdef>: '&1+<amount> explosion defense'
 <falldef>: '&b+<amount> fall defense'
 
+##If using MythicDrops, UnidentifiedItems display their Tier in the lore
+##By default, this text will be black to somewhat hide it
+##You can set the color below if you wish to make it more or less visible
+##Multiple color codes are valid such as '&k&0' or '&l&n&d'
+MythicDropsTierColor: '&0'
+
 
 ################## DEFAULTS ##################
 
