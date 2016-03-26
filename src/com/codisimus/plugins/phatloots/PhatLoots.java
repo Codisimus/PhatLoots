@@ -179,15 +179,6 @@ public class PhatLoots extends JavaPlugin {
                 }
             }.runTaskTimer(this, autoSavePeriod, autoSavePeriod);
         }
-
-        Properties version = new Properties();
-        try {
-            version.load(this.getResource("version.properties"));
-        } catch (Exception ex) {
-            logger.warning("version.properties file not found within jar");
-        }
-        logger.info("PhatLoots " + getDescription().getVersion() + " (Build "
-                    + version.getProperty("Build") + ") is enabled!");
     }
 
     /**
