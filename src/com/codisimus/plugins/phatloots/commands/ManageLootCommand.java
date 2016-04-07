@@ -358,9 +358,8 @@ public class ManageLootCommand {
         String coll = null; //The Collection to add the Loot to
         int lowerBound = 1; //Stack size of the Loot item (defaulted to 1)
         int upperBound = 1; //Amount to possibly increase the Stack size of the Loot item (defaulted to 1)
-        int durabilityLowerBound = -1; //Durability/damage of the Loot item (defaulted to -1 to indicate full)
-        int durabilityUpperBound = -1; //Durability/damage of the Loot item (defaulted to -1 to indicate full)
-        int upperBound = 1; //Amount to possibly increase the Stack size of the Loot item (defaulted to 1)
+        short durabilityLowerBound = -1; //Durability/damage of the Loot item (defaulted to -1 to indicate full)
+        short durabilityUpperBound = -1; //Durability/damage of the Loot item (defaulted to -1 to indicate full)
         boolean autoEnchant = false; //Whether or not the Loot Item should be automatically enchanted at time of Looting
         boolean tiered = false; //Whether or not the Loot Item should be Tiered
         boolean generateName = false; //Whether or not the Loot Item should have a generated name
