@@ -410,8 +410,8 @@ public class ManageLootCommand {
                 break;
 
             case 'd': //Durability
-                durabilityLowerBound = LootCommandUtil.getLowerBound(s);
-                durabilityUpperBound = LootCommandUtil.getUpperBound(s);
+                durabilityLowerBound = (short) LootCommandUtil.getLowerBound(s);
+                durabilityUpperBound = (short) LootCommandUtil.getUpperBound(s);
                 if (durabilityLowerBound == -1 || durabilityUpperBound == -1) {
                     sender.sendMessage("§6" + s + "§4 is not a valid number or range");
                     return;
@@ -436,8 +436,8 @@ public class ManageLootCommand {
 
         //Construct the Loot
         Item loot = new Item(item, upperBound - lowerBound);
-        item.setDurability(durabilityLowerBound);
-        item.durabilityBonus = durabilityUpperBound - durabilityLowerBound;
+        loot.setDurability(durabilityLowerBound);
+        loot.durabilityBonus = durabilityUpperBound - durabilityLowerBound;
         if (autoEnchant) {
             loot.autoEnchant = true;
         }
