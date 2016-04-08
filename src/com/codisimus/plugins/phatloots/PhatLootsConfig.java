@@ -1,6 +1,7 @@
 package com.codisimus.plugins.phatloots;
 
 import com.codisimus.plugins.phatloots.commands.LootCommand;
+import com.codisimus.plugins.phatloots.gui.InventoryListener;
 import com.codisimus.plugins.phatloots.listeners.MobListener;
 import com.codisimus.plugins.phatloots.listeners.PhatLootsListener;
 import com.codisimus.plugins.phatloots.loot.Item;
@@ -53,6 +54,8 @@ public class PhatLootsConfig {
     public static String mobDroppedExperience;
     public static String lootMessage;
     public static String lootBroadcast;
+
+    public static String tierPrefix;
 
     public static void load() {
         FileConfiguration config = PhatLoots.plugin.getConfig();
@@ -125,7 +128,7 @@ public class PhatLootsConfig {
 
         PhatLootChest.chestName = getString(config, "ChestName");
 
-        UnidentifiedItem.tierPrefix = getString(config, "MythicDropsTierColor");
+        tierPrefix = getString(config, "MythicDropsTierColor");
 
 
         /* TAGS */

@@ -2,6 +2,7 @@ package com.codisimus.plugins.phatloots.loot;
 
 import com.codisimus.plugins.phatloots.PhatLoot;
 import com.codisimus.plugins.phatloots.PhatLoots;
+import com.codisimus.plugins.phatloots.PhatLootsConfig;
 import com.codisimus.plugins.phatloots.PhatLootsUtil;
 import com.codisimus.plugins.phatloots.gui.Tool;
 import java.util.*;
@@ -26,7 +27,6 @@ import org.bukkit.inventory.meta.ItemMeta;
 public class UnidentifiedItem extends Loot {
     private static final String RANDOM_TIER = "RANDOM";
     private static ArrayList<String> tierList = null;
-    public static String tierPrefix;
     public String tierName;
     public int amountLower = 1;
     public int amountUpper = 1;
@@ -131,7 +131,7 @@ public class UnidentifiedItem extends Loot {
                 List<String> lore = meta.hasLore()
                                   ? meta.getLore()
                                   : new ArrayList<String>();
-                lore.add(tierPrefix + tierName);
+                lore.add(PhatLootsConfig.tierPrefix + tierName);
                 meta.setLore(lore);
                 mis.setItemMeta(meta);
 
