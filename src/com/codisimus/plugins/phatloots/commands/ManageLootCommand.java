@@ -358,6 +358,8 @@ public class ManageLootCommand {
         String coll = null; //The Collection to add the Loot to
         int lowerBound = 1; //Stack size of the Loot item (defaulted to 1)
         int upperBound = 1; //Amount to possibly increase the Stack size of the Loot item (defaulted to 1)
+        short durabilityLowerBound = -1; //Durability/damage of the Loot item (defaulted to -1 to indicate full)
+        short durabilityUpperBound = -1; //Durability/damage of the Loot item (defaulted to -1 to indicate full)
         boolean autoEnchant = false; //Whether or not the Loot Item should be automatically enchanted at time of Looting
         boolean tiered = false; //Whether or not the Loot Item should be Tiered
         boolean generateName = false; //Whether or not the Loot Item should have a generated name
@@ -408,12 +410,12 @@ public class ManageLootCommand {
                 break;
 
             case 'd': //Durability
-                short data = LootCommandUtil.getData(s);
-                if (data == -1) {
-                    sender.sendMessage("§6" + s + "§4 is not a valid data/durability value");
+                durabilityLowerBound = (short) LootCommandUtil.getLowerBound(s);
+                durabilityUpperBound = (short) LootCommandUtil.getUpperBound(s);
+                if (durabilityLowerBound == -1 || durabilityUpperBound == -1) {
+                    sender.sendMessage("§6" + s + "§4 is not a valid number or range");
                     return;
                 }
-                item.setDurability(data);
                 break;
 
             case 't': //Tiered
@@ -434,6 +436,8 @@ public class ManageLootCommand {
 
         //Construct the Loot
         Item loot = new Item(item, upperBound - lowerBound);
+        loot.setDurability(durabilityLowerBound);
+        loot.durabilityBonus = durabilityUpperBound - durabilityLowerBound;
         if (autoEnchant) {
             loot.autoEnchant = true;
         }
