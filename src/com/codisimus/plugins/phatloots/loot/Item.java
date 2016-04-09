@@ -17,6 +17,7 @@ import org.bukkit.enchantments.Enchantment;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.inventory.meta.SkullMeta;
 
 /**
  * An Item is the Loot representation of an ItemStack
@@ -989,6 +990,16 @@ public class Item extends Loot {
     public Map<String, Object> serialize() {
         Map map = new TreeMap();
         map.put("Probability", probability);
+        //Hack to serialize Skulls with null owner
+        if (item.getType() == Material.SKULL_ITEM) {
+            if (item.hasItemMeta()) {
+                SkullMeta meta = (SkullMeta) item.getItemMeta();
+                if (meta.getOwner() == null) {
+                    meta.setOwner("null");
+                    item.setItemMeta(meta);
+                }
+            }
+        }
         map.put("ItemStack", item);
         if (amountBonus > 0) {
             map.put("BonusAmount", amountBonus);

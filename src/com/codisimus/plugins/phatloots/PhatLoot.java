@@ -490,7 +490,7 @@ public final class PhatLoot implements ConfigurationSerializable {
         }
 
         //Get the weapon that caused the final blow
-        ItemStack weapon = player == null ? null : player.getInventory().getItemInMainHand();
+        ItemStack weapon = player == null ? null : player.getInventory().getItemInHand();
         //The looting bonus is determined by the LOOT_BONUS_MOBS enchantment on the weapon
         double lootingBonus = weapon == null
                               ? 0
@@ -612,14 +612,14 @@ public final class PhatLoot implements ConfigurationSerializable {
         //Remove Minecraft spawned armor
         eqp.clear();
         //The order of equipment should be Hand, Head, Body, Legs, Feet
-        eqp.setItemInMainHand(loot.remove(0));
+        eqp.setItemInHand(loot.remove(0));
         eqp.setHelmet(loot.remove(0));
         eqp.setChestplate(loot.remove(0));
         eqp.setLeggings(loot.remove(0));
         eqp.setBoots(loot.remove(0));
 
         //Set the drop chance of each item
-        eqp.setItemInMainHandDropChance(chanceOfDrop);
+        eqp.setItemInHandDropChance(chanceOfDrop);
         eqp.setHelmetDropChance(chanceOfDrop);
         eqp.setChestplateDropChance(chanceOfDrop);
         eqp.setLeggingsDropChance(chanceOfDrop);

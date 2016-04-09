@@ -42,10 +42,10 @@ public class LootBagListener implements Listener {
                                         hand.setAmount(hand.getAmount() - 1);
                                     } else {
                                         PlayerInventory inv = event.getPlayer().getInventory();
-                                        if (inv.getItemInMainHand().equals(hand)) {
-                                            inv.setItemInMainHand(new ItemStack(Material.AIR));
-                                        } else if (inv.getItemInOffHand().equals(hand)) {
-                                            inv.setItemInOffHand(new ItemStack(Material.AIR));
+                                        if (inv.getItemInHand().equals(hand)) {
+                                            inv.setItemInHand(new ItemStack(Material.AIR));
+                                        } else if (inv.getItemInHand().equals(hand)) {
+                                            inv.setItemInHand(new ItemStack(Material.AIR));
                                         } else {
                                             PhatLoots.logger.warning("Player attempted to use LootBag with an unexpected hand.");
                                             return;

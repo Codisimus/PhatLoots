@@ -271,7 +271,7 @@ public class PhatLootChest {
         }
 
         if (soundOnBreak) {
-            block.getWorld().playSound(block.getLocation(), Sound.ENTITY_ZOMBIE_BREAK_DOOR_WOOD, 1, 1);
+            block.getWorld().playSound(block.getLocation(), Sound.ZOMBIE_WOODBREAK, 1, 1);
         }
     }
 
@@ -513,13 +513,13 @@ public class PhatLootChest {
                 if (inv.getViewers().size() <= 1) { //First viewer
                     //Play for each Player in the World
                     for (Player p: player.getWorld().getPlayers()) {
-                        p.playSound(loc, Sound.BLOCK_CHEST_OPEN, 0.75F, 0.95F);
+                        p.playSound(loc, Sound.CHEST_OPEN, 0.75F, 0.95F);
                         ChestAnimations.openChest(getBlock());
                     }
                 }
             } else {
                 //Play for only the individual Player
-                player.playSound(loc, Sound.BLOCK_CHEST_OPEN, 0.75F, 0.95F);
+                player.playSound(loc, Sound.CHEST_OPEN, 0.75F, 0.95F);
                 ChestAnimations.openChest(player, getBlock());
             }
             break;
@@ -558,7 +558,7 @@ public class PhatLootChest {
                         case CHEST:
                         case TRAPPED_CHEST:
                         case ENDER_CHEST:
-                            p.playSound(loc, Sound.BLOCK_CHEST_CLOSE, 0.75F, 0.95F);
+                            p.playSound(loc, Sound.CHEST_CLOSE, 0.75F, 0.95F);
                             ChestAnimations.closeChest(getBlock());
                             break;
                         default:
@@ -591,7 +591,7 @@ public class PhatLootChest {
                 case TRAPPED_CHEST:
                 case ENDER_CHEST:
                     //Play for only the individual Player
-                    player.playSound(loc, Sound.BLOCK_CHEST_CLOSE, 0.75F, 0.95F);
+                    player.playSound(loc, Sound.CHEST_CLOSE, 0.75F, 0.95F);
                     ChestAnimations.closeChest(player, getBlock());
                     break;
                 default:

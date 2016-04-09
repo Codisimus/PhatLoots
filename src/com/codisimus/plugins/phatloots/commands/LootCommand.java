@@ -99,7 +99,7 @@ public class LootCommand {
     )
     public boolean linkHand(Player player, PhatLoot phatLoot) {
         //Cancel if the player is not holding an item
-        ItemStack item = player.getInventory().getItemInMainHand();
+        ItemStack item = player.getInventory().getItemInHand();
         if (item == null || item.getType() == Material.AIR) {
             return false;
         }

@@ -42,7 +42,7 @@ public class ManageLootCommand {
         permission = "phatloots.manage"
     )
     public boolean addHand(Player player, String[] args) {
-        setItem(player, true, player.getInventory().getItemInMainHand().clone(), args);
+        setItem(player, true, player.getInventory().getItemInHand().clone(), args);
         return true;
     }
 
@@ -206,7 +206,7 @@ public class ManageLootCommand {
         permission = "phatloots.manage"
     )
     public boolean removeHand(Player player, String[] args) {
-        setItem(player, false, player.getInventory().getItemInMainHand(), args);
+        setItem(player, false, player.getInventory().getItemInHand(), args);
         return true;
     }
 
