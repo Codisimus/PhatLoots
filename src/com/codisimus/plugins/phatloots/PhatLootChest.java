@@ -538,68 +538,41 @@ public class PhatLootChest {
     public void closeInventory(Player player, Inventory inv, boolean global) {
         openPhatLootChests.remove(player.getUniqueId());
         player.closeInventory();
+        if (inv.getViewers().size() > 0) {
+            return;
+        }
 
-        switch (getBlock().getType()) {
+        Block block = getBlock();
+        Location loc = block.getLocation();
+        switch (block.getType()) {
         case TRAPPED_CHEST:
             //Trigger redstone
-            for (Block block : findRedstone(getBlock(), true)) {
-                trigger(block);
+            for (Block neighbor : findRedstone(getBlock(), true)) {
+                trigger(neighbor);
             }
-        case ENDER_CHEST:
         case CHEST:
-            //Play chest animations
-            Block block = getBlock();
-            Location loc = block.getLocation();
+        case ENDER_CHEST:
             if (global) {
-                if (inv.getViewers().size() < 1) { //Last viewer
-                    //Play for each Player in the World
-                    for (Player p: player.getWorld().getPlayers()) {
-                        switch (block.getType()) {
-                        case CHEST:
-                        case TRAPPED_CHEST:
-                        case ENDER_CHEST:
-                            p.playSound(loc, Sound.BLOCK_CHEST_CLOSE, 0.75F, 0.95F);
-                            ChestAnimations.closeChest(getBlock());
-                            break;
-                        default:
-                            break;
-                        }
-                    }
-
-                    //Return if not using the Break and Respawn setting
-                    if (!useBreakAndRepawn) {
-                        return;
-                    }
-
-                    //Return if the Inventory is not empty
-                    for (ItemStack item : inv.getContents()) {
-                        if (item != null && item.getTypeId() != 0) {
-                            return;
-                        }
-                    }
-
-                    long time = getResetTime();
-
-                    //Don't break the chest if it will respawn in 1 second or less
-                    if (time > 20) {
-                        breakChest(player, time);
-                    }
-                }
+                block.getWorld().playSound(loc, Sound.BLOCK_CHEST_CLOSE, 0.75F, 0.95F);
+                ChestAnimations.closeChest(getBlock());
             } else {
-                switch (block.getType()) {
-                case CHEST:
-                case TRAPPED_CHEST:
-                case ENDER_CHEST:
-                    //Play for only the individual Player
-                    player.playSound(loc, Sound.BLOCK_CHEST_CLOSE, 0.75F, 0.95F);
-                    ChestAnimations.closeChest(player, getBlock());
-                    break;
-                default:
-                    break;
-                }
+                //Play for only the individual Player
+                player.playSound(loc, Sound.BLOCK_CHEST_CLOSE, 0.75F, 0.95F);
+                ChestAnimations.closeChest(player, getBlock());
             }
             break;
-        default: break;
+        default:
+            break;
+        }
+
+        if (useBreakAndRepawn) {
+            //Return if the Inventory is not empty
+            for (ItemStack item : inv.getContents()) {
+                if (item != null && item.getType() != Material.AIR) {
+                    return;
+                }
+            }
+            breakChest(player, getResetTime());
         }
     }
 
