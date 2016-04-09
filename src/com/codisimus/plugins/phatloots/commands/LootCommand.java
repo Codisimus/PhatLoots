@@ -18,6 +18,7 @@ import java.util.List;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
 import org.bukkit.command.CommandSender;
@@ -596,24 +597,67 @@ public class LootCommand {
 
     @CodCommand(
         command = "give",
+        subcommand = "all",
         weight = 150,
         usage = {
-            "§2<command> <Player> <PhatLoot> [Title]§b Force Player to loot a PhatLoot"
+            "§2<command> all <PhatLoot> [Title]§b Force all Players to loot a PhatLoot"
         },
         permission = "phatloots.give"
     )
-    public boolean give(CommandSender sender, Player player, PhatLoot phatLoot, String title) {
-        phatLoot.rollForLoot(player, ChatColor.translateAlternateColorCodes('&', title));
+    public boolean give(CommandSender sender, PhatLoot phatLoot) {
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            phatLoot.rollForLoot(player, phatLoot.name);
+        }
+        sender.sendMessage("§5PhatLoot §6" + phatLoot.name + "§5 given to §6all Players");
+        return true;
+    }
+    @CodCommand(command = "give", subcommand = "all", weight = 150.1, minArgs = 1)
+    public boolean give(CommandSender sender, PhatLoot phatLoot, String[] titleArray) {
+        String title = ChatColor.translateAlternateColorCodes('&', PhatLootsUtil.concatArgs(titleArray));
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            phatLoot.rollForLoot(player, title);
+        }
+        sender.sendMessage("§5PhatLoot §6" + phatLoot.name + "§5 given to §6all Players");
+        return true;
+    }
+
+    @CodCommand(
+        command = "give",
+        weight = 151,
+        usage = {
+            "§2<command> <Player> <PhatLoot> [Title]§b Force Player to loot a PhatLoot",
+            "§2<command> <World> <PhatLoot> [Title]§b Force all Players in a world to loot a PhatLoot"
+        },
+        permission = "phatloots.give"
+    )
+    public boolean give(CommandSender sender, Player player, PhatLoot phatLoot) {
+        phatLoot.rollForLoot(player, phatLoot.name);
         sender.sendMessage("§5PhatLoot §6" + phatLoot.name + "§5 given to §6" + player.getName());
         return true;
     }
-    @CodCommand(command = "give", weight = 150.1)
-    public boolean give(CommandSender sender, Player player, PhatLoot phatLoot) {
-        return give(sender, player, phatLoot, phatLoot.name);
+    @CodCommand(command = "give", weight = 151.1, minArgs = 1)
+    public boolean give(CommandSender sender, Player player, PhatLoot phatLoot, String[] titleArray) {
+        String title = ChatColor.translateAlternateColorCodes('&', PhatLootsUtil.concatArgs(titleArray));
+        phatLoot.rollForLoot(player, title);
+        sender.sendMessage("§5PhatLoot §6" + phatLoot.name + "§5 given to §6" + player.getName());
+        return true;
     }
-    @CodCommand(command = "give", weight = 150.2, minArgs = 1)
-    public boolean give(CommandSender sender, Player player, PhatLoot phatLoot, String[] title) {
-        return give(sender, player, phatLoot, PhatLootsUtil.concatArgs(title));
+    @CodCommand(command = "give", weight = 152)
+    public boolean give(CommandSender sender, World world, PhatLoot phatLoot) {
+        for (Player player : world.getPlayers()) {
+            phatLoot.rollForLoot(player, phatLoot.name);
+        }
+        sender.sendMessage("§5PhatLoot §6" + phatLoot.name + "§5 given to all Players in §6" + world.getName());
+        return true;
+    }
+    @CodCommand(command = "give", weight = 152.1, minArgs = 1)
+    public boolean give(CommandSender sender, World world, PhatLoot phatLoot, String[] titleArray) {
+        String title = ChatColor.translateAlternateColorCodes('&', PhatLootsUtil.concatArgs(titleArray));
+        for (Player player : world.getPlayers()) {
+            phatLoot.rollForLoot(player, title);
+        }
+        sender.sendMessage("§5PhatLoot §6" + phatLoot.name + "§5 given to all Players in §6" + world.getName());
+        return true;
     }
 
     @CodCommand(

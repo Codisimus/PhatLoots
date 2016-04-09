@@ -21,7 +21,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 public class CommandHandler implements CommandExecutor {
     private static enum ParameterType {
         STRING, INT, DOUBLE, BOOLEAN, MATERIAL, PLAYER, OFFLINEPLAYER,
-        PHATLOOT;
+        WORLD, PHATLOOT;
 
         public static ParameterType getType(Class parameter) {
             try {
@@ -315,6 +315,8 @@ public class CommandHandler implements CommandExecutor {
                 return Bukkit.getPlayer(argument);
             case OFFLINEPLAYER:
                 return Bukkit.getOfflinePlayer(argument);
+            case WORLD:
+                return Bukkit.getWorld(argument);
             case PHATLOOT:
                 return PhatLoots.getPhatLoot(argument);
             default:
