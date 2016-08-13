@@ -19,7 +19,7 @@ before_script:
       git push --quiet https://$AUTH_TOKEN@github.com/Codisimus/PhatLoots
     else
       echo -e "Appending build number to version for dev build...\n"
-      sed -e "3s/$/+$TRAVIS_BUILD_NUMBER/"
+      sed -e "3s/$/+$TRAVIS_BUILD_NUMBER/" $HOME/src/plugin.yml
     fi
 
 after_deploy:
