@@ -14,7 +14,7 @@ before_script:
       git config --global user.email "travis@travis-ci.org"
       git config --global user.name "travis-ci"
 
-      git add -f $HOME/src/plugin.yml
+      git add -f ./src/plugin.yml
       git commit -m "Updated version for build release"
       git push --quiet https://$AUTH_TOKEN@github.com/Codisimus/PhatLoots
     else
