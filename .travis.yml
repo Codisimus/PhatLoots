@@ -9,7 +9,7 @@ before_script:
   |
     if [ ! -z "$TRAVIS_TAG" ]; then
       echo -e "Incrementing version for release build...\n"
-      sed -i "3s/.*/version: $TRAVIS_TAG/" $TRAVIS_BUILD_DIR/src/plugin.yml
+      sed -i "/^version:/ s/.*/version: $TRAVIS_TAG/" $TRAVIS_BUILD_DIR/src/plugin.yml
 
       git config --global user.email "travis@travis-ci.org"
       git config --global user.name "travis-ci"
@@ -19,7 +19,7 @@ before_script:
       git push --quiet https://$AUTH_TOKEN@github.com/Codisimus/PhatLoots
     else
       echo -e "Appending build number to version for dev build...\n"
-      sed -e "3s/$/+$TRAVIS_BUILD_NUMBER/" $TRAVIS_BUILD_DIR/src/plugin.yml
+      sed -i "/^version:/ s/$/+$TRAVIS_BUILD_NUMBER/" $TRAVIS_BUILD_DIR/src/plugin.yml
       cat $TRAVIS_BUILD_DIR/src/plugin.yml
     fi
 
