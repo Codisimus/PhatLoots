@@ -20,6 +20,7 @@ before_script:
     else
       echo -e "Appending build number to version for dev build...\n"
       sed -e "3s/$/+$TRAVIS_BUILD_NUMBER/" $TRAVIS_BUILD_DIR/src/plugin.yml
+      cat $TRAVIS_BUILD_DIR/src/plugin.yml
     fi
 
 after_deploy:
