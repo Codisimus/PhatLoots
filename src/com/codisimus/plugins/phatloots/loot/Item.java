@@ -159,6 +159,9 @@ public class Item extends Loot {
             Object number = map.get(currentLine = "Probability");
             probability = (number instanceof Double) ? (Double) number : (Integer) number;
             item = (ItemStack) map.get(currentLine = "ItemStack");
+            if (item == null) {
+                throw new RuntimeException("ItemStack cannot be null");
+            }
             if (map.containsKey(currentLine = "BonusAmount")) {
                 amountBonus = (Integer) map.get(currentLine);
             }
