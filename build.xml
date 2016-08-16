@@ -16,7 +16,7 @@
         </get>-->
         <get dest="${download.lib.dir}">
             <url url="http://dev.bukkit.org/media/files/894/359/Vault.jar"/>
-            <url url="http://ci.citizensnpcs.co/job/CitizensAPI/lastSuccessfulBuild/artifact/target/citizensapi-2.0.17-SNAPSHOT.jar"/>
+            <url url="http://ci.citizensnpcs.co/job/CitizensAPI/lastSuccessfulBuild/artifact/target/citizensapi-2.0.20-SNAPSHOT.jar"/>
             <url url="http://dev.bukkit.org/media/files/619/372/Votifier.jar"/>
             <url url="http://dev.bukkit.org/media/files/881/691/worldguard-6.1.jar"/>
             <url url="http://dev.bukkit.org/media/files/880/435/worldedit-bukkit-6.1.jar"/>
