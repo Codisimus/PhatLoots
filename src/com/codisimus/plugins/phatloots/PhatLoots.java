@@ -316,26 +316,7 @@ public class PhatLoots extends JavaPlugin {
         } else if (isDebug()) {
             debug("Votifier loot has been turned off.");
         }
-        if (SpilledLootListener.claimMobLoot || SpilledLootListener.claimSpilledLoot) {
-            StringBuilder sb = new StringBuilder();
-            sb.append("Loot spilled");
-            if (SpilledLootListener.claimMobLoot) {
-                sb.append(" from mobs");
-            } else if (isDebug()) {
-                debug("Loot claiming has been turned off for mob drops");
-            }
-            if (SpilledLootListener.claimSpilledLoot) {
-                sb.append(SpilledLootListener.claimMobLoot ? " and" : " from");
-                sb.append(" chests");
-            } else if (isDebug()) {
-                debug("Loot claiming has been turned off for overflowing chests");
-            }
-            sb.append(" will be claimed");
-            logger.info(sb.toString());
-            pm.registerEvents(new SpilledLootListener(), plugin);
-        } else if (isDebug()) {
-            debug("Loot claiming has been turned off for mob drops and overflowing chests");
-        }
+
         List<Double> bonusPermList = getConfig().getDoubleList("LootBonusPermissions");
         if (!bonusPermList.isEmpty()) {
             LootingBonusListener listener = new LootingBonusListener();
