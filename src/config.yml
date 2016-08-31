@@ -108,6 +108,18 @@ RegionGroup:
 
 
 
+############### FEATURE FLAGS ################
+
+#When looting, if a Player has one of the specified permissions,
+#then they will have an increased probability of looting better/more items
+#Permission based bonuses stack with each other and on top of existing bonuses 
+#Enter comma delimited numbers between the brackets to register those nodes
+#i.e. with [10, 20, 0.5] a Player with the node phatloots.bonus.10 will
+#have 10 added to each of their rolls resulting in rarer loot
+LootBonusPermissions: []
+
+
+
 ################## MESSAGES ##################
 
 ##These are the messages that Players will see while using PhatLoots
