@@ -3,9 +3,11 @@ package com.codisimus.plugins.phatloots.loot;
 import com.codisimus.plugins.phatloots.PhatLoot;
 import com.codisimus.plugins.phatloots.PhatLoots;
 import com.codisimus.plugins.phatloots.PhatLootsCommandSender;
+import com.codisimus.plugins.phatloots.PhatLootsUtil;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.TreeMap;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -14,6 +16,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.scheduler.BukkitRunnable;
 
 /**
  * A CommandLoot is a Command which may be executed from the player or the console
@@ -24,6 +27,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 public class CommandLoot extends Loot {
     private static PhatLootsCommandSender cs = new PhatLootsCommandSender();
     public String command;
+    public long delay = 0;
     public boolean fromConsole;
     public boolean tempOP;
 
@@ -59,6 +63,9 @@ public class CommandLoot extends Loot {
         try {
             probability = (Double) map.get(currentLine = "Probability");
             command = (String) map.get(currentLine = "Command");
+            if (map.containsKey(currentLine = "Delay")) {
+                delay = ((Number) map.get(currentLine)).longValue();
+            }
             fromConsole = (Boolean) map.get(currentLine = "FromConsole");
             tempOP = (Boolean) map.get(currentLine = "TempOP");
         } catch (Exception ex) {
@@ -87,33 +94,38 @@ public class CommandLoot extends Loot {
      *
      * @param player The Player looting or null if no Player is involved
      */
-    public void execute(Player player) {
-        String cmd  = command;
-        if (player == null) {
-            if (!fromConsole || command.contains("<player>") || command.contains("<killer>")) {
-                return;
-            }
-        } else {
-            cmd = cmd.replace("<player>", player.getName());
-            if (command.contains("<killer>")) {
-                Player killer = player.getKiller();
-                if (killer == null) {
-                    return;
+    public void execute(final Player player) {
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                String cmd  = command;
+                if (player == null) {
+                    if (!fromConsole || command.contains("<player>") || command.contains("<killer>")) {
+                        return;
+                    }
                 } else {
-                    cmd = cmd.replace("<killer>", killer.getName());
+                    cmd = cmd.replace("<player>", player.getName());
+                    if (command.contains("<killer>")) {
+                        Player killer = player.getKiller();
+                        if (killer == null) {
+                            return;
+                        } else {
+                            cmd = cmd.replace("<killer>", killer.getName());
+                        }
+                    }
+                }
+                if (fromConsole) { //From console
+                    Bukkit.dispatchCommand(cs, cmd);
+                } else if (tempOP) { //From Player as OP
+                    //Make the player OP for long enough to execute the command
+                    player.setOp(true);
+                    Bukkit.dispatchCommand(player, cmd);
+                    player.setOp(false);
+                } else { //From Player
+                    Bukkit.dispatchCommand(player, cmd);
                 }
             }
-        }
-        if (fromConsole) { //From console
-            Bukkit.dispatchCommand(cs, cmd);
-        } else if (tempOP) { //From Player as OP
-            //Make the player OP for long enough to execute the command
-            player.setOp(true);
-            Bukkit.dispatchCommand(player, cmd);
-            player.setOp(false);
-        } else { //From Player
-            Bukkit.dispatchCommand(player, cmd);
-        }
+        }.runTaskLater(PhatLoots.plugin, delay);
     }
 
     /**
@@ -135,6 +147,7 @@ public class CommandLoot extends Loot {
         details.add("§4Probability: §6" + probability);
         details.add("§4Command: §6" + command);
         details.add(fromConsole ? "§6From Console" : "§6From Player");
+        details.add("§4Delayed: " + PhatLootsUtil.timeToString(delay));
         if (tempOP) {
             details.add("§6Player is temporarily OPed");
         }
@@ -193,6 +206,11 @@ public class CommandLoot extends Loot {
         //Only display the decimal values if the probability is not a whole number
         sb.append(String.valueOf(Math.floor(probability) == probability ? (int) probability : probability));
         sb.append("%");
+        if (delay > 0) {
+            sb.append("executed ");
+            sb.append(PhatLootsUtil.timeToString(delay));
+            sb.append(" after looted");
+        }
         return sb.toString();
     }
 
@@ -201,6 +219,7 @@ public class CommandLoot extends Loot {
         if (object instanceof CommandLoot) {
             CommandLoot loot = (CommandLoot) object;
             return loot.fromConsole == fromConsole
+                    && loot.delay == delay
                     && loot.tempOP == tempOP
                     && loot.command.equals(command);
         } else {
@@ -211,7 +230,8 @@ public class CommandLoot extends Loot {
     @Override
     public int hashCode() {
         int hash = 7;
-        hash = 37 * hash + (this.command != null ? this.command.hashCode() : 0);
+        hash = 37 * hash + Objects.hashCode(this.command);
+        hash = 37 * hash + (int) (this.delay ^ (this.delay >>> 32));
         hash = 37 * hash + (this.fromConsole ? 1 : 0);
         hash = 37 * hash + (this.tempOP ? 1 : 0);
         return hash;
@@ -222,6 +242,7 @@ public class CommandLoot extends Loot {
         Map map = new TreeMap();
         map.put("Probability", probability);
         map.put("Command", command);
+        map.put("Delay", delay);
         map.put("FromConsole", fromConsole);
         map.put("TempOP", tempOP);
         return map;

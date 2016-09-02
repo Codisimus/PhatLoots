@@ -6,6 +6,7 @@ import java.util.EnumSet;
 import java.util.LinkedList;
 import java.util.Random;
 import org.apache.commons.lang.WordUtils;
+import org.apache.commons.lang.time.DateUtils;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -204,5 +205,30 @@ public class PhatLootsUtil {
             sb.append(args[i]);
         }
         return sb.substring(1);
+    }
+
+    /**
+     * Returns a human friendly String of the remaining time until the PhatLootChest resets
+     *
+     * @param time The given time
+     * @return the remaining time until the PhatLootChest resets
+     */
+    public static String timeToString(long time) {
+        if (time < 0) {
+            return "forever";
+        }
+
+        //Find the appropriate unit of time and return that amount
+        if (time > DateUtils.MILLIS_PER_DAY) {
+            return time / DateUtils.MILLIS_PER_DAY + " day(s)";
+        } else if (time > DateUtils.MILLIS_PER_HOUR) {
+            return time / DateUtils.MILLIS_PER_HOUR + " hour(s)";
+        } else if (time > DateUtils.MILLIS_PER_MINUTE) {
+            return time / DateUtils.MILLIS_PER_MINUTE + " minute(s)";
+        } else if (time > DateUtils.MILLIS_PER_SECOND) {
+            return time / DateUtils.MILLIS_PER_SECOND + " second(s)";
+        } else {
+            return time + " millisecond(s)";
+        }
     }
 }
