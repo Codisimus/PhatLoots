@@ -40,6 +40,7 @@ public class PhatLoots extends JavaPlugin {
     public static Economy econ = null;
     public static String dataFolder;
     public static boolean mythicDropsSupport;
+    public static boolean mythicMobsSupport;
     public static long autoSavePeriod;
     public static CommandHandler handler;
     public static final HashMap<String, RegionHook> regionHooks = new HashMap<>(); //Plugin Name -> RegionHook
@@ -117,6 +118,13 @@ public class PhatLoots extends JavaPlugin {
             debug("Plugin MythicDrops could not be found, support has been turned off.");
         }
 
+        mythicMobsSupport = Bukkit.getPluginManager().isPluginEnabled("MythicMobs");
+        if (mythicMobsSupport) {
+            logger.info("Enabling MythicMobs support");
+        } else if (isDebug()) {
+            debug("Plugin MythicMobs could not be found, support has been turned off.");
+        }
+
         /* Register Buttons */
         LootCollection.registerButton();
         Experience.registerButton();
@@ -132,6 +140,9 @@ public class PhatLoots extends JavaPlugin {
         handler = new CommandHandler(this, command);
         if (mythicDropsSupport) {
             handler.registerCommands(ManageMythicDropsLootCommand.class);
+        }
+        if (mythicMobsSupport) {
+            handler.registerCommands(ManageMythicMobsLootCommand.class);
         }
         handler.registerCommands(LootCommand.class);
         handler.registerCommands(ManageLootCommand.class);
@@ -156,6 +167,9 @@ public class PhatLoots extends JavaPlugin {
             ConfigurationSerialization.registerClass(MythicDropsItem.class, "MythicDropsItem");
             ConfigurationSerialization.registerClass(UnidentifiedItem.class, "UnidentifiedItem");
             ConfigurationSerialization.registerClass(Gem.class, "Gem");
+        }
+        if (mythicMobsSupport) {
+            ConfigurationSerialization.registerClass(MythicMobsItem.class, "MythicMobsItem");
         }
 
         /* Load External PhatLoots Addons */
