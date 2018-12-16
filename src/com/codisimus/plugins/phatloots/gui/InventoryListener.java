@@ -272,7 +272,7 @@ public class InventoryListener implements Listener {
                     phatLoot.breakAndRespawn = !phatLoot.breakAndRespawn;
 
                     //Show the break and respawn status
-                    infoStack = new ItemStack(phatLoot.breakAndRespawn ? Material.MOB_SPAWNER : Material.CHEST);
+                    infoStack = new ItemStack(phatLoot.breakAndRespawn ? Material.SPAWNER : Material.CHEST);
                     info.setDisplayName("§4Break and Respawn: §6" + phatLoot.breakAndRespawn);
                     if (phatLoot.breakAndRespawn) {
                         details.add("§6This chest will break after it is looted");
@@ -290,7 +290,7 @@ public class InventoryListener implements Listener {
                     phatLoot.autoLoot = !phatLoot.autoLoot;
 
                     //Show the autoloot status
-                    infoStack = new ItemStack(phatLoot.autoLoot ? Material.REDSTONE_TORCH_ON : Material.LEVER);
+                    infoStack = new ItemStack(phatLoot.autoLoot ? Material.REDSTONE_TORCH : Material.LEVER);
                     info.setDisplayName("§4AutoLoot: §6" + phatLoot.autoLoot);
                     break;
 
@@ -313,7 +313,7 @@ public class InventoryListener implements Listener {
                     }
 
                     //Show the Reset Time
-                    infoStack = new ItemStack(Material.WATCH);
+                    infoStack = new ItemStack(Material.CLOCK);
                     info.setDisplayName("§2Reset Time");
                     details.add("§4Days: §6" + phatLoot.days);
                     details.add("§4Hours: §6" + phatLoot.hours);
@@ -533,7 +533,7 @@ public class InventoryListener implements Listener {
         ItemMeta info;
 
         //Display the Reset Time
-        infoStack = new ItemStack(Material.WATCH);
+        infoStack = new ItemStack(Material.CLOCK);
         info = Bukkit.getItemFactory().getItemMeta(infoStack.getType());
         info.setDisplayName("§2Reset Time");
         List<String> details = new ArrayList();
@@ -551,7 +551,7 @@ public class InventoryListener implements Listener {
         inv.setItem(index, infoStack);
 
         //Display the autoloot status
-        infoStack = new ItemStack(phatLoot.autoLoot ? Material.REDSTONE_TORCH_ON : Material.LEVER);
+        infoStack = new ItemStack(phatLoot.autoLoot ? Material.REDSTONE_TORCH : Material.LEVER);
         info = Bukkit.getItemFactory().getItemMeta(infoStack.getType());
         info.setDisplayName("§4AutoLoot: §6" + phatLoot.autoLoot);
         infoStack.setItemMeta(info);
@@ -559,7 +559,7 @@ public class InventoryListener implements Listener {
         inv.setItem(index, infoStack);
 
         //Display the break and respawn status
-        infoStack = new ItemStack(phatLoot.breakAndRespawn ? Material.MOB_SPAWNER : Material.CHEST);
+        infoStack = new ItemStack(phatLoot.breakAndRespawn ? Material.SPAWNER : Material.CHEST);
         info = Bukkit.getItemFactory().getItemMeta(infoStack.getType());
         info.setDisplayName("§4Break and Respawn: §6" + phatLoot.breakAndRespawn);
         details = new ArrayList();

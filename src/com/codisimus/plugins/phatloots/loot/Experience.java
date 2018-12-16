@@ -48,7 +48,7 @@ public class Experience extends Loot {
      */
     public static void registerButton() {
         //Register the Add Experience Button
-        ItemStack item = new ItemStack(Material.EXP_BOTTLE);
+        ItemStack item = new ItemStack(Material.EXPERIENCE_BOTTLE);
         ItemMeta info = Bukkit.getItemFactory().getItemMeta(item.getType());
         info.setDisplayName("§2Add experience...");
         item.setItemMeta(info);
@@ -107,7 +107,7 @@ public class Experience extends Loot {
     @Override
     public ItemStack getInfoStack() {
         //An Experience loot is represented by an Experience Bottle
-        ItemStack infoStack = new ItemStack(Material.EXP_BOTTLE);
+        ItemStack infoStack = new ItemStack(Material.EXPERIENCE_BOTTLE);
 
         //Set the display name of the item
         ItemMeta info = Bukkit.getItemFactory().getItemMeta(infoStack.getType());

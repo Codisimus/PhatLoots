@@ -86,32 +86,32 @@ public class Item extends Loot {
         Material.DIAMOND_LEGGINGS, Material.DIAMOND_BOOTS,
         Material.IRON_HELMET, Material.IRON_CHESTPLATE,
         Material.IRON_LEGGINGS, Material.IRON_BOOTS,
-        Material.GOLD_HELMET, Material.GOLD_CHESTPLATE,
-        Material.GOLD_LEGGINGS, Material.GOLD_BOOTS,
+        Material.GOLDEN_HELMET, Material.GOLDEN_CHESTPLATE,
+        Material.GOLDEN_LEGGINGS, Material.GOLDEN_BOOTS,
         Material.CHAINMAIL_HELMET, Material.CHAINMAIL_CHESTPLATE,
         Material.CHAINMAIL_LEGGINGS, Material.CHAINMAIL_BOOTS,
         Material.LEATHER_HELMET, Material.LEATHER_CHESTPLATE,
         Material.LEATHER_LEGGINGS, Material.LEATHER_BOOTS
     );
     private static final EnumSet<Material> SWORD_MATERIAL_SET = EnumSet.of(
-        Material.DIAMOND_SWORD, Material.IRON_SWORD, Material.GOLD_SWORD,
-        Material.STONE_SWORD, Material.WOOD_SWORD
+        Material.DIAMOND_SWORD, Material.IRON_SWORD, Material.GOLDEN_SWORD,
+        Material.STONE_SWORD, Material.WOODEN_SWORD
     );
     private static final EnumSet<Material> AXE_MATERIAL_SET = EnumSet.of(
-        Material.DIAMOND_AXE, Material.IRON_AXE, Material.GOLD_AXE,
-        Material.STONE_AXE, Material.WOOD_AXE
+        Material.DIAMOND_AXE, Material.IRON_AXE, Material.GOLDEN_AXE,
+        Material.STONE_AXE, Material.WOODEN_AXE
     );
     private static final EnumSet<Material> PICKAXE_MATERIAL_SET = EnumSet.of(
-        Material.DIAMOND_PICKAXE, Material.IRON_PICKAXE, Material.GOLD_PICKAXE,
-        Material.STONE_PICKAXE, Material.WOOD_PICKAXE
+        Material.DIAMOND_PICKAXE, Material.IRON_PICKAXE, Material.GOLDEN_PICKAXE,
+        Material.STONE_PICKAXE, Material.WOODEN_PICKAXE
     );
     private static final EnumSet<Material> SPADE_MATERIAL_SET = EnumSet.of(
-        Material.DIAMOND_SPADE, Material.IRON_SPADE, Material.GOLD_SPADE,
-        Material.STONE_SPADE, Material.WOOD_SPADE
+        Material.DIAMOND_SHOVEL, Material.IRON_SHOVEL, Material.GOLDEN_SHOVEL,
+        Material.STONE_SHOVEL, Material.WOODEN_SHOVEL
     );
     private static final EnumSet<Material> HOE_MATERIAL_SET = EnumSet.of(
-        Material.DIAMOND_HOE, Material.IRON_HOE, Material.GOLD_HOE,
-        Material.STONE_HOE, Material.WOOD_HOE
+        Material.DIAMOND_HOE, Material.IRON_HOE, Material.GOLDEN_HOE,
+        Material.STONE_HOE, Material.WOODEN_HOE
     );
     public static int tierNotify;
     public static FileConfiguration loreConfig;
@@ -844,23 +844,23 @@ public class Item extends Loot {
      */
     private int getBaseDamage(Material type) {
         switch (type) {
-        case WOOD_SPADE: return 1;
-        case WOOD_PICKAXE: return 2;
-        case WOOD_AXE: return 3;
-        case WOOD_SWORD: return 4;
-        case GOLD_SPADE: return 1;
-        case GOLD_PICKAXE: return 2;
-        case GOLD_AXE: return 3;
-        case GOLD_SWORD: return 4;
-        case STONE_SPADE: return 2;
+        case WOODEN_SHOVEL: return 1;
+        case WOODEN_PICKAXE: return 2;
+        case WOODEN_AXE: return 3;
+        case WOODEN_SWORD: return 4;
+        case GOLDEN_SHOVEL: return 1;
+        case GOLDEN_PICKAXE: return 2;
+        case GOLDEN_AXE: return 3;
+        case GOLDEN_SWORD: return 4;
+        case STONE_SHOVEL: return 2;
         case STONE_PICKAXE: return 3;
         case STONE_AXE: return 4;
         case STONE_SWORD: return 5;
-        case IRON_SPADE: return 3;
+        case IRON_SHOVEL: return 3;
         case IRON_PICKAXE: return 4;
         case IRON_AXE: return 5;
         case IRON_SWORD: return 6;
-        case DIAMOND_SPADE: return 4;
+        case DIAMOND_SHOVEL: return 4;
         case DIAMOND_PICKAXE: return 5;
         case DIAMOND_AXE: return 6;
         case DIAMOND_SWORD: return 7;
@@ -880,10 +880,10 @@ public class Item extends Loot {
         case LEATHER_LEGGINGS: return 2;
         case LEATHER_CHESTPLATE: return 3;
         case LEATHER_HELMET: return 1;
-        case GOLD_BOOTS: return 1;
-        case GOLD_LEGGINGS: return 3;
-        case GOLD_CHESTPLATE: return 5;
-        case GOLD_HELMET: return 1;
+        case GOLDEN_BOOTS: return 1;
+        case GOLDEN_LEGGINGS: return 3;
+        case GOLDEN_CHESTPLATE: return 5;
+        case GOLDEN_HELMET: return 1;
         case CHAINMAIL_BOOTS: return 2;
         case CHAINMAIL_LEGGINGS: return 4;
         case CHAINMAIL_CHESTPLATE: return 5;

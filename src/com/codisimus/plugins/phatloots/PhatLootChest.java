@@ -3,15 +3,40 @@ package com.codisimus.plugins.phatloots;
 import com.codisimus.plugins.phatloots.events.ChestBreakEvent;
 import com.codisimus.plugins.phatloots.events.ChestRespawnEvent;
 import com.codisimus.plugins.phatloots.events.ChestRespawnEvent.RespawnReason;
-import java.util.*;
-import org.bukkit.*;
-import org.bukkit.block.*;
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.Sound;
+import org.bukkit.World;
+import org.bukkit.block.Block;
+import org.bukkit.block.BlockState;
+import org.bukkit.block.Chest;
+import org.bukkit.block.Dispenser;
+import org.bukkit.block.Dropper;
+import org.bukkit.block.Skull;
+import org.bukkit.block.data.AnaloguePowerable;
+import org.bukkit.block.data.BlockData;
+import org.bukkit.block.data.Lightable;
+import org.bukkit.block.data.Powerable;
+import org.bukkit.block.data.type.Piston;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.TNTPrimed;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
+
+
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.UUID;
 
 /**
  * A PhatLootChest is a Block location and a Map of Users with times attached to them
@@ -20,15 +45,15 @@ import org.bukkit.scheduler.BukkitRunnable;
  */
 public class PhatLootChest {
     private static EnumSet<Material> untriggeredRedstone = EnumSet.of(
-        Material.REDSTONE_WIRE, Material.REDSTONE_COMPARATOR_OFF,
-        Material.REDSTONE_LAMP_OFF, Material.REDSTONE_TORCH_OFF,
-        Material.DIODE_BLOCK_OFF, Material.DISPENSER, Material.DROPPER,
-        Material.NOTE_BLOCK, Material.PISTON_BASE, Material.TNT
+        Material.REDSTONE_WIRE, Material.COMPARATOR,
+        Material.REDSTONE_LAMP, Material.REDSTONE_TORCH,
+        Material.REPEATER, Material.DISPENSER, Material.DROPPER,
+        Material.NOTE_BLOCK, Material.PISTON, Material.TNT
     );
     private static EnumSet<Material> triggeredRedstone = EnumSet.of(
-        Material.REDSTONE_WIRE, Material.REDSTONE_COMPARATOR_ON,
-        Material.REDSTONE_LAMP_ON, Material.REDSTONE_TORCH_ON,
-        Material.DIODE_BLOCK_ON, Material.PISTON_BASE
+        Material.REDSTONE_WIRE, Material.COMPARATOR,
+        Material.REDSTONE_LAMP, Material.REDSTONE_TORCH,
+        Material.REPEATER, Material.PISTON
     );
     private static HashMap<String, PhatLootChest> chests = new HashMap<>(); //Chest Location -> PhatLootChest
     static HashSet<PhatLootChest> chestsToRespawn = new HashSet<>();
@@ -221,7 +246,7 @@ public class PhatLootChest {
         //Only 'spawn' the new chest if it is not triggered to respawn
         if (state == null) {
             target.setType(block.getType());
-            target.setData(block.getData());
+            target.setBlockData(block.getBlockData());
         } else {
             state = target.getState();
         }
@@ -271,7 +296,7 @@ public class PhatLootChest {
         }
 
         if (soundOnBreak) {
-            block.getWorld().playSound(block.getLocation(), Sound.ENTITY_ZOMBIE_BREAK_DOOR_WOOD, 1, 1);
+            block.getWorld().playSound(block.getLocation(), Sound.ENTITY_ZOMBIE_BREAK_WOODEN_DOOR, 1, 1);
         }
     }
 
@@ -713,52 +738,64 @@ public class PhatLootChest {
      * @param block The given Block which has redstone qualities
      */
     private static void trigger(Block block) {
-        switch (block.getType()) {
-        case REDSTONE_WIRE: //Toggle the power level
-            block.setData((byte) (block.getData() ^ (byte) 15), true);
-            break;
-        case REDSTONE_COMPARATOR_OFF: //Turn the Comparator on
-            block.setTypeId(Material.REDSTONE_COMPARATOR_ON.getId(), true);
-            break;
-        case REDSTONE_LAMP_OFF: //Turn the Lamp on
-            block.setTypeId(Material.REDSTONE_LAMP_ON.getId(), true);
-            break;
-        case REDSTONE_TORCH_OFF: //Turn the Torch on
-            block.setTypeId(Material.REDSTONE_TORCH_ON.getId(), true);
-            break;
-        case DIODE_BLOCK_OFF: //Turn the Diode on
-            block.setTypeId(Material.DIODE_BLOCK_ON.getId(), true);
-            break;
-        case DISPENSER: //Dispense
-            ((Dispenser) block.getState()).dispense();
-            break;
-        case DROPPER: //Drop
-            ((Dropper) block.getState()).drop();
-            break;
-        case NOTE_BLOCK: //Play note
-            ((NoteBlock) block.getState()).play();
-            break;
-        case PISTON_BASE: //Toggle the extended bit
-            block.setData((byte) (block.getData() ^ (byte) 8), true);
-            break;
-        case TNT: //Replace the TNT with primed TNT
-            block.setTypeId(0);
+        BlockData data = block.getBlockData();
+        BlockState state = block.getState();
+        Material material = block.getType();
+        // TNT
+        if (material == Material.TNT) {
+            block.setType(Material.AIR);
             TNTPrimed tnt = (TNTPrimed) block.getWorld().spawnEntity(block.getLocation(), EntityType.PRIMED_TNT);
             tnt.setFuseTicks(80);
-            break;
-        case REDSTONE_COMPARATOR_ON: //Turn the Comparator off
-            block.setTypeId(Material.REDSTONE_COMPARATOR_OFF.getId(), true);
-            break;
-        case REDSTONE_LAMP_ON: //Turn the Lamp off
-            block.setTypeId(Material.REDSTONE_LAMP_OFF.getId(), true);
-            break;
-        case REDSTONE_TORCH_ON: //Turn the Torch off
-            block.setTypeId(Material.REDSTONE_TORCH_OFF.getId(), true);
-            break;
-        case DIODE_BLOCK_ON: //Turn the Diode off
-            block.setTypeId(Material.DIODE_BLOCK_OFF.getId(), true);
-            break;
-        default: break;
+            return;
+        }
+        // Dispenser
+        if (state instanceof Dispenser) {
+            ((Dispenser) state).dispense();
+            return;
+        }
+        // Dropper
+        if (state instanceof Dropper) {
+            ((Dropper) state).drop();
+            return;
+        }
+        // Comparator, Repeater, NoteBlock
+        if (data instanceof Powerable) {
+            if (((Powerable) data).isPowered()) {
+                ((Powerable) data).setPowered(false);
+            } else if (!((Powerable) data).isPowered()) {
+                ((Powerable) data).setPowered(true);
+            }
+            return;
+        }
+        // Redstone
+        if (data instanceof AnaloguePowerable) {
+            if (((AnaloguePowerable) data).getPower() != ((AnaloguePowerable) data).getMaximumPower()) {
+                ((AnaloguePowerable) data).setPower(((AnaloguePowerable) data).getMaximumPower());
+            } else {
+                if (((AnaloguePowerable) data).getPower() == ((AnaloguePowerable) data).getMaximumPower()) {
+                    ((AnaloguePowerable) data).setPower(0);
+                }
+            }
+            return;
+        }
+        // Restone Lamp, Redstone Torch
+        if (material == Material.REDSTONE_LAMP || material == Material.REDSTONE_TORCH || material == Material.REDSTONE_WALL_TORCH) {
+            if (data instanceof Lightable) {
+                if (((Lightable) data).isLit()) {
+                    ((Lightable) data).setLit(false);
+                } else if (!((Lightable) data).isLit()) {
+                    ((Lightable) data).setLit(true);
+                }
+            }
+            return;
+        }
+        // Piston
+        if (data instanceof Piston) {
+            if (((Piston) data).isExtended()) {
+                ((Piston) data).setExtended(false);
+            } else if (!((Piston) data).isExtended()) {
+                ((Piston) data).setExtended(true);
+            }
         }
     }
 

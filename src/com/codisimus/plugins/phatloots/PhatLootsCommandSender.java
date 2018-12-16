@@ -41,6 +41,11 @@ public class PhatLootsCommandSender implements CommandSender {
     }
 
     @Override
+    public Spigot spigot() {
+        return null;
+    }
+
+    @Override
     public boolean isPermissionSet(String string) {
         return true;
     }

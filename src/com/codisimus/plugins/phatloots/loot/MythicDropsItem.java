@@ -72,7 +72,7 @@ public class MythicDropsItem extends Loot {
      */
     public static void registerButtonAndTool() {
         //Register the Add Collection Button
-        ItemStack item = new ItemStack(Material.ENCHANTMENT_TABLE);
+        ItemStack item = new ItemStack(Material.ENCHANTED_BOOK);
         ItemMeta info = Bukkit.getItemFactory().getItemMeta(item.getType());
         List<String> uses = new ArrayList<>();
         info.setDisplayName("§2Add new MythicDrops Item...");
@@ -88,7 +88,7 @@ public class MythicDropsItem extends Loot {
         InventoryListener.registerButton(new AddMythicDropsItemButton(item));
 
 
-        item = new ItemStack(Material.ENCHANTMENT_TABLE);
+        item = new ItemStack(Material.ENCHANTED_BOOK);
         ItemMeta meta = Bukkit.getItemFactory().getItemMeta(item.getType());
         List<String> lore = new ArrayList<>();
         meta.setDisplayName("§2MythicDrops Toggle (Click to change Tool)");
@@ -199,7 +199,7 @@ public class MythicDropsItem extends Loot {
     @Override
     public ItemStack getInfoStack() {
         //A MythicDropsItem is represented by an Enchantment Table
-        ItemStack infoStack = new ItemStack(Material.ENCHANTMENT_TABLE);
+        ItemStack infoStack = new ItemStack(Material.ENCHANTED_BOOK);
 
         //Set the display name of the item
         ItemMeta info = Bukkit.getItemFactory().getItemMeta(infoStack.getType());
