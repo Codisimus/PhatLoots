@@ -15,14 +15,100 @@
             <id>spigot-repo</id>
             <url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
         </repository>
+        <repository>
+            <id>vault-repo</id>
+            <url>http://nexus.hc.to/content/repositories/pub_releases</url>
+            <!-- Dead repo -->
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+        <repository>
+             <!-- For Vault -->
+             <id>essx-repo</id>
+             <url>https://ci.ender.zone/plugin/repository/everything/</url>
+        </repository>
+        <repository>
+            <id>citizensapi</id>
+            <url>http://repo.citizensnpcs.co/</url>
+        </repository>
+        <repository>
+			<id>sk89q-repo</id>
+			<url>http://maven.sk89q.com/repo/</url>
+		</repository>
+        <repository>
+            <id>jitpack.io</id>
+            <url>https://jitpack.io</url>
+        </repository>
     </repositories>
     
     <dependencies>
         <dependency>
             <groupId>org.bukkit</groupId>
             <artifactId>bukkit</artifactId>
-            <version>1.13.2-R0.1-SNAPSHOT</version>
+            <version>1.12.2-R0.1-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
+        <dependency>
+            <groupId>net.milkbowl.vault</groupId>
+            <artifactId>VaultAPI</artifactId>
+            <version>1.6</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>net.citizensnpcs</groupId>
+            <artifactId>citizensapi</artifactId>
+            <version>2.0.24-SNAPSHOT</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.tealcube.minecraft.bukkit</groupId>
+            <artifactId>mythicdrops</artifactId>
+            <version>4.3.5</version>
+            <scope>system</scope>
+            <systemPath>${basedir}/lib/MythicDrops.jar</systemPath>
+        </dependency>
+        <dependency>
+            <groupId>net.elseland.xikage</groupId>
+            <artifactId>MythicDrops</artifactId>
+            <version>2.4.5</version>
+            <scope>system</scope>
+            <systemPath>${basedir}/lib/MythicMobs.jar</systemPath>
+        </dependency>
+        <dependency>
+            <groupId>com.codisimus.plugins</groupId>
+            <artifactId>regiontools</artifactId>
+            <version>1.0.0</version>
+            <scope>system</scope>
+            <systemPath>${basedir}/lib/RegionTools.jar</systemPath>
+        </dependency>
+        <dependency>
+            <groupId>com.sk89q</groupId>
+            <artifactId>worldguard</artifactId>
+            <version>LATEST</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+	        <groupId>com.github.vexsoftware</groupId>
+	        <artifactId>votifier</artifactId>
+	        <version>v1.9</version>
+	    </dependency>
     </dependencies>
+    
+    <build>
+        <sourceDirectory>src</sourceDirectory>
+        <plugins>
+            <plugin>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.5.1</version>
+                <configuration>
+                    <source>1.7</source>
+                    <target>1.7</target>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>

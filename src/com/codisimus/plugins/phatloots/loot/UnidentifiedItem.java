@@ -121,7 +121,7 @@ public class UnidentifiedItem extends Loot {
                 Material material = ItemUtil.getRandomMaterialFromCollection(materials);
                 ItemStack mis = new com.tealcube.minecraft.bukkit.mythicdrops.identification.UnidentifiedItem(material);
                 if (durabilityLower > 0 || durabilityUpper > 0) {
-                    mis.setDurability(ItemStackUtil.getDurabilityForMaterial(mis.getType(), durabilityLower, durabilityUpper));
+                    mis.setDurability((short) ItemStackUtil.getDurabilityForMaterial(mis.getType(), durabilityLower, durabilityUpper));
                 }
 
                 //Place the tier name as the last line of lore
