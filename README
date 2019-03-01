@@ -45,11 +45,9 @@ Step 1. Add the JitPack repository to your build file
 Step 2. Add the dependency
 
 	<dependency>
-	    <groupId>com.github.FlyingPikachu</groupId>
+	    <groupId>com.github.Codisimus</groupId>
 	    <artifactId>PhatLoots</artifactId>
 	    <version>-SNAPSHOT</version>
 	</dependency>
 	
 That's it! The first time you request a project JitPack checks out the code, builds it and serves the build artifacts (jar, aar).
-
-If the project doesn't have any GitHub Releases you can use the short commit hash or 'master-SNAPSHOT' as the version.
