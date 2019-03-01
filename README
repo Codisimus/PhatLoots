@@ -30,3 +30,24 @@ PhatLoots is a Bukkit plugin that allows a server admin to setup 'Loot Tables' t
 * Weapons and Armor may be automatically enchanted, named, and tiered to make them more exciting.
 * In game GUI (/loot info <PhatLoot>) using a chest inventory allows for easily viewing the information of a PhatLoot
 * Nearly all messages/features are customizable and may be disabled.
+
+To add this Git project into your build:
+
+Step 1. Add the JitPack repository to your build file
+
+	<repositories>
+		<repository>
+		    <id>jitpack.io</id>
+		    <url>https://jitpack.io</url>
+		</repository>
+	</repositories>
+	
+Step 2. Add the dependency
+
+	<dependency>
+	    <groupId>com.github.Codisimus</groupId>
+	    <artifactId>PhatLoots</artifactId>
+	    <version>-SNAPSHOT</version>
+	</dependency>
+	
+That's it! The first time you request a project JitPack checks out the code, builds it and serves the build artifacts (jar, aar).
