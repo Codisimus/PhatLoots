@@ -15,7 +15,7 @@
             <url url="https://ci.ender.zone/plugin/repository/everything/net/milkbowl/vault/VaultAPI/1.6/VaultAPI-1.6.jar"/>
             <url url="https://hub.spigotmc.org/nexus/service/local/repositories/snapshots/content/org/bukkit/bukkit/1.12.2-R0.1-SNAPSHOT/bukkit-1.12.2-R0.1-20180712.012114-155-shaded.jar"/>
             <url url="http://ci.citizensnpcs.co/job/CitizensAPI/lastSuccessfulBuild/artifact/target/citizensapi-2.0.24-SNAPSHOT.jar"/>
-            <url url="hhttps://github.com/NuVotifier/NuVotifier/releases/download/v2.5.0/nuvotifier-2.5.0.jar"/>
+            <url url="https://github.com/NuVotifier/NuVotifier/releases/download/v2.5.0/nuvotifier-2.5.0.jar"/>
             <url url="http://maven.sk89q.com/repo/com/sk89q/worldedit/6.0.0-SNAPSHOT/worldedit-6.0.0-SNAPSHOT.jar"/>
             <url url="http://maven.sk89q.com/repo/com/sk89q/worldguard/6.1.1-SNAPSHOT/worldguard-6.1.1-20150928.003559-16.jar"/>
         </get>
