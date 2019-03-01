@@ -110,5 +110,29 @@
                 </configuration>
             </plugin>
         </plugins>
+        
+        <resources>
+            <resource>
+                <targetPath>.</targetPath>
+                <directory>${basedir}/src</directory>
+                <filtering>true</filtering>
+                <includes>
+                    <include>config.yml</include>
+                    <include>enchantments.yml</include>
+                    <include>lores.yml</include>
+                    <include>plugin.yml</include>
+                    <include>SampleLoot.yml</include>
+                    <include>tiers.yml</include>
+                </includes>
+            </resource>
+            <resource>
+                <targetPath>.</targetPath>
+                <directory>${basedir}/</directory>
+                <filtering>false</filtering>
+                <includes>
+                    <include>README.md</include>
+                </includes>
+            </resource>
+        </resources>
     </build>
 </project>
