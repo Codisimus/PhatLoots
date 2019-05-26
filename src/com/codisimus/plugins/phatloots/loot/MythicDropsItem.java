@@ -184,7 +184,7 @@ public class MythicDropsItem extends Loot {
             ItemStack mis = MythicDropsPlugin.getNewDropBuilder().useDurability(false)
                     .withItemGenerationReason(ItemGenerationReason.EXTERNAL).withTier(tier).build();
             if (durabilityLower > 0 || durabilityUpper > 0) {
-                mis.setDurability(ItemStackUtil.getDurabilityForMaterial(mis.getType(), durabilityLower, durabilityUpper));
+                mis.setDurability((short) ItemStackUtil.getDurabilityForMaterial(mis.getType(), durabilityLower, durabilityUpper));
             }
             lootBundle.addItem(mis);
             amount--;
@@ -293,7 +293,7 @@ public class MythicDropsItem extends Loot {
         if (tierList == null) {
             //Cache Tiers alphabetically
             tierList = new ArrayList<>();
-            for (Tier tier : TierMap.getInstance().values()) {
+            for (Tier tier : TierMap.INSTANCE.values()) {
                 tierList.add(tier.getName());
             }
             Collections.sort(tierList);

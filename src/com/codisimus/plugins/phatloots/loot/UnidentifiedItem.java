@@ -114,14 +114,14 @@ public class UnidentifiedItem extends Loot {
         int amount = PhatLootsUtil.rollForInt(amountLower, amountUpper);
         while (amount > 0) {
             Tier tier = tierName.equalsIgnoreCase(RANDOM_TIER)
-                      ? TierMap.getInstance().getRandomWithChance()
+                      ? TierMap.INSTANCE.getRandomTierWithChance()
                       : TierUtil.getTier(tierName);
             if (tier != null) {
                 Collection<Material> materials = ItemUtil.getMaterialsFromTier(tier);
                 Material material = ItemUtil.getRandomMaterialFromCollection(materials);
                 ItemStack mis = new com.tealcube.minecraft.bukkit.mythicdrops.identification.UnidentifiedItem(material);
                 if (durabilityLower > 0 || durabilityUpper > 0) {
-                    mis.setDurability(ItemStackUtil.getDurabilityForMaterial(mis.getType(), durabilityLower, durabilityUpper));
+                    mis.setDurability((short) ItemStackUtil.getDurabilityForMaterial(mis.getType(), durabilityLower, durabilityUpper));
                 }
 
                 //Place the tier name as the last line of lore
@@ -241,7 +241,7 @@ public class UnidentifiedItem extends Loot {
         if (tierList == null) {
             //Cache Tiers alphabetically
             tierList = new ArrayList<>();
-            for (Tier tier : TierMap.getInstance().values()) {
+            for (Tier tier : TierMap.INSTANCE.values()) {
                 tierList.add(tier.getName());
             }
             Collections.sort(tierList);
