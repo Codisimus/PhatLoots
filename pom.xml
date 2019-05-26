@@ -46,7 +46,6 @@
             <url>http://nexus.hc.to/content/repositories/pub_releases</url>
         </repository>
     </repositories>
-
     <dependencies>
         <dependency>
             <groupId>org.spigotmc</groupId>
@@ -105,18 +104,6 @@
             <scope>provided</scope>
         </dependency>
     </dependencies>
-    <distributionManagement>
-        <repository>
-            <id>nexus</id>
-            <name>Releases</name>
-            <url>https://nexus.articdive.de/repository/maven-releases</url>
-        </repository>
-        <snapshotRepository>
-            <id>nexus</id>
-            <name>Snapshot</name>
-            <url>https://nexus.articdive.de/repository/maven-snapshots</url>
-        </snapshotRepository>
-    </distributionManagement>
     <!-- How we will compile the plugin -->
     <build>
         <finalName>${project.name}</finalName>
