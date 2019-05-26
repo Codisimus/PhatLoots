@@ -119,7 +119,14 @@ public class CommandLoot extends Loot {
                 } else if (tempOP) { //From Player as OP
                     //Make the player OP for long enough to execute the command
                     player.setOp(true);
-                    Bukkit.dispatchCommand(player, cmd);
+                    try {
+                        Bukkit.dispatchCommand(player, cmd);
+                    } catch (Exception ex) {
+                        // If command does not properly run, automatically deop player to avoid exploits
+                        player.setOp(false);
+                        ex.printStackTrace();
+                    }
+
                     player.setOp(false);
                 } else { //From Player
                     Bukkit.dispatchCommand(player, cmd);
