@@ -24,18 +24,15 @@ public class FishingListener implements Listener {
     public void onPlayerFish(PlayerFishEvent event) {
         //Check if there is a PhatLoot for Fishing
         PhatLoot phatLoot = PhatLoots.getPhatLoot("Fishing");
-        if (phatLoot == null) {
-            if (PhatLoots.plugin.getConfig().getBoolean("RegionFishingDropLoot", true)
-                    && MobListener.regionHook != null) {
+        if (PhatLoots.plugin.getConfig().getBoolean("RegionFishingDropLoot", true)
+                && MobListener.regionHook != null) {
 
-                List<String> regionNames = MobListener.regionHook.getRegionNames(event.getPlayer().getLocation());
-                for (String regionName : regionNames) {
-                    phatLoot = PhatLoots.getPhatLoot("Fishing@" + regionName);
-                    if (phatLoot != null)
-                        break;
-                }
+            List<String> regionNames = MobListener.regionHook.getRegionNames(event.getPlayer().getLocation());
+            for (String regionName : regionNames) {
+                phatLoot = PhatLoots.getPhatLoot("Fishing@" + regionName);
+                if (phatLoot != null)
+                    break;
             }
-            return;
         }
 
         //Check if something has been caught
