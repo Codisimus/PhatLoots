@@ -45,7 +45,7 @@ import java.util.UUID;
  */
 public class PhatLootChest {
     private static EnumSet<Material> untriggeredRedstone = EnumSet.of(
-        Material.REDSTONE_WIRE, Material.COMPARATOR,
+        Material.REDSTONE, Material.REDSTONE_WIRE, Material.COMPARATOR,
         Material.REDSTONE_LAMP, Material.REDSTONE_TORCH,
         Material.REPEATER, Material.DISPENSER, Material.DROPPER,
         Material.NOTE_BLOCK, Material.PISTON, Material.TNT
@@ -760,42 +760,54 @@ public class PhatLootChest {
         }
         // Comparator, Repeater, NoteBlock
         if (data instanceof Powerable) {
-            if (((Powerable) data).isPowered()) {
-                ((Powerable) data).setPowered(false);
-            } else if (!((Powerable) data).isPowered()) {
-                ((Powerable) data).setPowered(true);
+            Powerable powerable = (Powerable) data;
+            if (powerable.isPowered()) {
+                powerable.setPowered(false);
+            } else if (!powerable.isPowered()) {
+                powerable.setPowered(true);
             }
+
+            block.setBlockData(powerable);
             return;
         }
         // Redstone
         if (data instanceof AnaloguePowerable) {
-            if (((AnaloguePowerable) data).getPower() != ((AnaloguePowerable) data).getMaximumPower()) {
-                ((AnaloguePowerable) data).setPower(((AnaloguePowerable) data).getMaximumPower());
+            AnaloguePowerable analoguePowerable = ((AnaloguePowerable) data);
+            if (analoguePowerable.getPower() != analoguePowerable.getMaximumPower()) {
+                analoguePowerable.setPower(analoguePowerable.getMaximumPower());
             } else {
-                if (((AnaloguePowerable) data).getPower() == ((AnaloguePowerable) data).getMaximumPower()) {
-                    ((AnaloguePowerable) data).setPower(0);
+                if (analoguePowerable.getPower() == analoguePowerable.getMaximumPower()) {
+                    analoguePowerable.setPower(0);
                 }
             }
+
+            block.setBlockData(analoguePowerable);
             return;
         }
         // Restone Lamp, Redstone Torch
         if (material == Material.REDSTONE_LAMP || material == Material.REDSTONE_TORCH || material == Material.REDSTONE_WALL_TORCH) {
             if (data instanceof Lightable) {
-                if (((Lightable) data).isLit()) {
-                    ((Lightable) data).setLit(false);
-                } else if (!((Lightable) data).isLit()) {
-                    ((Lightable) data).setLit(true);
+                Lightable lightable = (Lightable) data;
+                if (lightable.isLit()) {
+                    lightable.setLit(false);
+                } else if (!lightable.isLit()) {
+                    lightable.setLit(true);
                 }
+
+                block.setBlockData(lightable);
             }
             return;
         }
         // Piston
         if (data instanceof Piston) {
-            if (((Piston) data).isExtended()) {
-                ((Piston) data).setExtended(false);
-            } else if (!((Piston) data).isExtended()) {
-                ((Piston) data).setExtended(true);
+            Piston piston = (Piston) data;
+            if (piston.isExtended()) {
+                piston.setExtended(false);
+            } else if (!piston.isExtended()) {
+                piston.setExtended(true);
             }
+
+            block.setBlockData(piston);
         }
     }
 
