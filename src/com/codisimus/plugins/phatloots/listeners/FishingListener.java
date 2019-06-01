@@ -35,6 +35,9 @@ public class FishingListener implements Listener {
             }
         }
 
+        if (phatLoot == null)
+            return;
+
         //Check if something has been caught
         if (event.getCaught() instanceof Item) {
             //Get the looting bonus of the fishing pole
