@@ -33,6 +33,7 @@ WorldMobSpawnLoot: true
 ##e.g. Zombie@Graveyard, Spider@Nest
 RegionMobDropLoot: true
 RegionMobSpawnLoot: true
+RegionFishingDropLoot: true
 
 ##Mob Types should be enabled if you want to distinguish between different types of Zombies, Skeletons, Villagers, etc.
 ##e.g. BabyZombie, WitherSkeleton, PriestVillager

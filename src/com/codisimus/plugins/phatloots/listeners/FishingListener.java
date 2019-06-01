@@ -11,6 +11,9 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerFishEvent;
 import org.bukkit.inventory.ItemStack;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Listens for Fishing events and handles what is caught
  *
@@ -22,6 +25,16 @@ public class FishingListener implements Listener {
         //Check if there is a PhatLoot for Fishing
         PhatLoot phatLoot = PhatLoots.getPhatLoot("Fishing");
         if (phatLoot == null) {
+            if (PhatLoots.plugin.getConfig().getBoolean("RegionFishingDropLoot", true)
+                    && MobListener.regionHook != null) {
+
+                List<String> regionNames = MobListener.regionHook.getRegionNames(event.getPlayer().getLocation());
+                for (String regionName : regionNames) {
+                    phatLoot = PhatLoots.getPhatLoot("Fishing@" + regionName);
+                    if (phatLoot != null)
+                        break;
+                }
+            }
             return;
         }
 
