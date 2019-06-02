@@ -107,7 +107,7 @@ public class MythicMobsItem extends Loot {
         info.setDisplayName("§2MythicMobs Item");
 
         //Add more specific details of the item
-        List<String> details = new ArrayList();
+        List<String> details = new ArrayList<>();
         details.add("§qItem ID: §6" + itemId);
         details.add("§1Probability: §6" + getProbability());
         if (amountLower == amountUpper) {

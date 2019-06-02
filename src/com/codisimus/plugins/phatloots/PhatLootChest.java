@@ -327,9 +327,9 @@ public class PhatLootChest {
                 if (state instanceof Skull) {
                     Skull oldState = (Skull) state;
                     Skull newState = (Skull) state.getBlock().getState();
-                    newState.setSkullType(oldState.getSkullType());
-                    newState.setRotation(oldState.getRotation());
-                    newState.setOwner(oldState.getOwner());
+                    newState.setType(oldState.getType());
+                    newState.setBlockData(oldState.getBlockData());
+                    newState.setOwningPlayer(oldState.getOwningPlayer());
                     newState.update();
                 }
                 state = null;

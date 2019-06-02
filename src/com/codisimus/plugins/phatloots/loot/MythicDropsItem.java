@@ -206,7 +206,7 @@ public class MythicDropsItem extends Loot {
         info.setDisplayName("§2MythicDrops Item");
 
         //Add more specific details of the item
-        List<String> details = new ArrayList();
+        List<String> details = new ArrayList<>();
         details.add("§1Tier: §6" + tierName);
         details.add("§1Probability: §6" + getProbability());
         if (amountLower == amountUpper) {
