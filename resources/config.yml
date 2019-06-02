@@ -11,7 +11,7 @@
 LootBags: false
 ##If using LootBags, there is a security threat if players on your server are able to modify the lore of an item
 ##In that case, you should change this key to something else (such as &3&8&4&r&0) and keep it secret
-LootBagKey: '&r&0'
+LootBagKeys: '&r&0'
 
 ##Using Dispensers may cause significant lag if you have a decent amount of redstone circuts on the server
 ##This also applies to Droppers

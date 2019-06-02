@@ -6,8 +6,10 @@ import com.codisimus.plugins.phatloots.listeners.PhatLootsListener;
 import com.codisimus.plugins.phatloots.loot.Item;
 import com.codisimus.plugins.phatloots.loot.LootCollection;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.logging.Level;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -34,7 +36,7 @@ public class PhatLootsConfig {
     static boolean defaultBreakAndRespawn;
     static boolean restrictAll; //True if all PhatLoots should require permission
     static HashSet<String> restricted = new HashSet();
-    public static String lootBagKey;
+    public static List<String> lootBagKeys;
     public static String permission;
     public static String moneyLooted;
     public static String moneyCharged;
@@ -181,7 +183,11 @@ public class PhatLootsConfig {
         for (String string : restricted) {
             string = ChatColor.translateAlternateColorCodes('&', string);
         }
-        lootBagKey = ChatColor.translateAlternateColorCodes('&', config.getString("LootBagKey"));
+        // Kept here for old configs
+        lootBagKeys.add(ChatColor.translateAlternateColorCodes('&', config.getString("LootBagKey")));
+        config.getStringList("LootBagKeys").forEach(key -> {
+            lootBagKeys.add(ChatColor.translateAlternateColorCodes('&', key));
+        });
         Item.tierNotify = config.getInt("MinimumTierNotification");
         LootCommand.setUnlockable = config.getBoolean("SetChestsAsUnlockable");
         PhatLoot.decimals = config.getBoolean("DivideMoneyAmountBy100");
