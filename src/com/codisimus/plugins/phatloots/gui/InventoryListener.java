@@ -575,6 +575,18 @@ public class InventoryListener implements Listener {
         index--;
         inv.setItem(index, infoStack);
 
+        infoStack = new ItemStack(Material.CLOCK);
+        info = Bukkit.getItemFactory().getItemMeta(infoStack.getType());
+        info.setDisplayName("§eLoot Conditions");
+        details = new ArrayList<>();
+        details.add("§6Loot conditions are options you can");
+        details.add("§6configure for loot tables so that they");
+        details.add("§6are only lootable if the conditions");
+        details.add("§6are met.");
+        info.setLore(details);
+        infoStack.setItemMeta(info);
+        index--;
+
         //Store the current view in the Player's stack
         pageStacks.put(player.getUniqueId(), new Stack<Inventory>());
 

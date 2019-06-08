@@ -1,5 +1,6 @@
 package com.codisimus.plugins.phatloots;
 
+import com.codisimus.plugins.phatloots.conditions.LootCondition;
 import com.codisimus.plugins.phatloots.events.*;
 import com.codisimus.plugins.phatloots.loot.*;
 import java.io.*;
@@ -46,6 +47,7 @@ public final class PhatLoot implements ConfigurationSerializable {
 
     public String name; //A unique name for the PhatLoot
     public ArrayList<Loot> lootList; //List of Loot
+    private List<LootCondition> lootConditions; // List of Loot conditions
 
     public int days; //Reset time (will never reset if any are negative)
     public int hours;
@@ -66,6 +68,7 @@ public final class PhatLoot implements ConfigurationSerializable {
     public PhatLoot(String name) {
         this.name = name;
         lootList = new ArrayList<>();
+        lootConditions = new ArrayList<>();
         days = PhatLootsConfig.defaultDays;
         hours = PhatLootsConfig.defaultHours;
         minutes = PhatLootsConfig.defaultMinutes;
@@ -1107,6 +1110,7 @@ public final class PhatLoot implements ConfigurationSerializable {
         map.put("BreakAndRespawn", breakAndRespawn);
 
         map.put("LootList", lootList);
+        map.put("LootConditions", lootConditions);
         return map;
     }
 
@@ -1138,6 +1142,10 @@ public final class PhatLoot implements ConfigurationSerializable {
                 lootList = (ArrayList) map.get(currentLine = "LootList");
             } else { //pre-3.1
                 PhatLoots.logger.warning("Your save files are outdated, please use version 3.1-3.2 to update them");
+            }
+
+            if (map.containsKey(currentLine = "LootConditions")) {
+                lootConditions = (ArrayList<LootCondition>) map.get(currentLine = "LootConditions");
             }
 
             //Updated Legacy money/experience data
