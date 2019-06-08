@@ -3,7 +3,9 @@ package com.codisimus.plugins.phatloots;
 import java.util.Set;
 import org.bukkit.Bukkit;
 import org.bukkit.Server;
-import org.bukkit.command.CommandSender;
+import org.bukkit.command.ConsoleCommandSender;
+import org.bukkit.conversations.Conversation;
+import org.bukkit.conversations.ConversationAbandonedEvent;
 import org.bukkit.permissions.Permission;
 import org.bukkit.permissions.PermissionAttachment;
 import org.bukkit.permissions.PermissionAttachmentInfo;
@@ -14,7 +16,7 @@ import org.bukkit.plugin.Plugin;
  *
  * @author Codisimus
  */
-public class PhatLootsCommandSender implements CommandSender {
+public class PhatLootsCommandSender implements ConsoleCommandSender {
     private final String NAME = "PhatLoots";
     private final String TAG = "[PhatLoots Command Sender] ";
 
@@ -107,6 +109,36 @@ public class PhatLootsCommandSender implements CommandSender {
 
     @Override
     public void setOp(boolean bln) {
+        throw new UnsupportedOperationException("Not supported.");
+    }
+
+    @Override
+    public boolean isConversing() {
+        return false;
+    }
+
+    @Override
+    public void acceptConversationInput(String s) {
+        throw new UnsupportedOperationException("Not supported.");
+    }
+
+    @Override
+    public boolean beginConversation(Conversation conversation) {
+        return false;
+    }
+
+    @Override
+    public void abandonConversation(Conversation conversation) {
+        throw new UnsupportedOperationException("Not supported.");
+    }
+
+    @Override
+    public void abandonConversation(Conversation conversation, ConversationAbandonedEvent conversationAbandonedEvent) {
+        throw new UnsupportedOperationException("Not supported.");
+    }
+
+    @Override
+    public void sendRawMessage(String s) {
         throw new UnsupportedOperationException("Not supported.");
     }
 }
