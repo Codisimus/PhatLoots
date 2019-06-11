@@ -183,11 +183,21 @@ public class PhatLootsConfig {
         for (String string : restricted) {
             string = ChatColor.translateAlternateColorCodes('&', string);
         }
+
+        lootBagKeys = new ArrayList<String>();
         // Kept here for old configs
-        lootBagKeys.add(ChatColor.translateAlternateColorCodes('&', config.getString("LootBagKey")));
-        config.getStringList("LootBagKeys").forEach(key -> {
-            lootBagKeys.add(ChatColor.translateAlternateColorCodes('&', key));
-        });
+        if (config.contains("LootBagKey"))
+            lootBagKeys.add(ChatColor.translateAlternateColorCodes('&', config.getString("LootBagKey")));
+
+        // This check is here just incase someone isn't using a new config
+        if (config.contains("LootBagKeys")) {
+            config.getStringList("LootBagKeys").forEach(key -> {
+                lootBagKeys.add(ChatColor.translateAlternateColorCodes('&', key));
+            });
+        } else {
+            PhatLoots.logger.warning("LootBagKey in your config file is deprecated and should be replaced with LootBagKeys.");
+        }
+
         Item.tierNotify = config.getInt("MinimumTierNotification");
         LootCommand.setUnlockable = config.getBoolean("SetChestsAsUnlockable");
         PhatLoot.decimals = config.getBoolean("DivideMoneyAmountBy100");
