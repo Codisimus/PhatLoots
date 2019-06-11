@@ -746,7 +746,7 @@ public class Item extends Loot {
             level = getLevel(enchantments, enchantment);
             lore = loreConfig.getString(type + '.' + enchantment.getKey().getKey() + '.' + level);
             if (lore != null) {
-                nameBuilder.replace(nameBuilder.length() - 5, nameBuilder.length(), lore);
+                nameBuilder.replace(nameBuilder.length() - 6, nameBuilder.length(), lore);
             }
             enchantment = Enchantment.DURABILITY;
             level = getLevel(enchantments, enchantment);
