@@ -265,6 +265,11 @@ public class InventoryListener implements Listener {
                 List<String> details = new ArrayList<>();
 
                 switch (slot) {
+                case SIZE - 4:
+                    // Need to initialize infoStack here
+                    infoStack = event.getView().getTopInventory().getItem(SIZE - 4);
+                    InventoryConditionListener.viewConditionMenu(player, phatLoot);
+                    break;
                 case SIZE - 3: //Toggle Break and Respawn
                     if (tool.getID() == MODIFY_AMOUNT) {
                         return;
@@ -575,7 +580,7 @@ public class InventoryListener implements Listener {
         index--;
         inv.setItem(index, infoStack);
 
-        infoStack = new ItemStack(Material.CLOCK);
+        infoStack = new ItemStack(Material.ACACIA_DOOR);
         info = Bukkit.getItemFactory().getItemMeta(infoStack.getType());
         info.setDisplayName("§eLoot Conditions");
         details = new ArrayList<>();
@@ -586,6 +591,7 @@ public class InventoryListener implements Listener {
         info.setLore(details);
         infoStack.setItemMeta(info);
         index--;
+        inv.setItem(index, infoStack);
 
         //Store the current view in the Player's stack
         pageStacks.put(player.getUniqueId(), new Stack<Inventory>());

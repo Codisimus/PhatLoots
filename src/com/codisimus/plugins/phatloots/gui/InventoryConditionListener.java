@@ -25,5 +25,7 @@ public class InventoryConditionListener implements Listener {
                 inv.addItem(condition.handleClick(inv, null));
             }
         }
+
+        player.openInventory(inv);
     }
 }
