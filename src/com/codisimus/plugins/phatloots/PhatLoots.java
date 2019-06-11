@@ -1,6 +1,7 @@
 package com.codisimus.plugins.phatloots;
 
 import com.codisimus.plugins.phatloots.commands.*;
+import com.codisimus.plugins.phatloots.conditions.TimeCondition;
 import com.codisimus.plugins.phatloots.events.ChestRespawnEvent.RespawnReason;
 import com.codisimus.plugins.phatloots.gui.InventoryListener;
 import com.codisimus.plugins.phatloots.listeners.*;
@@ -23,6 +24,7 @@ import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.*;
@@ -171,6 +173,9 @@ public class PhatLoots extends JavaPlugin {
         if (mythicMobsSupport) {
             ConfigurationSerialization.registerClass(MythicMobsItem.class, "MythicMobsItem");
         }
+
+        // Register loot conditions
+        ConfigurationSerialization.registerClass(TimeCondition.class, "TimeCondition");
 
         /* Load External PhatLoots Addons */
         //Buttons, Tools, CodCommands, RegionHooks, and ConfigurationSerializable classes should be registered from within the Addon
