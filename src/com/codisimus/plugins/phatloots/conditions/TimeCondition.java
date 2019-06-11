@@ -93,6 +93,7 @@ public class TimeCondition extends LootCondition {
     @Override
     public Map<String, Object> serialize() {
         Map<String, Object> map =  new TreeMap<String, Object>();
+        map.put("Enabled", enabled);
         map.put("Time", time);
         return map;
     }
