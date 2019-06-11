@@ -19,7 +19,6 @@ import java.util.List;
  *
  * @author Redned
  */
-@SerializableAs("LootCondition")
 public abstract class LootCondition implements ConfigurationSerializable {
 
     protected boolean enabled;

@@ -1048,6 +1048,15 @@ public final class PhatLoot implements ConfigurationSerializable {
     }
 
     /**
+     * Gets the loot conditions for the PhatLoot
+     *
+     * @return The loot conditions
+     */
+    public List<LootCondition> getLootConditions() {
+        return lootConditions;
+    }
+
+    /**
      * Reads Chest Locations of the PhatLoot from file
      */
     public final void loadChests() {
