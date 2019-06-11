@@ -11,6 +11,8 @@ import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * A loot condition is a condition that is ran before the loot is open. If the condition
@@ -22,6 +24,10 @@ import java.util.List;
 public abstract class LootCondition implements ConfigurationSerializable {
 
     protected boolean enabled;
+
+    public LootCondition(Map<String, Object> map) {
+        enabled = (boolean) map.get("Enabled");
+    }
 
     /**
      * Checks the condition
@@ -65,5 +71,12 @@ public abstract class LootCondition implements ConfigurationSerializable {
      */
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
+    }
+
+    @Override
+    public Map<String, Object> serialize() {
+        Map<String, Object> map =  new TreeMap<String, Object>();
+        map.put("Enabled", enabled);
+        return map;
     }
 }
