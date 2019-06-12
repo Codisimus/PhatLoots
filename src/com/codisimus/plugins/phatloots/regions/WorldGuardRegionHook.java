@@ -9,7 +9,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import com.sk89q.worldguard.util.Locations;
 import org.bukkit.Location;
 
 /**
