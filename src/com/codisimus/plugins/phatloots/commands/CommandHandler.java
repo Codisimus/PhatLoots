@@ -156,7 +156,7 @@ public class CommandHandler implements CommandExecutor {
             if (meta != null) {
                 handleCommand(sender, meta, new String[0]);
             } else {
-                displayHelpPage(sender);
+                displayHelpPage(sender, 1);
             }
             return true;
         }
@@ -178,6 +178,14 @@ public class CommandHandler implements CommandExecutor {
                          : arg1;
             switch (args.length) {
             case 2:
+                // Display help pages
+                try {
+                    displayHelpPage(sender, Integer.parseInt(args[1]));
+                    return true;
+                } catch (NumberFormatException ex) {
+                    /* do nothing */
+                }
+
                 meta = findMeta(subcommand, null);
                 break;
             case 3:
@@ -186,14 +194,15 @@ public class CommandHandler implements CommandExecutor {
             default:
                 break;
             }
+
             if (meta != null) {
                 displayUsage(sender, meta);
             } else {
-                displayHelpPage(sender);
+                displayHelpPage(sender, 1);
             }
         } else { //Invalid command
             sender.sendMessage("§6" + subcommand + "§4 is not a valid command");
-            displayHelpPage(sender);
+            displayHelpPage(sender, 1);
         }
         return true;
     }
@@ -373,13 +382,27 @@ public class CommandHandler implements CommandExecutor {
      * Displays the help page for grouped commands
      *
      * @param sender The sender to display the help page to
+     * @param page The page to display
      */
-    private void displayHelpPage(CommandSender sender) {
+    private void displayHelpPage(CommandSender sender, int page) {
         sender.sendMessage("§1Sub commands of §6/" + parentCommand + "§1:");
-        sender.sendMessage("§2/" + parentCommand + " help §f<§6command§f> =§b Display the usage of a sub command");
-        for (CodCommand meta : metas) {
+        sender.sendMessage("§2/" + parentCommand + " help §f<§6command§f> =§b Display the usage of a sub command.");
+
+        boolean resultsFound = false;
+        int displaySize = page * 10;
+        for (int i = displaySize - 10; i < displaySize; i++) {
+            if (i >= metas.size())
+                continue;
+
+            CodCommand meta = metas.toArray(new CodCommand[metas.size()])[i];
             displayOneLiner(sender, meta);
+            resultsFound = true;
         }
+
+        if (!resultsFound)
+            sender.sendMessage("§4Could not find any results for page §6" + page + "§4.");
+        else if (metas.size() >= displaySize)
+            sender.sendMessage("§6Use §b/loot help " + (page + 1) + "§6 to view the next page of results.");
     }
 
     /**
