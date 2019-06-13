@@ -21,7 +21,6 @@
             <id>sonatype</id>
             <url>https://oss.sonatype.org/content/groups/public/</url>
         </repository>
-
         <repository>
             <id>citizens-repo</id>
             <url>http://repo.citizensnpcs.co/</url>

@@ -17,6 +17,7 @@ import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -34,7 +35,7 @@ public class InventoryListener implements Listener {
     final static int TOOL_SLOT = SIZE - 9;
     private static final HashMap<UUID, Boolean> switchingPages = new HashMap<>(); //Player -> Going deeper (true) or back (false)
     private static final HashMap<UUID, PhatLoot> infoViewers = new HashMap<>(); //Player -> PhatLoot they are viewing
-    private static final HashMap<UUID, Stack<Inventory>> pageStacks = new HashMap<>(); //Player -> Page history
+    private static final HashMap<UUID, Stack<InventoryView>> pageStacks = new HashMap<>(); //Player -> Page history
     private static final HashMap<UUID, Loot> holding = new HashMap<>(); //Player -> Loot on cursor
     private static final HashMap<Integer, Button> buttons = new HashMap<>();
 
@@ -59,12 +60,11 @@ public class InventoryListener implements Listener {
      * Returns the List of loot for the current Inventory
      *
      * @param phatLoot The PhatLoot that contains the Loot
-     * @param inv The current Inventory
+     * @param invName The name of the current Inventory
      * @return The List of loot for the PhatLoot/LootCollection
      */
-    private static List<Loot> getLootList(PhatLoot phatLoot, Inventory inv) {
+    private static List<Loot> getLootList(PhatLoot phatLoot, String invName) {
         LootCollection coll = null;
-        String invName = inv.getName();
         if (invName.endsWith(" (Collection)")) {
             coll = phatLoot.findCollection(invName.substring(0, invName.length() - 13));
         }
@@ -90,8 +90,8 @@ public class InventoryListener implements Listener {
         if (!infoViewers.containsKey(playerUUID)) {
             return;
         } else { //Fixes glitch of not detecting inventory close
-            if (!event.getInventory().getTitle().contains("Loot")
-                    && !event.getInventory().getTitle().contains("Collection")) {
+            if (!event.getView().getTitle().contains("Loot")
+                    && !event.getView().getTitle().contains("Collection")) {
                 infoViewers.remove(playerUUID).save(); //Save the PhatLoot in case it has been modified
                 pageStacks.get(playerUUID).empty();
                 pageStacks.remove(playerUUID);
@@ -108,7 +108,7 @@ public class InventoryListener implements Listener {
         Inventory inv = event.getInventory();
         Tool tool = Tool.getTool(inv.getItem(TOOL_SLOT));
         ItemStack stack = event.getCurrentItem();
-        List<Loot> lootList = getLootList(phatLoot, inv);
+        List<Loot> lootList = getLootList(phatLoot, event.getView().getTitle());
         int slot = event.getRawSlot();
         Loot loot = slot >= 0 && lootList.size() > slot ? lootList.get(slot) : null;
 
@@ -259,7 +259,7 @@ public class InventoryListener implements Listener {
                 }
             }
 
-            if (inv.getTitle().endsWith("Loot Tables")) { //Default View
+            if (event.getView().getTitle().endsWith("Loot Tables")) { //Default View
                 ItemStack infoStack;
                 ItemMeta info = Bukkit.getItemFactory().getItemMeta(Material.STONE); //Block type doesn't really matter
                 List<String> details = new ArrayList<>();
@@ -352,7 +352,7 @@ public class InventoryListener implements Listener {
                         ((LootCollection) loot).addLoot(l);
                         event.getView().setCursor(null);
                     } else { //Enter LootCollection
-                        viewCollection(player, ((LootCollection) loot).name);
+                        viewCollection(player, ((LootCollection) loot).name, phatLoot.name);
                     }
                     return;
                 }
@@ -493,7 +493,7 @@ public class InventoryListener implements Listener {
 
         if (switchingPages.containsKey(playerUUID)) { //Switching pages
             if (switchingPages.get(playerUUID)) { //Going deeper
-                pageStacks.get(playerUUID).add(event.getInventory());
+                pageStacks.get(playerUUID).add(event.getView());
             }
             //The Player has finished switching pages
             switchingPages.remove(playerUUID);
@@ -594,10 +594,10 @@ public class InventoryListener implements Listener {
         inv.setItem(index, infoStack);
 
         //Store the current view in the Player's stack
-        pageStacks.put(player.getUniqueId(), new Stack<Inventory>());
+        pageStacks.put(player.getUniqueId(), new Stack<InventoryView>());
 
         infoViewers.put(player.getUniqueId(), phatLoot);
-        switchView(player, inv);
+        switchView(player, inv, invName);
     }
 
     /**
@@ -605,10 +605,11 @@ public class InventoryListener implements Listener {
      *
      * @param player The given Player
      * @param name The name of the LootCollection to open
+     * @param phatLootName The name of the PhatLoot the LootCollection is part of
      */
-    private static void viewCollection(Player player, String name) {
+    private static void viewCollection(Player player, String name, String phatLootName) {
         //Store the current view in the Player's stack
-        pageStacks.get(player.getUniqueId()).add(player.getOpenInventory().getTopInventory());
+        pageStacks.get(player.getUniqueId()).add(player.getOpenInventory());
 
         //Get the Inventory title
         String invName;
@@ -635,12 +636,12 @@ public class InventoryListener implements Listener {
         info = Bukkit.getItemFactory().getItemMeta(item.getType());
         info.setDisplayName("§2Up to...");
         List<String> details = new ArrayList();
-        details.add("§6" + pageStacks.get(player.getUniqueId()).peek().getTitle());
+        details.add("§6" + phatLootName);
         info.setLore(details);
         item.setItemMeta(info);
         inv.setItem(SIZE - 1, item);
 
-        switchView(player, inv);
+        switchView(player, inv, invName);
     }
 
     /**
@@ -650,9 +651,10 @@ public class InventoryListener implements Listener {
      */
     private static void up(Player player) {
         if (!pageStacks.isEmpty()) {
-            Stack<Inventory> history = pageStacks.get(player.getUniqueId());
+            Stack<InventoryView> history = pageStacks.get(player.getUniqueId());
             if (!history.empty()) {
-                switchView(player, history.pop());
+                InventoryView view = history.pop();
+                switchView(player, view.getTopInventory(), view.getTitle());
             }
         }
     }
@@ -662,8 +664,9 @@ public class InventoryListener implements Listener {
      *
      * @param player The Player to open the Inventory
      * @param inv The Inventory to open
+     * @param invName The name of the Inventory to open
      */
-    private static void switchView(final Player player, final Inventory inv) {
+    private static void switchView(final Player player, final Inventory inv, final String invName) {
         UUID playerUUID = player.getUniqueId();
         switchingPages.put(playerUUID, false);
 
@@ -689,7 +692,7 @@ public class InventoryListener implements Listener {
         }
 
         //Populate the inventory
-        refreshPage(player, inv, getLootList(infoViewers.get(player.getUniqueId()), inv));
+        refreshPage(player, inv, getLootList(infoViewers.get(player.getUniqueId()), invName));
 
         //Open the Inventory in 2 ticks to avoid Bukkit glitches
         Bukkit.getScheduler().runTaskLater(PhatLoots.plugin, () -> {
