@@ -352,7 +352,7 @@ public class InventoryListener implements Listener {
                         ((LootCollection) loot).addLoot(l);
                         event.getView().setCursor(null);
                     } else { //Enter LootCollection
-                        viewCollection(player, ((LootCollection) loot).name, phatLoot.name);
+                        viewCollection(player, ((LootCollection) loot).name);
                     }
                     return;
                 }
@@ -605,9 +605,8 @@ public class InventoryListener implements Listener {
      *
      * @param player The given Player
      * @param name The name of the LootCollection to open
-     * @param phatLootName The name of the PhatLoot the LootCollection is part of
      */
-    private static void viewCollection(Player player, String name, String phatLootName) {
+    private static void viewCollection(Player player, String name) {
         //Store the current view in the Player's stack
         pageStacks.get(player.getUniqueId()).add(player.getOpenInventory());
 
@@ -636,7 +635,7 @@ public class InventoryListener implements Listener {
         info = Bukkit.getItemFactory().getItemMeta(item.getType());
         info.setDisplayName("§2Up to...");
         List<String> details = new ArrayList();
-        details.add("§6" + phatLootName);
+        details.add("§6" + pageStacks.get(player.getUniqueId()).peek().getTitle());
         info.setLore(details);
         item.setItemMeta(info);
         inv.setItem(SIZE - 1, item);
