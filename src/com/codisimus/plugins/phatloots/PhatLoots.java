@@ -3,6 +3,7 @@ package com.codisimus.plugins.phatloots;
 import com.codisimus.plugins.phatloots.commands.*;
 import com.codisimus.plugins.phatloots.conditions.TimeCondition;
 import com.codisimus.plugins.phatloots.events.ChestRespawnEvent.RespawnReason;
+import com.codisimus.plugins.phatloots.gui.InventoryConditionListener;
 import com.codisimus.plugins.phatloots.gui.InventoryListener;
 import com.codisimus.plugins.phatloots.listeners.*;
 import com.codisimus.plugins.phatloots.loot.*;
@@ -228,6 +229,8 @@ public class PhatLoots extends JavaPlugin {
         PluginManager pm = Bukkit.getPluginManager();
         pm.registerEvents(new PhatLootsListener(), this);
         pm.registerEvents(new InventoryListener(), this);
+        pm.registerEvents(new InventoryConditionListener(), this);
+
         if (pm.isPluginEnabled("Citizens")) {
             logger.info("Listening for Citizens NPC deaths");
             pm.registerEvents(new CitizensListener(), this);

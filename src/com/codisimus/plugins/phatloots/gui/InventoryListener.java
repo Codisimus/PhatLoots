@@ -27,6 +27,8 @@ import org.bukkit.scheduler.BukkitRunnable;
  *
  * @author Cody
  */
+
+// TODO: Remove all of the static methods and variables from this class
 public class InventoryListener implements Listener {
     private static final int NAVIGATE_AND_MOVE = 0;
     private static final int MODIFY_PROBABILITY_AND_TOGGLE = 1;

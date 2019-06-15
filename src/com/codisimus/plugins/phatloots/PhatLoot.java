@@ -47,7 +47,7 @@ public final class PhatLoot implements ConfigurationSerializable {
 
     public String name; //A unique name for the PhatLoot
     public ArrayList<Loot> lootList; //List of Loot
-    private List<LootCondition> lootConditions; // List of Loot conditions
+    private Map<Integer, LootCondition> lootConditions; // Map of Loot conditions
 
     public int days; //Reset time (will never reset if any are negative)
     public int hours;
@@ -68,7 +68,7 @@ public final class PhatLoot implements ConfigurationSerializable {
     public PhatLoot(String name) {
         this.name = name;
         lootList = new ArrayList<>();
-        lootConditions = new ArrayList<>();
+        lootConditions = new HashMap<>();
         days = PhatLootsConfig.defaultDays;
         hours = PhatLootsConfig.defaultHours;
         minutes = PhatLootsConfig.defaultMinutes;
@@ -1053,6 +1053,15 @@ public final class PhatLoot implements ConfigurationSerializable {
      * @return The loot conditions
      */
     public List<LootCondition> getLootConditions() {
+        return new ArrayList<>(lootConditions.values());
+    }
+
+    /**
+     * Gets the loot conditions map for the PhatLoot
+     *
+     * @return The loot conditions map
+     */
+    public Map<Integer, LootCondition> getLootConditionsMap() {
         return lootConditions;
     }
 
@@ -1119,7 +1128,7 @@ public final class PhatLoot implements ConfigurationSerializable {
         map.put("BreakAndRespawn", breakAndRespawn);
 
         map.put("LootList", lootList);
-        map.put("LootConditions", lootConditions);
+        map.put("LootConditions", getLootConditions());
         return map;
     }
 
@@ -1154,7 +1163,13 @@ public final class PhatLoot implements ConfigurationSerializable {
             }
 
             if (map.containsKey(currentLine = "LootConditions")) {
-                lootConditions = (ArrayList<LootCondition>) map.get(currentLine = "LootConditions");
+                lootConditions = new HashMap<>();
+                List<LootCondition> conditions = (ArrayList<LootCondition>) map.get(currentLine = "LootConditions");
+                if (conditions != null && !conditions.isEmpty()) {
+                    for (int i = 0; i < conditions.size(); i++) {
+                        lootConditions.put(i, conditions.get(i));
+                    }
+                }
             }
 
             //Updated Legacy money/experience data
