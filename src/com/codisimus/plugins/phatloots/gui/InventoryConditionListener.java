@@ -3,6 +3,8 @@ package com.codisimus.plugins.phatloots.gui;
 import com.codisimus.plugins.phatloots.PhatLoot;
 import com.codisimus.plugins.phatloots.conditions.LootCondition;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.Material;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
@@ -11,7 +13,10 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,6 +31,7 @@ import java.util.UUID;
 // TODO: Remove all of the static methods and variables from this class
 public class InventoryConditionListener implements Listener {
 
+    private final static int SIZE = 54;
     private static final HashMap<UUID, PhatLoot> conditionViewers = new HashMap<>(); //Player -> PhatLoot they are viewing
 
     public static void viewConditionMenu(Player player, PhatLoot phatLoot) {
@@ -37,6 +43,13 @@ public class InventoryConditionListener implements Listener {
                 inv.setItem(i, lootConditionMap.get(i).handleClick(inv, null));
             }
         }
+
+        ItemStack item = new ItemStack(Material.LADDER);
+        ItemMeta meta = item.getItemMeta();
+        meta.setDisplayName(ChatColor.DARK_GREEN + "Up to...");
+        meta.setLore(Arrays.asList(ChatColor.GOLD + phatLoot.name));
+        item.setItemMeta(meta);
+        inv.setItem(SIZE - 1, item);
 
         conditionViewers.put(player.getUniqueId(), phatLoot);
         player.openInventory(inv);
@@ -72,10 +85,17 @@ public class InventoryConditionListener implements Listener {
         PhatLoot phatLoot = conditionViewers.get(player.getUniqueId());
 
         Map<Integer, LootCondition> lootConditionMap = phatLoot.getLootConditionsMap();
-        if (lootConditionMap.get(event.getSlot()) == null)
+        if (lootConditionMap.get(event.getSlot()) != null) {
+            event.getClickedInventory().setItem(event.getSlot(), lootConditionMap.get(event.getSlot()).handleClick(event.getInventory(), event.getClick()));
             return;
+        }
 
-        event.getClickedInventory().setItem(event.getSlot(), lootConditionMap.get(event.getSlot()).handleClick(event.getInventory(), event.getClick()));
+        switch (event.getSlot()) {
+            case SIZE - 1:
+                conditionViewers.remove(player.getUniqueId());
+                InventoryListener.viewPhatLoot(player, phatLoot);
+                break;
+        }
     }
 
     /**
