@@ -185,6 +185,16 @@ public class InventoryListener implements Listener {
             }
         }
 
+        if (stack.getType() == Material.ACACIA_DOOR) {
+            ItemMeta details = stack.getItemMeta();
+            if (details.hasDisplayName() && details.getDisplayName().contains("Loot Conditions")) {
+                if (event.getSlot() == SIZE - 4) {
+                    InventoryConditionListener.viewConditionMenu(player, phatLoot);
+                    return;
+                }
+            }
+        }
+
         /** Check if a Button was Clicked **/
         if (buttons.containsKey(slot)) {
             if (buttons.get(slot).onClick(event.getClick(), inv, phatLoot, lootList)) {
@@ -267,11 +277,6 @@ public class InventoryListener implements Listener {
                 List<String> details = new ArrayList<>();
 
                 switch (slot) {
-                case SIZE - 4:
-                    // Need to initialize infoStack here
-                    infoStack = event.getView().getTopInventory().getItem(SIZE - 4);
-                    InventoryConditionListener.viewConditionMenu(player, phatLoot);
-                    break;
                 case SIZE - 3: //Toggle Break and Respawn
                     if (tool.getID() == MODIFY_AMOUNT) {
                         return;
