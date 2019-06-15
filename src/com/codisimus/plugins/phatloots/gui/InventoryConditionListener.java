@@ -72,9 +72,10 @@ public class InventoryConditionListener implements Listener {
         PhatLoot phatLoot = conditionViewers.get(player.getUniqueId());
 
         Map<Integer, LootCondition> lootConditionMap = phatLoot.getLootConditionsMap();
-        for (int i = 0; i < lootConditionMap.size(); i++) {
-            event.getClickedInventory().setItem(i, lootConditionMap.get(i).handleClick(event.getInventory(), event.getClick()));
-        }
+        if (lootConditionMap.get(event.getSlot()) == null)
+            return;
+
+        event.getClickedInventory().setItem(event.getSlot(), lootConditionMap.get(event.getSlot()).handleClick(event.getInventory(), event.getClick()));
     }
 
     /**
