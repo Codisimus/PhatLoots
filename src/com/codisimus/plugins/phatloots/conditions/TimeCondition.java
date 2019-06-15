@@ -54,10 +54,6 @@ public class TimeCondition extends LootCondition {
     // TODO: Find a way to obtain user input and allow for specific time ##'s
     @Override
     public ItemStack handleClick(Inventory inventory, ClickType click) {
-        if (click == ClickType.RIGHT) {
-            this.enabled = !enabled;
-        }
-
         if (click == ClickType.LEFT) {
             if (time.equalsIgnoreCase("day")) {
                 time = "night";

@@ -33,7 +33,7 @@ public abstract class LootCondition implements ConfigurationSerializable {
      * Checks the condition
      *
      * @param player The player to check the condition on
-     * @return boolean The result of the oondition
+     * @return boolean The result of the condition
      */
     public abstract boolean checkCondition(Player player);
 
@@ -45,6 +45,10 @@ public abstract class LootCondition implements ConfigurationSerializable {
      * @return ItemStack The ItemStack constructed
      */
     public ItemStack handleClick(Inventory inventory, ClickType click) {
+        if (click == ClickType.RIGHT) {
+            this.enabled = !enabled;
+        }
+
         ItemStack condition = new ItemStack(Material.REDSTONE);
         ItemMeta meta = condition.getItemMeta();
         List<String> lore = new ArrayList<String>();

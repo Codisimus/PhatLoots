@@ -232,4 +232,43 @@ public class PhatLootsUtil {
             return time + " millisecond(s)";
         }
     }
+
+    /**
+     * Gets the experience at a certain level.
+     *
+     * @param level The level to retrieve the experience from
+     * @return The experience to level up at that level
+     */
+    public static int getExpAtLevel(int level) {
+        if (level <= 15) {
+            return (2 * level) + 7;
+        }
+        if ((level >= 16) && (level <= 30)) {
+            return (5 * level) - 38;
+        }
+        return (9 * level) - 158;
+    }
+
+    /**
+     * Never use player.getTotalExperience(), use this method instead.
+     * player.getTotalExperience() shows XP that has been spent on enchants.
+     *
+     * player.getExp() is the percentage toward the next level (between 0 & 1).
+     *
+     * @param player The player to get the total experience of
+     * @return The total experience the player has
+     */
+    public static int getTotalExperience(final Player player) {
+        int exp = (int) Math.round(getExpAtLevel(player.getLevel()) * player.getExp());
+        int currentLevel = player.getLevel();
+
+        while (currentLevel > 0) {
+            currentLevel--;
+            exp += getExpAtLevel(currentLevel);
+        }
+        if (exp < 0) {
+            exp = Integer.MAX_VALUE;
+        }
+        return exp;
+    }
 }

@@ -1,6 +1,7 @@
 package com.codisimus.plugins.phatloots;
 
 import com.codisimus.plugins.phatloots.commands.*;
+import com.codisimus.plugins.phatloots.conditions.ExperienceCondition;
 import com.codisimus.plugins.phatloots.conditions.TimeCondition;
 import com.codisimus.plugins.phatloots.events.ChestRespawnEvent.RespawnReason;
 import com.codisimus.plugins.phatloots.gui.InventoryConditionListener;
@@ -25,7 +26,6 @@ import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.*;
@@ -176,6 +176,7 @@ public class PhatLoots extends JavaPlugin {
         }
 
         // Register loot conditions
+        ConfigurationSerialization.registerClass(ExperienceCondition.class, "ExperienceCondition");
         ConfigurationSerialization.registerClass(TimeCondition.class, "TimeCondition");
 
         /* Load External PhatLoots Addons */
