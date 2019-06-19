@@ -22,7 +22,7 @@ import java.util.Map;
 public class ExperienceCondition extends LootCondition {
 
     private int experience;
-    public String option;
+    private String option;
 
     public ExperienceCondition(Map<String, Object> map) {
         super(map);
@@ -72,6 +72,9 @@ public class ExperienceCondition extends LootCondition {
             if (click == ClickType.SHIFT_RIGHT) {
                 experience -= 1;
             }
+
+            if (click == ClickType.MIDDLE)
+                experience = 1;
         }
 
         ItemStack item = super.handleClick(inventory, click);
