@@ -4,7 +4,7 @@
     <groupId>com.codisimus.plugins</groupId>
     <artifactId>phatloots</artifactId>
     <packaging>jar</packaging>
-    <version>5.3.4</version>
+    <version>5.3.5</version>
     <name>PhatLoots</name>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -51,6 +51,13 @@
             <groupId>org.spigotmc</groupId>
             <artifactId>spigot-api</artifactId>
             <version>1.13-R0.1-SNAPSHOT</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>net.md-5</groupId>
+            <artifactId>bungeecord-chat</artifactId>
+            <version>1.13-SNAPSHOT</version>
+            <type>jar</type>
             <scope>provided</scope>
         </dependency>
         <dependency>

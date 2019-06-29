@@ -9,6 +9,12 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.logging.Level;
+
+import net.md_5.bungee.api.ChatColor;
+import net.md_5.bungee.api.chat.BaseComponent;
+import net.md_5.bungee.api.chat.ClickEvent;
+import net.md_5.bungee.api.chat.HoverEvent;
+import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
@@ -19,6 +25,8 @@ import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
 import org.bukkit.material.MaterialData;
 import org.bukkit.plugin.java.JavaPlugin;
+
+import javax.xml.soap.Text;
 
 public class CommandHandler implements CommandExecutor {
 
@@ -412,23 +420,44 @@ public class CommandHandler implements CommandExecutor {
      * @param meta The given CodCommand
      */
     private void displayOneLiner(CommandSender sender, CodCommand meta) {
+        TextComponent component = new TextComponent();
         String cmd = getCommand(meta);
         if (meta.usage().length == 1) {
-            sender.sendMessage(meta.usage()[0].replace("<command>", cmd));
+            TextComponent command = new TextComponent(meta.usage()[0].replace("<command>", cmd));
+            command.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new BaseComponent[] {new TextComponent("Click to run.")}));
+            command.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, cmd));
+            sender.spigot().sendMessage(command);
         } else {
-            StringBuilder sb = new StringBuilder();
-            sb.append("§2");
-            sb.append(getCommand(meta));
-            sb.append(" §f=§b '/");
-            sb.append(parentCommand);
-            sb.append(" help ");
-            sb.append(meta.command());
-            if (!meta.subcommand().isEmpty()) {
-                sb.append(' ');
-                sb.append(meta.subcommand());
+            TextComponent command = new TextComponent(cmd);
+            command.setColor(ChatColor.DARK_GREEN);
+            command.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new BaseComponent[] {new TextComponent("Click to run.")}));
+            command.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, cmd));
+            component.addExtra(command);
+
+            for (BaseComponent comp : TextComponent.fromLegacyText(ChatColor.RESET + " = " + ChatColor.AQUA + "'/")) {
+                component.addExtra(comp);
             }
-            sb.append("' for full usage.");
-            sender.sendMessage(sb.toString());
+
+            TextComponent desc = new TextComponent(parentCommand + " help " + meta.command() + "'");
+            desc.setColor(ChatColor.AQUA);
+
+            TextComponent[] components = new TextComponent[meta.usage().length];
+            for (int i = 0; i < meta.usage().length; i++) {
+                String nextLine = "\n";
+                if (i == 0)
+                    nextLine = "";
+
+                components[i] = new TextComponent(nextLine + meta.usage()[i].replace("<command>", cmd));
+            }
+
+            desc.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, components));
+            component.addExtra(desc);
+
+            for (BaseComponent comp : TextComponent.fromLegacyText(ChatColor.AQUA + " for full usage.")) {
+                component.addExtra(comp);
+            }
+
+            sender.spigot().sendMessage(component);
         }
     }
 
