@@ -33,7 +33,7 @@ public class HealthCondition extends LootCondition {
     public HealthCondition(Map<String, Object> map) {
         super(map);
 
-        health = (int) map.get("Health");
+        health = (double) map.get("Health");
         option = (String) map.get("Option");
     }
 
