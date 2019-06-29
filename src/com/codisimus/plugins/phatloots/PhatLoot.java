@@ -1165,10 +1165,27 @@ public final class PhatLoot implements ConfigurationSerializable {
             if (map.containsKey(currentLine = "LootConditions")) {
                 lootConditions = new HashMap<>();
                 List<LootCondition> conditions = (ArrayList<LootCondition>) map.get(currentLine = "LootConditions");
-                if (conditions != null && !conditions.isEmpty()) {
-                    for (int i = 0; i < conditions.size(); i++) {
-                        lootConditions.put(i, conditions.get(i));
-                    }
+                Map<String, LootCondition> conditionMap = new HashMap<String, LootCondition>();
+
+                // Add default conditions
+                for (LootCondition condition : PhatLoots.plugin.getDefaultConditions()) {
+                    conditionMap.put(condition.getName(), condition);
+                }
+
+                // Override the default conditions if applicable
+                for (LootCondition condition : conditions) {
+                    conditionMap.put(condition.getName(), condition);
+                }
+
+                conditions.clear();
+                for (String str : conditionMap.keySet()) {
+                    LootCondition condition = conditionMap.get(str);
+                    conditions.add(condition);
+                }
+
+                for (int i = 0; i < conditions.size(); i++) {
+                    LootCondition condition = conditions.get(i);
+                    lootConditions.put(i, condition);
                 }
             }
 

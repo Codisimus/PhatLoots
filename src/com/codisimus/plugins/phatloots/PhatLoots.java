@@ -2,6 +2,7 @@ package com.codisimus.plugins.phatloots;
 
 import com.codisimus.plugins.phatloots.commands.*;
 import com.codisimus.plugins.phatloots.conditions.ExperienceCondition;
+import com.codisimus.plugins.phatloots.conditions.LootCondition;
 import com.codisimus.plugins.phatloots.conditions.TimeCondition;
 import com.codisimus.plugins.phatloots.events.ChestRespawnEvent.RespawnReason;
 import com.codisimus.plugins.phatloots.gui.InventoryConditionListener;
@@ -38,7 +39,8 @@ import org.bukkit.scheduler.BukkitRunnable;
  * @author Codisimus
  */
 public class PhatLoots extends JavaPlugin {
-    public static JavaPlugin plugin;
+
+    public static PhatLoots plugin;
     public static Logger logger;
     public static Economy econ = null;
     public static String dataFolder;
@@ -49,6 +51,8 @@ public class PhatLoots extends JavaPlugin {
     public static final HashMap<String, RegionHook> regionHooks = new HashMap<>(); //Plugin Name -> RegionHook
     public static final EnumMap<Material, HashMap<String, String>> types = new EnumMap(Material.class); //Material -> World Name -> PhatLoot Name
     private static final HashMap<String, PhatLoot> phatLoots = new HashMap<>(); //PhatLoot Name -> PhatLoot
+
+    private List<LootCondition> defaultConditions = new ArrayList<LootCondition>();
 
     public static void main(String[] args) {
         //Do Nothing - For debugging within NetBeans IDE
@@ -178,6 +182,9 @@ public class PhatLoots extends JavaPlugin {
         // Register loot conditions
         ConfigurationSerialization.registerClass(ExperienceCondition.class, "ExperienceCondition");
         ConfigurationSerialization.registerClass(TimeCondition.class, "TimeCondition");
+
+        defaultConditions.add(new ExperienceCondition("ExperienceCondition"));
+        defaultConditions.add(new TimeCondition("TimeCondition"));
 
         /* Load External PhatLoots Addons */
         //Buttons, Tools, CodCommands, RegionHooks, and ConfigurationSerializable classes should be registered from within the Addon
@@ -577,6 +584,31 @@ public class PhatLoots extends JavaPlugin {
         }
         econ = (Economy) rsp.getProvider();
         return econ != null;
+    }
+
+    /**
+     * Retrieves a loot condition with the given name
+     *
+     * @param conditions The loot condition list to search
+     * @param name The name of the loot condition to look for
+     * @return The loot condition with the given name
+     */
+    public LootCondition getConditionByName(List<LootCondition> conditions, String name) {
+        for (LootCondition condition : conditions) {
+            if (condition.getName().equals(name))
+                return condition;
+        }
+
+        return null;
+    }
+
+    /**
+     * Retrieves the default loot condition
+     *
+     * @return The default loot conditions
+     */
+    public List<LootCondition> getDefaultConditions() {
+        return defaultConditions;
     }
 
     /**

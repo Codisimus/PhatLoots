@@ -24,12 +24,20 @@ public class ExperienceCondition extends LootCondition {
     private int experience;
     private String option;
 
+    public ExperienceCondition(String name) {
+        super(name);
+
+        experience = 0;
+        option = "above";
+    }
+
     public ExperienceCondition(Map<String, Object> map) {
         super(map);
 
         experience = (int) map.get("Experience");
         option = (String) map.get("Option");
     }
+
     @Override
     public boolean checkCondition(Player player) {
         switch (option) {

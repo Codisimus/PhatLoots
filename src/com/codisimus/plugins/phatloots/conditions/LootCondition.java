@@ -23,9 +23,17 @@ import java.util.TreeMap;
  */
 public abstract class LootCondition implements ConfigurationSerializable {
 
+    protected String name;
     protected boolean enabled;
 
+    public LootCondition(String name) {
+        this.name = name;
+
+        enabled = false;
+    }
+
     public LootCondition(Map<String, Object> map) {
+        name = (String) map.get("Name");
         enabled = (boolean) map.get("Enabled");
     }
 
@@ -60,6 +68,15 @@ public abstract class LootCondition implements ConfigurationSerializable {
     }
 
     /**
+     * Gets the name of the condition
+     *
+     * @return The condition name
+     */
+    public String getName() {
+        return name;
+    }
+
+    /**
      * Gets if the condition is enabled
      *
      * @return If the condition is enabled
@@ -80,6 +97,7 @@ public abstract class LootCondition implements ConfigurationSerializable {
     @Override
     public Map<String, Object> serialize() {
         Map<String, Object> map =  new TreeMap<String, Object>();
+        map.put("Name", name);
         map.put("Enabled", enabled);
         return map;
     }

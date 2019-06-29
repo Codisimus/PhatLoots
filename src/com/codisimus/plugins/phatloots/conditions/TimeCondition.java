@@ -22,6 +22,12 @@ public class TimeCondition extends LootCondition {
 
     private String time;
 
+    public TimeCondition(String name) {
+        super(name);
+
+        time = "day";
+    }
+
     public TimeCondition(Map<String, Object> map) {
         super(map);
 
