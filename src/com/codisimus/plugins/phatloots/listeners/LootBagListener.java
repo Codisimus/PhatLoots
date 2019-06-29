@@ -29,7 +29,7 @@ public class LootBagListener implements Listener {
             return;
 
         ItemStack hand = event.getItem();
-        if (!hand.hasItemMeta())
+        if (hand.getItemMeta() == null)
             return;
 
         if (!hand.getItemMeta().hasLore())
@@ -40,7 +40,7 @@ public class LootBagListener implements Listener {
             String finalLine = "";
             for (String str : PhatLootsConfig.lootBagKeys) {
                 if (line.startsWith(str)) {
-                    finalLine = line;
+                    finalLine = str;
                     break;
                 }
             }
