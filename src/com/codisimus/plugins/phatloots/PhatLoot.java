@@ -77,6 +77,11 @@ public final class PhatLoot implements ConfigurationSerializable {
         round = PhatLootsConfig.defaultRound;
         autoLoot = PhatLootsConfig.defaultAutoLoot;
         breakAndRespawn = PhatLootsConfig.defaultBreakAndRespawn;
+
+        // Adds default conditions when a PhatLoot is made
+        for (LootCondition condition : PhatLoots.plugin.getDefaultConditions()) {
+            lootConditions.put(lootConditions.size(), condition);
+        }
     }
 
     /**
