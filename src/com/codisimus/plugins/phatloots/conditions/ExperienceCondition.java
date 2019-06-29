@@ -73,17 +73,18 @@ public class ExperienceCondition extends LootCondition {
                     break;
             }
 
-            if (click == ClickType.SHIFT_LEFT) {
-                experience += 1;
-            }
-
-            if (click == ClickType.SHIFT_RIGHT) {
-                experience -= 1;
-            }
-
-            if (click == ClickType.MIDDLE)
-                experience = 1;
         }
+
+        if (click == ClickType.SHIFT_LEFT) {
+            experience += 1;
+        }
+
+        if (click == ClickType.SHIFT_RIGHT) {
+            experience -= 1;
+        }
+
+        if (click == ClickType.MIDDLE)
+            experience = 1;
 
         ItemStack item = super.handleClick(inventory, click);
         ItemMeta meta = item.getItemMeta();
