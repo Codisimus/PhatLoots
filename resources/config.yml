@@ -147,6 +147,7 @@ Messages:
     MobDroppedExperience: ''
     LootMessage: ''
     LootBroadcast: ''
+    LootConditionsNotMet: '&4You cannot loot this chest at this time!'
 
 ##PhatLoot Chests will display this name at the top of the Chest GUI
 ##<name> will be replaced with the name of the linked PhatLoot

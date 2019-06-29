@@ -54,6 +54,7 @@ public class PhatLootsConfig {
     public static String mobDroppedExperience;
     public static String lootMessage;
     public static String lootBroadcast;
+    public static String lootConditionsNotMet;
 
     public static String tierPrefix;
 
@@ -125,6 +126,7 @@ public class PhatLootsConfig {
         mobDroppedExperience = getString(section, "MobDroppedExperience");
         lootMessage = getString(section, "LootMessage");
         lootBroadcast = getString(section, "LootBroadcast");
+        lootConditionsNotMet = getString(section, "LootConditionsNotMet");
 
         PhatLootChest.chestName = getString(config, "ChestName");
 

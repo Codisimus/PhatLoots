@@ -9,6 +9,7 @@ import java.util.logging.Level;
 import net.milkbowl.vault.economy.EconomyResponse;
 import org.apache.commons.lang.time.DateUtils;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -314,8 +315,10 @@ public final class PhatLoot implements ConfigurationSerializable {
                 if (!condition.isEnabled())
                     continue;
 
-                if (!condition.checkCondition(player))
+                if (!condition.checkCondition(player)) {
+                    player.sendMessage(ChatColor.translateAlternateColorCodes('&', PhatLootsConfig.lootConditionsNotMet));
                     return false;
+                }
             }
         }
 
