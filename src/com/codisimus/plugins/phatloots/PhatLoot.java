@@ -248,6 +248,20 @@ public final class PhatLoot implements ConfigurationSerializable {
      * @return true if the PhatLootChest should be manually broken
      */
     public boolean rollForChestLoot(Player player, PhatLootChest chest, String title, boolean autoSpill) {
+        return rollForChestLoot(player, chest, title, autoSpill, true);
+    }
+
+    /**
+     * Rolls for loot to place in the given PhatLootChest
+     *
+     * @param player The Player who is looting
+     * @param chest The PhatLootChest that is being looted
+     * @param title The title of the Inventory
+     * @param autoSpill true if the Chest should spill its loot rather than placing it in the chest
+     * @param checkConditions true if loot conditions should be checked
+     * @return true if the PhatLootChest should be manually broken
+     */
+    public boolean rollForChestLoot(Player player, PhatLootChest chest, String title, boolean autoSpill, boolean checkConditions) {
         boolean flagToBreak = false;
 
         if (title == null) {
@@ -290,6 +304,19 @@ public final class PhatLoot implements ConfigurationSerializable {
         Bukkit.getPluginManager().callEvent(preEvent);
         if (preEvent.isCancelled()) {
             return flagToBreak;
+        }
+
+        LootConditionCheckEvent conditionEvent = new LootConditionCheckEvent(player, this, getLootConditions());
+        conditionEvent.setCancelled(!checkConditions);
+        Bukkit.getPluginManager().callEvent(conditionEvent);
+        if (!conditionEvent.isCancelled()) {
+            for (LootCondition condition : conditionEvent.getLootConditions()) {
+                if (!condition.isEnabled())
+                    continue;
+
+                if (!condition.checkCondition(player))
+                    return false;
+            }
         }
 
         //Roll for all the Loot
