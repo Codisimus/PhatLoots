@@ -1088,6 +1088,11 @@ public final class PhatLoot implements ConfigurationSerializable {
      * @return The loot conditions
      */
     public List<LootCondition> getLootConditions() {
+        // If there are no loot conditions, return the default ones
+        // this normally happens when someone upgrades their PhatLoots version
+        if (lootConditions == null || lootConditions.values() == null)
+            return PhatLoots.plugin.getDefaultConditions();
+
         return new ArrayList<>(lootConditions.values());
     }
 
