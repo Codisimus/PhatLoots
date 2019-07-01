@@ -37,3 +37,10 @@ The armor and weapon that a mob spawns with may be controlled by a loot table
 
 ### When a Player Fishes
 The item that the player fishes out of the water may be controlled by a loot table
+
+### Links
+Discord: https://discordapp.com/invite/7MRPQmt
+
+Download: https://www.spigotmc.org/resources/68925/ (1.13 and 1.14+)
+
+Legacy Download for Older Versions: https://dev.bukkit.org/projects/phatloots
