@@ -12,7 +12,7 @@ PhatLoots is a Bukkit plugin that allows a server admin to setup 'Loot Tables' t
 * Weapons and Armor may be automatically enchanted, named, and tiered to make them more exciting.
 * In game GUI (/loot info <PhatLoot>) using a chest inventory allows for easily viewing the information of a PhatLoot
 * Nearly all messages/features are customizable and may be disabled.
-* Configurable loot conditions that make PhatLoots openable only if the condition is met.
+* Configurable loot conditions that make loot tables openable only if the condition is met.
     
 ### Player opens a Chest  
 Chests may be placed around the World by an admin and linked to specific Loot Tables. When a Player finds one of these Chests and opens it, it will randomly choose 'loot' that appears in the Chest.
