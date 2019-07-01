@@ -1,4 +1,4 @@
-![PhatLoots](http://codisimus.com/images/plugin-banner-phatloots.jpg "PhatLoots")
+![PhatLoots](https://i.imgur.com/gZ5zxIX.png "PhatLoots")
 ==========
 PhatLoots is a Bukkit plugin that allows a server admin to setup 'Loot Tables' that give Players Items, money, exp, etc. in the following scenarios:
 
