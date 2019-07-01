@@ -1,3 +1,5 @@
+## This repo is no longer being updated. For future updates, please view: https://github.com/RednedEpic/PhatLoots.
+
 PhatLoots is a Bukkit plugin that allows a server admin to setup 'Loot Tables' that give Players Items, money, exp, etc. in the following scenarios:
 
 1.) Player opens a Chest
