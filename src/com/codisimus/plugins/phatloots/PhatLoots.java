@@ -23,6 +23,7 @@ import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import net.milkbowl.vault.economy.Economy;
+import org.bstats.bukkit.Metrics;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -210,6 +211,8 @@ public class PhatLoots extends JavaPlugin {
                 }
             }.runTaskTimer(this, autoSavePeriod, autoSavePeriod);
         }
+
+        new Metrics(this);
     }
 
     /**
