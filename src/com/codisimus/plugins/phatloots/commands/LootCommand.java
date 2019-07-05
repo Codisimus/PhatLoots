@@ -184,6 +184,9 @@ public class LootCommand {
         Location loc = new Location(world, x, y, z);
         LootBundle lootBundle = phatLoot.rollForLoot();
         for (ItemStack item : lootBundle.getItemList()) {
+            if (item.getType() == Material.AIR)
+                continue;
+
             world.dropItemNaturally(loc, item);
         }
 
@@ -194,8 +197,11 @@ public class LootCommand {
             }
         }
 
-        ExperienceOrb orb = (ExperienceOrb) world.spawnEntity(loc, EntityType.EXPERIENCE_ORB);
-        orb.setExperience(lootBundle.getExp());
+        // Check experience so orbs without any experience value don't spawn
+        if (lootBundle.getExp() > 0) {
+            ExperienceOrb orb = (ExperienceOrb) world.spawnEntity(loc, EntityType.EXPERIENCE_ORB);
+            orb.setExperience(lootBundle.getExp());
+        }
 
         return true;
     }
