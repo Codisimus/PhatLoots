@@ -3,6 +3,8 @@ package com.codisimus.plugins.phatloots.commands;
 import com.codisimus.plugins.phatloots.PhatLoot;
 import com.codisimus.plugins.phatloots.PhatLoots;
 import com.codisimus.plugins.phatloots.PhatLootsConfig;
+import com.codisimus.plugins.phatloots.loot.CommandLoot;
+import com.codisimus.plugins.phatloots.loot.LootBundle;
 import com.codisimus.plugins.phatloots.util.PhatLootsUtil;
 import com.codisimus.plugins.phatloots.commands.CommandHandler.CodCommand;
 import com.codisimus.plugins.phatloots.gui.InventoryListener;
@@ -17,11 +19,14 @@ import java.util.LinkedList;
 import java.util.List;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.EntityType;
+import org.bukkit.entity.ExperienceOrb;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.DoubleChestInventory;
 import org.bukkit.inventory.Inventory;
@@ -165,6 +170,33 @@ public class LootCommand {
         phatLoot.addChest(block);
         player.sendMessage("§5Target §6" + blockName + "§5 has been linked to PhatLoot §6" + phatLoot.name);
         phatLoot.saveChests();
+        return true;
+    }
+
+    @CodCommand(command = "spill",
+        weight = 35,
+        usage = {
+            "§2<command> <PhatLoot> <x> <y> <z> <world>§b Spill loot at a specified location"
+        },
+        permission = "phatloots.spill"
+    )
+    public boolean spill(CommandSender sender, PhatLoot phatLoot, int x, int y, int z, World world) {
+        Location loc = new Location(world, x, y, z);
+        LootBundle lootBundle = phatLoot.rollForLoot();
+        for (ItemStack item : lootBundle.getItemList()) {
+            world.dropItemNaturally(loc, item);
+        }
+
+        if (sender instanceof Player) {
+            Player player = (Player) sender;
+            for (CommandLoot command : lootBundle.getCommandList()) {
+                command.execute(player);
+            }
+        }
+
+        ExperienceOrb orb = (ExperienceOrb) world.spawnEntity(loc, EntityType.EXPERIENCE_ORB);
+        orb.setExperience(lootBundle.getExp());
+
         return true;
     }
 
