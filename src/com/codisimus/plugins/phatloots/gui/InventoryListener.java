@@ -101,6 +101,11 @@ public class InventoryListener implements Listener {
             }
         }
 
+        // If the player is clicking in the PhatLoot menu and not their inventory
+        boolean inPhatLoot = false;
+        if (event.getClickedInventory() != null && event.getClickedInventory().equals(event.getView().getTopInventory()))
+            inPhatLoot = true;
+
         //Don't allow any inventory clicking
         event.setResult(Event.Result.DENY);
         player.updateInventory();
@@ -146,7 +151,7 @@ public class InventoryListener implements Listener {
         }
 
         /** Switch Tools **/
-        if (slot == -999 || slot == TOOL_SLOT) {
+        if (slot == -999 || (inPhatLoot && slot == TOOL_SLOT)) {
             switch (event.getClick()) {
             case LEFT: //Previous Tool
                 //Deny switching toos while holding Loot
@@ -166,7 +171,7 @@ public class InventoryListener implements Listener {
         }
 
         /** Go back to a previous View **/
-        if (stack.getType() == Material.LADDER) {
+        if (inPhatLoot && stack.getType() == Material.LADDER) {
             ItemMeta details = stack.getItemMeta();
             if (details.hasDisplayName()) {
                 String name = stack.getItemMeta().getDisplayName();
@@ -185,7 +190,7 @@ public class InventoryListener implements Listener {
             }
         }
 
-        if (stack.getType() == Material.ACACIA_DOOR) {
+        if (inPhatLoot && stack.getType() == Material.ACACIA_DOOR) {
             ItemMeta details = stack.getItemMeta();
             if (details.hasDisplayName() && details.getDisplayName().contains("Loot Conditions")) {
                 if (event.getSlot() == SIZE - 4) {
@@ -197,7 +202,7 @@ public class InventoryListener implements Listener {
 
         /** Check if a Button was Clicked **/
         if (buttons.containsKey(slot)) {
-            if (buttons.get(slot).onClick(event.getClick(), inv, phatLoot, lootList)) {
+            if (inPhatLoot && buttons.get(slot).onClick(event.getClick(), inv, phatLoot, lootList)) {
                 refreshPage(player, inv, lootList);
             }
             return;
