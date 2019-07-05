@@ -1,6 +1,7 @@
 package com.codisimus.plugins.phatloots.listeners;
 
 import com.codisimus.plugins.phatloots.*;
+import com.codisimus.plugins.phatloots.util.PhatLootsUtil;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.entity.HumanEntity;

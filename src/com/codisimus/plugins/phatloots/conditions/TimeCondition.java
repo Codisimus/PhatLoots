@@ -1,5 +1,6 @@
 package com.codisimus.plugins.phatloots.conditions;
 
+import com.codisimus.plugins.phatloots.PhatLoot;
 import org.bukkit.Material;
 import org.bukkit.configuration.serialization.SerializableAs;
 import org.bukkit.entity.Player;
@@ -10,7 +11,6 @@ import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
 
 /**
  * Loot condition that checks for time.
@@ -59,7 +59,7 @@ public class TimeCondition extends LootCondition {
 
     // TODO: Find a way to obtain user input and allow for specific time ##'s
     @Override
-    public ItemStack handleClick(Inventory inventory, ClickType click) {
+    public ItemStack handleClick(Player player, PhatLoot phatLoot, Inventory inventory, ClickType click) {
         if (click == ClickType.LEFT) {
             if (time.equalsIgnoreCase("day")) {
                 time = "night";
@@ -68,7 +68,7 @@ public class TimeCondition extends LootCondition {
             }
         }
 
-        ItemStack item = super.handleClick(inventory, click);
+        ItemStack item = super.handleClick(player, phatLoot, inventory, click);
         ItemMeta meta = item.getItemMeta();
         meta.setDisplayName("§eTime Condition");
         item.setType(Material.CLOCK);

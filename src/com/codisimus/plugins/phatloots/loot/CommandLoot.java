@@ -3,7 +3,7 @@ package com.codisimus.plugins.phatloots.loot;
 import com.codisimus.plugins.phatloots.PhatLoot;
 import com.codisimus.plugins.phatloots.PhatLoots;
 import com.codisimus.plugins.phatloots.PhatLootsCommandSender;
-import com.codisimus.plugins.phatloots.PhatLootsUtil;
+import com.codisimus.plugins.phatloots.util.PhatLootsUtil;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;

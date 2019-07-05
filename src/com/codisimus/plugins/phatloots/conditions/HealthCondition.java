@@ -1,5 +1,6 @@
 package com.codisimus.plugins.phatloots.conditions;
 
+import com.codisimus.plugins.phatloots.PhatLoot;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.configuration.serialization.SerializableAs;
@@ -58,7 +59,7 @@ public class HealthCondition extends LootCondition {
     }
 
     @Override
-    public ItemStack handleClick(Inventory inventory, ClickType click) {
+    public ItemStack handleClick(Player player, PhatLoot phatLoot, Inventory inventory, ClickType click) {
         if (click == ClickType.LEFT) {
             switch (option) {
                 case "below":
@@ -85,7 +86,7 @@ public class HealthCondition extends LootCondition {
         if (click == ClickType.MIDDLE)
             health = 1;
 
-        ItemStack item = super.handleClick(inventory, click);
+        ItemStack item = super.handleClick(player, phatLoot, inventory, click);
         ItemMeta meta = item.getItemMeta();
         meta.setDisplayName(ChatColor.YELLOW + "Health Condition");
         item.setType(Material.BEEF);

@@ -2,7 +2,7 @@ package com.codisimus.plugins.phatloots.commands;
 
 import com.codisimus.plugins.phatloots.PhatLoot;
 import com.codisimus.plugins.phatloots.PhatLoots;
-import com.codisimus.plugins.phatloots.PhatLootsUtil;
+import com.codisimus.plugins.phatloots.util.PhatLootsUtil;
 import com.codisimus.plugins.phatloots.loot.Loot;
 import com.codisimus.plugins.phatloots.loot.LootCollection;
 import java.util.HashMap;

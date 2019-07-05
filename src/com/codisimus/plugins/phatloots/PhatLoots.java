@@ -1,6 +1,7 @@
 package com.codisimus.plugins.phatloots;
 
 import com.codisimus.plugins.phatloots.commands.*;
+import com.codisimus.plugins.phatloots.conditions.BiomeCondition;
 import com.codisimus.plugins.phatloots.conditions.ExperienceCondition;
 import com.codisimus.plugins.phatloots.conditions.HealthCondition;
 import com.codisimus.plugins.phatloots.conditions.LootCondition;
@@ -13,6 +14,7 @@ import com.codisimus.plugins.phatloots.loot.*;
 import com.codisimus.plugins.phatloots.regions.RegionHook;
 import com.codisimus.plugins.phatloots.regions.RegionToolsRegionHook;
 import com.codisimus.plugins.phatloots.regions.WorldGuardRegionHook;
+import com.codisimus.plugins.phatloots.util.PhatLootsUtil;
 import com.google.common.io.Files;
 import java.io.*;
 import java.nio.ByteBuffer;
@@ -182,10 +184,12 @@ public class PhatLoots extends JavaPlugin {
         }
 
         // Register loot conditions
+        ConfigurationSerialization.registerClass(BiomeCondition.class, "BiomeCondition");
         ConfigurationSerialization.registerClass(ExperienceCondition.class, "ExperienceCondition");
         ConfigurationSerialization.registerClass(HealthCondition.class, "HealthCondition");
         ConfigurationSerialization.registerClass(TimeCondition.class, "TimeCondition");
 
+        defaultConditions.add(new BiomeCondition("BiomeCondition"));
         defaultConditions.add(new ExperienceCondition("ExperienceCondition"));
         defaultConditions.add(new HealthCondition("HealthCondition"));
         defaultConditions.add(new TimeCondition("TimeCondition"));
@@ -196,6 +200,7 @@ public class PhatLoots extends JavaPlugin {
             Bukkit.getPluginManager().enablePlugin(addon);
         }
 
+        https://discord.gg/7MRPQmt
         /* Register Events */
         registerEvents();
 

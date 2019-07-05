@@ -2,7 +2,7 @@ package com.codisimus.plugins.phatloots.loot;
 
 import com.codisimus.plugins.phatloots.PhatLoot;
 import com.codisimus.plugins.phatloots.PhatLoots;
-import com.codisimus.plugins.phatloots.PhatLootsUtil;
+import com.codisimus.plugins.phatloots.util.PhatLootsUtil;
 import com.codisimus.plugins.phatloots.gui.Tool;
 import io.lumine.xikage.mythicmobs.MythicMobs;
 import org.bukkit.Bukkit;

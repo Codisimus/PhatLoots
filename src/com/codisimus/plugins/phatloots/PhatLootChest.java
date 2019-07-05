@@ -3,6 +3,7 @@ package com.codisimus.plugins.phatloots;
 import com.codisimus.plugins.phatloots.events.ChestBreakEvent;
 import com.codisimus.plugins.phatloots.events.ChestRespawnEvent;
 import com.codisimus.plugins.phatloots.events.ChestRespawnEvent.RespawnReason;
+import com.codisimus.plugins.phatloots.util.PhatLootsUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;

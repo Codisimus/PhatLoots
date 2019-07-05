@@ -2,7 +2,7 @@ package com.codisimus.plugins.phatloots.loot;
 
 import com.codisimus.plugins.phatloots.PhatLoot;
 import com.codisimus.plugins.phatloots.PhatLoots;
-import com.codisimus.plugins.phatloots.PhatLootsUtil;
+import com.codisimus.plugins.phatloots.util.PhatLootsUtil;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;

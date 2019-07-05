@@ -3,7 +3,7 @@ package com.codisimus.plugins.phatloots.commands;
 import com.codisimus.plugins.phatloots.PhatLoot;
 import com.codisimus.plugins.phatloots.PhatLoots;
 import com.codisimus.plugins.phatloots.PhatLootsConfig;
-import com.codisimus.plugins.phatloots.PhatLootsUtil;
+import com.codisimus.plugins.phatloots.util.PhatLootsUtil;
 import com.codisimus.plugins.phatloots.commands.CommandHandler.CodCommand;
 import com.codisimus.plugins.phatloots.gui.InventoryListener;
 import com.codisimus.plugins.phatloots.loot.Experience;

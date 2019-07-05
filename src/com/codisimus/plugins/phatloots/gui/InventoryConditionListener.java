@@ -12,6 +12,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
+import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -40,7 +41,7 @@ public class InventoryConditionListener implements Listener {
         if (phatLoot.getLootConditions() != null && !phatLoot.getLootConditions().isEmpty()) {
             Map<Integer, LootCondition> lootConditionMap = phatLoot.getLootConditionsMap();
             for (int i = 0; i < lootConditionMap.size(); i++) {
-                inv.setItem(i, lootConditionMap.get(i).handleClick(inv, null));
+                inv.setItem(i, lootConditionMap.get(i).handleClick(player, phatLoot, inv, null));
             }
         }
 
@@ -70,7 +71,9 @@ public class InventoryConditionListener implements Listener {
         Player player = (Player) human;
         if (!conditionViewers.containsKey(player.getUniqueId())) {
             return;
-        } else if (!event.getView().getTitle().contains("Conditions")) {
+        }
+
+        if (!event.getView().getTitle().contains("Conditions")) {
             conditionViewers.remove(player.getUniqueId());
         }
 
@@ -83,10 +86,13 @@ public class InventoryConditionListener implements Listener {
 
         // Store popularly accessed variables
         PhatLoot phatLoot = conditionViewers.get(player.getUniqueId());
+        if (phatLoot == null)
+            return;
 
         Map<Integer, LootCondition> lootConditionMap = phatLoot.getLootConditionsMap();
+
         if (lootConditionMap.get(event.getSlot()) != null) {
-            event.getClickedInventory().setItem(event.getSlot(), lootConditionMap.get(event.getSlot()).handleClick(event.getInventory(), event.getClick()));
+            event.getClickedInventory().setItem(event.getSlot(), lootConditionMap.get(event.getSlot()).handleClick(player, phatLoot, event.getInventory(), event.getClick()));
             return;
         }
 
@@ -120,5 +126,14 @@ public class InventoryConditionListener implements Listener {
             return;
 
         conditionViewers.remove(player.getUniqueId());
+    }
+
+    /**
+     * Returns a map of the condition viewers
+     *
+     * @return a map of the condition viewers
+     */
+    public static Map<UUID, PhatLoot> getConditionViewers() {
+        return conditionViewers;
     }
 }

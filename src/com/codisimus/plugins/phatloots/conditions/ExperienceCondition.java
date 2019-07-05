@@ -1,6 +1,7 @@
 package com.codisimus.plugins.phatloots.conditions;
 
-import com.codisimus.plugins.phatloots.PhatLootsUtil;
+import com.codisimus.plugins.phatloots.PhatLoot;
+import com.codisimus.plugins.phatloots.util.PhatLootsUtil;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.configuration.serialization.SerializableAs;
@@ -59,7 +60,7 @@ public class ExperienceCondition extends LootCondition {
     }
 
     @Override
-    public ItemStack handleClick(Inventory inventory, ClickType click) {
+    public ItemStack handleClick(Player player, PhatLoot phatLoot, Inventory inventory, ClickType click) {
         if (click == ClickType.LEFT) {
             switch (option) {
                 case "below":
@@ -86,7 +87,7 @@ public class ExperienceCondition extends LootCondition {
         if (click == ClickType.MIDDLE)
             experience = 1;
 
-        ItemStack item = super.handleClick(inventory, click);
+        ItemStack item = super.handleClick(player, phatLoot, inventory, click);
         ItemMeta meta = item.getItemMeta();
         meta.setDisplayName(ChatColor.YELLOW + "Experience Condition");
         item.setType(Material.EXPERIENCE_BOTTLE);

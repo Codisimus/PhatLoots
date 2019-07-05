@@ -4,7 +4,7 @@
     <groupId>com.codisimus.plugins</groupId>
     <artifactId>phatloots</artifactId>
     <packaging>jar</packaging>
-    <version>5.3.7</version>
+    <version>5.3.8</version>
     <name>PhatLoots</name>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

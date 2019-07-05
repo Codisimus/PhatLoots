@@ -1,6 +1,6 @@
 package com.codisimus.plugins.phatloots.loot;
 
-import com.codisimus.plugins.phatloots.PhatLootsUtil;
+import com.codisimus.plugins.phatloots.util.PhatLootsUtil;
 import com.codisimus.plugins.phatloots.gui.Tool;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.event.inventory.ClickType;

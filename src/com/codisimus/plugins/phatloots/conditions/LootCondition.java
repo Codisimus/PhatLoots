@@ -1,5 +1,6 @@
 package com.codisimus.plugins.phatloots.conditions;
 
+import com.codisimus.plugins.phatloots.PhatLoot;
 import org.bukkit.Material;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.configuration.serialization.SerializableAs;
@@ -48,11 +49,13 @@ public abstract class LootCondition implements ConfigurationSerializable {
     /**
      * Handles the click
      *
+     * @param player The player that clicked
+     * @param phatLoot The PhatLoot in which the conditions are being changed
      * @param inventory The inventory clicked in
      * @param click The click type initiated
      * @return ItemStack The ItemStack constructed
      */
-    public ItemStack handleClick(Inventory inventory, ClickType click) {
+    public ItemStack handleClick(Player player, PhatLoot phatLoot, Inventory inventory, ClickType click) {
         if (click == ClickType.RIGHT) {
             this.enabled = !enabled;
         }

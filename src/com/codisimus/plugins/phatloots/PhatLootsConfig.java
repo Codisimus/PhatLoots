@@ -34,8 +34,8 @@ public class PhatLootsConfig {
     static boolean defaultRound;
     static boolean defaultAutoLoot;
     static boolean defaultBreakAndRespawn;
-    static boolean restrictAll; //True if all PhatLoots should require permission
-    static HashSet<String> restricted = new HashSet();
+    public static boolean restrictAll; //True if all PhatLoots should require permission
+    public static HashSet<String> restricted = new HashSet();
     public static List<String> lootBagKeys;
     public static String permission;
     public static String moneyLooted;
