@@ -1,9 +1,8 @@
 package com.codisimus.plugins.phatloots.conditions;
 
-import com.codisimus.plugins.phatloots.AnvilGUI;
-
 import com.codisimus.plugins.phatloots.PhatLoot;
 import com.codisimus.plugins.phatloots.gui.InventoryConditionListener;
+import com.codisimus.plugins.phatloots.util.ChatInput;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -100,27 +99,15 @@ public class BiomeCondition extends LootCondition {
         item.setItemMeta(meta);
 
         if (click == ClickType.SHIFT_LEFT) {
-            AnvilGUI gui = new AnvilGUI(player, new AnvilGUI.AnvilClickEventHandler() {
+            player.closeInventory();
+            new ChatInput(player) {
 
                 @Override
-                public void onAnvilClick(AnvilGUI.AnvilClickEvent event){
-                    event.setWillClose(false);
-                    event.setWillDestroy(true);
-
-                    if (event.getSlot() == AnvilGUI.AnvilSlot.OUTPUT) {
-                        biome = event.getName();
-                        InventoryConditionListener.viewConditionMenu(player, phatLoot);
-                    }
+                public void onChatInput(String input) {
+                    biome = input;
+                    InventoryConditionListener.viewConditionMenu(player, phatLoot);
                 }
-            });
-
-            ItemStack tag = new ItemStack(Material.NAME_TAG);
-            ItemMeta tagMeta = tag.getItemMeta();
-            tagMeta.setDisplayName("Enter Biome Name...");
-            tag.setItemMeta(tagMeta);
-            gui.setSlot(AnvilGUI.AnvilSlot.INPUT_LEFT, tag);
-
-            gui.open();
+            };
         }
 
         return item;
