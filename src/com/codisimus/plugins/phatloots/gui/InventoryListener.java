@@ -150,6 +150,10 @@ public class InventoryListener implements Listener {
             }
         }
 
+        // Set to air since in future versions this returns an NPE
+        if (stack == null)
+            stack = new ItemStack(Material.AIR);
+
         /** Switch Tools **/
         if (slot == -999 || (inPhatLoot && slot == TOOL_SLOT)) {
             switch (event.getClick()) {
