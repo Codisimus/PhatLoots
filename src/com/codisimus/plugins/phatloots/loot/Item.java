@@ -208,11 +208,13 @@ public class Item extends Loot {
      */
     @Override
     public ItemStack getInfoStack() {
-        ItemStack infoStack = item.clone();
-        boolean air = infoStack.getType() == Material.AIR;
-        if (air) {
-            infoStack.setType(Material.GLASS_BOTTLE);
+        ItemStack infoStack = new ItemStack(Material.GLASS_BOTTLE);
+        boolean air = true;
+        if (infoStack != null && infoStack.getType() != Material.AIR) {
+            infoStack = item.clone();
+            air = false;
         }
+
         ItemMeta info = infoStack.hasItemMeta() ? infoStack.getItemMeta() : Bukkit.getItemFactory().getItemMeta(infoStack.getType());
         if (air) {
             info.setDisplayName("AIR");
