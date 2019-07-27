@@ -88,6 +88,15 @@ public final class PhatLoot implements ConfigurationSerializable {
     }
 
     /**
+     * Returns the name of the PhatLoot
+     *
+     * @return the name of the PhatLoot
+     */
+    public String getName() {
+        return name;
+    }
+
+    /**
      * Convenience method for getTimeRemaining(player, chest) where chest == null
      *
      * @param player The given Player
