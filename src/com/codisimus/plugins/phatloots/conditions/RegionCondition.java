@@ -1,6 +1,9 @@
 package com.codisimus.plugins.phatloots.conditions;
 
 import com.codisimus.plugins.phatloots.PhatLoot;
+import com.codisimus.plugins.phatloots.gui.InventoryConditionListener;
+import com.codisimus.plugins.phatloots.listeners.MobListener;
+import com.codisimus.plugins.phatloots.util.ChatInput;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.configuration.serialization.SerializableAs;
@@ -14,45 +17,51 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Loot condition that checks for health.
+ * Loot condition that checks for region.
  *
  * @author Redned
  */
-@SerializableAs("HealthCondition")
-public class HealthCondition extends LootCondition {
+@SerializableAs("RegionCondition")
+public class RegionCondition extends LootCondition {
 
-    private double health;
+    private String region;
     private String option;
 
-    public HealthCondition(String name) {
+    public RegionCondition(String name) {
         super(name);
 
-        health = 0;
-        option = "above";
+        region = "none";
+        option = "inside";
     }
 
-    public HealthCondition(Map<String, Object> map) {
+    public RegionCondition(Map<String, Object> map) {
         super(map);
 
-        health = (double) map.get("Health");
+        region = (String) map.get("Region");
         option = (String) map.get("Option");
     }
 
     @Override
     public boolean checkCondition(Player player) {
+        if (MobListener.regionHook == null)
+            return false;
+
+        List<String> regions = MobListener.regionHook.getRegionNames(player.getLocation());
         switch (option) {
-            case "below":
-                if (player.getHealth() < health)
+            case "inside":
+                if (regions.isEmpty() && (region.isEmpty() || region.equals("none"))) {
+                    return true;
+                }
+
+                if (regions.contains(region))
                     return true;
                 break;
-            case "above":
-                if (player.getHealth() > health)
+            case "outside":
+                if (!regions.contains(region))
                     return true;
-                break;
-            case "at":
-                if (player.getHealth() == health)
+
+                if (!regions.isEmpty() && region.equals("none"))
                     return true;
-                break;
         }
 
         return false;
@@ -62,36 +71,22 @@ public class HealthCondition extends LootCondition {
     public ItemStack handleClick(Player player, PhatLoot phatLoot, Inventory inventory, ClickType click) {
         if (click == ClickType.LEFT) {
             switch (option) {
-                case "below":
-                    option = "above";
+                case "inside":
+                    option = "outside";
                     break;
-                case "above":
-                    option = "at";
-                    break;
-                case "at":
-                    option = "below";
+                case "outside":
+                    option = "inside";
                     break;
             }
         }
 
-        if (click == ClickType.SHIFT_LEFT) {
-            health += 1;
-        }
-
-        if (click == ClickType.SHIFT_RIGHT) {
-            health -= 1;
-        }
-
-        if (click == ClickType.MIDDLE)
-            health = 1;
-
         ItemStack item = super.handleClick(player, phatLoot, inventory, click);
         ItemMeta meta = item.getItemMeta();
-        meta.setDisplayName(ChatColor.YELLOW + "Health Condition");
-        item.setType(Material.BEEF);
+        meta.setDisplayName(ChatColor.YELLOW + "Region Condition");
+        item.setType(Material.BARRIER);
         List<String> lore = meta.getLore();
-        lore.add("§6 Required Health: §e" + health);
-        lore.add("§6 Health Option: §e" + option);
+        lore.add("§6 Required Region: §e" + region);
+        lore.add("§6 Region Option: §e" + option);
         lore.add("§a");
         lore.add("§aActions:");
         lore.add("§4RIGHT CLICK:");
@@ -99,20 +94,29 @@ public class HealthCondition extends LootCondition {
         lore.add("§4LEFT CLICK:");
         lore.add("§6 Cycle Through the Options");
         lore.add("§4SHIFT + LEFT CLICK:");
-        lore.add("§6 Add Health");
-        lore.add("§4SHIFT + RIGHT CLICK:");
-        lore.add("§6 Remove Health");
-        lore.add("§4SCROLL CLICK:");
-        lore.add("§6 Reset Health to 1");
+        lore.add("§6 Set Region");
         meta.setLore(lore);
         item.setItemMeta(meta);
+
+        if (click == ClickType.SHIFT_LEFT) {
+            player.closeInventory();
+            new ChatInput(player) {
+
+                @Override
+                public void onChatInput(String input) {
+                    region = input;
+                    InventoryConditionListener.viewConditionMenu(player, phatLoot);
+                }
+            };
+        }
+
         return item;
     }
 
     @Override
     public Map<String, Object> serialize() {
         Map<String, Object> map = super.serialize();
-        map.put("Health", health);
+        map.put("Region", region);
         map.put("Option", option);
         return map;
     }
