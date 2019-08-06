@@ -1,6 +1,5 @@
 package com.codisimus.plugins.phatloots.commands;
 
-import com.codisimus.plugins.phatloots.PhatLoot;
 import com.codisimus.plugins.phatloots.PhatLoots;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -10,8 +9,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.logging.Level;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.BaseComponent;
@@ -20,19 +17,20 @@ import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
-import org.bukkit.OfflinePlayer;
-import org.bukkit.World;
 import org.bukkit.command.Command;
+import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.PluginCommand;
-import org.bukkit.command.TabExecutor;
+import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
 import org.bukkit.material.MaterialData;
 import org.bukkit.plugin.java.JavaPlugin;
 
-public class CommandHandler implements TabExecutor {
+import javax.xml.soap.Text;
 
-    private enum ParameterType {
+public class CommandHandler implements CommandExecutor {
+
+    private static enum ParameterType {
         STRING, INT, DOUBLE, BOOLEAN, MATERIAL, PLAYER, OFFLINEPLAYER,
         WORLD, PHATLOOT;
 
@@ -49,7 +47,7 @@ public class CommandHandler implements TabExecutor {
         @Override
         public int compare(Object o1, Object o2) {
             return Double.compare(((Method) o1).getAnnotation(CodCommand.class).weight(),
-                                  ((Method) o2).getAnnotation(CodCommand.class).weight());
+                    ((Method) o2).getAnnotation(CodCommand.class).weight());
         }
     };
 
@@ -75,8 +73,8 @@ public class CommandHandler implements TabExecutor {
 
     private final boolean groupedCommands;
     private final String parentCommand;
-    private final Map<String, Set<Method>> commandMethods = new HashMap<String, Set<Method>>();
     private final TreeSet<CodCommand> metas = new TreeSet<>(CODCOMMAND_COMPARATOR);
+    private final HashMap<CodCommand, TreeSet<Method>> methods = new HashMap<>();
     private final Properties aliases = new Properties();
     private final JavaPlugin plugin;
 
@@ -142,15 +140,13 @@ public class CommandHandler implements TabExecutor {
                     treeSet = new TreeSet<>(METHOD_COMPARATOR);
                 } else {
                     metas.remove(meta);
+                    treeSet = methods.remove(meta);
                 }
                 meta = annotation;
                 metas.add(meta);
+                methods.put(meta, treeSet);
             }
-
-            Set<Method> methods = commandMethods.getOrDefault(annotation.command(), new HashSet<Method>());
-            methods.add(method);
-
-            commandMethods.put(annotation.command(), methods);
+            methods.get(meta).add(method);
         }
     }
 
@@ -164,7 +160,7 @@ public class CommandHandler implements TabExecutor {
 
         if (args.length == 0) {
             //No subcommand was added
-            CodCommand meta = findMeta("&none", "");
+            CodCommand meta = findMeta("&none", null);
             if (meta != null) {
                 handleCommand(sender, meta, new String[0]);
             } else {
@@ -174,8 +170,8 @@ public class CommandHandler implements TabExecutor {
         }
 
         String subcommand = aliases.containsKey(args[0])
-                            ? aliases.getProperty(args[0])
-                            : args[0];
+                ? aliases.getProperty(args[0])
+                : args[0];
         String arg1 = args.length > 1 ? args[1] : null;
         CodCommand meta = findMeta(subcommand, arg1);
         if (meta != null) {
@@ -186,25 +182,25 @@ public class CommandHandler implements TabExecutor {
             handleCommand(sender, meta, Arrays.copyOfRange(args, index, args.length));
         } else if (subcommand.equals("help")) { //Default 'help' subcommand
             subcommand = arg1 != null && aliases.containsKey(arg1)
-                         ? aliases.getProperty(arg1)
-                         : arg1;
+                    ? aliases.getProperty(arg1)
+                    : arg1;
             switch (args.length) {
-            case 2:
-                // Display help pages
-                try {
-                    displayHelpPage(sender, Integer.parseInt(args[1]));
-                    return true;
-                } catch (NumberFormatException ex) {
-                    /* do nothing */
-                }
+                case 2:
+                    // Display help pages
+                    try {
+                        displayHelpPage(sender, Integer.parseInt(args[1]));
+                        return true;
+                    } catch (NumberFormatException ex) {
+                        /* do nothing */
+                    }
 
-                meta = findMeta(subcommand, "");
-                break;
-            case 3:
-                meta = findMeta(subcommand, args[2]);
-                break;
-            default:
-                break;
+                    meta = findMeta(subcommand, null);
+                    break;
+                case 3:
+                    meta = findMeta(subcommand, args[2]);
+                    break;
+                default:
+                    break;
             }
 
             if (meta != null) {
@@ -235,7 +231,7 @@ public class CommandHandler implements TabExecutor {
             }
 
             //Iterate through each method of the command to find one which has matching parameters
-            for (Method method : commandMethods.get(meta.command())) {
+            for (Method method : methods.get(meta)) {
                 Class[] requestedParameters = method.getParameterTypes();
                 Object[] parameters = new Object[requestedParameters.length];
                 int argumentCount = args.length;
@@ -312,102 +308,41 @@ public class CommandHandler implements TabExecutor {
             ParameterType type = ParameterType.getType(parameter);
 
             switch (type) {
-            case STRING:
-                return argument;
-            case INT:
-                return Integer.parseInt(argument);
-            case DOUBLE:
-                return Double.parseDouble(argument);
-            case BOOLEAN:
-                switch (argument) {
-                case "true":
-                case "on":
-                case "yes":
-                    return true;
-                case "false":
-                case "off":
-                case "no":
-                    return false;
-                default:
-                    return null;
-                }
-            case MATERIAL:
-                return argument.matches("[0-9]+")
-                       ? convertMaterial(Integer.parseInt(argument), (byte) 0)
-                       : Material.matchMaterial(argument);
-            case PLAYER:
-                return Bukkit.getPlayer(argument);
-            case OFFLINEPLAYER:
-                return Bukkit.getOfflinePlayer(argument);
-            case WORLD:
-                return Bukkit.getWorld(argument);
-            case PHATLOOT:
-                return PhatLoots.getPhatLoot(argument);
-            default:
-                return null;
-            }
-        } catch (Exception ex) {
-            return null;
-        }
-    }
-
-    /**
-     * Verifies that the argument is of the given class for tab completion
-     *
-     * @param argument The argument that was given
-     * @param parameter The Class that the argument should be
-     * @return a string list of the valid completions
-     */
-    private List<String> validateTabComplete(String argument, Class parameter) {
-        List<String> completions = new ArrayList<String>();
-        try {
-            ParameterType type = ParameterType.getType(parameter);;
-            switch (type) {
+                case STRING:
+                    return argument;
+                case INT:
+                    return Integer.parseInt(argument);
+                case DOUBLE:
+                    return Double.parseDouble(argument);
                 case BOOLEAN:
                     switch (argument) {
                         case "true":
                         case "on":
                         case "yes":
-                            break;
+                            return true;
                         case "false":
                         case "off":
                         case "no":
-                            completions.add("no");
-                            break;
+                            return false;
                         default:
-                            break;
+                            return null;
                     }
                 case MATERIAL:
-                    completions.addAll(Stream.of(Material.values()).map(Material::name).collect(Collectors.toList()));
-                    break;
+                    return Material.matchMaterial(argument);
                 case PLAYER:
-                    Player[] players = Bukkit.getOnlinePlayers().toArray(new Player[Bukkit.getOnlinePlayers().size()]);
-                    completions = Stream.of(players).map(Player::getName).collect(Collectors.toList());
-                    break;
+                    return Bukkit.getPlayer(argument);
                 case OFFLINEPLAYER:
-                    completions = Stream.of(Bukkit.getOfflinePlayers()).map(OfflinePlayer::getName).collect(Collectors.toList());
-                    break;
+                    return Bukkit.getOfflinePlayer(argument);
                 case WORLD:
-                    World[] worlds = Bukkit.getWorlds().toArray(new World[Bukkit.getWorlds().size()]);
-                    completions = Stream.of(worlds).map(World::getName).collect(Collectors.toList());
-                    break;
+                    return Bukkit.getWorld(argument);
                 case PHATLOOT:
-                    PhatLoot[] phatLoots = PhatLoots.getPhatLoots().toArray(new PhatLoot[PhatLoots.getPhatLoots().size()]);
-                    return Stream.of(phatLoots).map(PhatLoot::getName).collect(Collectors.toList());
+                    return PhatLoots.getPhatLoot(argument);
+                default:
+                    return null;
             }
         } catch (Exception ex) {
-            return completions;
+            return null;
         }
-
-        for (int i = 0; i < completions.size(); i++) {
-            String completion = completions.get(i);
-            if (!completion.toLowerCase().startsWith(argument.toLowerCase())) {
-                completions.remove(completion);
-                i--;
-            }
-        }
-
-        return completions;
     }
 
     /**
@@ -418,18 +353,14 @@ public class CommandHandler implements TabExecutor {
      * @return The CodCommand or null if none was found
      */
     private CodCommand findMeta(String command, String subcommand) {
-        if (!commandMethods.containsKey(command))
-            return null;
-
-        for (Method method : commandMethods.get(command)) {
-            CodCommand meta = method.getAnnotation(CodCommand.class);
+        for (CodCommand meta : metas) {
             //Check if the commands match
             if (meta.command().equals(command)
                     || (meta.command().equals("&variable")
-                        && !command.equals("&none")
-                        && !command.equals("help"))) {
+                    && !command.equals("&none")
+                    && !command.equals("help"))) {
                 //Check if the subcommands match
-                if (subcommand.isEmpty() || meta.subcommand().equals(subcommand)) {
+                if (meta.subcommand().isEmpty() || meta.subcommand().equals(subcommand)) {
                     return meta;
                 }
             }
@@ -562,96 +493,5 @@ public class CommandHandler implements TabExecutor {
             sb.append(meta.subcommand());
         }
         return sb.toString();
-    }
-
-    @SuppressWarnings("deprecation")
-    private Material convertMaterial(int ID, byte Data) {
-        for(Material i : EnumSet.allOf(Material.class)) if(i.getId() == ID) return Bukkit.getUnsafe().fromLegacy(new MaterialData(i, Data));
-        return null;
-    }
-
-    @Override
-    public List<String> onTabComplete(CommandSender sender, Command command, String label, String[] args) {
-        return handleTabComplete(sender, args);
-    }
-
-    public List<String> handleTabComplete(CommandSender sender, String[] args) {
-        List<String> completions = new ArrayList<String>();
-
-        try {
-            if (args.length == 1) {
-                for (String cmd : commandMethods.keySet()) {
-                    CodCommand meta = commandMethods.get(cmd).iterator().next().getAnnotation(CodCommand.class);
-                    if (!meta.permission().isEmpty() && !sender.hasPermission(meta.permission()))
-                        continue;
-
-                    completions.add(meta.command());
-                }
-
-                for (int i = 0; i < completions.size(); i++) {
-                    String completion = completions.get(i);
-                    if (!completion.toLowerCase().startsWith(args[0].toLowerCase())) {
-                        completions.remove(completion);
-                        i--;
-                    }
-                }
-            }
-
-            if (args.length == 2) {
-                if (!commandMethods.containsKey(args[0]))
-                    return null;
-
-                for (Method method : commandMethods.get(args[0])) {
-                    CodCommand meta = method.getAnnotation(CodCommand.class);
-
-                    if (!meta.permission().isEmpty() && !sender.hasPermission(meta.permission()))
-                        continue;
-
-                    if (meta.subcommand().isEmpty())
-                        continue;
-
-                     completions.add(meta.subcommand());
-                }
-
-                for (int i = 0; i < completions.size(); i++) {
-                    String completion = completions.get(i);
-                    if (!completion.toLowerCase().startsWith(args[1].toLowerCase())) {
-                        completions.remove(completion);
-                        i--;
-                    }
-                }
-            }
-
-            if (args.length > 1) {
-                Set<Method> methods = commandMethods.get(args[0]);
-                for (Method method : methods) {
-                    CodCommand meta = method.getAnnotation(CodCommand.class);
-                    if (!meta.permission().isEmpty() && !sender.hasPermission(meta.permission()))
-                        continue;
-
-                    Class<?>[] requestedParams = method.getParameterTypes();
-                    if (requestedParams.length < args.length)
-                        continue;
-
-                    Class<?> requestedParam = requestedParams[args.length - 1];
-                    if (!meta.subcommand().isEmpty())
-                        requestedParam = requestedParams[args.length - 2];
-
-                    completions.addAll(validateTabComplete(args[args.length - 1], requestedParam));
-                }
-
-                for (int i = 0; i < completions.size(); i++) {
-                    String completion = completions.get(i);
-                    if (!completion.toLowerCase().startsWith(args[args.length - 1].toLowerCase())) {
-                        completions.remove(completion);
-                        i--;
-                    }
-                }
-            }
-        } catch (Exception ex) {
-            // TODO: Try and get this exception to not throw at all if possible?
-        }
-
-        return completions;
     }
 }
