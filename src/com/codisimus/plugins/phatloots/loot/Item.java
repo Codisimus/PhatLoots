@@ -210,7 +210,7 @@ public class Item extends Loot {
     public ItemStack getInfoStack() {
         ItemStack infoStack = new ItemStack(Material.GLASS_BOTTLE);
         boolean air = true;
-        if (infoStack != null && infoStack.getType() != Material.AIR) {
+        if (item.clone() != null && item.clone().getType() != Material.AIR) {
             infoStack = item.clone();
             air = false;
         }
