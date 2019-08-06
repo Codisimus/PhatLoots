@@ -412,7 +412,6 @@ public class PhatLootChest {
             fInventory = new ForgettableInventory(key, inventory);
         }
 
-        fInventory.refresh(name);
         inventory = fInventory.getInventory();
         //Forget the Inventory in the scheduled time
         fInventory.schedule();

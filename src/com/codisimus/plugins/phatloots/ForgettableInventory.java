@@ -2,7 +2,6 @@ package com.codisimus.plugins.phatloots;
 
 import java.util.HashMap;
 
-import org.bukkit.Bukkit;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
@@ -74,25 +73,5 @@ public class ForgettableInventory {
      */
     public static boolean has(String key) {
         return inventories.containsKey(key);
-    }
-
-    /**
-     * Refreshes the inventory with the given title. Due to
-     * the inventory changes in 1.14, this method had to be
-     * added since there is no way to easily retrieve the title
-     * of an inventory anymore.
-     *
-     * @param title the title to set
-     */
-    public void refresh(String title) {
-        if (inventory == null)
-            return;
-
-        Inventory inventory = Bukkit.createInventory(null, this.inventory.getSize(), title);
-        inventory.setContents(this.inventory.getContents());
-        inventory.setStorageContents(this.inventory.getStorageContents());
-        this.inventory = inventory;
-
-        inventories.put(key, this);
     }
 }
