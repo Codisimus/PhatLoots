@@ -390,11 +390,8 @@ public class PhatLootChest {
         //Grab the custom Inventory belonging to the Player
         Inventory inventory;
         ForgettableInventory fInventory = ForgettableInventory.get(key);
-        if (fInventory != null) {
-            inventory = fInventory.getInventory();
-        } else {
-            name = chestName.replace("<name>", ChatColor.translateAlternateColorCodes('&', name.replace('_', ' ')));
-
+        name = chestName.replace("<name>", ChatColor.translateAlternateColorCodes('&', name.replace('_', ' ')));
+        if (fInventory == null) {
             if (chest != null) {
                 Block block = chest.getBlock();
                 switch (block.getType()) {
@@ -415,6 +412,8 @@ public class PhatLootChest {
             fInventory = new ForgettableInventory(key, inventory);
         }
 
+        fInventory.refresh(name);
+        inventory = fInventory.getInventory();
         //Forget the Inventory in the scheduled time
         fInventory.schedule();
         return inventory;
