@@ -445,6 +445,11 @@ public final class PhatLoot implements ConfigurationSerializable {
                 //Add each item to the Inventory
                 for (ItemStack item : itemList) {
                     Collection<ItemStack> leftOvers = inv.addItem(item).values();
+                    if (PhatLootChest.shuffleLoot) {
+                        List<ItemStack> contents = Arrays.asList(inv.getContents());
+                        Collections.shuffle(contents);
+                        inv.setContents(contents.toArray(new ItemStack[contents.size()]));
+                    }
                     if (!leftOvers.isEmpty()) {
                         //Overflow all that could not fit in the Inventory
                         for (ItemStack stack : leftOvers) {
