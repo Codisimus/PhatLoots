@@ -93,7 +93,7 @@ public class PermissionCondition extends LootCondition {
 
                 @Override
                 public void onChatInput(String input) {
-                    option = input;
+                    permission = input;
                     InventoryConditionListener.viewConditionMenu(player, phatLoot);
                 }
             };
