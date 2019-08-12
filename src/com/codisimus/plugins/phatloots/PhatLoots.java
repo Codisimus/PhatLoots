@@ -5,6 +5,7 @@ import com.codisimus.plugins.phatloots.conditions.BiomeCondition;
 import com.codisimus.plugins.phatloots.conditions.ExperienceCondition;
 import com.codisimus.plugins.phatloots.conditions.HealthCondition;
 import com.codisimus.plugins.phatloots.conditions.LootCondition;
+import com.codisimus.plugins.phatloots.conditions.PermissionCondition;
 import com.codisimus.plugins.phatloots.conditions.RegionCondition;
 import com.codisimus.plugins.phatloots.conditions.TimeCondition;
 import com.codisimus.plugins.phatloots.conditions.WeatherCondition;
@@ -189,6 +190,7 @@ public class PhatLoots extends JavaPlugin {
         ConfigurationSerialization.registerClass(BiomeCondition.class, "BiomeCondition");
         ConfigurationSerialization.registerClass(ExperienceCondition.class, "ExperienceCondition");
         ConfigurationSerialization.registerClass(HealthCondition.class, "HealthCondition");
+        ConfigurationSerialization.registerClass(PermissionCondition.class, "PermissionCondition");
         ConfigurationSerialization.registerClass(RegionCondition.class, "RegionCondition");
         ConfigurationSerialization.registerClass(TimeCondition.class, "TimeCondition");
         ConfigurationSerialization.registerClass(WeatherCondition.class, "WeatherCondition");
@@ -196,6 +198,7 @@ public class PhatLoots extends JavaPlugin {
         defaultConditions.add(new BiomeCondition("BiomeCondition"));
         defaultConditions.add(new ExperienceCondition("ExperienceCondition"));
         defaultConditions.add(new HealthCondition("HealthCondition"));
+        defaultConditions.add(new PermissionCondition("PermissionCondition"));
         defaultConditions.add(new RegionCondition("RegionCondition"));
         defaultConditions.add(new TimeCondition("TimeCondition"));
         defaultConditions.add(new WeatherCondition("WeatherCondition"));
