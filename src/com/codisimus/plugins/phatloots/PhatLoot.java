@@ -327,7 +327,9 @@ public final class PhatLoot implements ConfigurationSerializable {
                     continue;
 
                 if (!condition.checkCondition(player)) {
-                    player.sendMessage(ChatColor.translateAlternateColorCodes('&', PhatLootsConfig.lootConditionsNotMet));
+                    if (PhatLootsConfig.lootConditionsNotMet != null && !PhatLootsConfig.lootConditionsNotMet.isEmpty())
+                        player.sendMessage(ChatColor.translateAlternateColorCodes('&', PhatLootsConfig.lootConditionsNotMet));
+
                     return false;
                 }
             }
