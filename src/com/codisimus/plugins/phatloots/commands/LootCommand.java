@@ -9,12 +9,10 @@ import com.codisimus.plugins.phatloots.util.PhatLootsUtil;
 import com.codisimus.plugins.phatloots.commands.CommandHandler.CodCommand;
 import com.codisimus.plugins.phatloots.gui.InventoryListener;
 import com.codisimus.plugins.phatloots.loot.Experience;
-import com.codisimus.plugins.phatloots.loot.Loot;
 import com.codisimus.plugins.phatloots.loot.LootCollection;
 import com.codisimus.plugins.phatloots.loot.Money;
 import java.util.ArrayList;
 import java.util.EnumSet;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import org.bukkit.Bukkit;
@@ -401,12 +399,7 @@ public class LootCommand {
         permission = "phatloots.money"
     )
     public boolean money(CommandSender sender, PhatLoot phatLoot, int lower, int upper) {
-        Iterator<Loot> itr = phatLoot.lootList.iterator();
-        while (itr.hasNext()) {
-            if (itr.next() instanceof Money) {
-                itr.remove();
-            }
-        }
+        phatLoot.lootList.removeIf(loot -> loot instanceof Money);
         phatLoot.addLoot(new Money(lower, upper));
         sender.sendMessage("§5Money for PhatLoot §6"
                 + phatLoot.name + "§5 set to "
@@ -450,16 +443,8 @@ public class LootCommand {
     }
     @CodCommand(command = "money", weight = 100.5)
     public boolean money(Player player, String range) {
-        String[] bounds = range.split("-");
-        int lower, upper;
-        try {
-            lower = Integer.parseInt(bounds[0]);
-            upper = Integer.parseInt(bounds[1]);
-        } catch (Exception ex) {
-            return false;
-        }
         for (PhatLoot phatLoot : PhatLootsUtil.getPhatLoots(player)) {
-            money(player, phatLoot, lower, upper);
+            money(player, phatLoot, range);
         }
         return true;
     }
@@ -534,12 +519,7 @@ public class LootCommand {
         permission = "phatloots.exp"
     )
     public boolean exp(CommandSender sender, PhatLoot phatLoot, int lower, int upper) {
-        Iterator<Loot> itr = phatLoot.lootList.iterator();
-        while (itr.hasNext()) {
-            if (itr.next() instanceof Experience) {
-                itr.remove();
-            }
-        }
+        phatLoot.lootList.removeIf(loot -> loot instanceof Experience);
         phatLoot.addLoot(new Experience(lower, upper));
         sender.sendMessage("§5Experience for PhatLoot §6"
                 + phatLoot.name + "§5 set to "
@@ -568,7 +548,25 @@ public class LootCommand {
         }
         return true;
     }
-
+    @CodCommand(command = "exp", weight = 120.4)
+    public boolean exp(CommandSender sender, PhatLoot phatLoot, String range) {
+        String[] bounds = range.split("-");
+        int lower, upper;
+        try {
+            lower = Integer.parseInt(bounds[0]);
+            upper = Integer.parseInt(bounds[1]);
+        } catch (Exception ex) {
+            return false;
+        }
+        return exp(sender, phatLoot, lower, upper);
+    }
+    @CodCommand(command = "exp", weight = 120.5)
+    public boolean exp(Player player, String range) {
+        for (PhatLoot phatLoot : PhatLootsUtil.getPhatLoots(player)) {
+            exp(player, phatLoot, range);
+        }
+        return true;
+    }
     @CodCommand(
         command = "list",
         weight = 130,
@@ -578,10 +576,10 @@ public class LootCommand {
         permission = "phatloots.list"
     )
     public boolean list(CommandSender sender) {
-        String list = "§5Current PhatLoots: §6";
+        StringBuilder list = new StringBuilder("§5Current PhatLoots: §6");
         //Concat each PhatLoot
         for (PhatLoot phatLoot : PhatLoots.getPhatLoots()) {
-            list += phatLoot.name + ", ";
+            list.append(phatLoot.name).append(", ");
         }
         sender.sendMessage(list.substring(0, list.length() - 2));
         return true;
@@ -622,10 +620,10 @@ public class LootCommand {
             gui(player, phatLoots.getFirst());
             break;
         default:
-            String list = "§5Linked PhatLoots: §6";
+            StringBuilder list = new StringBuilder("§5Linked PhatLoots: §6");
             //Concat each PhatLoot
             for (PhatLoot pl : phatLoots) {
-                list += pl.name + ", ";
+                list.append(pl.name).append(", ");
             }
             player.sendMessage(list.substring(0, list.length() - 2));
             break;
