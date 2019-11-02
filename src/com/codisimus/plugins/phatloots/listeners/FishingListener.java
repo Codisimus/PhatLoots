@@ -20,6 +20,7 @@ import java.util.List;
  * @author Codisimus
  */
 public class FishingListener implements Listener {
+
     @EventHandler (ignoreCancelled = true)
     public void onPlayerFish(PlayerFishEvent event) {
         //Check if there is a PhatLoot for Fishing

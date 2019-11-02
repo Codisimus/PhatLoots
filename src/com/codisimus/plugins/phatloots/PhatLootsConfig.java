@@ -56,6 +56,9 @@ public class PhatLootsConfig {
     public static String lootBroadcast;
     public static String lootConditionsNotMet;
 
+    public static boolean replaceBlockLoot;
+    public static boolean blockLootEnchantBonus;
+
     public static String tierPrefix;
 
     public static void load() {
@@ -105,7 +108,8 @@ public class PhatLootsConfig {
         MobListener.mobTypes = config.getBoolean("MobTypes");
         MobListener.namedMobs = config.getBoolean("NamedMobs");
 
-
+        replaceBlockLoot = config.getBoolean("ReplaceBlockLoot", false);
+        blockLootEnchantBonus = config.getBoolean("BlockLootEnchantBonus");
         /* MESSAGES */
 
         section = config.getConfigurationSection("Messages");

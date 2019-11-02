@@ -291,3 +291,12 @@ AutoSavePeriod: 1440
 ##The loot will spill all over the ground near the chests location
 ##This will only apply if BreakAndRespawn=true, and GlobalReset=true
 AutoBreakOnPunch: false
+
+## This setting configures if block loots should be overriden by loot tables with the name of blocks
+## Block loots are the items/blocks a block will drop when broken
+## Format: namespace-item (Example: minecraft-stone)
+## A dash '-' is used in place of a colon ':" in the namespace due to file separator problems
+ReplaceBlockLoot: false
+
+## If enchants like fortune should increase the chance of rare items in a loot table when mined
+BlockLootEnchantBonus: false

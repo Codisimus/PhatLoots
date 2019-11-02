@@ -278,6 +278,13 @@ public class PhatLoots extends JavaPlugin {
             debug("DispenserLoot has been turned off.");
         }
 
+        if (getConfig().getBoolean("ReplaceBlockLoot")) {
+            logger.info("Listening for Block Loots");
+            pm.registerEvents(new BlockLootListener(), this);
+        } else if (isDebug()) {
+            debug("Custom Block Loot has been turned off.");
+        }
+
         //Find and set the RegionHook
         String regionPlugin = getConfig().getString("RegionPlugin");
         if (isDebug()) {
