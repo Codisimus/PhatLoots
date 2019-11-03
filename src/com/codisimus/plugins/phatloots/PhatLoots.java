@@ -23,6 +23,7 @@ import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.Charset;
+import java.text.DecimalFormat;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.logging.Level;
@@ -405,6 +406,7 @@ public class PhatLoots extends JavaPlugin {
             debug(dir.listFiles(PhatLootsUtil.YAML_FILTER).length + " loot table(s) have been found in " + dir.getPath());
         }
         for (File file : dir.listFiles(PhatLootsUtil.YAML_FILTER)) {
+            long startTime = System.currentTimeMillis();
             try {
                 String name = file.getName();
                 name = name.substring(0, name.length() - PhatLootsUtil.YAML_EXTENSION.length());
@@ -422,6 +424,13 @@ public class PhatLoots extends JavaPlugin {
                 }
                 phatLoots.put(name, phatLoot);
                 phatLoot.save();
+
+                if (isDebug()) {
+                    double loadTime = System.currentTimeMillis() - startTime / 1000D;
+                    if (loadTime > 4) {
+                        debug("PhatLoot name (" + phatLoot.name + ") took a long time to load - " + new DecimalFormat("#.###").format(loadTime) + "s");
+                    }
+                }
             } catch (Exception ex) {
                 logger.log(Level.SEVERE, "Failed to load " + file.getName(), ex);
             }
