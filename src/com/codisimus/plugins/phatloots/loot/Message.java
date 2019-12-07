@@ -78,7 +78,7 @@ public class Message extends Loot {
         info.setDisplayName("§2Message");
 
         //Add more specific details of the message
-        List<String> details = new ArrayList();
+        List<String> details = new ArrayList<>();
         details.add("§4Probability: §6" + probability);
         details.add("§4Message: §6" + msg);
 
@@ -114,13 +114,11 @@ public class Message extends Loot {
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append(msg);
-        sb.append(" @ ");
-        //Only display the decimal values if the probability is not a whole number
-        sb.append(String.valueOf(Math.floor(probability) == probability ? (int) probability : probability));
-        sb.append("%");
-        return sb.toString();
+        return msg +
+                " @ " +
+                //Only display the decimal values if the probability is not a whole number
+                Math.floor(probability == probability ? (int) probability : probability) +
+                "%";
     }
 
     @Override
@@ -142,7 +140,7 @@ public class Message extends Loot {
 
     @Override
     public Map<String, Object> serialize() {
-        Map map = new TreeMap();
+        Map<String, Object> map = new TreeMap<>();
         map.put("Probability", probability);
         map.put("Message", msg);
         return map;

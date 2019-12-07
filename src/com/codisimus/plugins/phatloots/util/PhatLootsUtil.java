@@ -5,6 +5,7 @@ import java.io.FilenameFilter;
 import java.util.EnumSet;
 import java.util.LinkedList;
 import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 
 import com.codisimus.plugins.phatloots.PhatLoot;
 import com.codisimus.plugins.phatloots.PhatLoots;
@@ -26,16 +27,11 @@ import org.bukkit.inventory.ItemStack;
  * @author Codisimus
  */
 public class PhatLootsUtil {
-    private static Random random = new Random();
+    private static Random random = ThreadLocalRandom.current();
     public static final String PROPERTIES_EXTENSION = ".properties";
     public static final String TEXT_EXTENSION = ".txt";
     public static final String YAML_EXTENSION = ".yml";
-    public static final FilenameFilter YAML_FILTER = new FilenameFilter() {
-        @Override
-        public boolean accept(File dir, String name) {
-            return name.toLowerCase().endsWith(YAML_EXTENSION);
-        }
-    };
+    public static final FilenameFilter YAML_FILTER = (dir, name) -> name.toLowerCase().endsWith(YAML_EXTENSION);
 
     /**
      * Returns true if the given player is allowed to loot the specified PhatLoot
@@ -47,9 +43,8 @@ public class PhatLootsUtil {
     public static boolean canLoot(Player player, PhatLoot phatLoot) {
         //Check if the PhatLoot is restricted
         if (PhatLootsConfig.restrictAll || PhatLootsConfig.restricted.contains(phatLoot.name)) {
-            return player.hasPermission("phatloots.loot.*") //Check for the loot all permission
-                   ? true
-                   : player.hasPermission("phatloots.loot." + phatLoot.name); //Check if the Player has the specific loot permission
+            //Check for the loot all permission
+            return player.hasPermission("phatloots.loot.*") || player.hasPermission("phatloots.loot." + phatLoot.name); //Check if the Player has the specific loot permission
         } else {
             return true;
         }
@@ -246,7 +241,7 @@ public class PhatLootsUtil {
         if (level <= 15) {
             return (2 * level) + 7;
         }
-        if ((level >= 16) && (level <= 30)) {
+        if (level <= 30) {
             return (5 * level) - 38;
         }
         return (9 * level) - 158;
@@ -262,7 +257,7 @@ public class PhatLootsUtil {
      * @return The total experience the player has
      */
     public static int getTotalExperience(final Player player) {
-        int exp = (int) Math.round(getExpAtLevel(player.getLevel()) * player.getExp());
+        int exp = Math.round(getExpAtLevel(player.getLevel()) * player.getExp());
         int currentLevel = player.getLevel();
 
         while (currentLevel > 0) {

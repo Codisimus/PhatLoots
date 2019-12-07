@@ -30,7 +30,7 @@ import javax.xml.soap.Text;
 
 public class CommandHandler implements CommandExecutor {
 
-    private static enum ParameterType {
+    private enum ParameterType {
         STRING, INT, DOUBLE, BOOLEAN, MATERIAL, PLAYER, OFFLINEPLAYER,
         WORLD, PHATLOOT;
 
@@ -43,20 +43,10 @@ public class CommandHandler implements CommandExecutor {
         }
     }
 
-    private static final Comparator<Method> METHOD_COMPARATOR = new Comparator() {
-        @Override
-        public int compare(Object o1, Object o2) {
-            return Double.compare(((Method) o1).getAnnotation(CodCommand.class).weight(),
-                    ((Method) o2).getAnnotation(CodCommand.class).weight());
-        }
-    };
+    private static final Comparator<Method> METHOD_COMPARATOR = Comparator.comparingDouble(method ->
+            method.getAnnotation(CodCommand.class).weight());
 
-    private static final Comparator<CodCommand> CODCOMMAND_COMPARATOR = new Comparator() {
-        @Override
-        public int compare(Object o1, Object o2) {
-            return Double.compare(((CodCommand) o1).weight(), ((CodCommand) o2).weight());
-        }
-    };
+    private static final Comparator<CodCommand> CODCOMMAND_COMPARATOR = Comparator.comparingDouble(CodCommand::weight);
 
     @Target(ElementType.METHOD)
     @Retention(RetentionPolicy.RUNTIME)
@@ -135,7 +125,7 @@ public class CommandHandler implements CommandExecutor {
             CodCommand meta = findMeta(annotation);
             if (meta == null || CODCOMMAND_COMPARATOR.compare(annotation, meta) < 0) {
                 //This new (or first) meta has highest priority and should thus be the main one
-                TreeSet treeSet;
+                TreeSet<Method> treeSet;
                 if (meta == null) {
                     treeSet = new TreeSet<>(METHOD_COMPARATOR);
                 } else {
@@ -400,7 +390,7 @@ public class CommandHandler implements CommandExecutor {
             if (i >= metas.size())
                 continue;
 
-            CodCommand meta = metas.toArray(new CodCommand[metas.size()])[i];
+            CodCommand meta = metas.toArray(new CodCommand[0])[i];
             displayOneLiner(sender, meta);
             resultsFound = true;
         }

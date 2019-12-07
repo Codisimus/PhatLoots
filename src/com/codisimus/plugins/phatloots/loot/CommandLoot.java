@@ -152,7 +152,7 @@ public class CommandLoot extends Loot {
         info.setDisplayName("§2Command");
 
         //Add more specific details of the command
-        List<String> details = new ArrayList();
+        List<String> details = new ArrayList<>();
         details.add("§4Probability: §6" + probability);
         details.add("§4Command: §6" + command);
         details.add(fromConsole ? "§6From Console" : "§6From Player");
@@ -213,7 +213,7 @@ public class CommandLoot extends Loot {
         }
         sb.append("command @ ");
         //Only display the decimal values if the probability is not a whole number
-        sb.append(String.valueOf(Math.floor(probability) == probability ? (int) probability : probability));
+        sb.append(Math.floor(probability) == probability ? (int) probability : probability);
         sb.append("%");
         if (delay > 0) {
             sb.append("executed ");
@@ -248,7 +248,7 @@ public class CommandLoot extends Loot {
 
     @Override
     public Map<String, Object> serialize() {
-        Map map = new TreeMap();
+        Map<String, Object> map = new TreeMap<>();
         map.put("Probability", probability);
         map.put("Command", command);
         map.put("Delay", delay);

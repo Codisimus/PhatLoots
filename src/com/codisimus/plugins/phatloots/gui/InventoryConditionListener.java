@@ -17,11 +17,7 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * Listens for interactions with PhatLoot Condition info GUIs
@@ -33,7 +29,7 @@ import java.util.UUID;
 public class InventoryConditionListener implements Listener {
 
     private final static int SIZE = 54;
-    private static final HashMap<UUID, PhatLoot> conditionViewers = new HashMap<>(); //Player -> PhatLoot they are viewing
+    private static final Map<UUID, PhatLoot> conditionViewers = new HashMap<>(); //Player -> PhatLoot they are viewing
 
     public static void viewConditionMenu(Player player, PhatLoot phatLoot) {
         //Create the Inventory view
@@ -48,7 +44,7 @@ public class InventoryConditionListener implements Listener {
         ItemStack item = new ItemStack(Material.LADDER);
         ItemMeta meta = item.getItemMeta();
         meta.setDisplayName(ChatColor.DARK_GREEN + "Up to...");
-        meta.setLore(Arrays.asList(ChatColor.GOLD + phatLoot.name));
+        meta.setLore(Collections.singletonList(ChatColor.GOLD + phatLoot.name));
         item.setItemMeta(meta);
         inv.setItem(SIZE - 1, item);
 
@@ -96,11 +92,9 @@ public class InventoryConditionListener implements Listener {
             return;
         }
 
-        switch (event.getSlot()) {
-            case SIZE - 1:
-                conditionViewers.remove(player.getUniqueId());
-                InventoryListener.viewPhatLoot(player, phatLoot);
-                break;
+        if (event.getSlot() == SIZE - 1) {
+            conditionViewers.remove(player.getUniqueId());
+            InventoryListener.viewPhatLoot(player, phatLoot);
         }
     }
 

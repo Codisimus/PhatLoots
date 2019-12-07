@@ -45,7 +45,7 @@ public class LootBagListener implements Listener {
                 }
             }
 
-            if (finalLine == null || finalLine.isEmpty())
+            if (finalLine.isEmpty())
                 continue;
 
             PhatLoot phatLoot = PhatLoots.getPhatLoot(line.substring(finalLine.length()));

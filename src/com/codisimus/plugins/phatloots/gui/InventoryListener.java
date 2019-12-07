@@ -229,7 +229,7 @@ public class InventoryListener implements Listener {
                         } else { //Pick up nothing
                             event.getView().setCursor(null);
                         }
-                        if (l != null && l instanceof Item) { //Put down Item
+                        if (l instanceof Item) { //Put down Item
                             event.setCurrentItem(((Item) l).getItem());
                         }
                         break;
@@ -557,7 +557,7 @@ public class InventoryListener implements Listener {
         infoStack = new ItemStack(Material.CLOCK);
         info = Bukkit.getItemFactory().getItemMeta(infoStack.getType());
         info.setDisplayName("§2Reset Time");
-        List<String> details = new ArrayList();
+        List<String> details = new ArrayList<>();
         details.add("§4Days: §6" + phatLoot.days);
         details.add("§4Hours: §6" + phatLoot.hours);
         details.add("§4Minutes: §6" + phatLoot.minutes);
@@ -610,7 +610,7 @@ public class InventoryListener implements Listener {
         inv.setItem(index, infoStack);
 
         //Store the current view in the Player's stack
-        pageStacks.put(player.getUniqueId(), new Stack<InventoryView>());
+        pageStacks.put(player.getUniqueId(), new Stack<>());
 
         infoViewers.put(player.getUniqueId(), phatLoot);
         switchView(player, inv, invName);
@@ -650,7 +650,7 @@ public class InventoryListener implements Listener {
         item = new ItemStack(Material.LADDER);
         info = Bukkit.getItemFactory().getItemMeta(item.getType());
         info.setDisplayName("§2Up to...");
-        List<String> details = new ArrayList();
+        List<String> details = new ArrayList<>();
         details.add("§6" + pageStacks.get(player.getUniqueId()).peek().getTitle());
         info.setLore(details);
         item.setItemMeta(info);

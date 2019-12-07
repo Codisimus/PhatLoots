@@ -62,7 +62,7 @@ public abstract class LootCondition implements ConfigurationSerializable {
 
         ItemStack condition = new ItemStack(Material.REDSTONE);
         ItemMeta meta = condition.getItemMeta();
-        List<String> lore = new ArrayList<String>();
+        List<String> lore = new ArrayList<>();
         lore.add("§4Condition Info:");
         lore.add("§6 Enabled: §e" + enabled);
         meta.setLore(lore);
@@ -99,7 +99,7 @@ public abstract class LootCondition implements ConfigurationSerializable {
 
     @Override
     public Map<String, Object> serialize() {
-        Map<String, Object> map =  new TreeMap<String, Object>();
+        Map<String, Object> map =  new TreeMap<>();
         map.put("Name", name);
         map.put("Enabled", enabled);
         return map;

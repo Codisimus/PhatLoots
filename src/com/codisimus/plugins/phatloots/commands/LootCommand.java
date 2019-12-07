@@ -109,7 +109,7 @@ public class LootCommand {
         }
 
         ItemMeta meta = item.hasItemMeta() ? item.getItemMeta() : Bukkit.getItemFactory().getItemMeta(item.getType());
-        List<String> lore = meta.hasLore() ? meta.getLore() : new ArrayList<String>();
+        List<String> lore = meta.hasLore() ? meta.getLore() : new ArrayList<>();
         lore.add(PhatLootsConfig.lootBagKeys.get(0) + phatLoot.name);
         meta.setLore(lore);
         item.setItemMeta(meta);

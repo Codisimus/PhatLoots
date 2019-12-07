@@ -4,6 +4,8 @@ import com.codisimus.plugins.phatloots.loot.LootBundle;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
+import java.util.List;
+
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 
@@ -80,8 +82,8 @@ public class PhatLootsAPI {
      *
      * @return a List of Blocks that are PhatLootChests
      */
-    public static ArrayList<Block> getAllPhatLootChestBlocks() {
-        ArrayList<Block> blockList = new ArrayList<>();
+    public static List<Block> getAllPhatLootChestBlocks() {
+        List<Block> blockList = new ArrayList<>();
         for (PhatLootChest chest : getAllPhatLootChests()) {
             blockList.add(chest.getBlock());
         }

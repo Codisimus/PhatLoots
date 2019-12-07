@@ -28,7 +28,7 @@ import org.bukkit.inventory.meta.ItemMeta;
  */
 @SerializableAs("MythicDropsItem")
 public class MythicDropsItem extends Loot {
-    private static ArrayList<String> tierList = null;
+    private static List<String> tierList = null;
     public String tierName;
     public int amountLower = 1;
     public int amountUpper = 1;
@@ -385,7 +385,7 @@ public class MythicDropsItem extends Loot {
 
     @Override
     public Map<String, Object> serialize() {
-        Map map = new TreeMap();
+        Map<String, Object> map = new TreeMap<>();
         map.put("Probability", getProbability());
         map.put("Tier", tierName);
         if (amountLower == amountUpper) {

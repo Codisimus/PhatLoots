@@ -226,7 +226,7 @@ public class Item extends Loot {
             details = info.getLore();
             details.add("§1-----------------------------");
         } else {
-            details = new ArrayList();
+            details = new ArrayList<>();
         }
         details.add(ChatColor.DARK_BLUE + "Probability: " + ChatColor.GOLD + probability);
         if (amountBonus == 0) {
@@ -423,7 +423,7 @@ public class Item extends Loot {
 
                                     nameBuilder.append(line);
 
-                                    List lore = new LinkedList();
+                                    List<String> lore = new LinkedList<>();
                                     while ((line = bReader.readLine()) != null) {
                                         line = line.replace('&', ChatColor.COLOR_CHAR);
                                         lore.add(line);
@@ -634,7 +634,7 @@ public class Item extends Loot {
      */
     private void generateName(ItemStack item, StringBuilder nameBuilder) {
         Material mat = item.getType();
-        Map enchantments = item.getEnchantments();
+        Map<Enchantment, Integer> enchantments = item.getEnchantments();
         String type;
         Enchantment enchantment;
         int level;
@@ -992,7 +992,7 @@ public class Item extends Loot {
 
     @Override
     public Map<String, Object> serialize() {
-        Map map = new TreeMap();
+        Map<String, Object> map = new TreeMap<>();
         map.put("Probability", probability);
         map.put("ItemStack", item);
         if (amountBonus > 0) {

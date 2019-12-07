@@ -11,7 +11,7 @@ import org.bukkit.event.HandlerList;
  */
 public class ChestRespawnEvent extends PhatLootChestEvent {
     private static final HandlerList handlers = new HandlerList();
-    public static enum RespawnReason { INITIAL, DELAYED, PLUGIN_DISABLED, OTHER }
+    public enum RespawnReason { INITIAL, DELAYED, PLUGIN_DISABLED, OTHER }
     private long delay;
     private final RespawnReason reason;
 

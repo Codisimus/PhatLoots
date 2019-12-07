@@ -28,9 +28,8 @@ public class WorldGuardRegionHook implements RegionHook {
         Set<ProtectedRegion> regionSet = applicableRegionSet.getRegions();
 
         //Eliminate all parent Regions
-        Iterator<ProtectedRegion> itr = applicableRegionSet.iterator();
-        while (itr.hasNext()) {
-            ProtectedRegion region = itr.next().getParent();
+        for (ProtectedRegion protectedRegion : applicableRegionSet) {
+            ProtectedRegion region = protectedRegion.getParent();
             while (region != null) {
                 regionSet.remove(region);
                 region = region.getParent();

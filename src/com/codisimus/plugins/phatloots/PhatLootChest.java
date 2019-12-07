@@ -26,18 +26,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.entity.TNTPrimed;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.scheduler.BukkitRunnable;
 
-
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * A PhatLootChest is a Block location and a Map of Users with times attached to them
@@ -45,7 +35,7 @@ import java.util.UUID;
  * @author Codisimus
  */
 public class PhatLootChest {
-    private static EnumSet<Material> untriggeredRedstone = EnumSet.of(
+    private static Set<Material> untriggeredRedstone = EnumSet.of(
         Material.REDSTONE, Material.REDSTONE_WIRE, Material.COMPARATOR,
         Material.REDSTONE_LAMP, Material.REDSTONE_TORCH,
         Material.REPEATER, Material.DISPENSER, Material.DROPPER,
@@ -56,9 +46,9 @@ public class PhatLootChest {
         Material.REDSTONE_LAMP, Material.REDSTONE_TORCH,
         Material.REPEATER, Material.PISTON
     );
-    private static HashMap<String, PhatLootChest> chests = new HashMap<>(); //Chest Location -> PhatLootChest
+    private static Map<String, PhatLootChest> chests = new HashMap<>(); //Chest Location -> PhatLootChest
     static HashSet<PhatLootChest> chestsToRespawn = new HashSet<>();
-    public static HashMap<UUID, PhatLootChest> openPhatLootChests = new HashMap<>(); //Player -> Open PhatLootChest
+    public static Map<UUID, PhatLootChest> openPhatLootChests = new HashMap<>(); //Player -> Open PhatLootChest
     static boolean useBreakAndRepawn;
     static boolean soundOnBreak;
     static boolean shuffleLoot;
@@ -288,12 +278,7 @@ public class PhatLootChest {
 
         //Schedule the chest to respawn
         if (event.getRespawnTime() > 0) {
-            new BukkitRunnable() {
-                @Override
-                public void run() {
-                    respawn(RespawnReason.INITIAL);
-                }
-            }.runTaskLater(PhatLoots.plugin, event.getRespawnTime());
+            Bukkit.getScheduler().runTaskLater(PhatLoots.plugin, () -> respawn(RespawnReason.INITIAL), event.getRespawnTime());
         }
 
         if (soundOnBreak) {
@@ -316,12 +301,7 @@ public class PhatLootChest {
             }
 
             if (event.getRespawnTime() > 0) {
-                new BukkitRunnable() {
-                    @Override
-                    public void run() {
-                        respawn(RespawnReason.DELAYED);
-                    }
-                }.runTaskLater(PhatLoots.plugin, event.getRespawnTime());
+                Bukkit.getScheduler().runTaskLater(PhatLoots.plugin, () -> respawn(RespawnReason.DELAYED), event.getRespawnTime());
             } else {
                 state.update(true);
                 //Hack to fix a Bukkit bug of Skulls not updating properly
@@ -340,9 +320,9 @@ public class PhatLootChest {
                     if (otherHalfState instanceof Skull) {
                         Skull oldState = (Skull) otherHalfState;
                         Skull newState = (Skull) otherHalfState.getBlock().getState();
-                        newState.setSkullType(oldState.getSkullType());
-                        newState.setRotation(oldState.getRotation());
-                        newState.setOwner(oldState.getOwner());
+                        newState.setOwningPlayer(oldState.getOwningPlayer());
+                        newState.setBlockData(oldState.getBlockData());
+                        newState.setData(oldState.getData());
                         newState.update();
                     }
                     otherHalfState = null;
@@ -432,7 +412,7 @@ public class PhatLootChest {
         if (shuffleLoot) {
             List<ItemStack> contents = Arrays.asList(inventory.getContents());
             Collections.shuffle(contents);
-            inventory.setContents(contents.toArray(new ItemStack[contents.size()]));
+            inventory.setContents(contents.toArray(new ItemStack[0]));
         }
     }
 
@@ -634,7 +614,7 @@ public class PhatLootChest {
             }
         }
         //Convert the time from milliseconds to ticks
-        return time /= 50;
+        return time / 50;
     }
 
     /**
@@ -645,7 +625,7 @@ public class PhatLootChest {
      * @return The List of Blocks
      */
     private static LinkedList<Block> findRedstone(Block block, boolean on) {
-        EnumSet redstone = on ? triggeredRedstone : untriggeredRedstone;
+        Set<Material> redstone = on ? triggeredRedstone : untriggeredRedstone;
         LinkedList<Block> redstoneList = new LinkedList<>();
         Block neighbor = block.getRelative(1, 0, 0);
         if (redstone.contains(neighbor.getType())) {

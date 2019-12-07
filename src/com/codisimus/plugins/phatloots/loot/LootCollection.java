@@ -100,7 +100,7 @@ public class LootCollection extends Loot {
             name = (String) map.get(currentLine = "Name");
             lowerNumberOfLoots = (Integer) map.get(currentLine = "LowerNumberOfLoots");
             upperNumberOfLoots = (Integer) map.get(currentLine = "UpperNumberOfLoots");
-            lootList = new LinkedList<>((List) map.get(currentLine = "LootList"));
+            lootList = new LinkedList<>((List<Loot>) map.get(currentLine = "LootList"));
         } catch (Exception ex) {
             //Print debug messages
             PhatLoots.logger.severe("Failed to load LootCollection line: " + currentLine);
@@ -192,7 +192,7 @@ public class LootCollection extends Loot {
         info.setDisplayName("§2" + name + " (Collection)");
 
         //Add more specific details of the collection
-        List<String> details = new ArrayList();
+        List<String> details = new ArrayList<>();
         details.add("§1Probability: §6" + probability);
         if (isRollForEach()) {
             details.add("§6Each loot is rolled for");
@@ -342,7 +342,7 @@ public class LootCollection extends Loot {
 
     @Override
     public Map<String, Object> serialize() {
-        Map map = new TreeMap();
+        Map<String, Object> map = new TreeMap<>();
         map.put("Probability", probability);
         map.put("Name", name);
         map.put("LowerNumberOfLoots", lowerNumberOfLoots);

@@ -25,7 +25,6 @@ public abstract class MobListener implements Listener {
     /**
      * Returns a cleaned up string representation of the given Entity's type
      *
-     * @param entity The given Entity
      * @return The name of the type of the Entity
      */
     abstract String getLootType();
@@ -52,7 +51,7 @@ public abstract class MobListener implements Listener {
         //First check for a PhatLoot matching the mob's custom name
         if (namedMobs) {
             String name = entity instanceof HumanEntity
-                          ? ((HumanEntity) entity).getName() //NPC or Player
+                          ? entity.getName() //NPC or Player
                           : entity.getCustomName(); //Mob
             if (name != null) {
                 name = name.replace(" ", "_");
@@ -190,11 +189,11 @@ public abstract class MobListener implements Listener {
         }
         String s = type.name();
         String[] parts = s.split("_");
-        String camelCaseString = "";
+        StringBuilder camelCaseString = new StringBuilder();
         for (String part : parts){
-            camelCaseString = camelCaseString + toProperCase(part);
+            camelCaseString.append(toProperCase(part));
         }
-        return camelCaseString;
+        return camelCaseString.toString();
     }
 
     private static String toProperCase(String s) {

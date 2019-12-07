@@ -104,16 +104,13 @@ public class Gem extends Loot {
         while (amount > 0) {
             SocketGem socketGem;
             if (gemName.equalsIgnoreCase(RANDOM_GEM)) {
-                switch (gemType) {
-                case ANY:
+                if (gemType == GemType.ANY) {
                     socketGem = SocketGemUtil.getRandomSocketGemWithChance();
-                    break;
-                default:
+                } else {
                     instantiateGemLists();
                     ArrayList<String> gemList = gemLists.get(gemType);
                     String socketGemName = gemList.get(PhatLootsUtil.rollForInt(1, gemList.size() - 1));
                     socketGem = SocketGemUtil.getSocketGemFromName(socketGemName);
-                    break;
                 }
             } else {
                 socketGem = SocketGemUtil.getSocketGemFromName(gemName);
@@ -143,7 +140,7 @@ public class Gem extends Loot {
         info.setDisplayName("§2Gem");
 
         //Add more specific details of the item
-        List<String> details = new ArrayList();
+        List<String> details = new ArrayList<>();
         if (!gemName.equalsIgnoreCase(RANDOM_GEM)) {
             details.addAll(SocketGemUtil.getSocketGemFromName(gemName).getLore());
             details.add("§1-----------------------------");
@@ -251,22 +248,18 @@ public class Gem extends Loot {
 
     private static void instantiateGemLists() {
         if (gemLists == null) {
-            gemLists = new EnumMap(GemType.class);
+            gemLists = new EnumMap<>(GemType.class);
 
             //LOAD ALL THE GEMS!
             for (SocketGem socketGem : MythicDropsPlugin.getInstance().getSockettingSettings().getSocketGemMap().values()) {
                 GemType gemType = socketGem.getGemType();
-                if (gemLists.get(gemType) == null) {
-                    gemLists.put(gemType, new ArrayList<String>());
-                }
+                gemLists.computeIfAbsent(gemType, key -> new ArrayList<>());
                 ArrayList<String> gemList = gemLists.get(gemType);
                 gemList.add(socketGem.getName());
             }
 
             //Create the ANY gem list
-            if (gemLists.get(GemType.ANY) == null) {
-                gemLists.put(GemType.ANY, new ArrayList<String>());
-            }
+            gemLists.computeIfAbsent(GemType.ANY, key -> new ArrayList<>());
             ArrayList<String> anyGemList = gemLists.get(GemType.ANY);
             for (GemType gemType : GemType.values()) {
                 if (gemType != GemType.ANY) {
@@ -364,7 +357,7 @@ public class Gem extends Loot {
 
     @Override
     public Map<String, Object> serialize() {
-        Map map = new TreeMap();
+        Map<String, Object> map = new TreeMap<>();
         map.put("Probability", getProbability());
         map.put("Name", gemName);
         map.put("Type", gemType.name());

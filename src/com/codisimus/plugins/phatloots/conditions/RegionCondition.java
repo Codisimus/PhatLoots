@@ -60,7 +60,7 @@ public class RegionCondition extends LootCondition {
                 if (!regions.contains(region))
                     return true;
 
-                if (!regions.isEmpty() && region.equals("none"))
+                if (region.equals("none"))
                     return true;
         }
 

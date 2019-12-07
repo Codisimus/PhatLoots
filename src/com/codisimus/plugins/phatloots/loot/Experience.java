@@ -114,7 +114,7 @@ public class Experience extends Loot {
         info.setDisplayName("§2Experience");
 
         //Add more specific details of the Experience loot
-        List<String> details = new ArrayList();
+        List<String> details = new ArrayList<>();
         details.add("§4Probability: §6" + probability);
         details.add("§4Lower Bound: §6" + lowerAmount);
         details.add("§4Upper Bound: §6" + upperAmount);
@@ -179,7 +179,7 @@ public class Experience extends Loot {
         sb.append(" experience");
         sb.append(" @ ");
         //Only display the decimal values if the probability is not a whole number
-        sb.append(String.valueOf(Math.floor(probability) == probability ? (int) probability : probability));
+        sb.append(Math.floor(probability) == probability ? (int) probability : probability);
         sb.append("%");
         return sb.toString();
     }
@@ -205,7 +205,7 @@ public class Experience extends Loot {
 
     @Override
     public Map<String, Object> serialize() {
-        Map map = new TreeMap();
+        Map<String, Object> map = new TreeMap<>();
         map.put("Probability", probability);
         map.put("Lower", lowerAmount);
         map.put("Upper", upperAmount);

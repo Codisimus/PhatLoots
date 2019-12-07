@@ -23,6 +23,7 @@ import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
 import java.util.*;
 import java.util.Map.Entry;
@@ -57,10 +58,10 @@ public class PhatLoots extends JavaPlugin {
     public static long autoSavePeriod;
     public static CommandHandler handler;
     public static final HashMap<String, RegionHook> regionHooks = new HashMap<>(); //Plugin Name -> RegionHook
-    public static final EnumMap<Material, HashMap<String, String>> types = new EnumMap(Material.class); //Material -> World Name -> PhatLoot Name
+    public static final EnumMap<Material, HashMap<String, String>> types = new EnumMap<>(Material.class); //Material -> World Name -> PhatLoot Name
     private static final HashMap<String, PhatLoot> phatLoots = new HashMap<>(); //PhatLoot Name -> PhatLoot
 
-    private List<LootCondition> defaultConditions = new ArrayList<LootCondition>();
+    private List<LootCondition> defaultConditions = new ArrayList<>();
 
     public static void main(String[] args) {
         //Do Nothing - For debugging within NetBeans IDE
@@ -210,7 +211,6 @@ public class PhatLoots extends JavaPlugin {
             Bukkit.getPluginManager().enablePlugin(addon);
         }
 
-        https://discord.gg/7MRPQmt
         /* Register Events */
         registerEvents();
 
@@ -219,12 +219,7 @@ public class PhatLoots extends JavaPlugin {
 
         /* Start save repeating task */
         if (autoSavePeriod > 0) {
-            new BukkitRunnable() {
-                @Override
-                public void run() {
-                    saveLootTimes();
-                }
-            }.runTaskTimer(this, autoSavePeriod, autoSavePeriod);
+            this.getServer().getScheduler().runTaskTimer(this, PhatLoots::saveLootTimes, autoSavePeriod, autoSavePeriod);
         }
 
         new Metrics(this);
@@ -511,9 +506,7 @@ public class PhatLoots extends JavaPlugin {
      */
     public static LinkedList<PhatLoot> getPhatLoots(Block block, Player player) {
         LinkedList<PhatLoot> phatLootList = getPhatLoots(block);
-        Iterator<PhatLoot> itr = phatLootList.iterator();
-        while (itr.hasNext()) {
-            PhatLoot phatLoot = itr.next();
+        for (PhatLoot phatLoot : phatLootList) {
             if (!PhatLootsUtil.canLoot(player, phatLoot)) {
                 phatLootList.remove(phatLoot);
             }
@@ -693,7 +686,7 @@ public class PhatLoots extends JavaPlugin {
         YamlConfiguration fileConfiguration = new YamlConfiguration();
         try {
             if (isValidUTF8(Files.toByteArray(file))) {
-                fileConfiguration.loadFromString(Files.toString(file, Charset.forName("UTF-8")));
+                fileConfiguration.loadFromString(Files.toString(file, StandardCharsets.UTF_8));
             } else {
                 fileConfiguration.load(file);
             }

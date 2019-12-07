@@ -49,7 +49,7 @@ public final class PhatLoot implements ConfigurationSerializable {
     static boolean commandCooldown;
 
     public String name; //A unique name for the PhatLoot
-    public ArrayList<Loot> lootList; //List of Loot
+    public List<Loot> lootList; //List of Loot
     private Map<Integer, LootCondition> lootConditions; // Map of Loot conditions
 
     public int days; //Reset time (will never reset if any are negative)
@@ -60,7 +60,7 @@ public final class PhatLoot implements ConfigurationSerializable {
     public boolean round;
     public boolean autoLoot;
     public boolean breakAndRespawn;
-    private HashSet<PhatLootChest> chests = new HashSet<>(); //Set of Chests linked to this PhatLoot
+    private Set<PhatLootChest> chests = new HashSet<>(); //Set of Chests linked to this PhatLoot
     private Properties lootTimes = new Properties(); //PhatLootChest'PlayerName=Year'Day'Hour'Minute'Second
 
     /**
@@ -408,7 +408,7 @@ public final class PhatLoot implements ConfigurationSerializable {
         }
 
         if (autoLoot) { //AutoLoot the items
-            HashMap<Integer, ItemStack> leftovers = player.getInventory().addItem(itemList.toArray(new ItemStack[itemList.size()]));
+            HashMap<Integer, ItemStack> leftovers = player.getInventory().addItem(itemList.toArray(new ItemStack[0]));
             if (PhatLootsConfig.autoLoot != null) {
                 int i = 0;
                 for (ItemStack item : itemList) {
@@ -450,7 +450,7 @@ public final class PhatLoot implements ConfigurationSerializable {
                     if (PhatLootChest.shuffleLoot) {
                         List<ItemStack> contents = Arrays.asList(inv.getContents());
                         Collections.shuffle(contents);
-                        inv.setContents(contents.toArray(new ItemStack[contents.size()]));
+                        inv.setContents(contents.toArray(new ItemStack[0]));
                     }
                     if (!leftOvers.isEmpty()) {
                         //Overflow all that could not fit in the Inventory
@@ -1004,7 +1004,7 @@ public final class PhatLoot implements ConfigurationSerializable {
         if (block == null) { //Add all keys
             keys = lootTimes.stringPropertyNames();
         } else { //Add each key that starts with the chest location
-            keys = new HashSet();
+            keys = new HashSet<>();
             String chest = PhatLootChest.getChest(block).toString();
             for (String key : lootTimes.stringPropertyNames()) {
                 if (key.startsWith(chest)) {
@@ -1170,10 +1170,10 @@ public final class PhatLoot implements ConfigurationSerializable {
 
     @Override
     public Map<String, Object> serialize() {
-        Map map = new TreeMap();
+        Map<String, Object> map = new TreeMap<>();
         map.put("Name", name);
 
-        Map nestedMap = new HashMap();
+        Map<String, Object> nestedMap = new HashMap<>();
         nestedMap.put("Days", days);
         nestedMap.put("Hours", hours);
         nestedMap.put("Minutes", minutes);
@@ -1200,7 +1200,7 @@ public final class PhatLoot implements ConfigurationSerializable {
         try {
             current = name = (String) map.get(currentLine = "Name");
 
-            Map nestedMap = (Map) map.get(currentLine = "Reset");
+            Map<String, Object> nestedMap = (Map<String, Object>) map.get(currentLine = "Reset");
             days = (Integer) nestedMap.get(currentLine = "Days");
             hours = (Integer) nestedMap.get(currentLine = "Hours");
             minutes = (Integer) nestedMap.get(currentLine = "Minutes");
@@ -1215,15 +1215,15 @@ public final class PhatLoot implements ConfigurationSerializable {
 
             //Check which version the file is
             if (map.containsKey(currentLine = "LootList")) { //3.1+
-                lootList = (ArrayList) map.get(currentLine = "LootList");
+                lootList = (List<Loot>) map.get(currentLine = "LootList");
             } else { //pre-3.1
                 PhatLoots.logger.warning("Your save files are outdated, please use version 3.1-3.2 to update them");
             }
 
             if (map.containsKey(currentLine = "LootConditions")) {
                 lootConditions = new HashMap<>();
-                List<LootCondition> conditions = (ArrayList<LootCondition>) map.get(currentLine = "LootConditions");
-                Map<String, LootCondition> conditionMap = new HashMap<String, LootCondition>();
+                List<LootCondition> conditions = (List<LootCondition>) map.get(currentLine = "LootConditions");
+                Map<String, LootCondition> conditionMap = new HashMap<>();
 
                 // Add default conditions
                 for (LootCondition condition : PhatLoots.plugin.getDefaultConditions()) {

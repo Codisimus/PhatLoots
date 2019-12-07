@@ -26,7 +26,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 @SerializableAs("UnidentifiedItem")
 public class UnidentifiedItem extends Loot {
     private static final String RANDOM_TIER = "RANDOM";
-    private static ArrayList<String> tierList = null;
+    private static List<String> tierList = null;
     public String tierName;
     public int amountLower = 1;
     public int amountUpper = 1;
@@ -130,7 +130,7 @@ public class UnidentifiedItem extends Loot {
                               : Bukkit.getItemFactory().getItemMeta(material);
                 List<String> lore = meta.hasLore()
                                   ? meta.getLore()
-                                  : new ArrayList<String>();
+                                  : new ArrayList<>();
                 lore.add(PhatLootsConfig.tierPrefix + tierName);
                 meta.setLore(lore);
                 mis.setItemMeta(meta);
@@ -334,7 +334,7 @@ public class UnidentifiedItem extends Loot {
 
     @Override
     public Map<String, Object> serialize() {
-        Map map = new TreeMap();
+        Map<String, Object> map = new TreeMap<>();
         map.put("Probability", getProbability());
         map.put("Tier", tierName);
         if (amountLower == amountUpper) {

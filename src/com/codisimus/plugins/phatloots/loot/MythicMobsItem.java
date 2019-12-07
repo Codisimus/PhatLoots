@@ -226,7 +226,7 @@ public class MythicMobsItem extends Loot {
 
     @Override
     public Map<String, Object> serialize() {
-        Map map = new TreeMap();
+        Map<String, Object> map = new TreeMap<>();
         map.put("Probability", getProbability());
         map.put("ItemID", itemId);
         if (amountLower == amountUpper) {

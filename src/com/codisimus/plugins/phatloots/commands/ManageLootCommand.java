@@ -581,7 +581,7 @@ public class ManageLootCommand {
      * @param args The arguments of the Loot Command
      */
     private static void setCmd(CommandSender sender, boolean add, String[] args) {
-        String cmd = null; //The command to be added/removed
+        StringBuilder cmd = new StringBuilder(); //The command to be added/removed
         String phatLoot = null; //The name of the PhatLoot
         double percent = 100; //The chance of receiving the Loot (defaulted to 100)
         String coll = null; //The Collection to add the Loot to
@@ -609,10 +609,10 @@ public class ManageLootCommand {
                 break;
 
             case '/': //Command
-                cmd = args[i];
+                cmd = new StringBuilder(args[i]);
                 i++;
                 while (i < args.length) {
-                    cmd += " " + args[i];
+                    cmd.append(" ").append(args[i]);
                     i++;
                 }
                 break;
@@ -626,7 +626,7 @@ public class ManageLootCommand {
         }
 
         //Construct the Loot
-        Loot loot = new CommandLoot(cmd);
+        Loot loot = new CommandLoot(cmd.toString());
         loot.setProbability(percent);
 
         LootCommandUtil.setLoot(sender, phatLoot, add, coll, loot);

@@ -1,7 +1,9 @@
 package com.codisimus.plugins.phatloots;
 
 import java.util.HashMap;
+import java.util.Map;
 
+import org.bukkit.Bukkit;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
@@ -13,7 +15,7 @@ import org.bukkit.scheduler.BukkitTask;
  */
 public class ForgettableInventory {
     static long delay;
-    private static final HashMap<String, ForgettableInventory> inventories = new HashMap<>(); //User+Chest Location -> Inventory
+    private static final Map<String, ForgettableInventory> inventories = new HashMap<>(); //User+Chest Location -> Inventory
     private Inventory inventory;
     private final String key;
     private BukkitTask task;
@@ -37,13 +39,8 @@ public class ForgettableInventory {
         if (task != null) {
             task.cancel();
         }
-        task = new BukkitRunnable() {
-            @Override
-            public void run() {
-                inventories.remove(key);
-            }
-        }.runTaskLater(PhatLoots.plugin, delay);
-
+        task = Bukkit.getScheduler().runTaskLater(PhatLoots.plugin,
+                () -> inventories.remove(key), delay);
     }
 
     /**

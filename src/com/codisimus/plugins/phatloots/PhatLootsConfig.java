@@ -6,10 +6,7 @@ import com.codisimus.plugins.phatloots.listeners.PhatLootsListener;
 import com.codisimus.plugins.phatloots.loot.Item;
 import com.codisimus.plugins.phatloots.loot.LootCollection;
 import java.io.File;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 import java.util.logging.Level;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -35,7 +32,7 @@ public class PhatLootsConfig {
     static boolean defaultAutoLoot;
     static boolean defaultBreakAndRespawn;
     public static boolean restrictAll; //True if all PhatLoots should require permission
-    public static HashSet<String> restricted = new HashSet();
+    public static Set<String> restricted = new HashSet<>();
     public static List<String> lootBagKeys;
     public static String permission;
     public static String moneyLooted;
@@ -88,9 +85,7 @@ public class PhatLootsConfig {
                 for (String string : worldSection.getKeys(false)) {
                     Material mat = Material.matchMaterial(string);
                     if (mat != null) {
-                        if (PhatLoots.types.get(mat) == null) {
-                            PhatLoots.types.put(mat, new HashMap());
-                        }
+                        PhatLoots.types.computeIfAbsent(mat, key -> new HashMap<>());
                         PhatLoots.types.get(mat).put(world, worldSection.getString(string));
                     }
                 }
@@ -181,7 +176,6 @@ public class PhatLootsConfig {
         defaultMinutes = section.getInt("Minutes");
         defaultSeconds = section.getInt("Seconds");
 
-
         /* OTHER */
 
         restrictAll = config.getBoolean("RestrictAll");
@@ -190,16 +184,15 @@ public class PhatLootsConfig {
             string = ChatColor.translateAlternateColorCodes('&', string);
         }
 
-        lootBagKeys = new ArrayList<String>();
+        lootBagKeys = new ArrayList<>();
         // Kept here for old configs
         if (config.contains("LootBagKey"))
             lootBagKeys.add(ChatColor.translateAlternateColorCodes('&', config.getString("LootBagKey")));
 
         // This check is here just incase someone isn't using a new config
         if (config.contains("LootBagKeys")) {
-            config.getStringList("LootBagKeys").forEach(key -> {
-                lootBagKeys.add(ChatColor.translateAlternateColorCodes('&', key));
-            });
+            config.getStringList("LootBagKeys").forEach(key ->
+                    lootBagKeys.add(ChatColor.translateAlternateColorCodes('&', key)));
         } else {
             PhatLoots.logger.warning("LootBagKey in your config file is deprecated and should be replaced with LootBagKeys.");
         }
