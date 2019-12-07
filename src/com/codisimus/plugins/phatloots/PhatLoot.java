@@ -568,7 +568,7 @@ public final class PhatLoot implements ConfigurationSerializable {
         }
 
         //Call the event to be modified
-        MobDropLootEvent event = new MobDropLootEvent(mob, player, lootBundle);
+        MobDropLootEvent event = new MobDropLootEvent(mob, player, this, lootBundle);
         Bukkit.getPluginManager().callEvent(event);
         if (event.isCancelled()) {
             drops.clear(); //Drop no items
