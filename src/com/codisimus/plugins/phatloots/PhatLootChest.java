@@ -76,7 +76,7 @@ public class PhatLootChest {
         World w = Bukkit.getWorld(world);
         if (w == null) { //The world is not currently loaded
             PhatLoots.logger.warning("The world '" + world + "' is not currently loaded, all linked chests in this world are being unlinked.");
-            PhatLoots.logger.warning("THIS CHEST UNLINKING IS PERMANANT IF YOU LINK/UNLINK ANY OTHER CHESTS IN THIS PHATLOOT!");
+            PhatLoots.logger.warning("THIS CHEST UNLINKING IS PERMANANT IF YOU LINK/UNLINK ANY OTHER CHESTS IN THIS PHATLOOT! (" + this.chestName + ")");
         } else {
             Block block = w.getBlockAt(x, y, z);
             switch (block.getType()) {
