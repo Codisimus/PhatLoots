@@ -15,6 +15,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -35,6 +36,9 @@ import org.bukkit.inventory.meta.PotionMeta;
  */
 @SerializableAs("PhatLoot")
 public final class PhatLoot implements ConfigurationSerializable {
+
+    public static final NamespacedKey LINK_TAG = new NamespacedKey(PhatLoots.plugin, "link");
+
     public static String current; //The currently loading PhatLoot (used for debugging)
     public static String last; //The last successfully loaded PhatLoot (used for debugging)
 

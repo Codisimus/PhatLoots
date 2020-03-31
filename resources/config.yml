@@ -13,6 +13,11 @@ LootBags: false
 ##In that case, you should change this key to something else (such as &3&8&4&r&0) and keep it secret
 LootBagKeys: ['&r&0']
 
+## If loot links should be handled by the persistent data container. This container is a direct
+## link to NBT, so loot links do not need to rely on lore. This is MUCH safer in any event where
+## players may have access to commands to modify lore.
+PersistentDataContainerLinks: true
+
 ##Using Dispensers may cause significant lag if you have a decent amount of redstone circuts on the server
 ##This also applies to Droppers
 DispenserLoot: true
