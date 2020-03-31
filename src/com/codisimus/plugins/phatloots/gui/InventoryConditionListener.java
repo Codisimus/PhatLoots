@@ -35,9 +35,9 @@ public class InventoryConditionListener implements Listener {
         //Create the Inventory view
         Inventory inv = Bukkit.createInventory(null, 54, phatLoot.name + " Conditions");
         if (phatLoot.getLootConditions() != null && !phatLoot.getLootConditions().isEmpty()) {
-            Map<Integer, LootCondition> lootConditionMap = phatLoot.getLootConditionsMap();
-            for (int i = 0; i < lootConditionMap.size(); i++) {
-                inv.setItem(i, lootConditionMap.get(i).handleClick(player, phatLoot, inv, null));
+            List<LootCondition> lootConditions = phatLoot.getLootConditions();
+            for (int i = 0; i < lootConditions.size(); i++) {
+                inv.setItem(i, lootConditions.get(i).handleClick(player, phatLoot, inv, null));
             }
         }
 
@@ -85,10 +85,9 @@ public class InventoryConditionListener implements Listener {
         if (phatLoot == null)
             return;
 
-        Map<Integer, LootCondition> lootConditionMap = phatLoot.getLootConditionsMap();
-
-        if (lootConditionMap.get(event.getSlot()) != null) {
-            event.getClickedInventory().setItem(event.getSlot(), lootConditionMap.get(event.getSlot()).handleClick(player, phatLoot, event.getInventory(), event.getClick()));
+        List<LootCondition> lootConditions = phatLoot.getLootConditions();
+        if (lootConditions.size() > event.getSlot() && lootConditions.get(event.getSlot()) != null) {
+            event.getClickedInventory().setItem(event.getSlot(), lootConditions.get(event.getSlot()).handleClick(player, phatLoot, event.getInventory(), event.getClick()));
             return;
         }
 

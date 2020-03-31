@@ -44,6 +44,17 @@ public class PlaceholderDataCondition extends LootCondition {
         this.placeholderManager = PhatLoots.plugin.getPluginHookManager().getPlaceholderManager();
     }
 
+    public PlaceholderDataCondition(Map<String, Object> map) {
+        super(map);
+
+        this.placeholder = (String) map.get("Placeholder");
+        this.expectedResult = (String) map.get("ExpectedResult");
+        this.inputType = (String) map.get("InputType");
+        this.option = (String) map.get("Option");
+
+        this.placeholderManager = PhatLoots.plugin.getPluginHookManager().getPlaceholderManager();
+    }
+
     @Override
     public boolean checkCondition(Player player) {
         if (!placeholderManager.isPlaceholderPluginPresent()) {

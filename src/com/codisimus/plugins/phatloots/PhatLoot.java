@@ -6,6 +6,7 @@ import com.codisimus.plugins.phatloots.loot.*;
 import java.io.*;
 import java.util.*;
 import java.util.logging.Level;
+import java.util.stream.Collectors;
 
 import com.codisimus.plugins.phatloots.util.PhatLootsUtil;
 import net.milkbowl.vault.economy.EconomyResponse;
@@ -54,7 +55,7 @@ public final class PhatLoot implements ConfigurationSerializable {
 
     public String name; //A unique name for the PhatLoot
     public List<Loot> lootList; //List of Loot
-    private Map<Integer, LootCondition> lootConditions; // Map of Loot conditions
+    private List<LootCondition> lootConditions = new ArrayList<>(); // Map of Loot conditions
 
     public int days; //Reset time (will never reset if any are negative)
     public int hours;
@@ -75,7 +76,6 @@ public final class PhatLoot implements ConfigurationSerializable {
     public PhatLoot(String name) {
         this.name = name;
         lootList = new ArrayList<>();
-        lootConditions = new HashMap<>();
         days = PhatLootsConfig.defaultDays;
         hours = PhatLootsConfig.defaultHours;
         minutes = PhatLootsConfig.defaultMinutes;
@@ -86,9 +86,7 @@ public final class PhatLoot implements ConfigurationSerializable {
         breakAndRespawn = PhatLootsConfig.defaultBreakAndRespawn;
 
         // Adds default conditions when a PhatLoot is made
-        for (LootCondition condition : PhatLoots.plugin.getDefaultConditions()) {
-            lootConditions.put(lootConditions.size(), condition);
-        }
+        lootConditions.addAll(PhatLoots.plugin.getDefaultConditions());
     }
 
     /**
@@ -322,7 +320,7 @@ public final class PhatLoot implements ConfigurationSerializable {
             return flagToBreak;
         }
 
-        LootConditionCheckEvent conditionEvent = new LootConditionCheckEvent(player, this, getLootConditions());
+        LootConditionCheckEvent conditionEvent = new LootConditionCheckEvent(player, this, new ArrayList<>(getLootConditions()));
         conditionEvent.setCancelled(!checkConditions);
         Bukkit.getPluginManager().callEvent(conditionEvent);
         if (!conditionEvent.isCancelled()) {
@@ -1105,25 +1103,11 @@ public final class PhatLoot implements ConfigurationSerializable {
     }
 
     /**
-     * Gets the loot conditions for the PhatLoot
+     * Gets the loot conditions map for the PhatLoot
      *
      * @return The loot conditions
      */
     public List<LootCondition> getLootConditions() {
-        // If there are no loot conditions, return the default ones
-        // this normally happens when someone upgrades their PhatLoots version
-        if (lootConditions == null || lootConditions.values() == null)
-            return PhatLoots.plugin.getDefaultConditions();
-
-        return new ArrayList<>(lootConditions.values());
-    }
-
-    /**
-     * Gets the loot conditions map for the PhatLoot
-     *
-     * @return The loot conditions map
-     */
-    public Map<Integer, LootCondition> getLootConditionsMap() {
         return lootConditions;
     }
 
@@ -1190,7 +1174,7 @@ public final class PhatLoot implements ConfigurationSerializable {
         map.put("BreakAndRespawn", breakAndRespawn);
 
         map.put("LootList", lootList);
-        map.put("LootConditions", getLootConditions());
+        map.put("LootConditions", lootConditions);
         return map;
     }
 
@@ -1225,7 +1209,6 @@ public final class PhatLoot implements ConfigurationSerializable {
             }
 
             if (map.containsKey(currentLine = "LootConditions")) {
-                lootConditions = new HashMap<>();
                 List<LootCondition> conditions = (List<LootCondition>) map.get(currentLine = "LootConditions");
                 Map<String, LootCondition> conditionMap = new HashMap<>();
 
@@ -1236,18 +1219,14 @@ public final class PhatLoot implements ConfigurationSerializable {
 
                 // Override the default conditions if applicable
                 for (LootCondition condition : conditions) {
+                    if (condition == null) {
+                        continue;
+                    }
                     conditionMap.put(condition.getName(), condition);
                 }
 
-                conditions.clear();
-                for (String str : conditionMap.keySet()) {
-                    LootCondition condition = conditionMap.get(str);
-                    conditions.add(condition);
-                }
-
-                for (int i = 0; i < conditions.size(); i++) {
-                    LootCondition condition = conditions.get(i);
-                    lootConditions.put(i, condition);
+                for (Map.Entry<String, LootCondition> conditionEntry : conditionMap.entrySet()) {
+                    lootConditions.add(conditionEntry.getValue());
                 }
             }
 
@@ -1272,6 +1251,9 @@ public final class PhatLoot implements ConfigurationSerializable {
             if (current == null) {
                 PhatLoots.logger.severe("Last successful load was...");
                 PhatLoots.logger.severe("PhatLoot: " + (last == null ? "unknown" : last));
+            }
+            if (PhatLoots.isDebug()) {
+                ex.printStackTrace();
             }
         }
         last = current;
