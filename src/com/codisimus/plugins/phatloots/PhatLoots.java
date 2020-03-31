@@ -1,17 +1,11 @@
 package com.codisimus.plugins.phatloots;
 
 import com.codisimus.plugins.phatloots.commands.*;
-import com.codisimus.plugins.phatloots.conditions.BiomeCondition;
-import com.codisimus.plugins.phatloots.conditions.ExperienceCondition;
-import com.codisimus.plugins.phatloots.conditions.HealthCondition;
-import com.codisimus.plugins.phatloots.conditions.LootCondition;
-import com.codisimus.plugins.phatloots.conditions.PermissionCondition;
-import com.codisimus.plugins.phatloots.conditions.RegionCondition;
-import com.codisimus.plugins.phatloots.conditions.TimeCondition;
-import com.codisimus.plugins.phatloots.conditions.WeatherCondition;
+import com.codisimus.plugins.phatloots.conditions.*;
 import com.codisimus.plugins.phatloots.events.ChestRespawnEvent.RespawnReason;
 import com.codisimus.plugins.phatloots.gui.InventoryConditionListener;
 import com.codisimus.plugins.phatloots.gui.InventoryListener;
+import com.codisimus.plugins.phatloots.hook.PluginHookManager;
 import com.codisimus.plugins.phatloots.listeners.*;
 import com.codisimus.plugins.phatloots.loot.*;
 import com.codisimus.plugins.phatloots.regions.RegionHook;
@@ -61,6 +55,8 @@ public class PhatLoots extends JavaPlugin {
     public static final EnumMap<Material, HashMap<String, String>> types = new EnumMap<>(Material.class); //Material -> World Name -> PhatLoot Name
     private static final HashMap<String, PhatLoot> phatLoots = new HashMap<>(); //PhatLoot Name -> PhatLoot
 
+    private PluginHookManager hookManager;
+
     private List<LootCondition> defaultConditions = new ArrayList<>();
 
     public static void main(String[] args) {
@@ -78,7 +74,7 @@ public class PhatLoots extends JavaPlugin {
     }
 
     @Override
-    public void onEnable () {
+    public void onEnable() {
         logger = getLogger();
         plugin = this;
 
@@ -171,6 +167,9 @@ public class PhatLoots extends JavaPlugin {
         registerRegionHook("RegionTools", new RegionToolsRegionHook());
         registerRegionHook("WorldGuard", new WorldGuardRegionHook());
 
+        /* Register Plugin Hook Manager */
+        this.hookManager = new PluginHookManager(this);
+
         /* Register ConfigurationSerializable classes */
         ConfigurationSerialization.registerClass(PhatLoot.class, "PhatLoot");
         ConfigurationSerialization.registerClass(LootCollection.class, "LootCollection");
@@ -193,6 +192,7 @@ public class PhatLoots extends JavaPlugin {
         ConfigurationSerialization.registerClass(ExperienceCondition.class, "ExperienceCondition");
         ConfigurationSerialization.registerClass(HealthCondition.class, "HealthCondition");
         ConfigurationSerialization.registerClass(PermissionCondition.class, "PermissionCondition");
+        ConfigurationSerialization.registerClass(PlaceholderDataCondition.class, "PlaceholderDataCondition");
         ConfigurationSerialization.registerClass(RegionCondition.class, "RegionCondition");
         ConfigurationSerialization.registerClass(TimeCondition.class, "TimeCondition");
         ConfigurationSerialization.registerClass(WeatherCondition.class, "WeatherCondition");
@@ -201,6 +201,7 @@ public class PhatLoots extends JavaPlugin {
         defaultConditions.add(new ExperienceCondition("ExperienceCondition"));
         defaultConditions.add(new HealthCondition("HealthCondition"));
         defaultConditions.add(new PermissionCondition("PermissionCondition"));
+        defaultConditions.add(new PlaceholderDataCondition("PlaceholderDataCondition"));
         defaultConditions.add(new RegionCondition("RegionCondition"));
         defaultConditions.add(new TimeCondition("TimeCondition"));
         defaultConditions.add(new WeatherCondition("WeatherCondition"));
@@ -613,6 +614,16 @@ public class PhatLoots extends JavaPlugin {
         }
         econ = (Economy) rsp.getProvider();
         return econ != null;
+    }
+
+    /**
+     * Returns the plugin hook manager which
+     * manages hooks between other plugins
+     *
+     * @return the plugin hook manager
+     */
+    public PluginHookManager getPluginHookManager() {
+        return hookManager;
     }
 
     /**
