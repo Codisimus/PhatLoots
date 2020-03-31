@@ -15,6 +15,8 @@ import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
+
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -30,6 +32,8 @@ import org.bukkit.inventory.DoubleChestInventory;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.inventory.meta.tags.CustomItemTagContainer;
+import org.bukkit.inventory.meta.tags.ItemTagType;
 
 /**
  * Executes Player Commands
@@ -108,11 +112,18 @@ public class LootCommand {
             return false;
         }
 
-        ItemMeta meta = item.hasItemMeta() ? item.getItemMeta() : Bukkit.getItemFactory().getItemMeta(item.getType());
-        List<String> lore = meta.hasLore() ? meta.getLore() : new ArrayList<>();
-        lore.add(PhatLootsConfig.lootBagKeys.get(0) + phatLoot.name);
-        meta.setLore(lore);
-        item.setItemMeta(meta);
+        if (PhatLootsConfig.persistentDataContainerLinks) {
+            ItemMeta meta = item.getItemMeta();
+            CustomItemTagContainer itemTagContainer = meta.getCustomTagContainer();
+            itemTagContainer.setCustomTag(PhatLoot.LINK_TAG, ItemTagType.STRING, phatLoot.name);
+            item.setItemMeta(meta);
+        } else {
+            ItemMeta meta = item.hasItemMeta() ? item.getItemMeta() : Bukkit.getItemFactory().getItemMeta(item.getType());
+            List<String> lore = meta.hasLore() ? meta.getLore() : new ArrayList<>();
+            lore.add(PhatLootsConfig.lootBagKeys.get(0) + phatLoot.name);
+            meta.setLore(lore);
+            item.setItemMeta(meta);
+        }
 
         player.sendMessage("§6" + PhatLootsUtil.getItemName(item) + "§5 has been linked to PhatLoot §6" + phatLoot.name);
         return true;
@@ -205,8 +216,61 @@ public class LootCommand {
     }
 
     @CodCommand(
+            command = "unlink",
+            subcommand = "hand",
+            weight = 40,
+            usage = {
+                    "§2<command> <Name>§b Unlink Item in hand with PhatLoot"
+            },
+            permission = "phatloots.unlink"
+    )
+    public boolean unlinkHand(Player player, PhatLoot phatLoot) {
+        //Cancel if the player is not holding an item
+        ItemStack item = player.getInventory().getItemInMainHand();
+        if (item == null || item.getType() == Material.AIR) {
+            return false;
+        }
+
+        if (PhatLootsConfig.persistentDataContainerLinks) {
+            ItemMeta meta = item.getItemMeta();
+            CustomItemTagContainer itemTagContainer = meta.getCustomTagContainer();
+            itemTagContainer.removeCustomTag(PhatLoot.LINK_TAG);
+            item.setItemMeta(meta);
+        } else {
+            ItemMeta meta = item.getItemMeta();
+            List<String> lore = Optional.ofNullable(meta).map(ItemMeta::getLore).orElse(new ArrayList<>());
+            List<String> toRemove = new ArrayList<>();
+            for (String line : lore) {
+                String finalLine = "";
+                for (String str : PhatLootsConfig.lootBagKeys) {
+                    if (line.startsWith(str)) {
+                        finalLine = str;
+                        break;
+                    }
+                }
+
+                if (finalLine.isEmpty())
+                    continue;
+
+                PhatLoot handLoot = PhatLoots.getPhatLoot(line.substring(finalLine.length()));
+                if (handLoot == null || !handLoot.getName().equals(phatLoot.getName()))
+                    continue;
+
+                toRemove.add(line);
+            }
+            toRemove.forEach(lore::remove);
+            lore.removeAll(toRemove);
+            meta.setLore(lore);
+            item.setItemMeta(meta);
+        }
+
+        player.sendMessage("§6" + PhatLootsUtil.getItemName(item) + "§5 has been unlinked from PhatLoot " + ChatColor.GOLD + phatLoot.getName());
+        return true;
+    }
+
+    @CodCommand(
         command = "unlink",
-        weight = 40,
+        weight = 40.1,
         usage = {
             "§2<command> [Name]§b Unlink target Block from PhatLoot",
             "§7If Name is not specified then all PhatLoots linked to the target Block will be affected"
@@ -220,7 +284,8 @@ public class LootCommand {
         phatLoot.saveChests();
         return true;
     }
-    @CodCommand(command = "unlink", weight = 40.1)
+
+    @CodCommand(command = "unlink", weight = 40.2)
     public boolean unlink(Player player) {
         for (PhatLoot phatLoot : PhatLootsUtil.getPhatLoots(player)) {
             unlink(player, phatLoot);

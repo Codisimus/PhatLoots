@@ -33,6 +33,7 @@ public class PhatLootsConfig {
     static boolean defaultBreakAndRespawn;
     public static boolean restrictAll; //True if all PhatLoots should require permission
     public static Set<String> restricted = new HashSet<>();
+    public static boolean persistentDataContainerLinks;
     public static List<String> lootBagKeys;
     public static String permission;
     public static String moneyLooted;
@@ -196,6 +197,8 @@ public class PhatLootsConfig {
         } else {
             PhatLoots.logger.warning("LootBagKey in your config file is deprecated and should be replaced with LootBagKeys.");
         }
+
+        persistentDataContainerLinks = config.getBoolean("PersistentDataContainerLinks", true);
 
         Item.tierNotify = config.getInt("MinimumTierNotification");
         LootCommand.setUnlockable = config.getBoolean("SetChestsAsUnlockable");
