@@ -140,7 +140,7 @@ public class LootCommand {
     public boolean link(Player player, PhatLoot phatLoot) {
         //Cancel if the player is not targeting a correct Block
         Block block  = player.getTargetBlock(EnumSet.of(Material.AIR, Material.CAVE_AIR, Material.VOID_AIR), 10);
-        String blockName = block.getType().toString();
+        String blockName = PhatLootsUtil.getBlockName(block);
         if (!PhatLootsUtil.isLinkableType(block)) {
             player.sendMessage("§6" + blockName + "§4 is not a linkable type.");
             return true;
@@ -280,7 +280,7 @@ public class LootCommand {
     public boolean unlink(Player player, PhatLoot phatLoot) {
         Block block = player.getTargetBlock(EnumSet.of(Material.AIR, Material.CAVE_AIR, Material.VOID_AIR), 10);
         phatLoot.removeChest(block);
-        player.sendMessage("§5Target §6" + block.getType().toString() + "§5 has been unlinked from PhatLoot §6" + phatLoot.name);
+        player.sendMessage("§5Target §6" + PhatLootsUtil.getBlockName(block) + "§5 has been unlinked from PhatLoot §6" + phatLoot.name);
         phatLoot.saveChests();
         return true;
     }
@@ -775,7 +775,7 @@ public class LootCommand {
         Block block = player.getTargetBlock(EnumSet.noneOf(Material.class), 10);
         for (PhatLoot phatLoot : PhatLootsUtil.getPhatLoots(player)) {
             phatLoot.reset(block);
-            player.sendMessage("§5Target §6" + block.getType().toString() + "§5 has been reset.");
+            player.sendMessage("§5Target §6" + PhatLootsUtil.getBlockName(block) + "§5 has been reset.");
         }
         return true;
     }
@@ -812,7 +812,7 @@ public class LootCommand {
         Block block = player.getTargetBlock(EnumSet.noneOf(Material.class), 10);
         for (PhatLoot phatLoot : PhatLootsUtil.getPhatLoots(player)) {
             phatLoot.clean(block);
-            player.sendMessage("§5Target §6" + block.getType().toString() + "§5 has been cleaned.");
+            player.sendMessage("§5Target §6" + PhatLootsUtil.getBlockName(block) + "§5 has been cleaned.");
         }
         return true;
     }

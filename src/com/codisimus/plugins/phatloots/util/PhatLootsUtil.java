@@ -121,6 +121,17 @@ public class PhatLootsUtil {
     }
 
     /**
+     * Returns a user friendly String of the given Block's name
+     *
+     * @return The name of the item
+     */
+    public static String getBlockName(Block block) {
+        //Return the Display name of the item if there is one
+        //A display name was not found so use a cleaned up version of the Material name
+        return WordUtils.capitalizeFully(block.getType().toString().replace("_", " "));
+    }
+
+    /**
      * Returns the left side of a Chest block
      *
      * @param block The Block which may or may not be a Chest
@@ -176,7 +187,7 @@ public class PhatLootsUtil {
         LinkedList<PhatLoot> phatLoots = new LinkedList<>();
         //Cancel if the sender is not targeting a correct Block
         Block block = player.getTargetBlock(EnumSet.of(Material.AIR, Material.CAVE_AIR, Material.VOID_AIR), 10);
-        String blockName = block.getType().toString();
+        String blockName = PhatLootsUtil.getBlockName(block);
         if (!PhatLootsUtil.isLinkableType(block)) {
             player.sendMessage("§6" + blockName + "§4 is not a linkable type.");
             return phatLoots;

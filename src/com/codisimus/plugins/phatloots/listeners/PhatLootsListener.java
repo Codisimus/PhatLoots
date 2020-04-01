@@ -109,7 +109,7 @@ public class PhatLootsListener implements Listener {
         //Unlink the broken Block
         for (PhatLoot phatLoot : PhatLoots.getPhatLoots(block)) {
             phatLoot.removeChest(block);
-            player.sendMessage("§5Broken §6" + block.getType().toString() + "§5 has been unlinked from PhatLoot §6" + phatLoot.name);
+            player.sendMessage("§5Broken §6" + PhatLootsUtil.getBlockName(block) + "§5 has been unlinked from PhatLoot §6" + phatLoot.name);
             phatLoot.saveChests();
         }
     }
