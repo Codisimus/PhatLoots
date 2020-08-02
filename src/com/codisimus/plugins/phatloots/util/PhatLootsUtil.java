@@ -280,4 +280,46 @@ public class PhatLootsUtil {
         }
         return exp;
     }
+
+    /**
+     * Checks if the specified version is compatible with the
+     * given version.
+     *
+     * @param version the version to check
+     * @param whichVersion the version to check if compatbile with
+     * @return if the specified version is compatible with the given version
+     */
+    public static boolean isCompatible(String version, String whichVersion) {
+        int[] currentVersion = parseVersion(version);
+        int[] otherVersion = parseVersion(whichVersion);
+        int length = Math.max(currentVersion.length, otherVersion.length);
+        for (int index = 0; index < length; index = index + 1) {
+            int self = (index < currentVersion.length) ? currentVersion[index] : 0;
+            int other = (index < otherVersion.length) ? otherVersion[index] : 0;
+
+            if (self != other) {
+                return (self - other) > 0;
+            }
+        }
+        return true;
+    }
+
+    private static int[] parseVersion(String versionParam) {
+        versionParam = (versionParam == null) ? "" : versionParam;
+        if (versionParam.contains("(MC: ")) {
+            versionParam = versionParam.split("\\(MC: ")[1];
+            versionParam = versionParam.split("\\)")[0];
+        }
+        String[] stringArray = versionParam.split("[_.-]");
+        int[] temp = new int[stringArray.length];
+        for (int index = 0; index <= (stringArray.length - 1); index = index + 1) {
+            String t = stringArray[index].replaceAll("\\D", "");
+            try {
+                temp[index] = Integer.parseInt(t);
+            } catch(NumberFormatException ex) {
+                temp[index] = 0;
+            }
+        }
+        return temp;
+    }
 }

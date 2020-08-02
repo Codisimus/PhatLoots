@@ -3,7 +3,10 @@ package com.codisimus.plugins.phatloots.listeners;
 import com.codisimus.plugins.phatloots.PhatLoot;
 import com.codisimus.plugins.phatloots.PhatLoots;
 import com.codisimus.plugins.phatloots.PhatLootsConfig;
+import com.codisimus.plugins.phatloots.util.PhatLootsUtil;
 import java.util.List;
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -53,9 +56,19 @@ public class LootBagListener implements Listener {
         for (String line : lore) {
             String finalLine = "";
             for (String str : PhatLootsConfig.lootBagKeys) {
-                if (line.startsWith(str)) {
+                if (line.startsWith(ChatColor.translateAlternateColorCodes('&', str))) {
                     finalLine = str;
                     break;
+                }
+                // 1.16 check
+                if (PhatLootsUtil.isCompatible(Bukkit.getServer().getVersion(), "1.16.1")) {
+                    if (str.startsWith(ChatColor.RESET.toString())) {
+                        str = str.substring(2);
+                        if (line.startsWith(ChatColor.translateAlternateColorCodes('&', str))) {
+                            finalLine = str;
+                            break;
+                        }
+                    }
                 }
             }
 
