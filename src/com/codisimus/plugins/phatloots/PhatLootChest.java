@@ -9,6 +9,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Sound;
+import org.bukkit.SoundCategory;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
@@ -282,7 +283,7 @@ public class PhatLootChest {
         }
 
         if (soundOnBreak) {
-            block.getWorld().playSound(block.getLocation(), Sound.ENTITY_ZOMBIE_BREAK_WOODEN_DOOR, 1, 1);
+            block.getWorld().playSound(block.getLocation(), Sound.ENTITY_ZOMBIE_BREAK_WOODEN_DOOR, SoundCategory.BLOCKS, 1, 1);
         }
     }
 
@@ -517,13 +518,13 @@ public class PhatLootChest {
                 if (inv.getViewers().size() <= 1) { //First viewer
                     //Play for each Player in the World
                     for (Player p: player.getWorld().getPlayers()) {
-                        p.playSound(loc, Sound.BLOCK_CHEST_OPEN, 0.75F, 0.95F);
+                        p.playSound(loc, Sound.BLOCK_CHEST_OPEN, SoundCategory.BLOCKS, 0.75F, 0.95F);
                         ChestAnimations.openChest(getBlock());
                     }
                 }
             } else {
                 //Play for only the individual Player
-                player.playSound(loc, Sound.BLOCK_CHEST_OPEN, 0.75F, 0.95F);
+                player.playSound(loc, Sound.BLOCK_CHEST_OPEN, SoundCategory.BLOCKS, 0.75F, 0.95F);
                 ChestAnimations.openChest(player, getBlock());
             }
             break;
@@ -557,11 +558,11 @@ public class PhatLootChest {
         case CHEST:
         case ENDER_CHEST:
             if (global) {
-                block.getWorld().playSound(loc, Sound.BLOCK_CHEST_CLOSE, 0.75F, 0.95F);
+                block.getWorld().playSound(loc, Sound.BLOCK_CHEST_CLOSE, SoundCategory.BLOCKS, 0.75F, 0.95F);
                 ChestAnimations.closeChest(getBlock());
             } else {
                 //Play for only the individual Player
-                player.playSound(loc, Sound.BLOCK_CHEST_CLOSE, 0.75F, 0.95F);
+                player.playSound(loc, Sound.BLOCK_CHEST_CLOSE, SoundCategory.BLOCKS, 0.75F, 0.95F);
                 ChestAnimations.closeChest(player, getBlock());
             }
             break;

@@ -256,11 +256,13 @@ SetChestsAsUnlockable: true
 ##This would turn a range of 100-1275 to 1.00-12.75
 DivideMoneyAmountBy100: false
 
-
+# If sound should be played when a chest is automatically looted.
 PlaySoundOnAutoLoot: true
 
+# If sound should be played on chest break.
 PlaySoundOnChestBreak: true
 
+# If break and respawn should be used.
 UseBreakAndRespawn: true
 
 
