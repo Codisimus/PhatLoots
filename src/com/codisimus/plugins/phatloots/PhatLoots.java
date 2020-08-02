@@ -197,6 +197,7 @@ public class PhatLoots extends JavaPlugin {
         ConfigurationSerialization.registerClass(BiomeCondition.class, "BiomeCondition");
         ConfigurationSerialization.registerClass(ExperienceCondition.class, "ExperienceCondition");
         ConfigurationSerialization.registerClass(HealthCondition.class, "HealthCondition");
+        ConfigurationSerialization.registerClass(ItemCondition.class, "ItemCondition");
         ConfigurationSerialization.registerClass(PermissionCondition.class, "PermissionCondition");
         ConfigurationSerialization.registerClass(PlaceholderDataCondition.class, "PlaceholderDataCondition");
         ConfigurationSerialization.registerClass(RegionCondition.class, "RegionCondition");
@@ -206,6 +207,7 @@ public class PhatLoots extends JavaPlugin {
         defaultConditions.add(new BiomeCondition("BiomeCondition"));
         defaultConditions.add(new ExperienceCondition("ExperienceCondition"));
         defaultConditions.add(new HealthCondition("HealthCondition"));
+        defaultConditions.add(new ItemCondition("ItemCondition"));
         defaultConditions.add(new PermissionCondition("PermissionCondition"));
         defaultConditions.add(new PlaceholderDataCondition("PlaceholderDataCondition"));
         defaultConditions.add(new RegionCondition("RegionCondition"));

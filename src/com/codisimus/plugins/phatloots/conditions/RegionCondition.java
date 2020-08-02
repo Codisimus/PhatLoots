@@ -3,7 +3,7 @@ package com.codisimus.plugins.phatloots.conditions;
 import com.codisimus.plugins.phatloots.PhatLoot;
 import com.codisimus.plugins.phatloots.gui.InventoryConditionListener;
 import com.codisimus.plugins.phatloots.listeners.MobListener;
-import com.codisimus.plugins.phatloots.util.ChatInput;
+import com.codisimus.plugins.phatloots.util.InteractionInputs;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.configuration.serialization.SerializableAs;
@@ -100,7 +100,7 @@ public class RegionCondition extends LootCondition {
 
         if (click == ClickType.SHIFT_LEFT) {
             player.closeInventory();
-            new ChatInput(player) {
+            new InteractionInputs.ChatInput(player) {
 
                 @Override
                 public void onChatInput(String input) {
