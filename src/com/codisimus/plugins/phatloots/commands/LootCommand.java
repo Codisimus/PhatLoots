@@ -850,4 +850,28 @@ public class LootCommand {
         PhatLoots.rl(sender);
         return true;
     }
+
+    @CodCommand(
+            command = "save",
+            weight = 190,
+            usage = "§2<command> <Name> §b Saves the given loot table",
+            permission = "phatloots.save"
+    )
+    public boolean save(CommandSender sender, PhatLoot phatLoot) {
+        phatLoot.saveAll();
+        sender.sendMessage(ChatColor.GREEN + "Saved " + ChatColor.GOLD + phatLoot.getName() + ChatColor.GREEN + " successfully!");
+        return true;
+    }
+
+    @CodCommand(
+            command = "saveall",
+            weight = 200,
+            usage = "§2<command>§b Saves all loot tables.",
+            permission = "phatloots.save.all"
+    )
+    public boolean saveAll(CommandSender sender) {
+        PhatLoots.saveAll();
+        sender.sendMessage(ChatColor.GREEN + "Saved all loot tables successfully!");
+        return true;
+    }
 }
