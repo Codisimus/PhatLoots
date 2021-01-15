@@ -101,11 +101,6 @@ public class PhatLoots extends JavaPlugin {
             dir.mkdir();
         }
 
-        dir = new File(dataFolder, "Addons");
-        if (!dir.isDirectory()) {
-            dir.mkdir();
-        }
-
         //Save SampleLoot.yml if it does not exist
         File file = new File(dataFolder, "LootTables" + File.separator + "SampleLoot.yml");
         if (!file.exists()) {
@@ -215,10 +210,6 @@ public class PhatLoots extends JavaPlugin {
         defaultConditions.add(new WeatherCondition("WeatherCondition"));
 
         /* Load External PhatLoots Addons */
-        //Buttons, Tools, CodCommands, RegionHooks, and ConfigurationSerializable classes should be registered from within the Addon
-        for (Plugin addon : Bukkit.getPluginManager().loadPlugins(dir)) {
-            Bukkit.getPluginManager().enablePlugin(addon);
-        }
 
         /* Register Events */
         registerEvents();
