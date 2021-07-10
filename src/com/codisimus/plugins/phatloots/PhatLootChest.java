@@ -11,6 +11,7 @@ import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.SoundCategory;
 import org.bukkit.World;
+import org.bukkit.WorldCreator;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Chest;
@@ -134,7 +135,12 @@ public class PhatLootChest {
     public static PhatLootChest getChest(String world, int x, int y, int z) {
         World w = Bukkit.getWorld(world);
         if (w == null) {
-            return null;
+            w = Bukkit.getServer().createWorld(new WorldCreator(world));
+            if (w == null) {
+                return null;
+            } else {
+                return getChest(w.getBlockAt(x, y, z));
+            }
         } else {
             return getChest(w.getBlockAt(x, y, z));
         }

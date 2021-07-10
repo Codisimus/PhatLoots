@@ -1094,7 +1094,8 @@ public final class PhatLoot implements ConfigurationSerializable {
         try (FileWriter fWriter = new FileWriter(file)) {
             try (PrintWriter pWriter = new PrintWriter(fWriter)) {
                 for (PhatLootChest chest : getChests()) {
-                    pWriter.println(chest.toString());
+                    if (chest!=null)
+                        pWriter.println(chest.toString());
                 }
             }
         } catch (IOException ex) {
