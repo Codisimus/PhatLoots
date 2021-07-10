@@ -689,8 +689,8 @@ public class InventoryListener implements Listener {
         final ItemStack hand = player.getItemOnCursor();
         Loot loot = holding.get(playerUUID);
 
-        //Close the old InventoryView
-        player.closeInventory();
+        //Close the old InventoryView **after here it wasn't working at all**
+//        player.closeInventory();
 
         //Re-add the Loot if there was any (it is removed onInventoryClose)
         if (loot != null) {

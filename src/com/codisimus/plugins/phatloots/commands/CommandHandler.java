@@ -277,7 +277,7 @@ public class CommandHandler implements CommandExecutor {
 
             displayUsage(sender, meta);
         } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
-            sender.sendMessage("§4An error occured while trying to perform this command. Please notify a server administator.");
+            sender.sendMessage("§4An error occured while trying to perform this command. Please notify a server administrator.");
             plugin.getLogger().log(Level.SEVERE, "Error occured when executing command " + getCommand(meta), ex);
         }
     }
