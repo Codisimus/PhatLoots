@@ -46,7 +46,7 @@ public class ChestAnimations {
 
         if (player != null) {
             net.minecraft.world.level.block.Block nmsBlock = CraftMagicNumbers.getBlock(block.getType());
-            PacketPlayOutBlockAction packet = new PacketPlayOutBlockAction(blockPosition, nmsBlock, openCode, 1);
+            PacketPlayOutBlockAction packet = new PacketPlayOutBlockAction(blockPosition, nmsBlock, 1, openCode);
             ((CraftPlayer) player).getHandle().b.sendPacket(packet);
         } else {
             World world = ((CraftWorld) location.getWorld()).getHandle();
