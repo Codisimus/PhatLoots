@@ -19,7 +19,7 @@ public class ManageLootCommand {
     @CodCommand(
         command = "add",
         subcommand = "hand",
-        weight = 190,
+        weight = 190.1,
         aliases = {"+"},
         usage = {
             "§e     PhatLoots Manage Loot Help Page:",
@@ -184,7 +184,7 @@ public class ManageLootCommand {
         command = "remove",
         subcommand = "hand",
         weight = 195,
-        aliases = {"+"},
+        aliases = {"-"},
         usage = {
             "§e     PhatLoots Manage Loot Help Page:",
             "§5A Parameter starts with the 1 character §2id",
@@ -214,7 +214,7 @@ public class ManageLootCommand {
         command = "remove",
         subcommand = "coll",
         weight = 196,
-        aliases = {"+"},
+        aliases = {"-"},
         usage = {
             "§e     PhatLoots Manage Loot Help Page:",
             "§5A Parameter starts with the 1 character §2id",
