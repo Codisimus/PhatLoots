@@ -38,12 +38,12 @@ public class PhatLootsCommandSender implements ConsoleCommandSender {
 
     @Override
     public void sendMessage(@Nullable UUID uuid, @NotNull String s) {
-
+        this.sendMessage(s);
     }
 
     @Override
     public void sendMessage(@Nullable UUID uuid, @NotNull String[] strings) {
-
+        this.sendMessage(strings);
     }
 
     @Override
@@ -158,6 +158,6 @@ public class PhatLootsCommandSender implements ConsoleCommandSender {
 
     @Override
     public void sendRawMessage(@Nullable UUID uuid, @NotNull String s) {
-
+        this.sendRawMessage(s);
     }
 }

@@ -135,12 +135,7 @@ public class PhatLootChest {
     public static PhatLootChest getChest(String world, int x, int y, int z) {
         World w = Bukkit.getWorld(world);
         if (w == null) {
-            w = Bukkit.getServer().createWorld(new WorldCreator(world));
-            if (w == null) {
-                return null;
-            } else {
-                return getChest(w.getBlockAt(x, y, z));
-            }
+            return null;
         } else {
             return getChest(w.getBlockAt(x, y, z));
         }

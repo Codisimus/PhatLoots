@@ -4,7 +4,7 @@ PhatLoots is a Bukkit plugin that allows a server admin to setup 'Loot Tables' t
 
 ### Links
 * Discord: https://discordapp.com/invite/7MRPQmt
-* Download: https://www.spigotmc.org/resources/68925/ (1.13 and 1.14+)
+* Download: https://www.spigotmc.org/resources/68925/ (1.13+)
 * Legacy Download for Older Versions: http://codisimus.com/phatloots
 
 ## Features
